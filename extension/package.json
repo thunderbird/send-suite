@@ -1,0 +1,18 @@
+{
+  "name": "send-suite-extension",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "base64-js": "^1.5.1",
+    "buffer": "^6.0.3",
+    "crc": "^4.3.2",
+    "nanobus": "^4.5.0",
+    "vite": "^4.3.2"
+  }
+}
