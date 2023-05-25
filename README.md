@@ -82,7 +82,7 @@ lorem ipsum.
 
 ## Building and installing the extension
 
-While in the `extension` directory, run `pnpm run build`.
+While in the `extension` directory, run `pnpm run build` (or `pnpm run build:watch` to rebuild on changes).
 
 This will create/update the `dist/` directory.
 
