@@ -28,6 +28,7 @@ If you've just cloned, you'll need to install the deps and create the dev databa
 cd service/
 pnpm install
 npx prisma generate
+npx prisma migrate dev --name init
 pnpm run db:migrate
 ```
 

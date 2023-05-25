@@ -1,3 +1,7 @@
+# TODO: remove this when the db is more solid, specifically re: file ownership
+migrations
+seed.ts
+
 # Dev droppings
 *.env*
 dev.db*
