@@ -8,6 +8,15 @@ export async function createUser(email: string) {
     },
   });
 }
+
+export async function getUserItems(userId: number) {
+  return prisma.item.findMany({
+    where: {
+      sharedBy: userId,
+    },
+  });
+}
+
 export async function createGroup(data = {}) {
   return prisma.group.create({
     data,
@@ -85,10 +94,16 @@ export async function removeGroupMember(groupId: number, userId: number) {
   });
 }
 
-export async function createItem(url: string) {
+export async function createItem(
+  url: string,
+  metadata: string,
+  sharedBy: number
+) {
   return prisma.item.create({
     data: {
       url,
+      metadata,
+      sharedBy,
     },
   });
 }

@@ -10,6 +10,7 @@ datasource db {
 model User {
   id      Int     @id @default(autoincrement())
   email   String  @unique
+  items     Item[]
   groups  GroupUser[]
 }
 
@@ -31,6 +32,10 @@ model GroupUser {
 model Item {
   id        Int      @id @default(autoincrement())
   url       String   @unique
+  // metadata  Json  // JSON fields are unsupported by prisma's sqlite connector
+  metadata  String   // will just serialize/deserialize for now
+  sharedBy  Int      @map("shared_by")
+  user      User     @relation(fields: [sharedBy], references: [id])
   groups    GroupItem[]
 }
 

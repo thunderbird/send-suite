@@ -4,6 +4,7 @@ import express from "express";
 import WebSocket from "ws";
 import {
   createUser,
+  getUserItems,
   createGroup,
   getGroupMembers,
   deleteGroup,
@@ -73,6 +74,20 @@ app.post("/api/users", async (req, res) => {
       });
       // res.status(404); // Not Found - if groupId or userId don't exist
     }
+  }
+});
+
+// Items shared by a user
+app.get("/api/users/:userId/items", async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const items = await getUserItems(parseInt(userId));
+    res.status(200).json(items);
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error.",
+      error,
+    });
   }
 });
 // Will we ever need to delete or update a user?
@@ -208,9 +223,9 @@ app.delete("/api/groups/:groupId/members/:userId", async (req, res) => {
 // Need additional code to remove the files from storage.
 
 app.post("/api/items", async (req, res) => {
-  const { url } = req.body;
+  const { url, metadata, sharedBy } = req.body;
   try {
-    const item = await createItem(url);
+    const item = await createItem(url, metadata, parseInt(sharedBy));
     res.status(201).json({
       message: "Item created",
       item,
