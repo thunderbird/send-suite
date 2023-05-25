@@ -116,11 +116,23 @@ After putting a value in for the `Server URL`, be sure to click `Save`.
 
 ## Try it out! (sort of)
 
+### Convert attachment to Thunderbird Send
+
+In the new message composition window, attach a file as you would normally (i.e., using the `Attach` button near the upper right of the window).
+
+If you've configured the extension (described in the previous section), you should be able to right-click the attachment and choose `Convert to... > Thunderbird Send`
+
+![](./screenshots/convert-attachment.png)
+
+After successfully uploading, your message window should now include a download link:
+
+![](./screenshots/attachment-link-in-body.png)
+
+**Important: do NOT use this for sending actual attachments, since your server is inaccessible to anyone else**.
+
 ### Send encrypted
 
 In a new message composition window, you should see a `Send encrypted` button next to `Attach`:
 ![](./screenshots/secret-message.png)
 
 Type something into the body of the email and then click `Send encrypted` - your `service` terminal should show a lot of activity.
-
-(Coming soon: receiving an encrypted message)
