@@ -277,8 +277,8 @@ app.post("/api/groups/:groupId/items/", async (req, res) => {
   `);
 
   try {
-    const group = await getGroup(parseInt(groupId));
-    if (!group) {
+    const groupWithMembers = await getGroupMembers(parseInt(groupId));
+    if (!groupWithMembers) {
       res.status(404).json({
         message: "Group not found.",
       });
@@ -293,11 +293,18 @@ app.post("/api/groups/:groupId/items/", async (req, res) => {
       return;
     }
 
-    const groupItem = await addGroupItem(group.id, item.id);
-    res.status(201).json({
-      message: "Item added to group.",
-      groupItem,
-    });
+    const isOwnerMemberOfGroup =
+      groupWithMembers.members.filter(({ user }) => user.id === item.sharedBy)
+        .length === 1;
+    console.log(`isOwnerMemberOfGroup? ${isOwnerMemberOfGroup}`);
+
+    if (isOwnerMemberOfGroup) {
+      const groupItem = await addGroupItem(groupWithMembers.id, item.id);
+      res.status(201).json({
+        message: "Item added to group.",
+        groupItem,
+      });
+    }
   } catch (error) {
     console.log(error);
     if (
