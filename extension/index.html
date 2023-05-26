@@ -5,16 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TB Send Test UI</title>
     <style>
-      input#url {
+      input,
+      textarea {
         width: 100%;
+      }
+      input[type="checkbox"],
+      input[type="number"] {
+        width: auto;
       }
     </style>
   </head>
   <body>
-    <h1>This is just a test page</h1>
-    <p>URL: <input id="url" /></p>
-    <button id="send">Send</button>
-    <button id="receive">Receive</button>
+    <h1>Test UI</h1>
+    <div>
+      <label>
+        User ID
+        <input type="number" value="1" id="user-id" />
+      </label>
+    </div>
+    <div>
+      <p>Text content for upload<input id="text-content" /></p>
+      <button id="send">Send</button>
+      <p>
+        URL:
+        <input id="url" />
+        <input type="checkbox" id="save-file" />
+        <label for="save-file">Save as File</label>
+      </p>
+      <button id="receive">Receive</button>
+      <label>
+        Group ID
+        <input type="number" value="1" id="group-id" />
+      </label>
+      <button id="share-to-group">Share to group</button>
+      <p>
+        Decoded message:
+        <textarea id="decoded-message" readonly></textarea>
+      </p>
+    </div>
+
+    <!-- <div>
+      <p>Uploaded files</p>
+      <ul id="uploaded-file-list"></ul>
+    </div> -->
 
     <script type="module" src="src/main.js"></script>
   </body>

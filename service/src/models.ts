@@ -9,13 +9,34 @@ export async function createUser(email: string) {
   });
 }
 
-export async function getUserItems(userId: number) {
-  return prisma.item.findMany({
+export async function getUser(userId: number) {
+  return prisma.user.findUnique({
     where: {
-      sharedBy: userId,
+      id: userId,
+    },
+    select: {
+      id: true,
+      groups: {
+        select: {
+          groupId: true,
+        },
+      },
+      items: {
+        select: {
+          id: true,
+        },
+      },
     },
   });
 }
+
+// export async function getUserItems(userId: number) {
+//   return prisma.item.findMany({
+//     where: {
+//       sharedBy: userId,
+//     },
+//   });
+// }
 
 export async function createGroup(data = {}) {
   return prisma.group.create({

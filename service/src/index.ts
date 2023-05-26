@@ -4,7 +4,8 @@ import express from "express";
 import WebSocket from "ws";
 import {
   createUser,
-  getUserItems,
+  getUser,
+  // getUserItems,
   createGroup,
   getGroupMembers,
   deleteGroup,
@@ -77,12 +78,12 @@ app.post("/api/users", async (req, res) => {
   }
 });
 
-// Items shared by a user
-app.get("/api/users/:userId/items", async (req, res) => {
+// Get user info
+app.get("/api/users/:userId", async (req, res) => {
   const { userId } = req.params;
   try {
-    const items = await getUserItems(parseInt(userId));
-    res.status(200).json(items);
+    const user = await getUser(parseInt(userId));
+    res.status(200).json(user);
   } catch (error) {
     res.status(500).json({
       message: "Server error.",
@@ -90,6 +91,20 @@ app.get("/api/users/:userId/items", async (req, res) => {
     });
   }
 });
+
+// // Items shared by a user
+// app.get("/api/users/:userId/items", async (req, res) => {
+//   const { userId } = req.params;
+//   try {
+//     const items = await getUserItems(parseInt(userId));
+//     res.status(200).json(items);
+//   } catch (error) {
+//     res.status(500).json({
+//       message: "Server error.",
+//       error,
+//     });
+//   }
+// });
 // Will we ever need to delete or update a user?
 
 // Groups ======================================================================
@@ -253,6 +268,14 @@ app.post("/api/groups/:groupId/items/", async (req, res) => {
   const { groupId } = req.params;
   const { itemId } = req.body;
 
+  console.log(`
+
+  TODO:
+  - get the item from the db
+  - check if the .sharedBy is a member of this group
+
+  `);
+
   try {
     const group = await getGroup(parseInt(groupId));
     if (!group) {
@@ -276,6 +299,7 @@ app.post("/api/groups/:groupId/items/", async (req, res) => {
       groupItem,
     });
   } catch (error) {
+    console.log(error);
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2002"
