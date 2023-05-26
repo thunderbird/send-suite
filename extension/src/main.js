@@ -18,9 +18,19 @@ const shouldNotSave = () => !shouldSaveCheckbox.checked;
 
 const decodedMessageTextArea = document.querySelector("#decoded-message");
 
+const groupFileList = document.querySelector("#group-file-list");
+
 async function getOwnedFiles() {}
 
-async function getGroupFiles() {}
+async function getGroupFiles(groupId) {
+  const getItemsForGroupUrl = `${serverUrl}/api/groups/${groupId}/items`;
+
+  const getItemsForGroupResponse = await fetch(getItemsForGroupUrl);
+  if (!getItemsForGroupResponse.ok) {
+    console.log(`Can't get items for group`);
+  }
+  return getItemsForGroupResponse.json();
+}
 
 async function createItem(url, userId) {
   const createItemUrl = `${serverUrl}/api/items`;
@@ -147,4 +157,31 @@ btnShare.addEventListener("click", async () => {
   console.log("sharing is caring");
   // debugger;
   addItemToGroup(currentItem.id, groupIdInput.value);
+});
+
+const newListItem = ({ id, url }) => {
+  const el = document.createElement("a");
+  el.href = "#";
+  el.textContent = `${id}: ${url}`;
+  el.addEventListener("click", (event) => {
+    event.preventDefault();
+    urlSpan.value = url;
+  });
+  const li = document.createElement("li");
+  li.appendChild(el);
+  return li;
+};
+
+const btnGetGroupFiles = document.querySelector("#get-group-file-list");
+btnGetGroupFiles.addEventListener("click", async () => {
+  groupFileList.innerHTML = "";
+  console.log("did anyone share? do they care?");
+  // debugger;
+  // addItemToGroup(currentItem.id, groupIdInput.value);
+  const { items } = await getGroupFiles(groupIdInput.value);
+  console.log(items);
+  for (let { item } of items) {
+    console.log(item);
+    groupFileList.appendChild(newListItem(item));
+  }
 });
