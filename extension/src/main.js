@@ -18,9 +18,92 @@ const shouldNotSave = () => !shouldSaveCheckbox.checked;
 
 const decodedMessageTextArea = document.querySelector("#decoded-message");
 
+const btnGetGroupsForUser = document.querySelector("#get-groups-for-user");
+const btnCreateGroup = document.querySelector("#create-group");
+const btnAddUserToGroup = document.querySelector("#add-user-to-group");
 const groupFileList = document.querySelector("#group-file-list");
+const currentGroupList = document.querySelector("#current-groups");
 
 async function getOwnedFiles() {}
+
+const newGroup = (groupId) => {
+  const el = document.createElement("a");
+  el.href = "#";
+  el.textContent = `${groupId}`;
+  el.addEventListener("click", (event) => {
+    event.preventDefault();
+    groupIdInput.value = groupId;
+  });
+  const li = document.createElement("li");
+  li.appendChild(el);
+  return li;
+};
+
+async function getGroupsForUser(userId) {
+  const getGroupsForUserUrl = `${serverUrl}/api/users/${userId}`;
+
+  const getGroupsForUserResponse = await fetch(getGroupsForUserUrl);
+  if (!getGroupsForUserResponse.ok) {
+    console.log(`Can't get items for group`);
+    return;
+  }
+  const { groups } = await getGroupsForUserResponse.json();
+  for (let { groupId } of groups) {
+    currentGroupList.appendChild(newGroup(groupId));
+  }
+}
+
+btnGetGroupsForUser.addEventListener("click", (event) => {
+  event.preventDefault();
+  getGroupsForUser(userIdInput.value);
+});
+
+async function createNewGroup() {
+  const createGroupUrl = `${serverUrl}/api/groups/`;
+  const createGroupFetchInfo = {
+    mode: "cors",
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({}),
+  };
+
+  const createGroupResponse = await fetch(createGroupUrl, createGroupFetchInfo);
+
+  if (!createGroupResponse.ok) {
+    console.log(`Unable to add user to group`);
+    return;
+  }
+  alert("group created");
+  const { group } = await createGroupResponse.json();
+  console.log(group);
+  groupIdInput.value = group.id;
+}
+btnCreateGroup.addEventListener("click", createNewGroup);
+
+async function addUserToGroup(userId, groupId) {
+  const addUserToGroupUrl = `${serverUrl}/api/groups/${groupId}/members`;
+  const addUserToGroupFetchInfo = {
+    mode: "cors",
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      userId,
+    }),
+  };
+
+  const addUserToGroupResponse = await fetch(
+    addUserToGroupUrl,
+    addUserToGroupFetchInfo
+  );
+
+  if (!addUserToGroupResponse.ok) {
+    console.log(`Unable to add user to group`);
+  }
+}
+btnAddUserToGroup.addEventListener("click", (event) => {
+  event.preventDefault();
+  addUserToGroup(userIdInput.value, groupIdInput.value);
+});
 
 async function getGroupFiles(groupId) {
   const getItemsForGroupUrl = `${serverUrl}/api/groups/${groupId}/items`;
@@ -28,6 +111,7 @@ async function getGroupFiles(groupId) {
   const getItemsForGroupResponse = await fetch(getItemsForGroupUrl);
   if (!getItemsForGroupResponse.ok) {
     console.log(`Can't get items for group`);
+    return;
   }
   return getItemsForGroupResponse.json();
 }
@@ -51,6 +135,7 @@ async function createItem(url, userId) {
       "❌ Unable add create item in database",
       `Error: Unable to create db item for “${upload.file.name}” file.`
     );
+    return;
   }
   const { item } = await createItemResponse.json();
   return item;

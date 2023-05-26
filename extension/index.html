@@ -22,6 +22,21 @@
         User ID
         <input type="number" value="1" id="user-id" />
       </label>
+      <label>
+        Group ID
+        <input type="number" value="1" id="group-id" />
+      </label>
+    </div>
+    <div>
+      <button id="add-user-to-group">Add User to Group</button>
+      <button id="create-group">Create new Group</button>
+      <p>
+        Groups for user
+        <ul id="current-groups">
+
+        </ul>
+        <button id="get-groups-for-user">Get Groups</button>
+      </p>
     </div>
     <div>
       <p>Text content for upload<input id="text-content" /></p>
@@ -32,12 +47,9 @@
         <input type="checkbox" id="save-file" />
         <label for="save-file">Save as File</label>
       </p>
-      <button id="receive">Receive</button>
-      <label>
-        Group ID
-        <input type="number" value="1" id="group-id" />
-      </label>
+
       <button id="share-to-group">Share to group</button>
+      <button id="receive">Receive</button>
       <p>
         Decoded message:
         <textarea id="decoded-message" readonly></textarea>
