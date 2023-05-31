@@ -4,6 +4,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "nodemon src/index.ts",
+    "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:destroy": "rm prisma/dev.db"
   },

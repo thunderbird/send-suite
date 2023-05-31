@@ -47,6 +47,7 @@ async function getGroupsForUser(userId) {
     console.log(`Can't get items for group`);
     return;
   }
+  currentGroupList.innerHTML = "";
   const { groups } = await getGroupsForUserResponse.json();
   for (let { groupId } of groups) {
     currentGroupList.appendChild(newGroup(groupId));

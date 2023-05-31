@@ -3,7 +3,7 @@ migrations
 seed.ts
 
 # Dev droppings
-*.env*
+.env
 dev.db*
 shell.nix*
 node_modules
