@@ -50,7 +50,7 @@ class FileStore {
         console.log(`   setting ${k} to ${meta[k]}`);
       }
     }
-    console.log(`final hash in this.kv:`);
+    console.log(`🧨🧨🧨 final hash in this.kv:`);
     console.log(hash);
     this.kv.set(id, hash);
     /*
@@ -71,7 +71,7 @@ class FileStore {
       hash = new Map();
     }
     hash.set(key, value);
-    console.log(`final hash in this.kv:`);
+    console.log(`🧨🧨🧨 final hash in this.kv:`);
     console.log(hash);
     this.kv.set(id, hash);
   }

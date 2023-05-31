@@ -307,7 +307,7 @@ export function uploadWs(
 
 async function downloadS(id, keychain, signal) {
   const auth = await keychain.authHeader();
-
+  console.log(`🧨 api.downloadS(): accessing api/download/:id`);
   const response = await fetch(getApiUrl(`/api/download/${id}`), {
     signal: signal,
     method: "GET",

@@ -5,8 +5,9 @@
   "scripts": {
     "dev": "nodemon src/index.ts",
     "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:destroy": "rm prisma/dev.db"
+    "db:browse": "prisma studio",
+    "db:migrate": "prisma migrate",
+    "db:reset": "prisma migrate reset"
   },
   "dependencies": {
     "@prisma/client": "4.13.0",

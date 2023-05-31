@@ -371,9 +371,10 @@ app.delete("/api/groups/:groupId/items/:itemId", async (req, res) => {
 
 app.get(`/download/:id${ID_REGEX}`, pages.download);
 app.get(`/api/metadata/:id${ID_REGEX}`, auth.hmac, metadata);
-app.get(`/api/download/:id${ID_REGEX}`, auth.hmac, download);
-// Probably don't need this one?
+// app.get(`/api/download/:id${ID_REGEX}`, auth.hmac, download);
+// unsure if I need this one...
 app.get(`/api/download/blob/:id${ID_REGEX}`, auth.hmac, download);
+
 app.get(`*`, (req, res) => {
   res.status(404);
 });
