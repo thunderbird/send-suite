@@ -18,14 +18,28 @@ There are three directories in this project:
 - `npm` or `pnpm` (examples will use `pnpm`, but `npm` should be fine)
 - `docker-compose` or `podman-compose`
 
+## Environment variables and docker-compose file
+
+If you're doing local development, you'll want to copy or symlink the `dev.env` and `docker-compose.dev.yml` files:
+
+```sh
+cd service/
+ln -s dev.env .env
+ln -s docker-compose.dev.yml docker-compose.yml
+```
+
+Prod/staging friendly versions will need to be created...later.
+
 ## Running supporting services (database and TLS proxy)
 
-You'll want to make sure this is running, as it provides "everything else that's not the node.js app":
+Next, you'll want to make sure the Docker containers are running, as they provide "everything else that's not the node.js app":
 
 ```sh
 cd service/
 docker-compose up -d
 ```
+
+This will start a Postgres database listening on the host at `6432` (so it doesn't conflict with a "normal" instance of Postgres you might be running). In addition, it runs an nginx reverse proxy with a self-signed TLS certificate. (Without the TLS certificate, the websockets code wouldn't be happy.)
 
 ## Running the backend service
 
