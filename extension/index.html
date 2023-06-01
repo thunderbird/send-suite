@@ -18,18 +18,20 @@
   <body>
     <h1>Test UI</h1>
     <div>
+      <button id="create-user">Create new User</button>
       <label>
         User ID
-        <input type="number" value="1" id="user-id" />
+        <input type="number" value="0" id="user-id" />
       </label>
+      <br>
+      <button id="create-group">Create new Group</button>
       <label>
         Group ID
-        <input type="number" value="1" id="group-id" />
+        <input type="number" value="0" id="group-id" />
       </label>
     </div>
     <div>
       <button id="add-user-to-group">Add User to Group</button>
-      <button id="create-group">Create new Group</button>
       <p>
         Groups for user
         <ul id="current-groups">

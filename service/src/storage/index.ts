@@ -2,7 +2,7 @@ import config from "../config";
 // import Metadata from "../lib/metadata";
 import FSStorage from "./filesystem";
 import { Config } from "./types";
-import { createMetadata, getMetadata, updateMetadata } from "../models";
+import { createUpload, getUpload, updateUpload } from "../models";
 
 // function getPrefix(seconds) {
 //   return Math.max(Math.floor(seconds / 86400), 1);
@@ -42,7 +42,7 @@ class FileStore {
     await this.storage.set(filePath, file);
     const { owner, metadata, dlimit, auth, nonce } = meta;
 
-    return createMetadata(id, owner, metadata, dlimit, auth, nonce);
+    return createUpload(id, owner, metadata, dlimit, auth, nonce);
     /*
     In the original implementation, we were setting additional info:
     - dl
@@ -58,7 +58,7 @@ class FileStore {
   async setField(id: string, key: string, value: any) {
     console.log(`In storage.set(), doing setField() for ${id}`);
     console.log(`   setting ${key} to ${value}`);
-    return updateMetadata(id, {
+    return updateUpload(id, {
       [key]: value,
     });
   }
@@ -71,7 +71,7 @@ class FileStore {
     // const result = await this.redis.hgetallAsync(id);
     console.log(`🥡 trying to get metadata for ${id} from the db`);
     // const hash = await this.kv.get(id);
-    return await getMetadata(id);
+    return await getUpload(id);
   }
 }
 

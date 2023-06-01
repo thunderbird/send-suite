@@ -48,7 +48,7 @@ model GroupItem {
 
 // Putting in Postgres for now.
 // Used to live in Redis
-model Metadata {
+model Upload {
   id        String      @unique
   owner     String
   metadata  String

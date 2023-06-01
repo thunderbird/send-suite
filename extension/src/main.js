@@ -19,6 +19,7 @@ const shouldNotSave = () => !shouldSaveCheckbox.checked;
 const decodedMessageTextArea = document.querySelector("#decoded-message");
 
 const btnGetGroupsForUser = document.querySelector("#get-groups-for-user");
+const btnCreateUser = document.querySelector("#create-user");
 const btnCreateGroup = document.querySelector("#create-group");
 const btnAddUserToGroup = document.querySelector("#add-user-to-group");
 const groupFileList = document.querySelector("#group-file-list");
@@ -59,6 +60,30 @@ btnGetGroupsForUser.addEventListener("click", (event) => {
   getGroupsForUser(userIdInput.value);
 });
 
+async function createNewUser() {
+  const createUserUrl = `${serverUrl}/api/users/`;
+  const createUserFetchInfo = {
+    mode: "cors",
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      email: `${Math.floor(Math.random() * 100000)}@email.com`,
+    }),
+  };
+
+  const createUserResponse = await fetch(createUserUrl, createUserFetchInfo);
+
+  if (!createUserResponse.ok) {
+    console.log(`Unable to create user`);
+    return;
+  }
+  alert("user created");
+  const { user } = await createUserResponse.json();
+  console.log(user);
+  userIdInput.value = user.id;
+}
+btnCreateUser.addEventListener("click", createNewUser);
+
 async function createNewGroup() {
   const createGroupUrl = `${serverUrl}/api/groups/`;
   const createGroupFetchInfo = {
@@ -71,7 +96,7 @@ async function createNewGroup() {
   const createGroupResponse = await fetch(createGroupUrl, createGroupFetchInfo);
 
   if (!createGroupResponse.ok) {
-    console.log(`Unable to add user to group`);
+    console.log(`Unable to create group`);
     return;
   }
   alert("group created");

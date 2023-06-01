@@ -175,7 +175,7 @@ export async function removeGroupItem(groupId: number, itemId: number) {
 // Because:
 // - Every upload will have Metadata
 // - But not every upload will be an Item shared by a User to a Group
-export async function createMetadata(
+export async function createUpload(
   id: string,
   owner: string,
   metadata: string,
@@ -183,7 +183,7 @@ export async function createMetadata(
   auth: string,
   nonce: string
 ) {
-  return prisma.metadata.create({
+  return prisma.upload.create({
     data: {
       id,
       owner,
@@ -195,21 +195,21 @@ export async function createMetadata(
   });
 }
 
-export async function getMetadata(id: string) {
-  return prisma.metadata.findUnique({
+export async function getUpload(id: string) {
+  return prisma.upload.findUnique({
     where: { id },
   });
 }
 
-export async function deleteMetadata(id: string) {
-  return prisma.metadata.delete({
+export async function deleteUpload(id: string) {
+  return prisma.upload.delete({
     where: {
       id,
     },
   });
 }
 
-export async function updateMetadata(id: string, kv: Record<string, any>) {
+export async function updateUpload(id: string, kv: Record<string, any>) {
   const data = {
     ...kv,
   };
@@ -217,7 +217,7 @@ export async function updateMetadata(id: string, kv: Record<string, any>) {
   if (Object.keys(data).length === 0) {
     return;
   }
-  return prisma.metadata.update({
+  return prisma.upload.update({
     where: { id },
     data,
   });
