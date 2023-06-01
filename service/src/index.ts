@@ -4,6 +4,8 @@ import express from "express";
 import WebSocket from "ws";
 import {
   createUser,
+  getUser,
+  // getUserItems,
   createGroup,
   getGroupMembers,
   deleteGroup,
@@ -75,6 +77,34 @@ app.post("/api/users", async (req, res) => {
     }
   }
 });
+
+// Get user info
+app.get("/api/users/:userId", async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const user = await getUser(parseInt(userId));
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error.",
+      error,
+    });
+  }
+});
+
+// // Items shared by a user
+// app.get("/api/users/:userId/items", async (req, res) => {
+//   const { userId } = req.params;
+//   try {
+//     const items = await getUserItems(parseInt(userId));
+//     res.status(200).json(items);
+//   } catch (error) {
+//     res.status(500).json({
+//       message: "Server error.",
+//       error,
+//     });
+//   }
+// });
 // Will we ever need to delete or update a user?
 
 // Groups ======================================================================
@@ -208,9 +238,9 @@ app.delete("/api/groups/:groupId/members/:userId", async (req, res) => {
 // Need additional code to remove the files from storage.
 
 app.post("/api/items", async (req, res) => {
-  const { url } = req.body;
+  const { url, metadata, sharedBy } = req.body;
   try {
-    const item = await createItem(url);
+    const item = await createItem(url, parseInt(sharedBy));
     res.status(201).json({
       message: "Item created",
       item,
@@ -238,9 +268,17 @@ app.post("/api/groups/:groupId/items/", async (req, res) => {
   const { groupId } = req.params;
   const { itemId } = req.body;
 
+  console.log(`
+
+  TODO:
+  - get the item from the db
+  - check if the .sharedBy is a member of this group
+
+  `);
+
   try {
-    const group = await getGroup(parseInt(groupId));
-    if (!group) {
+    const groupWithMembers = await getGroupMembers(parseInt(groupId));
+    if (!groupWithMembers) {
       res.status(404).json({
         message: "Group not found.",
       });
@@ -255,12 +293,20 @@ app.post("/api/groups/:groupId/items/", async (req, res) => {
       return;
     }
 
-    const groupItem = await addGroupItem(group.id, item.id);
-    res.status(201).json({
-      message: "Item added to group.",
-      groupItem,
-    });
+    const isOwnerMemberOfGroup =
+      groupWithMembers.members.filter(({ user }) => user.id === item.sharedBy)
+        .length === 1;
+    console.log(`isOwnerMemberOfGroup? ${isOwnerMemberOfGroup}`);
+
+    if (isOwnerMemberOfGroup) {
+      const groupItem = await addGroupItem(groupWithMembers.id, item.id);
+      res.status(201).json({
+        message: "Item added to group.",
+        groupItem,
+      });
+    }
   } catch (error) {
+    console.log(error);
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2002"
@@ -325,9 +371,10 @@ app.delete("/api/groups/:groupId/items/:itemId", async (req, res) => {
 
 app.get(`/download/:id${ID_REGEX}`, pages.download);
 app.get(`/api/metadata/:id${ID_REGEX}`, auth.hmac, metadata);
-app.get(`/api/download/:id${ID_REGEX}`, auth.hmac, download);
-// Probably don't need this one?
+// app.get(`/api/download/:id${ID_REGEX}`, auth.hmac, download);
+// unsure if I need this one...
 app.get(`/api/download/blob/:id${ID_REGEX}`, auth.hmac, download);
+
 app.get(`*`, (req, res) => {
   res.status(404);
 });

@@ -1,11 +1,12 @@
 import config from "../config";
-import Metadata from "../lib/metadata";
+// import Metadata from "../lib/metadata";
 import FSStorage from "./filesystem";
 import { Config } from "./types";
+import { createUpload, getUpload, updateUpload } from "../models";
 
-function getPrefix(seconds) {
-  return Math.max(Math.floor(seconds / 86400), 1);
-}
+// function getPrefix(seconds) {
+//   return Math.max(Math.floor(seconds / 86400), 1);
+// }
 
 class FileStore {
   private storage: FSStorage;
@@ -15,73 +16,62 @@ class FileStore {
     this.storage = new FSStorage(config);
     this.kv = new Map();
   }
+  /*
+  getPrefixedId() is only used when querying for the file or its length.
+  Those are the `get()` and `length()` methods.
 
-  async getPrefixedId(id) {
-    const hash = await this.kv.get(id);
-    const prefix = await hash.get("prefix");
-    return `${prefix}-${id}`;
-  }
+  Originally, the prefix was likely used (or intended to be used for)
+  some kind of sharding of the physical storage (and/or for distributing
+  the load among several Redis servers.)
 
+  For the 2023 version, we're storing upload metadata in Postgres.
+  */
   async get(id: string) {
-    const filePath = await this.getPrefixedId(id);
-    return this.storage.getStream(filePath);
+    return this.storage.getStream(id);
   }
 
   async length(id: string) {
-    const filePath = await this.getPrefixedId(id);
-    return this.storage.length(filePath);
+    return this.storage.length(id);
   }
 
+  // Note: only called from wsHandler.handleUpload()
+  // Therefore, we're creating
   async set(id: string, file, meta, expireSeconds) {
-    const prefix = getPrefix(expireSeconds);
-    const filePath = `${prefix}-${id}`;
-    console.log("in storage/index.ts, about to pass off to (fs.ts).set()");
+    const filePath = id;
+    console.log("in storage/index.ts, about to pass off to fs.set()");
     await this.storage.set(filePath, file);
-    let hash = this.kv.get(id);
-    if (!hash) {
-      hash = new Map();
-    }
+    const { owner, metadata, dlimit, auth, nonce } = meta;
 
-    hash.set("prefix", prefix);
-    if (meta) {
-      console.log(`In storage.set(), adding metadata for ${id} to this.kv`);
-      for (let k of Object.keys(meta)) {
-        hash.set(k, meta[k]);
-        console.log(`   setting ${k} to ${meta[k]}`);
-      }
-    }
-    console.log(`final hash in this.kv:`);
-    console.log(hash);
-    this.kv.set(id, hash);
+    return createUpload(id, owner, metadata, dlimit, auth, nonce);
     /*
-    In the original implementation, we were setting additional info
-    in Redis for this file id:
-    - prefix
-    - meta data
-
-    And we were setting the record to expire after `expireSeconds`
+    In the original implementation, we were setting additional info:
+    - dl
+    - pwd
+    - expireSeconds
     */
   }
 
-  setField(id: string, key: string, value: any) {
-    // this.redis.hset(id, key, value);
+  // Note: this is only called from auth.hmac()
+  // and it's only ever the `nonce`
+  // However, we'll keep it flexible, in case we need to update
+  // other fields.
+  async setField(id: string, key: string, value: any) {
     console.log(`In storage.set(), doing setField() for ${id}`);
-    let hash = this.kv.get(id);
-    if (!hash) {
-      hash = new Map();
-    }
-    hash.set(key, value);
-    console.log(`final hash in this.kv:`);
-    console.log(hash);
-    this.kv.set(id, hash);
+    console.log(`   setting ${key} to ${value}`);
+    return updateUpload(id, {
+      [key]: value,
+    });
   }
 
-  async metadata(id: string): Promise<Metadata> {
+  // The metadata is the hash we were storing under the file's ID.
+  // We use this in:
+  // - auth.owner (currently unused)
+  // And it's originally generated in `wsHandler.handleUpload()`
+  async metadata(id: string) {
     // const result = await this.redis.hgetallAsync(id);
-    console.log(`🥡 trying to get ${id} from the kv store`);
-    const result = await this.kv.get(id);
-    console.log(result);
-    return result && new Metadata(Object.fromEntries(result));
+    console.log(`🥡 trying to get metadata for ${id} from the db`);
+    // const hash = await this.kv.get(id);
+    return await getUpload(id);
   }
 }
 

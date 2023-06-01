@@ -26,7 +26,7 @@ export default {
         const verifyHash = hmac.digest();
         if (crypto.timingSafeEqual(verifyHash, Buffer.from(auth, "base64"))) {
           req.nonce = crypto.randomBytes(16).toString("base64");
-          storage.setField(id, "nonce", req.nonce);
+          await storage.setField(id, "nonce", req.nonce);
           console.log(
             `🚀 ${new Date().getTime()}  auth.js: hmac - (passed timingSafeEqual challenge) Setting the nonce in WWW-Authenticate header`
           );

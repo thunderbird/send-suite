@@ -8,6 +8,36 @@ export async function createUser(email: string) {
     },
   });
 }
+
+export async function getUser(userId: number) {
+  return prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      id: true,
+      groups: {
+        select: {
+          groupId: true,
+        },
+      },
+      items: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  });
+}
+
+// export async function getUserItems(userId: number) {
+//   return prisma.item.findMany({
+//     where: {
+//       sharedBy: userId,
+//     },
+//   });
+// }
+
 export async function createGroup(data = {}) {
   return prisma.group.create({
     data,
@@ -85,10 +115,11 @@ export async function removeGroupMember(groupId: number, userId: number) {
   });
 }
 
-export async function createItem(url: string) {
+export async function createItem(url: string, sharedBy: number) {
   return prisma.item.create({
     data: {
       url,
+      sharedBy,
     },
   });
 }
@@ -135,5 +166,59 @@ export async function removeGroupItem(groupId: number, itemId: number) {
     where: {
       groupId_itemId: { groupId, itemId },
     },
+  });
+}
+
+// ===================================================================
+// This is data previously stored in Redis
+// Note: this Metadata pertains to uploads, not to Items.
+// Because:
+// - Every upload will have Metadata
+// - But not every upload will be an Item shared by a User to a Group
+export async function createUpload(
+  id: string,
+  owner: string,
+  metadata: string,
+  dlimit: number,
+  auth: string,
+  nonce: string
+) {
+  return prisma.upload.create({
+    data: {
+      id,
+      owner,
+      metadata,
+      dlimit,
+      auth,
+      nonce,
+    },
+  });
+}
+
+export async function getUpload(id: string) {
+  return prisma.upload.findUnique({
+    where: { id },
+  });
+}
+
+export async function deleteUpload(id: string) {
+  return prisma.upload.delete({
+    where: {
+      id,
+    },
+  });
+}
+
+export async function updateUpload(id: string, kv: Record<string, any>) {
+  const data = {
+    ...kv,
+  };
+
+  if (Object.keys(data).length === 0) {
+    return;
+  }
+  return prisma.upload.update({
+    where: { id },
+    data,
   });
 }

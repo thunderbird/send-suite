@@ -3,7 +3,8 @@ import { tmpdir } from "os";
 import path from "path";
 
 const appConfig = {
-  file_dir: `${tmpdir()}${path.sep}send-${randomBytes(4).toString("hex")}`,
+  // file_dir: `${tmpdir()}${path.sep}send-${randomBytes(4).toString("hex")}`,
+  file_dir: `/tmp/send-suite-dev-dir`,
   default_expire_seconds: 86400,
   default_downloads: 1,
   base_url: "https://localhost:8088",

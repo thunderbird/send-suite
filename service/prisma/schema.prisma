@@ -3,13 +3,14 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
   id      Int     @id @default(autoincrement())
   email   String  @unique
+  items     Item[]
   groups  GroupUser[]
 }
 
@@ -31,6 +32,8 @@ model GroupUser {
 model Item {
   id        Int      @id @default(autoincrement())
   url       String   @unique
+  sharedBy  Int      @map("shared_by")
+  user      User     @relation(fields: [sharedBy], references: [id])
   groups    GroupItem[]
 }
 
@@ -41,4 +44,17 @@ model GroupItem {
   item    Item  @relation(fields: [itemId], references: [id])
 
   @@id([groupId, itemId])
+}
+
+// Putting in Postgres for now.
+// Used to live in Redis
+model Upload {
+  id        String      @unique
+  owner     String
+  metadata  String
+  dlimit    Int
+  auth      String
+  nonce     String
+  // pwd    Boolean
+  // dl     Int
 }

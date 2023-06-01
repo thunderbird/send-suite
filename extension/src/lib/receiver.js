@@ -106,12 +106,16 @@ export default class Receiver extends Nanobus {
 
       const plaintext = await streamToArrayBuffer(plainStream, size);
       if (!noSave) {
-        await saveFile({
+        return await saveFile({
           // plaintext: await streamToArrayBuffer(blobStream(ciphertext), size),
           plaintext,
           name: decodeURIComponent(this.fileInfo.name),
           type: this.fileInfo.type,
         });
+      } else {
+        const decoder = new TextDecoder();
+        const plaintextString = decoder.decode(plaintext);
+        return plaintextString;
       }
       //   this.msg = "downloadFinish";
       //   this.emit("complete");
@@ -159,11 +163,19 @@ export default class Receiver extends Nanobus {
       onprogress(0);
       debugger;
       if (noSave) {
+        console.log(
+          `🧨 Receiver.downloadStream() - noSave: accessing api/download/:id`
+        );
+
         const res = await fetch(getApiUrl(`/api/download/${this.fileInfo.id}`));
         if (res.status !== 200) {
           throw new Error(res.status);
         }
       } else {
+        console.log(
+          `🧨 Receiver.downloadStream() - !noSave: accessing api/download/:id`
+        );
+
         const downloadPath = `/api/download/${this.fileInfo.id}`;
         let downloadUrl = getApiUrl(downloadPath);
         if (downloadUrl === downloadPath) {

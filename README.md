@@ -18,6 +18,29 @@ There are three directories in this project:
 - `npm` or `pnpm` (examples will use `pnpm`, but `npm` should be fine)
 - `docker-compose` or `podman-compose`
 
+## Environment variables and docker-compose file
+
+If you're doing local development, you'll want to copy or symlink the `dev.env` and `docker-compose.dev.yml` files:
+
+```sh
+cd service/
+ln -s dev.env .env
+ln -s docker-compose.dev.yml docker-compose.yml
+```
+
+Prod/staging friendly versions will need to be created...later.
+
+## Running supporting services (database and TLS proxy)
+
+Next, you'll want to make sure the Docker containers are running, as they provide "everything else that's not the node.js app":
+
+```sh
+cd service/
+docker-compose up -d
+```
+
+This will start a Postgres database listening on the host at `6432` (so it doesn't conflict with a "normal" instance of Postgres you might be running). In addition, it runs an nginx reverse proxy with a self-signed TLS certificate. (Without the TLS certificate, the websockets code wouldn't be happy.)
+
 ## Running the backend service
 
 _Note: these instructions need a sanity-check._
@@ -27,25 +50,17 @@ If you've just cloned, you'll need to install the deps and create the dev databa
 ```
 cd service/
 pnpm install
-npx prisma generate
-npx prisma migrate dev --name init
+pnpm run db:generate
 pnpm run db:migrate
 ```
+
+You'll be prompted for a name (`init` is a good one). For now, we're not committing the migrations to git.
 
 After that, you can run the server with `pnpm run dev`
 
 Leave this terminal open so you can see that things are ✨ happening ✨ while you test the front-end.
 
-## Running the TLS server
-
-You'll want to make sure this is running
-
-```sh
-cd tls-dev-proxy
-docker-compose up -d
-```
-
-☝ If you forget this step, you won't be able to upload files/messages to the backend. 🤷
+### Sanity check
 
 If you visit https://localhost:8088, you should see a page that looks like this:
 
