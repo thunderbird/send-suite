@@ -125,7 +125,6 @@ async function createItem(url, userId) {
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
       url,
-      metadata: "{}",
       sharedBy: userId,
     }),
   };

@@ -240,7 +240,7 @@ app.delete("/api/groups/:groupId/members/:userId", async (req, res) => {
 app.post("/api/items", async (req, res) => {
   const { url, metadata, sharedBy } = req.body;
   try {
-    const item = await createItem(url, metadata, parseInt(sharedBy));
+    const item = await createItem(url, parseInt(sharedBy));
     res.status(201).json({
       message: "Item created",
       item,

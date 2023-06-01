@@ -115,15 +115,10 @@ export async function removeGroupMember(groupId: number, userId: number) {
   });
 }
 
-export async function createItem(
-  url: string,
-  metadata: string,
-  sharedBy: number
-) {
+export async function createItem(url: string, sharedBy: number) {
   return prisma.item.create({
     data: {
       url,
-      metadata,
       sharedBy,
     },
   });
@@ -171,5 +166,59 @@ export async function removeGroupItem(groupId: number, itemId: number) {
     where: {
       groupId_itemId: { groupId, itemId },
     },
+  });
+}
+
+// ===================================================================
+// This is data previously stored in Redis
+// Note: this Metadata pertains to uploads, not to Items.
+// Because:
+// - Every upload will have Metadata
+// - But not every upload will be an Item shared by a User to a Group
+export async function createMetadata(
+  id: string,
+  owner: string,
+  metadata: string,
+  dlimit: number,
+  auth: string,
+  nonce: string
+) {
+  return prisma.metadata.create({
+    data: {
+      id,
+      owner,
+      metadata,
+      dlimit,
+      auth,
+      nonce,
+    },
+  });
+}
+
+export async function getMetadata(id: string) {
+  return prisma.metadata.findUnique({
+    where: { id },
+  });
+}
+
+export async function deleteMetadata(id: string) {
+  return prisma.metadata.delete({
+    where: {
+      id,
+    },
+  });
+}
+
+export async function updateMetadata(id: string, kv: Record<string, any>) {
+  const data = {
+    ...kv,
+  };
+
+  if (Object.keys(data).length === 0) {
+    return;
+  }
+  return prisma.metadata.update({
+    where: { id },
+    data,
   });
 }

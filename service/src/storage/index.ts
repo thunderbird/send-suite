@@ -1,11 +1,12 @@
 import config from "../config";
-import Metadata from "../lib/metadata";
+// import Metadata from "../lib/metadata";
 import FSStorage from "./filesystem";
 import { Config } from "./types";
+import { createMetadata, getMetadata, updateMetadata } from "../models";
 
-function getPrefix(seconds) {
-  return Math.max(Math.floor(seconds / 86400), 1);
-}
+// function getPrefix(seconds) {
+//   return Math.max(Math.floor(seconds / 86400), 1);
+// }
 
 class FileStore {
   private storage: FSStorage;
@@ -23,12 +24,7 @@ class FileStore {
   some kind of sharding of the physical storage (and/or for distributing
   the load among several Redis servers.)
 
-  For the 2023 version, we may do away with this so that we can
-  store the metadata with each Item in the database.
-
-  Of course, that means storing the `nonce` with the location of
-  each item, so that's probably a security concern.
-
+  For the 2023 version, we're storing upload metadata in Postgres.
   */
   async get(id: string) {
     return this.storage.getStream(id);
@@ -39,58 +35,43 @@ class FileStore {
   }
 
   // Note: only called from wsHandler.handleUpload()
+  // Therefore, we're creating
   async set(id: string, file, meta, expireSeconds) {
     const filePath = id;
-    console.log("in storage/index.ts, about to pass off to (fs.ts).set()");
+    console.log("in storage/index.ts, about to pass off to fs.set()");
     await this.storage.set(filePath, file);
-    let hash = this.kv.get(id);
-    if (!hash) {
-      hash = new Map();
-    }
+    const { owner, metadata, dlimit, auth, nonce } = meta;
 
-    if (meta) {
-      console.log(`In storage.set(), adding metadata for ${id} to this.kv`);
-      for (let k of Object.keys(meta)) {
-        hash.set(k, meta[k]);
-        console.log(`   setting ${k} to ${meta[k]}`);
-      }
-    }
-    console.log(`🧨🧨🧨 final hash in this.kv:`);
-    console.log(hash);
-    this.kv.set(id, hash);
+    return createMetadata(id, owner, metadata, dlimit, auth, nonce);
     /*
-    In the original implementation, we were setting additional info
-    in Redis for this file id:
-    - prefix
-    - meta data
-
-    And we were setting the record to expire after `expireSeconds`
+    In the original implementation, we were setting additional info:
+    - dl
+    - pwd
+    - expireSeconds
     */
   }
 
   // Note: this is only called from auth.hmac()
-  setField(id: string, key: string, value: any) {
+  // and it's only ever the `nonce`
+  // However, we'll keep it flexible, in case we need to update
+  // other fields.
+  async setField(id: string, key: string, value: any) {
     console.log(`In storage.set(), doing setField() for ${id}`);
-    let hash = this.kv.get(id);
-    if (!hash) {
-      hash = new Map();
-    }
-    hash.set(key, value);
-    console.log(`🧨🧨🧨 final hash in this.kv:`);
-    console.log(hash);
-    this.kv.set(id, hash);
+    console.log(`   setting ${key} to ${value}`);
+    return updateMetadata(id, {
+      [key]: value,
+    });
   }
 
   // The metadata is the hash we were storing under the file's ID.
   // We use this in:
   // - auth.owner (currently unused)
   // And it's originally generated in `wsHandler.handleUpload()`
-  async metadata(id: string): Promise<Metadata> {
+  async metadata(id: string) {
     // const result = await this.redis.hgetallAsync(id);
-    console.log(`🥡 trying to get ${id} from the kv store`);
-    const hash = await this.kv.get(id);
-    console.log(hash);
-    return hash && new Metadata(Object.fromEntries(hash));
+    console.log(`🥡 trying to get metadata for ${id} from the db`);
+    // const hash = await this.kv.get(id);
+    return await getMetadata(id);
   }
 }
 

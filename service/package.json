@@ -6,7 +6,7 @@
     "dev": "nodemon src/index.ts",
     "db:generate": "prisma generate",
     "db:browse": "prisma studio",
-    "db:migrate": "prisma migrate",
+    "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset"
   },
   "dependencies": {

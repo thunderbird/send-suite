@@ -50,6 +50,7 @@ If you've just cloned, you'll need to install the deps and create the dev databa
 ```
 cd service/
 pnpm install
+pnpm run db:generate
 pnpm run db:migrate
 ```
 

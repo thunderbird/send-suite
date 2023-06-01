@@ -32,8 +32,6 @@ model GroupUser {
 model Item {
   id        Int      @id @default(autoincrement())
   url       String   @unique
-  // metadata  Json  // JSON fields are unsupported by prisma's sqlite connector
-  metadata  String   // will just serialize/deserialize for now
   sharedBy  Int      @map("shared_by")
   user      User     @relation(fields: [sharedBy], references: [id])
   groups    GroupItem[]
@@ -46,4 +44,16 @@ model GroupItem {
   item    Item  @relation(fields: [itemId], references: [id])
 
   @@id([groupId, itemId])
+}
+
+// Putting in Postgres for now.
+// Used to live in Redis
+model Metadata {
+  id        String      @unique
+  owner     String
+  metadata  String
+  dlimit    Int
+  auth      String
+  nonce     String
+
 }
