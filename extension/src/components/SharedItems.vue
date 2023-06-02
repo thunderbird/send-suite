@@ -11,10 +11,6 @@ const emits = defineEmits(["choose-url"]);
 const sharedItems = ref([]);
 const groupId = 1;
 
-onMounted(() => {
-  console.log(serverUrl);
-});
-
 async function getItems() {
   const url = `${serverUrl}/api/groups/${groupId}/items`;
 
@@ -29,6 +25,11 @@ async function getItems() {
   sharedItems.value = items.map((i) => i.item);
   return;
 }
+
+onMounted(() => {
+  console.log(serverUrl);
+  getItems();
+});
 </script>
 
 <template>
@@ -38,6 +39,4 @@ async function getItems() {
       <a href="#" @click.stop="emits(`choose-url`, url)">{{ url }}</a>
     </li>
   </ul>
-  <button @click="getItems">Get Items</button>
-  <!-- <div v-if="currentUrl">You clicked {{ currentUrl }}</div> -->
 </template>

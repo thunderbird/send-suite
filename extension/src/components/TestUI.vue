@@ -4,7 +4,6 @@ import SharedItems from "./SharedItems.vue";
 import Message from "./Message.vue";
 
 const currentUrl = ref(null);
-
 function handleChoice(url) {
   currentUrl.value = url;
 }
