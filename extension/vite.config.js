@@ -1,8 +1,10 @@
 // vite.config.js
-import { resolve } from "path";
 import { defineConfig } from "vite";
+import { resolve } from "path";
+import vue from "@vitejs/plugin-vue";
 
 export default defineConfig({
+  plugins: [vue()],
   build: {
     lib: {
       // Could also be a dictionary or array of multiple entry points
@@ -10,6 +12,18 @@ export default defineConfig({
       name: "LockAndSend",
       // the proper extensions will be added
       fileName: "background",
+    },
+    // resolve: {
+    //   alias: {
+    //     "@": resolve(__dirname, "./src"),
+    //   },
+    // },
+    rollupOptions: {
+      input: {
+        popup: resolve(__dirname, "index.test.html"),
+        // stats: resolve(__dirname, 'index.stats.html'),
+        // options: resolve(__dirname, 'index.options.html'),
+      },
     },
     // rollupOptions: {
     //   // make sure to externalize deps that shouldn't be bundled
