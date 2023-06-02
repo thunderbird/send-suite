@@ -1,6 +1,7 @@
 import Sender from "./lib/sender";
 import Receiver from "./lib/receiver";
 import Archive from "./lib/archive";
+import { serverUrl } from "./lib/const";
 
 console.log(`hello from background.js`);
 const ALLOW_OPTIONS = true;
@@ -114,6 +115,54 @@ function handleMessage(message, sender, sendResponse) {
 }
 messenger.runtime.onMessage.addListener(handleMessage);
 
+async function createItem(url, userId) {
+  const createItemUrl = `${serverUrl}/api/items`;
+  const createItemFetchInfo = {
+    mode: "cors",
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      url,
+      sharedBy: userId,
+    }),
+  };
+  const createItemResponse = await fetch(createItemUrl, createItemFetchInfo);
+
+  if (!createItemResponse.ok) {
+    console.log(
+      "❌ Unable add create item in database",
+      `Error: Unable to create db item for “${upload.file.name}” file.`
+    );
+    return;
+  }
+  const { item } = await createItemResponse.json();
+  return item;
+}
+
+async function addItemToGroup(itemId, groupId) {
+  const addItemToGroupUrl = `${serverUrl}/api/groups/${groupId}/items`;
+  const addItemToGroupFetchInfo = {
+    mode: "cors",
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      itemId: itemId,
+    }),
+  };
+
+  const addItemToGroupResponse = await fetch(
+    addItemToGroupUrl,
+    addItemToGroupFetchInfo
+  );
+
+  if (!addItemToGroupResponse.ok) {
+    console.log(
+      "❌ Unable add create item in database",
+      `Error: Unable to create db item for item with id “${itemId}”.`
+    );
+  }
+}
+
 // Attaches handler for the custom button we specified
 // in `manifest.json`
 browser.composeAction.onClicked.addListener(async (tab) => {
@@ -134,8 +183,10 @@ browser.composeAction.onClicked.addListener(async (tab) => {
 
   const sender = new Sender();
   console.log("finished creating a Sender(), fire zee 🚀");
-  const ownedFile = await sender.upload(archive);
-  console.log(`secret message stored at ${ownedFile.url}`);
+  const file = await sender.upload(archive);
+  console.log(`secret message stored at ${file.url}`);
+  const item = await createItem(file.url, 1);
+  addItemToGroup(item.id, 1);
 });
 
 async function awaitPopup() {

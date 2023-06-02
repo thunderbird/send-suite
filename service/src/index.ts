@@ -299,6 +299,8 @@ app.post("/api/groups/:groupId/items/", async (req, res) => {
     console.log(`isOwnerMemberOfGroup? ${isOwnerMemberOfGroup}`);
 
     if (isOwnerMemberOfGroup) {
+      console.log(`group id`, groupWithMembers.id);
+      console.log(`item id`, item.id);
       const groupItem = await addGroupItem(groupWithMembers.id, item.id);
       res.status(201).json({
         message: "Item added to group.",

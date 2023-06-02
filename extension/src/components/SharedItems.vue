@@ -34,6 +34,7 @@ onMounted(() => {
 
 <template>
   <h1>Your messages</h1>
+  <button @click="getItems">get new</button>
   <ul>
     <li v-for="{ url } in sharedItems">
       <a href="#" @click.stop="emits(`choose-url`, url)">{{ url }}</a>
