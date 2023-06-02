@@ -6,23 +6,19 @@ import vue from "@vitejs/plugin-vue";
 export default defineConfig({
   plugins: [vue()],
   build: {
-    lib: {
-      // Could also be a dictionary or array of multiple entry points
-      entry: resolve(__dirname, "src/background.js"),
-      name: "LockAndSend",
-      // the proper extensions will be added
-      fileName: "background",
-    },
     // resolve: {
     //   alias: {
     //     "@": resolve(__dirname, "./src"),
     //   },
     // },
+    outDir: "dist/pages",
     rollupOptions: {
       input: {
-        popup: resolve(__dirname, "index.test.html"),
+        // background: resolve(__dirname, "src/background.js"),
+        testpage: resolve(__dirname, "index.test.html"),
         // stats: resolve(__dirname, 'index.stats.html'),
         // options: resolve(__dirname, 'index.options.html'),
+        // popup: resolve(__dirname, 'index.popup.html'),
       },
     },
     // rollupOptions: {

@@ -10,6 +10,9 @@
       "strict_min_version": "110.0a1"
     }
   },
+  "action": {
+    "default_title": "secrets"
+  },
   "background": {
     "scripts": ["background.js"]
   },

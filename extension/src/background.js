@@ -137,3 +137,60 @@ browser.composeAction.onClicked.addListener(async (tab) => {
   const ownedFile = await sender.upload(archive);
   console.log(`secret message stored at ${ownedFile.url}`);
 });
+
+async function awaitPopup() {
+  async function popupPrompt(popupId, defaultResponse) {
+    try {
+      await messenger.windows.get(popupId);
+    } catch (e) {
+      // Window does not exist, assume closed.
+      return defaultResponse;
+    }
+    return new Promise((resolve) => {
+      let response = defaultResponse;
+      function windowRemoveListener(closedId) {
+        if (popupId == closedId) {
+          messenger.windows.onRemoved.removeListener(windowRemoveListener);
+          messenger.runtime.onMessage.removeListener(messageListener);
+          resolve(response);
+        }
+      }
+      function messageListener(request, sender, sendResponse) {
+        if (sender.tab.windowId != popupId || !request) {
+          return;
+        }
+
+        if (request.popupResponse) {
+          response = request.popupResponse;
+        }
+        if (request.ping) {
+          console.log("Background ping");
+        }
+      }
+      messenger.runtime.onMessage.addListener(messageListener);
+      messenger.windows.onRemoved.addListener(windowRemoveListener);
+    });
+  }
+
+  let window = await messenger.windows.create({
+    url: "index.test.html",
+    type: "popup",
+    height: 720,
+    width: 640,
+    allowScriptsToClose: true,
+  });
+  // Wait for the popup to be closed and define a default return value if the
+  // window is closed without clicking a button.
+  let rv = await popupPrompt(window.id, "cancel");
+  console.log(rv);
+}
+messenger.action.onClicked.addListener(awaitPopup);
+// browser.action.onClicked.addListener(async (...args) => {
+//   console.log(args);
+//   const window = await browser.windows.create({
+//     url: browser.runtime.getURL("/index.test.html"),
+//     type: "popup",
+//     // Should not be needed: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/windows/create#parameters
+//     allowScriptsToClose: true,
+//   });
+// });
