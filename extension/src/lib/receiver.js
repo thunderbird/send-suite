@@ -14,7 +14,8 @@ export default class Receiver extends Nanobus {
     }
     this.fileInfo = fileInfo;
     this.reset();
-    console.log(`Do we ever use fileReceiver.js?`);
+    console.log(`Receiver initialized with:`);
+    console.log(fileInfo);
   }
 
   get progressRatio() {

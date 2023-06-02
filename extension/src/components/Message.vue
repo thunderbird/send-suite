@@ -20,12 +20,16 @@ watchEffect(async () => {
   const result = await fetch(urlRef.value.href);
   if (result.ok) {
     const data = await result.json();
+    console.log(`Retrieved from ${urlRef.value.href}`);
+    console.log(data);
     const receiver = new Receiver({
       secretKey: secretKey.value, // Not so secret - it's the hash at the end of the URL
       id: id.value,
       url: urlRef.value.href,
       nonce: data?.metadata?.nonce,
       requiresPassword: false,
+      // When we use passwords, will also need:
+      // password: 'whatever-user-enters-when-we-prompt-them'
     });
     await receiver.getMetadata();
     const optionalContent = await receiver.download({
