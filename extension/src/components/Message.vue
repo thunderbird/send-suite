@@ -6,7 +6,7 @@ const props = defineProps({
   url: String,
 });
 
-const message = ref(`seat's taken`);
+const message = ref(null);
 
 const urlRef = computed(() => props.url && new URL(props.url));
 const secretKey = computed(() => urlRef.value.hash.substring(1));
@@ -44,6 +44,5 @@ watchEffect(async () => {
 
 <template>
   <div>{{ url }}</div>
-  <h1>Message</h1>
   <textarea>{{ message }}</textarea>
 </template>

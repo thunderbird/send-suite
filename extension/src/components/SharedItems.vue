@@ -32,7 +32,7 @@ async function getItems() {
 </script>
 
 <template>
-  <h1>hi. your shared items will appear here</h1>
+  <h1>Your messages</h1>
   <ul>
     <li v-for="{ url } in sharedItems">
       <a href="#" @click.stop="emits(`choose-url`, url)">{{ url }}</a>
