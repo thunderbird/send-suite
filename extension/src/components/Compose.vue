@@ -6,7 +6,7 @@ import { serverUrl } from "../lib/const";
 const message = ref(null);
 
 async function createItem(url, userId) {
-  const createItemUrl = `${serverUrl}/api/items`;
+  const createItemUrl = `${serverUrl}/api/items?type=MESSAGE`;
   const createItemFetchInfo = {
     mode: "cors",
     method: "POST",
@@ -21,7 +21,7 @@ async function createItem(url, userId) {
   if (!createItemResponse.ok) {
     console.log(
       "❌ Unable add create item in database",
-      `Error: Unable to create db item for “${upload.file.name}” file.`
+      `Error: Unable to create db item for message.`
     );
     return;
   }
@@ -62,15 +62,17 @@ async function sendMessage() {
   const sender = new Sender();
   const file = await sender.upload(archive);
   const item = await createItem(file.url, 1);
-  addItemToGroup(item.id, 1);
-  message.value = "";
+  if (item) {
+    addItemToGroup(item.id, 1);
+    message.value = "";
+  }
 }
 </script>
 
 <template>
   <h2></h2>
   <textarea v-model="message"></textarea>
-  <button @click="sendMessage">Send</button>
+  <button @click="sendMessage">Send Message</button>
 </template>
 
 <style scoped>

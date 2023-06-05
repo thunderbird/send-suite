@@ -2,18 +2,25 @@
 import { ref } from "vue";
 import MessageList from "./MessageList.vue";
 import Message from "./Message.vue";
-// import Compose from "./Compose.vue";
+import SharedFiles from "./SharedFiles.vue";
+import Compose from "./Compose.vue";
 
-const currentUrl = ref(null);
-function handleChoice(url) {
-  currentUrl.value = url;
+const currentMessageUrl = ref(null);
+function handleMessageChoice(url) {
+  currentMessageUrl.value = url;
+}
+const currentFileUrl = ref(null);
+function handleFileChoice(url) {
+  currentFileUrl.value = url;
 }
 </script>
 
 <template>
-  <!-- <Compose /> -->
-  <MessageList @choose-url="handleChoice" />
-  <Message :url="currentUrl" />
+  <Compose />
+  <MessageList @choose-url="handleMessageChoice" />
+  <Message :url="currentMessageUrl" />
+  <SharedFiles @choose-url="handleFileChoice" />
+  <div>File you clicked for download: {{ currentFileUrl }}</div>
 </template>
 
 <style scoped>
