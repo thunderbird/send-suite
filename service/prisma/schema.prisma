@@ -29,12 +29,18 @@ model GroupUser {
   @@id([groupId, userId])
 }
 
+enum ItemType {
+  MESSAGE
+  FILE
+}
+
 model Item {
   id        Int      @id @default(autoincrement())
   url       String   @unique
   sharedBy  Int      @map("shared_by")
   user      User     @relation(fields: [sharedBy], references: [id])
   groups    GroupItem[]
+  type      ItemType
 }
 
 model GroupItem {

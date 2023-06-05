@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient, Prisma, ItemType } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export async function createUser(email: string) {
@@ -115,11 +115,16 @@ export async function removeGroupMember(groupId: number, userId: number) {
   });
 }
 
-export async function createItem(url: string, sharedBy: number) {
+export async function createItem(
+  url: string,
+  sharedBy: number,
+  type: ItemType
+) {
   return prisma.item.create({
     data: {
       url,
       sharedBy,
+      type,
     },
   });
 }
@@ -133,20 +138,13 @@ export async function addGroupItem(groupId: number, itemId: number) {
   });
 }
 
-export async function getGroupItems(groupId: number) {
-  return prisma.group.findUnique({
+export async function getGroupItems(groupId: number, type: ItemType) {
+  return prisma.item.findMany({
     where: {
-      id: groupId,
-    },
-    include: {
-      items: {
-        select: {
-          item: {
-            select: {
-              id: true,
-              url: true,
-            },
-          },
+      type,
+      groups: {
+        some: {
+          groupId,
         },
       },
     },

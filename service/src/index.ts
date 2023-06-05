@@ -1,6 +1,6 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, ItemType } from "@prisma/client";
 import cors from "cors";
-import express from "express";
+import express, { Request } from "express";
 import WebSocket from "ws";
 import {
   createUser,
@@ -239,8 +239,15 @@ app.delete("/api/groups/:groupId/members/:userId", async (req, res) => {
 
 app.post("/api/items", async (req, res) => {
   const { url, metadata, sharedBy } = req.body;
+  const type = req.query.type as ItemType;
+
+  if (!(type in ItemType)) {
+    return res.status(400).json({
+      message: "Invalid Item Type: " + type,
+    });
+  }
   try {
-    const item = await createItem(url, parseInt(sharedBy));
+    const item = await createItem(url, parseInt(sharedBy), type);
     res.status(201).json({
       message: "Item created",
       item,
@@ -258,7 +265,6 @@ app.post("/api/items", async (req, res) => {
         message: "Server error.",
         error,
       });
-      // res.status(404); // Not Found - groupId or userId don't exist
     }
   }
 });
@@ -267,14 +273,6 @@ app.post("/api/items", async (req, res) => {
 app.post("/api/groups/:groupId/items/", async (req, res) => {
   const { groupId } = req.params;
   const { itemId } = req.body;
-
-  console.log(`
-
-  TODO:
-  - get the item from the db
-  - check if the .sharedBy is a member of this group
-
-  `);
 
   try {
     const groupWithMembers = await getGroupMembers(parseInt(groupId));
@@ -328,8 +326,15 @@ app.post("/api/groups/:groupId/items/", async (req, res) => {
 
 app.get("/api/groups/:groupId/items", async (req, res) => {
   const { groupId } = req.params;
+  const type = req.query.type as ItemType;
+
+  if (!(type in ItemType)) {
+    return res.status(400).json({
+      message: "Invalid Item Type: " + type,
+    });
+  }
   try {
-    const items = await getGroupItems(parseInt(groupId));
+    const items = await getGroupItems(parseInt(groupId), type);
     res.status(200).json(items);
   } catch (error) {
     res.status(500).json({

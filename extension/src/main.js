@@ -132,7 +132,7 @@ btnAddUserToGroup.addEventListener("click", (event) => {
 });
 
 async function getGroupFiles(groupId) {
-  const getItemsForGroupUrl = `${serverUrl}/api/groups/${groupId}/items`;
+  const getItemsForGroupUrl = `${serverUrl}/api/groups/${groupId}/items?type=FILE`;
 
   const getItemsForGroupResponse = await fetch(getItemsForGroupUrl);
   if (!getItemsForGroupResponse.ok) {
@@ -143,7 +143,7 @@ async function getGroupFiles(groupId) {
 }
 
 async function createItem(url, userId) {
-  const createItemUrl = `${serverUrl}/api/items`;
+  const createItemUrl = `${serverUrl}/api/items?type=MESSAGE`;
   const createItemFetchInfo = {
     mode: "cors",
     method: "POST",
@@ -158,7 +158,7 @@ async function createItem(url, userId) {
   if (!createItemResponse.ok) {
     console.log(
       "❌ Unable add create item in database",
-      `Error: Unable to create db item for “${upload.file.name}” file.`
+      `Error: Unable to create db item for file.`
     );
     return;
   }
@@ -288,9 +288,9 @@ btnGetGroupFiles.addEventListener("click", async () => {
   console.log("did anyone share? do they care?");
   // debugger;
   // addItemToGroup(currentItem.id, groupIdInput.value);
-  const { items } = await getGroupFiles(groupIdInput.value);
+  const items = await getGroupFiles(groupIdInput.value);
   console.log(items);
-  for (let { item } of items) {
+  for (let item of items) {
     console.log(item);
     groupFileList.appendChild(newListItem(item));
   }

@@ -12,17 +12,17 @@ const sharedItems = ref([]);
 const groupId = 1;
 
 async function getItems() {
-  const url = `${serverUrl}/api/groups/${groupId}/items`;
+  const url = `${serverUrl}/api/groups/${groupId}/items?type=MESSAGE`;
 
   const resp = await fetch(url);
   if (!resp.ok) {
     console.log(`Can't get items for group`);
     return;
   }
-  const { items } = await resp.json();
+  const items = await resp.json();
   console.log(`items retrieved from `);
   console.log(items);
-  sharedItems.value = items.map((i) => i.item);
+  sharedItems.value = items; //items.map((i) => i.item);
   return;
 }
 

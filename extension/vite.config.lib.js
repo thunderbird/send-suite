@@ -13,5 +13,8 @@ export default defineConfig({
       formats: ["es"],
     },
     outDir: "dist/background",
+    rollupOptions: {
+      external: ["vue"],
+    },
   },
 });

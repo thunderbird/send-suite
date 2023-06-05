@@ -1,14 +1,21 @@
 ## tl;dr
 
-- To work on the TB Extension: `pnpm run build:watch`
+- To work on the TB Extension: `pnpm run build`
+  - Note: must be run every time you need to rebuild. Watch mode isn't possible because of the hybrid nature of the pages/extension.
 - To use the UI test page: `pnpm run dev`
 
 ## Details
 
-This extension is built using `vite` configured for [library mode](https://vitejs.dev/guide/build.html#library-mode).
+This extension is built using `vite` configured for:
 
-This compiles `src/background.js` and its dependencies into `dist/background.js`. It also copies over the contents of `public/` (including the `manifest.json`, `popup.*` and `management.*` files).
+- "regular pages" - there are multiple entry points, i.e., `index.*.html`
+- [library mode](https://vitejs.dev/guide/build.html#library-mode) - the extension needs a single file that attaches listeners
 
-If you're working on something fairly low-level functionality (like upload/download), run the vite dev server: `pnpm run dev` and open a browser to http://localhost:5173
+The `build` command runs `build.sh`, which does the following:
 
-Modify `index.html` and `src/main.js` as needed.
+- manually clears/creates the `dist/` directory
+- builds the library (`src/background.js`), targeting `dist/background`
+- builds the pages, targeting `dist/pages`
+- moves the contents of both targets to `dist/`
+
+In the process, it also copies over the contents of `public/` (including the `manifest.json`, `popup.*` and `management.*` files).

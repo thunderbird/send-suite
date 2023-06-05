@@ -13,6 +13,7 @@ export default defineConfig({
     // },
     outDir: "dist/pages",
     rollupOptions: {
+      external: ["vue"],
       input: {
         // background: resolve(__dirname, "src/background.js"),
         testpage: resolve(__dirname, "index.test.html"),

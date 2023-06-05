@@ -5,9 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build:watch": "vite build --watch",
-    "build": "rm -rf dist/* && vite build --config vite.config.lib.js && vite build --config vite.config.js && mv dist/pages/* dist/ && mv dist/background/* dist/",
-    "preview": "vite preview"
+    "build": "build.sh"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.2.3",
