@@ -1,5 +1,5 @@
 <script setup>
-import { serverUrl } from "../lib/const";
+import { serverUrl, ITEM_TYPES } from "../lib/const";
 import { ref, onMounted } from "vue";
 
 // Props are like inputs
@@ -12,7 +12,7 @@ const sharedItems = ref([]);
 const groupId = 1;
 
 async function getItems() {
-  const url = `${serverUrl}/api/groups/${groupId}/items?type=MESSAGE`;
+  const url = `${serverUrl}/api/groups/${groupId}/items?type=${ITEM_TYPES.FILE}`;
 
   const resp = await fetch(url);
   if (!resp.ok) {
@@ -33,7 +33,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <h1>Your messages</h1>
+  <h1>Your files</h1>
   <button @click="getItems">get new</button>
   <ul>
     <li v-for="{ url } in sharedItems">

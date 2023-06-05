@@ -4,4 +4,9 @@ export const SEND_SERVER = {
   protocol: "https:",
 };
 
+export const ITEM_TYPES = {
+  MESSAGE: "MESSAGE",
+  FILE: "FILE",
+};
+
 export const serverUrl = `${SEND_SERVER.protocol}//${SEND_SERVER.hostname}:${SEND_SERVER.port}`;

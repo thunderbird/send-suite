@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from "vue";
-import SharedItems from "./SharedItems.vue";
+import MessageList from "./MessageList.vue";
 import Message from "./Message.vue";
 // import Compose from "./Compose.vue";
 
@@ -12,7 +12,7 @@ function handleChoice(url) {
 
 <template>
   <!-- <Compose /> -->
-  <SharedItems @choose-url="handleChoice" />
+  <MessageList @choose-url="handleChoice" />
   <Message :url="currentUrl" />
 </template>
 
