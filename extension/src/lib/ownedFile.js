@@ -37,10 +37,7 @@ export default class OwnedFile {
       this.password = password;
       this._hasPassword = true;
       this.keychain.setPassword(password, this.url);
-      // TODO: find out how the setPassword function works and where the ownerToken comes from
-      // `this.id` is the file identifier used as part of the retrieval URL
       const result = await setPassword(this.id, this.ownerToken, this.keychain);
-      debugger;
       return result;
     } catch (e) {
       this.password = null;
@@ -95,7 +92,7 @@ export default class OwnedFile {
       dlimit: this.dlimit,
       dtotal: this.dtotal,
       hasPassword: this.hasPassword,
-      timeLimit: this.timeLimit
+      timeLimit: this.timeLimit,
     };
   }
 }

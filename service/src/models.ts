@@ -179,7 +179,8 @@ export async function createUpload(
   metadata: string,
   dlimit: number,
   auth: string,
-  nonce: string
+  nonce: string,
+  pwd?: boolean
 ) {
   return prisma.upload.create({
     data: {
@@ -189,6 +190,7 @@ export async function createUpload(
       dlimit,
       auth,
       nonce,
+      pwd: !!pwd,
     },
   });
 }

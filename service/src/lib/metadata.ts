@@ -13,7 +13,7 @@ export default class Metadata {
   public id: string;
   // public dl: number;
   public dlimit: number;
-  // public pwd: boolean;
+  public pwd: boolean;
   public owner: string;
   public metadata: any;
   public auth: any;
@@ -23,7 +23,7 @@ export default class Metadata {
     // this.dl = +obj.dl || 0;
     this.id = obj.id;
     this.dlimit = +obj.dlimit || 1;
-    // this.pwd = String(obj.pwd) === "true";
+    this.pwd = String(obj.pwd) === "true";
     this.owner = obj.owner;
     this.metadata = obj.metadata;
     this.auth = obj.auth;
@@ -35,7 +35,7 @@ export default class Metadata {
       id: this.id,
       // dl: this.dl,
       dlimit: this.dlimit,
-      // pwd: this.pwd,
+      pwd: this.pwd,
       owner: this.owner,
       metadata: this.metadata,
       auth: this.auth,

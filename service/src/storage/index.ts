@@ -45,16 +45,12 @@ class FileStore {
     return createUpload(id, owner, metadata, dlimit, auth, nonce);
     /*
     In the original implementation, we were setting additional info:
-    - dl
-    - pwd
     - expireSeconds
     */
   }
 
-  // Note: this is only called from auth.hmac()
-  // and it's only ever the `nonce`
-  // However, we'll keep it flexible, in case we need to update
-  // other fields.
+  // Called from auth.hmac()
+  // and for setting the password on an Upload
   async setField(id: string, key: string, value: any) {
     console.log(`In storage.set(), doing setField() for ${id}`);
     console.log(`   setting ${key} to ${value}`);

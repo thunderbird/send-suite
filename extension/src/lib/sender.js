@@ -104,6 +104,10 @@ export default class Sender extends Nanobus {
         timeLimit: payload.timeLimit,
       });
 
+      console.log(`💣💣💣 setting password to "password"`);
+      await ownedFile.setPassword("password");
+      console.log(`password set?`);
+
       return ownedFile;
     } catch (e) {
       this.msg = "errorPageHeader";

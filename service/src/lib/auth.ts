@@ -13,7 +13,7 @@ export default {
     const authHeader = req.header("Authorization");
     if (id && authHeader) {
       try {
-        const auth = req.header("Authorization").split(" ")[1];
+        const auth = authHeader.split(" ")[1];
         const meta = await storage.metadata(id);
         if (!meta) {
           return res.sendStatus(404);

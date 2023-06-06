@@ -61,6 +61,6 @@ model Upload {
   dlimit    Int
   auth      String
   nonce     String
-  // pwd    Boolean
+  pwd    Boolean
   // dl     Int
 }

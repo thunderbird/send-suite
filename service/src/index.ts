@@ -23,6 +23,7 @@ import auth from "./lib/auth";
 import pages from "./pages";
 import metadata from "./api/metadata";
 import download from "./api/download";
+import password from "./api/password";
 
 // TODO: move these to `config.ts`
 const PORT = 8080;
@@ -379,8 +380,9 @@ app.delete("/api/groups/:groupId/items/:itemId", async (req, res) => {
 app.get(`/download/:id${ID_REGEX}`, pages.download);
 app.get(`/api/metadata/:id${ID_REGEX}`, auth.hmac, metadata);
 // app.get(`/api/download/:id${ID_REGEX}`, auth.hmac, download);
-// unsure if I need this one...
+// ^^ unsure if I need this one
 app.get(`/api/download/blob/:id${ID_REGEX}`, auth.hmac, download);
+app.post(`/api/password/:id${ID_REGEX}`, auth.owner, password);
 
 app.get(`*`, (req, res) => {
   res.status(404);

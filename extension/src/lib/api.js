@@ -141,7 +141,6 @@ export async function metadata(id, keychain) {
 
 export async function setPassword(id, owner_token, keychain) {
   const auth = await keychain.authKeyB64();
-  debugger;
   const response = await fetch(
     getApiUrl(`/api/password/${id}`),
     post({ owner_token, auth })

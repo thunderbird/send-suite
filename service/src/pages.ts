@@ -4,8 +4,7 @@ async function download(req, res, next) {
   const id = req.params.id;
   try {
     const metadata = await storage.metadata(id);
-    const { nonce } = metadata;
-    // previously also grabbing `pwd` from metadata
+    const { nonce, pwd } = metadata;
 
     console.log(
       `🚀 ${new Date().getTime()}  pages.js: download - Setting the nonce in WWW-Authenticate header`
@@ -15,7 +14,7 @@ async function download(req, res, next) {
     res.status(200).json({
       metadata: {
         nonce,
-        // pwd
+        pwd,
       },
     });
   } catch (e) {
