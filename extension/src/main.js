@@ -12,6 +12,7 @@ urlSpan.value = "";
 const textInput = document.querySelector("#text-content");
 const userIdInput = document.querySelector("#user-id");
 const groupIdInput = document.querySelector("#group-id");
+const passwordInput = document.querySelector("#file-password");
 
 const shouldSaveCheckbox = document.querySelector("#save-file");
 const shouldNotSave = () => !shouldSaveCheckbox.checked;
@@ -132,7 +133,7 @@ btnAddUserToGroup.addEventListener("click", (event) => {
 });
 
 async function getGroupFiles(groupId) {
-  const getItemsForGroupUrl = `${serverUrl}/api/groups/${groupId}/items?type=FILE`;
+  const getItemsForGroupUrl = `${serverUrl}/api/groups/${groupId}/items?type=MESSAGE`;
 
   const getItemsForGroupResponse = await fetch(getItemsForGroupUrl);
   if (!getItemsForGroupResponse.ok) {
@@ -226,14 +227,23 @@ async function doDownload(_url) {
   const secretKey = url.hash.substring(1);
   const id = url.pathname.split("/")[2];
   const result = await fetch(url.href);
+
   if (result.ok) {
     const data = await result.json();
+    console.log(data.metadata.pwd);
+    if (data.metadata.pwd && !passwordInput.value) {
+      alert("password required for this file");
+      passwordInput.focus();
+      return;
+    }
+    console.log(`👆👆👆👆👆 does it need a password?`);
     const receiver = new Receiver({
       secretKey, // Not so secret - it's the hash at the end of the URL
       id,
       url,
       nonce: data?.metadata?.nonce,
-      requiresPassword: false,
+      requiresPassword: data.metadata.pwd,
+      password: passwordInput.value,
     });
     await receiver.getMetadata();
     const optionalContent = await receiver.download({
