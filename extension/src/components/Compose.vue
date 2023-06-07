@@ -6,9 +6,12 @@ import { serverUrl } from "../lib/const";
 const message = ref(null);
 const groupId = ref(1);
 const password = ref(null);
+const fileBlob = ref(null);
+const isFile = ref(false);
 
 async function createItem(url, userId) {
-  const createItemUrl = `${serverUrl}/api/items?type=MESSAGE`;
+  const itemType = isFile.value ? "FILE" : "MESSAGE";
+  const createItemUrl = `${serverUrl}/api/items?type=${itemType}`;
   const createItemFetchInfo = {
     mode: "cors",
     method: "POST",
@@ -55,12 +58,8 @@ async function addItemToGroup(itemId, groupId) {
   }
 }
 
-async function sendMessage() {
-  console.log(message.value);
-  const blob = new Blob([message.value], { type: "text/plain" });
-  blob.name = `${new Date().getTime()}.txt`;
+async function doSend(blob) {
   const archive = new Archive([blob]);
-
   const sender = new Sender();
   const file = await sender.upload(archive, null, password.value);
   const item = await createItem(file.url, 1);
@@ -70,11 +69,44 @@ async function sendMessage() {
     password.value = "";
   }
 }
+
+async function handleFile(event) {
+  const file = event.target.files[0];
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    const buffer = reader.result;
+    fileBlob.value = new Blob([buffer], { type: file.type });
+    fileBlob.value.name = file.name;
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+async function sendFile() {
+  isFile.value = true;
+  doSend(fileBlob.value);
+}
+
+async function sendMessage() {
+  console.log(message.value);
+  const blob = new Blob([message.value], { type: "text/plain" });
+  blob.name = `${new Date().getTime()}.txt`;
+  isFile.value = false;
+  doSend(blob);
+}
 </script>
 
 <template>
-  <h2></h2>
-  <textarea v-model="message"></textarea>
+  <h2>Enter a message or choose a file</h2>
+  <label>
+    Message
+    <textarea v-model="message"></textarea>
+  </label>
+  <br />
+  <label>
+    File:
+    <input type="file" @change="handleFile" />
+  </label>
   <br />
   <label>
     Password (optional):
@@ -87,6 +119,7 @@ async function sendMessage() {
   </label>
   <br />
   <button @click="sendMessage">Send Message</button>
+  <button @click="sendFile">Send File</button>
 </template>
 
 <style scoped>
