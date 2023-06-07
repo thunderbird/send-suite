@@ -338,6 +338,10 @@ app.get("/api/groups/:groupId/items", async (req, res) => {
     const items = await getGroupItems(parseInt(groupId), type);
     res.status(200).json(items);
   } catch (error) {
+    console.log(
+      `🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡`
+    );
+    console.log(error);
     res.status(500).json({
       message: "Server error.",
       error,

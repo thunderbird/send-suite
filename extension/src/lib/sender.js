@@ -49,7 +49,7 @@ export default class Sender extends Nanobus {
 
   The actual work of uploading is via `uploadWs`
   */
-  async upload(payload, bearerToken) {
+  async upload(payload, bearerToken, password) {
     if (this.cancelled) {
       throw new Error(0);
     }
@@ -103,10 +103,14 @@ export default class Sender extends Nanobus {
         dlimit: payload.dlimit,
         timeLimit: payload.timeLimit,
       });
-
-      console.log(`💣💣💣 setting password to "password"`);
-      await ownedFile.setPassword("password");
-      console.log(`password set?`);
+      console.log(`
+      ⁉️⁉️⁉️ did you send a password? ${password}
+      `);
+      if (password) {
+        console.log(`💣💣💣 setting password to "password"`);
+        await ownedFile.setPassword(password);
+        console.log(`password set?`);
+      }
 
       return ownedFile;
     } catch (e) {

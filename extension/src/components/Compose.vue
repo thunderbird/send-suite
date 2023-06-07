@@ -4,6 +4,8 @@ import Sender from "../lib/sender";
 import Archive from "../lib/archive";
 import { serverUrl } from "../lib/const";
 const message = ref(null);
+const groupId = ref(1);
+const password = ref(null);
 
 async function createItem(url, userId) {
   const createItemUrl = `${serverUrl}/api/items?type=MESSAGE`;
@@ -60,11 +62,12 @@ async function sendMessage() {
   const archive = new Archive([blob]);
 
   const sender = new Sender();
-  const file = await sender.upload(archive);
+  const file = await sender.upload(archive, null, password.value);
   const item = await createItem(file.url, 1);
   if (item) {
-    addItemToGroup(item.id, 1);
+    addItemToGroup(item.id, groupId.value);
     message.value = "";
+    password.value = "";
   }
 }
 </script>
@@ -72,6 +75,17 @@ async function sendMessage() {
 <template>
   <h2></h2>
   <textarea v-model="message"></textarea>
+  <br />
+  <label>
+    Password (optional):
+    <input v-model="password" />
+  </label>
+  <br />
+  <label>
+    Share to Group
+    <input type="number" v-model="groupId" />
+  </label>
+  <br />
   <button @click="sendMessage">Send Message</button>
 </template>
 
