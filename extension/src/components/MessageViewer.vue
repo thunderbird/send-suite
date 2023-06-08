@@ -10,6 +10,8 @@ const message = ref(null);
 const password = ref(null);
 const needsPassword = ref(false);
 
+const isMessage = (fileType) => ["text/plain"].includes(fileType);
+
 async function doDownload() {
   const url = new URL(props.url);
   const secretKey = url.hash.substring(1);
@@ -31,7 +33,7 @@ async function doDownload() {
     });
     await receiver.getMetadata();
     const optionalContent = await receiver.download({
-      noSave: true, // You do want to save
+      noSave: isMessage(receiver.fileInfo.type), // You do want to save
       // ignoring the stream option for now
       // stream: false,
     });

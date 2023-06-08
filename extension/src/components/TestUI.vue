@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import MessageList from "./MessageList.vue";
-import Message from "./Message.vue";
+import MessageViewer from "./MessageViewer.vue";
 import SharedFiles from "./SharedFiles.vue";
 import Compose from "./Compose.vue";
 
@@ -18,9 +18,9 @@ function handleFileChoice(url) {
 <template>
   <Compose />
   <MessageList @choose-url="handleMessageChoice" />
-  <Message :url="currentMessageUrl" />
+  <MessageViewer :url="currentMessageUrl" />
   <SharedFiles @choose-url="handleFileChoice" />
-  <div>File you clicked for download: {{ currentFileUrl }}</div>
+  <MessageViewer :url="currentFileUrl" />
 </template>
 
 <style scoped>
