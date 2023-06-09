@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "build.sh"
+    "build": "./build.sh"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.2.3",
