@@ -10,3 +10,7 @@ export const ITEM_TYPES = {
 };
 
 export const serverUrl = `${SEND_SERVER.protocol}//${SEND_SERVER.hostname}:${SEND_SERVER.port}`;
+
+export const STORAGE_KEY = "send-suite/";
+
+export const keyFor = (name) => STORAGE_KEY + "name";

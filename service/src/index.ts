@@ -112,17 +112,25 @@ app.get("/api/users/:userId", async (req, res) => {
 // Create a group
 // TODO: Could also accept an existing user ID (or multiple IDs)
 app.post("/api/groups", async (req, res) => {
-  try {
-    const group = await createGroup();
-    res.status(201).json({
-      message: "Group created.",
-      group,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Server error.",
-      error,
-    });
+  // Modify this so that I can pass in some email addresses in the body
+  const { emailAddresses } = req.body;
+
+  if (emailAddresses) {
+    console.log(`Creating group for a set of email addresses`);
+    // or see if it already exists?
+  } else {
+    try {
+      const group = await createGroup();
+      res.status(201).json({
+        message: "Group created.",
+        group,
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: "Server error.",
+        error,
+      });
+    }
   }
 });
 

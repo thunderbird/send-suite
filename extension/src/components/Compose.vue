@@ -1,10 +1,13 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import Sender from "../lib/sender";
 import Archive from "../lib/archive";
 import { serverUrl } from "../lib/const";
+import { get, set } from "../lib/sync";
+import { keyFor } from "../lib/const";
 const message = ref(null);
 const groupId = ref(1);
+const userId = ref(0);
 const password = ref(null);
 const fileBlob = ref(null);
 const isFile = ref(false);
@@ -62,7 +65,7 @@ async function doSend(blob) {
   const archive = new Archive([blob]);
   const sender = new Sender();
   const file = await sender.upload(archive, null, password.value);
-  const item = await createItem(file.url, 1);
+  const item = await createItem(file.url, userId);
   if (item) {
     addItemToGroup(item.id, groupId.value);
     message.value = "";
@@ -94,6 +97,17 @@ async function sendMessage() {
   isFile.value = false;
   doSend(blob);
 }
+
+onMounted(() => {
+  console.log("Checking storage for user.");
+  const obj = get(keyFor("user"));
+  if (obj) {
+    const { email, id } = obj;
+    console.log(`Loaded user ${email} with id ${id}`);
+    // emailAddress.value = email;
+    userId.value = id;
+  }
+});
 </script>
 
 <template>
