@@ -1,6 +1,8 @@
 <script setup>
-import { serverUrl, ITEM_TYPES } from "../lib/const";
 import { ref, onMounted } from "vue";
+import { serverUrl, ITEM_TYPES } from "../lib/const";
+import { get, set } from "../lib/sync";
+import { keyFor } from "../lib/const";
 
 // Props are like inputs
 // Emits are like outputs
@@ -28,6 +30,13 @@ async function getItems() {
 
 onMounted(() => {
   console.log(serverUrl);
+  console.log("Checking storage for user.");
+  const obj = get(keyFor("user"));
+  if (obj) {
+    const { email, id } = obj;
+    console.log(`Loaded user ${email} with id ${id}`);
+    // emailAddress.value = email;
+  }
   getItems();
 });
 </script>
