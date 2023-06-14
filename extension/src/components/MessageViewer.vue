@@ -10,7 +10,8 @@ const message = ref(null);
 const password = ref(null);
 const needsPassword = ref(false);
 
-const isMessage = (fileType) => ["text/plain"].includes(fileType);
+const isMessage = (fileType) =>
+  ["text/plain", "application/html"].includes(fileType);
 
 async function doDownload() {
   const url = new URL(props.url);

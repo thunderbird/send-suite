@@ -20,7 +20,14 @@
     "name": "Thunderbird Send",
     "management_url": "management.html"
   },
-  "permissions": ["storage", "compose", "notifications"],
+  "permissions": [
+    "storage",
+    "compose",
+    "notifications",
+    "activeTab",
+    "tabs",
+    "tabHide"
+  ],
   "compose_action": {
     "default_title": "Send encrypted"
   }

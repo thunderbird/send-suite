@@ -116,7 +116,7 @@ function handleMessage(message, sender, sendResponse) {
 messenger.runtime.onMessage.addListener(handleMessage);
 
 async function createItem(url, userId) {
-  const createItemUrl = `${serverUrl}/api/items`;
+  const createItemUrl = `${serverUrl}/api/items?type=MESSAGE`;
   const createItemFetchInfo = {
     mode: "cors",
     method: "POST",
@@ -176,6 +176,7 @@ browser.composeAction.onClicked.addListener(async (tab) => {
   const blob = new Blob([body], {
     type: mimeType,
   });
+  blob.name = `${new Date().getTime()}.txt`;
   const archive = new Archive([blob]);
   // const withPassword = false;
   // TODO: show the popup, giving the user an opportunity to
@@ -190,50 +191,50 @@ browser.composeAction.onClicked.addListener(async (tab) => {
 });
 
 async function awaitPopup() {
-  async function popupPrompt(popupId, defaultResponse) {
-    try {
-      await messenger.windows.get(popupId);
-    } catch (e) {
-      // Window does not exist, assume closed.
-      return defaultResponse;
-    }
-    return new Promise((resolve) => {
-      let response = defaultResponse;
-      function windowRemoveListener(closedId) {
-        if (popupId == closedId) {
-          messenger.windows.onRemoved.removeListener(windowRemoveListener);
-          messenger.runtime.onMessage.removeListener(messageListener);
-          resolve(response);
-        }
-      }
-      function messageListener(request, sender, sendResponse) {
-        if (sender.tab.windowId != popupId || !request) {
-          return;
-        }
+  // async function popupPrompt(popupId, defaultResponse) {
+  //   try {
+  //     await messenger.windows.get(popupId);
+  //   } catch (e) {
+  //     // Window does not exist, assume closed.
+  //     return defaultResponse;
+  //   }
+  //   return new Promise((resolve) => {
+  //     let response = defaultResponse;
+  //     function windowRemoveListener(closedId) {
+  //       if (popupId == closedId) {
+  //         messenger.windows.onRemoved.removeListener(windowRemoveListener);
+  //         messenger.runtime.onMessage.removeListener(messageListener);
+  //         resolve(response);
+  //       }
+  //     }
+  //     function messageListener(request, sender, sendResponse) {
+  //       if (sender.tab.windowId != popupId || !request) {
+  //         return;
+  //       }
 
-        if (request.popupResponse) {
-          response = request.popupResponse;
-        }
-        if (request.ping) {
-          console.log("Background ping");
-        }
-      }
-      messenger.runtime.onMessage.addListener(messageListener);
-      messenger.windows.onRemoved.addListener(windowRemoveListener);
-    });
-  }
-
-  let window = await messenger.windows.create({
-    url: "index.test.html",
-    type: "popup",
-    height: 720,
-    width: 640,
-    allowScriptsToClose: true,
-  });
+  //       if (request.popupResponse) {
+  //         response = request.popupResponse;
+  //       }
+  //       if (request.ping) {
+  //         console.log("Background ping");
+  //       }
+  //     }
+  //     messenger.runtime.onMessage.addListener(messageListener);
+  //     messenger.windows.onRemoved.addListener(windowRemoveListener);
+  //   });
+  // }
+  browser.tabs.create({ active: true, url: "index.test.html" });
+  // let window = await messenger.windows.create({
+  //   url: "index.test.html",
+  //   type: "popup",
+  //   height: 720,
+  //   width: 640,
+  //   allowScriptsToClose: true,
+  // });
   // Wait for the popup to be closed and define a default return value if the
   // window is closed without clicking a button.
-  let rv = await popupPrompt(window.id, "cancel");
-  console.log(rv);
+  // let rv = await popupPrompt(window.id, "cancel");
+  // console.log(rv);
 }
 messenger.action.onClicked.addListener(awaitPopup);
 // browser.action.onClicked.addListener(async (...args) => {
