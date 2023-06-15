@@ -214,23 +214,3 @@ let translate = function () {
 export function setTranslate(t) {
   translate = t;
 }
-
-export default {
-  locale,
-  delay,
-  allowedCopy,
-  bytes,
-  percent,
-  number,
-  arrayToB64,
-  b64ToArray,
-  loadShim,
-  isFile,
-  browserName,
-  streamToArrayBuffer,
-  secondsToL10nId,
-  timeLeft,
-  platform,
-  encryptedSize,
-  setTranslate,
-};

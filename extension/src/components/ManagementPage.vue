@@ -1,8 +1,7 @@
 <script setup>
 import { ref, onMounted, nextTick } from "vue";
 import { createNewUser, login } from "../lib/api";
-import { get, set } from "../lib/sync";
-import { keyFor } from "../lib/const";
+import { loadUser, storeUser } from "../lib/sync";
 
 // Create the `browser` object for use outside of TB.
 const browser = window.browser ?? {};
@@ -14,6 +13,8 @@ let accountId = new URL(location.href).searchParams.get("accountId");
 
 // Initialize the settings
 browser.storage?.local.get([accountId]).then((accountInfo) => {
+  setAccountConfigured(accountId);
+
   if (accountInfo[accountId] && SERVER in accountInfo[accountId]) {
     // input.value = accountInfo[accountId][SERVER];
     setAccountConfigured(accountId);
@@ -41,11 +42,6 @@ function log(msg) {
   });
 }
 
-function storeUser(email, id) {
-  set(keyFor("user"), { email, id });
-  log(`Storing user ${email} with id ${id}`);
-}
-
 async function saveConfiguration() {
   log("Confirming user before saving config");
   // check for user
@@ -54,12 +50,14 @@ async function saveConfiguration() {
     console.log(`user exists on server`);
     console.log(user);
     storeUser(user.email, user.id);
+    log(`Storing user ${user.email} with id ${user.id}`);
   } else {
     try {
       log(`User does not exist, attempting to create...`);
       const { email, id } = await createNewUser(emailAddress.value);
       log(`User created`);
       storeUser(email, id);
+      log(`Storing user ${email} with id ${id}`);
     } catch (error) {
       console.log(`Couldn't create user...maybe already exists?`);
       console.log(error);
@@ -81,13 +79,12 @@ async function saveConfiguration() {
 onMounted(() => {
   setAccountConfigured(accountId);
   log("Checking storage for user.");
-  const obj = get(keyFor("user"));
-  if (obj) {
-    const { email, id } = obj;
+  try {
+    const { email, id } = loadUser();
     log(`Loaded user ${email} with id ${id}`);
     emailAddress.value = email;
-  } else {
-    log(`No user found, please create one`);
+  } catch (error) {
+    console.log(error);
   }
 });
 </script>

@@ -11,7 +11,7 @@ import { keyFor } from "../lib/const";
 const emits = defineEmits(["choose-url"]);
 
 const sharedItems = ref([]);
-const groupId = 1;
+const groupId = 2;
 
 async function getItems() {
   const url = `${serverUrl}/api/groups/${groupId}/items?type=${ITEM_TYPES.MESSAGE}`;

@@ -3,39 +3,15 @@ import { ref, onMounted } from "vue";
 import Sender from "../lib/sender";
 import Archive from "../lib/archive";
 import { serverUrl } from "../lib/const";
-import { get, set } from "../lib/sync";
-import { keyFor } from "../lib/const";
+import { loadUser } from "../lib/sync";
+import { createItem } from "../lib/api";
 const message = ref(null);
 const groupId = ref(1);
 const userId = ref(0);
 const password = ref(null);
 const fileBlob = ref(null);
 const isFile = ref(false);
-
-async function createItem(url, userId) {
-  const itemType = isFile.value ? "FILE" : "MESSAGE";
-  const createItemUrl = `${serverUrl}/api/items?type=${itemType}`;
-  const createItemFetchInfo = {
-    mode: "cors",
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      url,
-      sharedBy: userId,
-    }),
-  };
-  const createItemResponse = await fetch(createItemUrl, createItemFetchInfo);
-
-  if (!createItemResponse.ok) {
-    console.log(
-      "❌ Unable add create item in database",
-      `Error: Unable to create db item for message.`
-    );
-    return;
-  }
-  const { item } = await createItemResponse.json();
-  return item;
-}
+const shareWith = ref("75525@email.com");
 
 async function addItemToGroup(itemId, groupId) {
   const addItemToGroupUrl = `${serverUrl}/api/groups/${groupId}/items`;
@@ -65,7 +41,7 @@ async function doSend(blob) {
   const archive = new Archive([blob]);
   const sender = new Sender();
   const file = await sender.upload(archive, null, password.value);
-  const item = await createItem(file.url, userId);
+  const item = await createItem(file.url, userId.value, isFile.value);
   if (item) {
     addItemToGroup(item.id, groupId.value);
     message.value = "";
@@ -100,12 +76,12 @@ async function sendMessage() {
 
 onMounted(() => {
   console.log("Checking storage for user.");
-  const obj = get(keyFor("user"));
-  if (obj) {
-    const { email, id } = obj;
+  try {
+    const { email, id } = loadUser();
     console.log(`Loaded user ${email} with id ${id}`);
-    // emailAddress.value = email;
     userId.value = id;
+  } catch (error) {
+    console.log(error);
   }
 });
 </script>
@@ -128,8 +104,8 @@ onMounted(() => {
   </label>
   <br />
   <label>
-    Share to Group
-    <input type="number" v-model="groupId" />
+    Share with
+    <input type="email" v-model="shareWith" />
   </label>
   <br />
   <button @click="sendMessage">Send Message</button>

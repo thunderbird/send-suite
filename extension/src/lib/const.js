@@ -13,4 +13,4 @@ export const serverUrl = `${SEND_SERVER.protocol}//${SEND_SERVER.hostname}:${SEN
 
 export const STORAGE_KEY = "send-suite/";
 
-export const keyFor = (name) => STORAGE_KEY + "name";
+export const keyFor = (name) => STORAGE_KEY + "/" + name;

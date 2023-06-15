@@ -7,6 +7,7 @@ import {
   getUser,
   // getUserItems,
   createGroup,
+  getGroupWithMembers,
   getGroupMembers,
   deleteGroup,
   addGroupMember,
@@ -55,9 +56,9 @@ app.get("/api/", (req, res) => {
 // Create a new user
 // TODO: Could also create a group that includes the new user
 app.post("/api/users", async (req, res) => {
-  const { email } = req.body;
+  const { email }: { email: string } = req.body;
   try {
-    const user = await createUser(email);
+    const user = await createUser(email.trim().toLowerCase());
     res.status(201).json({
       message: "User created",
       user,
@@ -137,10 +138,15 @@ app.get("/api/users/:userId", async (req, res) => {
 app.post("/api/groups", async (req, res) => {
   // Modify this so that I can pass in some email addresses in the body
   const { emailAddresses } = req.body;
-
   if (emailAddresses) {
-    console.log(`Creating group for a set of email addresses`);
+    // console.log(`Creating group for a set of email addresses`);
+    console.log(
+      `👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿`
+    );
+    await getGroupWithMembers(emailAddresses);
     // or see if it already exists?
+    console.log("sending a 200");
+    res.status(200).send();
   } else {
     try {
       const group = await createGroup();
@@ -293,6 +299,7 @@ app.post("/api/items", async (req, res) => {
         message: "Item with unique URL already exists.",
       });
     } else {
+      console.log(error);
       res.status(500).json({
         message: "Server error.",
         error,

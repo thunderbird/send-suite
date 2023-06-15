@@ -40,6 +40,32 @@ export async function login(email) {
 }
 
 // =============================================================================
+// Sharing helpers
+
+export async function createItem(url, sharedBy, asFile) {
+  const itemType = asFile ? "FILE" : "MESSAGE";
+  const resp = await callApi(
+    `items?type=${itemType}`,
+    {
+      url,
+      sharedBy,
+    },
+    "POST"
+  );
+  if (resp) {
+    const { item } = resp;
+    console.log(item);
+    return item;
+  } else {
+    console.log(
+      "❌ Unable add create item in database",
+      `Error: Unable to create db item for message.`
+    );
+    return null;
+  }
+}
+
+// =============================================================================
 // Upload, download, and decryption helpers
 
 let fileProtocolWssUrl = null;
