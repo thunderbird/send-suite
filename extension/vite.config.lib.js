@@ -14,10 +14,7 @@ export default defineConfig({
     },
     outDir: "dist/background",
     rollupOptions: {
-      // external: ["vue"],
-      globals: {
-        vue: "Vue",
-      },
+      external: ["vue"],
     },
   },
 });

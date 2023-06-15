@@ -13,7 +13,6 @@ export default defineConfig({
     // },
     outDir: "dist/pages",
     rollupOptions: {
-      external: ["vue"],
       input: {
         // background: resolve(__dirname, "src/background.js"),
         testpage: resolve(__dirname, "index.test.html"),
@@ -22,17 +21,5 @@ export default defineConfig({
         // popup: resolve(__dirname, 'index.popup.html'),
       },
     },
-    // rollupOptions: {
-    //   // make sure to externalize deps that shouldn't be bundled
-    //   // into your library
-    //   external: ['vue'],
-    //   output: {
-    //     // Provide global variables to use in the UMD build
-    //     // for externalized deps
-    //     globals: {
-    //       vue: 'Vue',
-    //     },
-    //   },
-    // },
   },
 });
