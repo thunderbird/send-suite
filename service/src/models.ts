@@ -85,16 +85,14 @@ export async function getGroupMembers(groupId: number) {
 
 export async function getGroupWithMembers(emailAddresses = []) {
   /*
-what if the users are members together in multiple groups?
-You want to avoid finding a group that has all of these members,
-BUT ALSO has other members.
+  what if the users are members together in multiple groups?
+  You want to avoid finding a group that has all of these members,
+  BUT ALSO has other members.
 
-So, if you find multiple overlaps, you'll have to dig through each
-group and make sure the number of members is === emailAddresses.length
-*/
+  So, if you find multiple groups, you'll have to dig through each
+  group and make sure the number of members is === emailAddresses.length
+  */
   // First, get the ids for those email addresses
-  console.log(`is this thing on?`);
-  console.log(emailAddresses);
   const users = await prisma.user.findMany({
     where: {
       email: {
@@ -106,10 +104,13 @@ group and make sure the number of members is === emailAddresses.length
       groups: true,
     },
   });
+
+  // Not every email has a user.
   if (users.length !== emailAddresses.length) {
     return null;
   }
-  // Now, go through all their groups and find one that only has them in it.
+
+  // Get groups for each user; if any user has no groups, make note.
   let hasNoGroups = false;
   const groupsForEachUser = users.map(({ groups }) => {
     if (groups.length === 0) {
@@ -118,10 +119,12 @@ group and make sure the number of members is === emailAddresses.length
     return groups.map(({ groupId }) => groupId);
   });
 
+  // At least one user isn't in any groups.
   if (hasNoGroups) {
     return null;
   }
-  console.log(groupsForEachUser);
+
+  // Find the groups the users have in common.
   let idsForGroupsInCommon = [];
   for (let i = 1; i < groupsForEachUser.length; i++) {
     let g1 = groupsForEachUser[i - 1];
@@ -131,11 +134,15 @@ group and make sure the number of members is === emailAddresses.length
       // console.log(`does ${g2} include ${g}? ${g2.includes(g)}`);
       return g2.includes(g);
     });
-    // console.log(common);
     idsForGroupsInCommon = [...idsForGroupsInCommon, ...common];
   }
-  console.log(idsForGroupsInCommon);
 
+  // No groups in common.
+  if (idsForGroupsInCommon.length === 0) {
+    return null;
+  }
+
+  // Get the groups, and filter out any that have extra members.
   const possibleGroups = await prisma.group.findMany({
     where: {
       id: {
@@ -150,36 +157,18 @@ group and make sure the number of members is === emailAddresses.length
   const groups = possibleGroups.filter(
     ({ members }) => members.length === emailAddresses.length
   );
+
+  // Bail if there isn't exactly one group.
   if (groups.length !== 1) {
     console.log(`Seat's taken 🪑`);
     return null;
   }
-  console.log(`there can be only one ⚔️`);
+
+  console.log(`⚔️⚔️⚔️ there can be only one ⚔️⚔️⚔️`);
   console.log(groups[0]);
   // console.log(users.map(({ groups }) => groups.map(({ groupId }) => groupId)));
   // const userIds = users.map((u) => u.id);
   return groups[0];
-
-  // // Then, get the group that has those member ids
-  // const groups = await prisma.group.findMany({
-  //   where: {
-  //     members: {},
-  //   },
-  // });
-  // if (!groups) {
-  //   return null;
-  // }
-  // console.log(`🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉 got a matching group`);
-  // console.log(groups[0]);
-  // return groups;
-  /*
-
-const getUser = await prisma.user.findMany({
-  where: {
-    id: { in: [22, 91, 14, 2, 5] },
-  },
-})
-  */
 }
 
 export async function deleteGroup(groupId: number) {
