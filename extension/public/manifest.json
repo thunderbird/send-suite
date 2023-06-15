@@ -18,7 +18,7 @@
   },
   "cloud_file": {
     "name": "Thunderbird Send",
-    "management_url": "management.html"
+    "management_url": "index.management.html"
   },
   "permissions": [
     "storage",

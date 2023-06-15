@@ -16,6 +16,7 @@ export default defineConfig({
       input: {
         // background: resolve(__dirname, "src/background.js"),
         testpage: resolve(__dirname, "index.test.html"),
+        management: resolve(__dirname, "index.management.html"),
         // stats: resolve(__dirname, 'index.stats.html'),
         // options: resolve(__dirname, 'index.options.html'),
         // popup: resolve(__dirname, 'index.popup.html'),

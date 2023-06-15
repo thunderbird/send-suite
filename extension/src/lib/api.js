@@ -2,6 +2,46 @@ import { SEND_SERVER, serverUrl } from "./const";
 import { arrayToB64, b64ToArray, delay } from "./utils";
 import { ECE_RECORD_SIZE } from "./ece";
 
+// =============================================================================
+// User and group helpers
+async function callApi(path, body, method) {
+  const url = `${serverUrl}/api/${path}`;
+  const opts = {
+    mode: "cors",
+    method,
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      ...body,
+    }),
+  };
+
+  const resp = await fetch(url, opts);
+
+  if (!resp.ok) {
+    return null;
+  }
+  return resp.json();
+}
+
+export async function createNewUser(email) {
+  const resp = await callApi("users/", { email }, "POST");
+  if (resp) {
+    const { user } = resp;
+    console.log(user);
+    return user;
+  } else {
+    console.log(`unable to create user`);
+    return null;
+  }
+}
+
+export async function login(email) {
+  return await callApi("users/login", { email }, "POST");
+}
+
+// =============================================================================
+// Upload, download, and decryption helpers
+
 let fileProtocolWssUrl = null;
 try {
   fileProtocolWssUrl = localStorage.getItem("wssURL");
@@ -413,38 +453,38 @@ export function downloadFile(id, keychain, onprogress) {
   };
 }
 
-export async function getFileList(bearerToken, kid) {
-  console.log(`we are about to get from /api/filelist/${kid}`);
-  debugger;
-  const headers = new Headers({ Authorization: `Bearer ${bearerToken}` });
-  const response = await fetch(getApiUrl(`/api/filelist/${kid}`), { headers });
-  if (response.ok) {
-    const encrypted = await response.blob();
-    return encrypted;
-  }
-  throw new Error(response.status);
-}
+// export async function getFileList(bearerToken, kid) {
+//   console.log(`we are about to get from /api/filelist/${kid}`);
+//   debugger;
+//   const headers = new Headers({ Authorization: `Bearer ${bearerToken}` });
+//   const response = await fetch(getApiUrl(`/api/filelist/${kid}`), { headers });
+//   if (response.ok) {
+//     const encrypted = await response.blob();
+//     return encrypted;
+//   }
+//   throw new Error(response.status);
+// }
 
-export async function setFileList(bearerToken, kid, data) {
-  console.log(`we have just POSTed to /api/filelist/${kid}`);
-  console.log(`it seems we want to included the Bearer token`);
-  debugger;
-  const headers = new Headers({ Authorization: `Bearer ${bearerToken}` });
-  const response = await fetch(getApiUrl(`/api/filelist/${kid}`), {
-    headers,
-    method: "POST",
-    body: data,
-  });
-  return response.ok;
-}
+// export async function setFileList(bearerToken, kid, data) {
+//   console.log(`we have just POSTed to /api/filelist/${kid}`);
+//   console.log(`it seems we want to included the Bearer token`);
+//   debugger;
+//   const headers = new Headers({ Authorization: `Bearer ${bearerToken}` });
+//   const response = await fetch(getApiUrl(`/api/filelist/${kid}`), {
+//     headers,
+//     method: "POST",
+//     body: data,
+//   });
+//   return response.ok;
+// }
 
-export async function getConstants() {
-  const response = await fetch(getApiUrl("/config"));
+// export async function getConstants() {
+//   const response = await fetch(getApiUrl("/config"));
 
-  if (response.ok) {
-    const obj = await response.json();
-    return obj;
-  }
+//   if (response.ok) {
+//     const obj = await response.json();
+//     return obj;
+//   }
 
-  throw new Error(response.status);
-}
+//   throw new Error(response.status);
+// }

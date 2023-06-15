@@ -17,6 +17,7 @@ import {
   getItem,
   removeGroupItem,
   createItem,
+  getUserByEmail,
 } from "./models";
 import wsHandler from "./lib/wsHandler";
 import auth from "./lib/auth";
@@ -76,6 +77,28 @@ app.post("/api/users", async (req, res) => {
       });
       // res.status(404); // Not Found - if groupId or userId don't exist
     }
+  }
+});
+
+// "log in"
+// TODO: require a bearer token or something like it.
+app.post("/api/users/login", async (req, res) => {
+  const { email } = req.body;
+  console.log(`looking for user ${email}`);
+  try {
+    const user = await getUserByEmail(email);
+    if (user) {
+      res.status(200).json(user);
+    } else {
+      res.status(404).send();
+    }
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Server error.",
+      error,
+    });
   }
 });
 
