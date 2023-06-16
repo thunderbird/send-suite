@@ -8,6 +8,7 @@ import {
   // getUserItems,
   createGroup,
   getGroupWithMembers,
+  createGroupWithmembers,
   getGroupMembers,
   deleteGroup,
   addGroupMember,
@@ -74,7 +75,7 @@ app.post("/api/users", async (req, res) => {
     } else {
       res.status(500).json({
         message: "Server error.",
-        error,
+        error: error.message,
       });
       // res.status(404); // Not Found - if groupId or userId don't exist
     }
@@ -98,7 +99,7 @@ app.post("/api/users/login", async (req, res) => {
 
     res.status(500).json({
       message: "Server error.",
-      error,
+      error: error.message,
     });
   }
 });
@@ -112,7 +113,7 @@ app.get("/api/users/:userId", async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: "Server error.",
-      error,
+      error: error.message,
     });
   }
 });
@@ -126,7 +127,7 @@ app.get("/api/users/:userId", async (req, res) => {
 //   } catch (error) {
 //     res.status(500).json({
 //       message: "Server error.",
-//       error,
+//       error: error.message,
 //     });
 //   }
 // });
@@ -143,10 +144,31 @@ app.post("/api/groups", async (req, res) => {
     console.log(
       `👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿`
     );
-    await getGroupWithMembers(emailAddresses);
-    // or see if it already exists?
-    console.log("sending a 200");
-    res.status(200).send();
+    try {
+      const existingGroup = await getGroupWithMembers(emailAddresses);
+      let newGroup;
+
+      if (!existingGroup) {
+        newGroup = await createGroupWithmembers(emailAddresses);
+
+        if (!newGroup) {
+          return res.status(400).json({
+            message: "Could not create group.",
+          });
+        }
+      }
+
+      return res.status(200).json({
+        message: existingGroup ? "Group found." : "Group created.",
+        group: existingGroup ? existingGroup : newGroup,
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        message: "Server error.",
+        error: error.message,
+      });
+    }
   } else {
     try {
       const group = await createGroup();
@@ -157,7 +179,7 @@ app.post("/api/groups", async (req, res) => {
     } catch (error) {
       res.status(500).json({
         message: "Server error.",
-        error,
+        error: error.message,
       });
     }
   }
@@ -178,7 +200,7 @@ app.get("/api/groups/:groupId", async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: "Server error.",
-      error,
+      error: error.message,
     });
   }
 });
@@ -203,7 +225,7 @@ app.delete("/api/groups/:groupId", async (req, res) => {
     } else {
       res.status(500).json({
         message: "Server error.",
-        error,
+        error: error.message,
       });
       // res.status(404); // Not Found
     }
@@ -233,7 +255,7 @@ app.post("/api/groups/:groupId/members", async (req, res) => {
     } else {
       res.status(500).json({
         message: "Server error.",
-        error,
+        error: error.message,
       });
       // res.status(404); // Not Found - if groupId or userId don't exist
     }
@@ -264,7 +286,7 @@ app.delete("/api/groups/:groupId/members/:userId", async (req, res) => {
     } else {
       res.status(500).json({
         message: "Server error.",
-        error,
+        error: error.message,
       });
       // res.status(404); // Not Found - groupId or userId don't exist
     }
@@ -302,7 +324,7 @@ app.post("/api/items", async (req, res) => {
       console.log(error);
       res.status(500).json({
         message: "Server error.",
-        error,
+        error: error.message,
       });
     }
   }
@@ -356,7 +378,7 @@ app.post("/api/groups/:groupId/items/", async (req, res) => {
     } else {
       res.status(500).json({
         message: "Server error.",
-        error,
+        error: error.message,
       });
       // res.status(404); // Not Found - if groupId or userId don't exist
     }
@@ -382,7 +404,7 @@ app.get("/api/groups/:groupId/items", async (req, res) => {
     console.log(error);
     res.status(500).json({
       message: "Server error.",
-      error,
+      error: error.message,
     });
   }
 });
@@ -414,7 +436,7 @@ app.delete("/api/groups/:groupId/items/:itemId", async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: "Server error.",
-      error,
+      error: error.message,
     });
   }
 });

@@ -83,7 +83,43 @@ export async function getGroupMembers(groupId: number) {
   });
 }
 
+export async function createGroupWithmembers(emailAddresses = []) {
+  if (emailAddresses.length === 0) {
+    return null;
+  }
+  //
+  const users = await prisma.user.findMany({
+    where: {
+      email: {
+        mode: "insensitive",
+        in: emailAddresses,
+      },
+    },
+  });
+  if (users.length < emailAddresses.length) {
+    // for now, all users must exist
+    console.log(`Not everyone is a user`);
+    return null;
+  }
+  const group = await prisma.group.create({ data: {} });
+
+  const connections = users.map((u) => ({
+    groupId: group.id,
+    userId: u.id,
+  }));
+
+  await prisma.groupUser.createMany({
+    data: connections,
+  });
+
+  console.log(group);
+  return group;
+}
+
 export async function getGroupWithMembers(emailAddresses = []) {
+  if (emailAddresses.length === 0) {
+    return null;
+  }
   /*
   what if the users are members together in multiple groups?
   You want to avoid finding a group that has all of these members,
@@ -160,8 +196,11 @@ export async function getGroupWithMembers(emailAddresses = []) {
 
   // Bail if there isn't exactly one group.
   if (groups.length !== 1) {
+    if (groups.length === 0) {
+      return null;
+    }
     console.log(`Seat's taken 🪑`);
-    return null;
+    throw new Error("Multiple matching groups. Invalid database state.");
   }
 
   console.log(`⚔️⚔️⚔️ there can be only one ⚔️⚔️⚔️`);
