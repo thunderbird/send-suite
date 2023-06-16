@@ -207,7 +207,9 @@ export async function getGroupWithMembers(emailAddresses = []) {
   console.log(groups[0]);
   // console.log(users.map(({ groups }) => groups.map(({ groupId }) => groupId)));
   // const userIds = users.map((u) => u.id);
-  return groups[0];
+  return {
+    id: groups[0].id,
+  };
 }
 
 export async function deleteGroup(groupId: number) {

@@ -65,6 +65,39 @@ export async function createItem(url, sharedBy, asFile) {
   }
 }
 
+async function shareToGroup(itemId, groupId) {
+  const resp = await callApi(
+    `groups/${groupId}/items`,
+    {
+      itemId,
+    },
+    "POST"
+  );
+  console.log(`sharing ${itemId} to group ${groupId}`);
+  console.log(resp);
+  return resp ?? null;
+}
+
+export async function shareWith(itemId, fromEmail, recipientEmails) {
+  const emailAddresses = [fromEmail, ...recipientEmails];
+
+  // POST `emailAddresses` in order to find existing group, or create new
+  const resp = await callApi(
+    `groups`,
+    {
+      emailAddresses,
+    },
+    "POST"
+  );
+  if (resp) {
+    const { group } = resp;
+    console.log(group);
+    return await shareToGroup(itemId, group.id);
+  } else {
+    return null;
+  }
+}
+
 // =============================================================================
 // Upload, download, and decryption helpers
 
