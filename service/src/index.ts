@@ -20,6 +20,7 @@ import {
   removeGroupItem,
   createItem,
   getUserByEmail,
+  getItemsForUser,
 } from "./models";
 import wsHandler from "./lib/wsHandler";
 import auth from "./lib/auth";
@@ -118,19 +119,25 @@ app.get("/api/users/:userId", async (req, res) => {
   }
 });
 
-// // Items shared by a user
-// app.get("/api/users/:userId/items", async (req, res) => {
-//   const { userId } = req.params;
-//   try {
-//     const items = await getUserItems(parseInt(userId));
-//     res.status(200).json(items);
-//   } catch (error) {
-//     res.status(500).json({
-//       message: "Server error.",
-//       error: error.message,
-//     });
-//   }
-// });
+// Items for all groups a user is in, excluding the items they sent.
+app.get("/api/users/:userId/items", async (req, res) => {
+  const { userId } = req.params;
+  const type = req.query.type as ItemType;
+  if (!(type in ItemType)) {
+    return res.status(400).json({
+      message: "Invalid Item Type: " + type,
+    });
+  }
+  try {
+    const items = await getItemsForUser(parseInt(userId), type);
+    res.status(200).json(items);
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error.",
+      error: error.message,
+    });
+  }
+});
 // Will we ever need to delete or update a user?
 
 // Groups ======================================================================
@@ -398,9 +405,6 @@ app.get("/api/groups/:groupId/items", async (req, res) => {
     const items = await getGroupItems(parseInt(groupId), type);
     res.status(200).json(items);
   } catch (error) {
-    console.log(
-      `🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡`
-    );
     console.log(error);
     res.status(500).json({
       message: "Server error.",

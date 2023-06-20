@@ -38,6 +38,33 @@ export async function getUserByEmail(email: string) {
   });
 }
 
+export async function getItemsForUser(userId: number, type: ItemType) {
+  const user = await getUser(userId);
+  if (!user) {
+    return null;
+  }
+
+  const { groups } = user;
+  const groupIds = groups.map(({ groupId }) => groupId);
+
+  const items = await prisma.item.findMany({
+    where: {
+      type,
+      sharedBy: {
+        not: userId,
+      },
+      groups: {
+        some: {
+          groupId: {
+            in: groupIds,
+          },
+        },
+      },
+    },
+  });
+  return items;
+}
+
 // export async function getUserItems(userId: number) {
 //   return prisma.item.findMany({
 //     where: {
