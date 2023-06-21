@@ -7,37 +7,50 @@ import { ref, onMounted } from "vue";
 // A component declares both.
 // skewer in string form
 const emits = defineEmits(["choose-url"]);
+const props = defineProps({
+  user: Object,
+});
 
 const sharedItems = ref([]);
-const groupId = 1;
 
-async function getItems() {
-  const url = `${serverUrl}/api/groups/${groupId}/items?type=${ITEM_TYPES.FILE}`;
+async function getItems(userId) {
+  const url = `${serverUrl}/api/users/${userId}/items?type=${ITEM_TYPES.FILE}`;
 
   const resp = await fetch(url);
   if (!resp.ok) {
-    console.log(`Can't get items for group`);
+    console.log(`Can't get items for this user`);
     return;
   }
   const items = await resp.json();
-  console.log(`items retrieved from `);
+  console.log(`received file items:`);
   console.log(items);
-  sharedItems.value = items; //items.map((i) => i.item);
+  const files = items.map((i) => ({
+    ...i,
+    createdAt: new Date(i.createdAt),
+  }));
+  files.sort((msg1, msg2) => msg1.createdAt - msg2.createdAt);
+  sharedItems.value = files.reverse(); //items.map((i) => i.item);
   return;
 }
 
 onMounted(() => {
-  console.log(serverUrl);
-  getItems();
+  if (props.user) {
+    console.log(`getting items for user with id ${props.user.id}`);
+    getItems(props.user.id);
+  } else {
+    console.log(`no props.user passed to SharedFiles`);
+  }
 });
 </script>
 
 <template>
   <h1>Your files</h1>
-  <button @click="getItems">get new</button>
+  <button @click="getItems(props.user.id)">get new</button>
   <ul>
-    <li v-for="{ url } in sharedItems">
-      <a href="#" @click.stop="emits(`choose-url`, url)">{{ url }}</a>
+    <li v-for="{ url, createdAt } in sharedItems">
+      <a href="#" @click.stop="emits(`choose-url`, url)">{{
+        new Date(createdAt)
+      }}</a>
     </li>
   </ul>
 </template>

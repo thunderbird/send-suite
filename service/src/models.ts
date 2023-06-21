@@ -289,6 +289,8 @@ export async function createItem(
       url,
       sharedBy,
       type,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
   });
 }
@@ -355,6 +357,7 @@ export async function createUpload(
       auth,
       nonce,
       pwd: !!pwd,
+      createdAt: new Date(),
     },
   });
 }

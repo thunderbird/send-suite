@@ -226,7 +226,13 @@ async function doDownload(_url) {
   const url = new URL(_url);
   const secretKey = url.hash.substring(1);
   const id = url.pathname.split("/")[2];
-  const result = await fetch(url.href);
+  const result = await fetch(url.href, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Requested-With": "XMLHttpRequest",
+    },
+  });
 
   if (result.ok) {
     const data = await result.json();

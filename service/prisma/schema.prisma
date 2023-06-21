@@ -42,6 +42,8 @@ model Item {
   user      User     @relation(fields: [sharedBy], references: [id])
   groups    GroupItem[]
   type      ItemType
+  createdAt DateTime?
+  updatedAt DateTime?
 }
 
 model GroupItem {
@@ -64,4 +66,5 @@ model Upload {
   nonce     String
   pwd    Boolean
   // dl     Int
+  createdAt DateTime?
 }

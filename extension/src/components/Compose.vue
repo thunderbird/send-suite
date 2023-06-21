@@ -2,30 +2,27 @@
 import { ref, onMounted } from "vue";
 import Sender from "../lib/sender";
 import Archive from "../lib/archive";
-import { loadUser } from "../lib/sync";
 import { createItem, shareWith } from "../lib/api";
+
+const props = defineProps({
+  user: Object,
+});
+
 const message = ref(null);
-const groupId = ref(1);
-const userId = ref(0);
-const userEmail = ref("");
+
 const password = ref(null);
 const fileBlob = ref(null);
 const isFile = ref(false);
-const emailAddresses = ref("75525@email.com");
+const emailAddresses = ref("");
 
-async function doSend(blob) {
+async function doSend(blob, user) {
   const archive = new Archive([blob]);
   const sender = new Sender();
   const file = await sender.upload(archive, null, password.value);
-  const item = await createItem(file.url, userId.value, isFile.value);
+  const item = await createItem(file.url, user.id, isFile.value);
   if (item) {
-    await shareWith(item.id, userEmail.value, [emailAddresses.value]);
+    await shareWith(item.id, user.email, [emailAddresses.value]);
   }
-  // if (item) {
-  //   addItemToGroup(item.id, groupId.value);
-  //   message.value = "";
-  //   password.value = "";
-  // }
 }
 
 async function handleFile(event) {
@@ -42,7 +39,7 @@ async function handleFile(event) {
 
 async function sendFile() {
   isFile.value = true;
-  doSend(fileBlob.value);
+  doSend(fileBlob.value, props.user);
 }
 
 async function sendMessage() {
@@ -50,18 +47,15 @@ async function sendMessage() {
   const blob = new Blob([message.value], { type: "text/plain" });
   blob.name = `${new Date().getTime()}.txt`;
   isFile.value = false;
-  doSend(blob);
+  doSend(blob, props.user);
 }
 
 onMounted(() => {
-  console.log("Checking storage for user.");
-  try {
-    const { email, id } = loadUser();
-    console.log(`Loaded user ${email} with id ${id}`);
-    userId.value = id;
-    userEmail.value = email;
-  } catch (error) {
-    console.log(error);
+  if (props.user) {
+    console.log(`I have a props.user`);
+    console.log(props.user);
+  } else {
+    console.log(`no props.user for Compose.vue`);
   }
 });
 </script>

@@ -1,52 +1,56 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { serverUrl, ITEM_TYPES } from "../lib/const";
-import { get, set } from "../lib/sync";
-import { keyFor } from "../lib/const";
 
 // Props are like inputs
 // Emits are like outputs
 // A component declares both.
 // skewer in string form
 const emits = defineEmits(["choose-url"]);
+const props = defineProps({
+  user: Object,
+});
 
 const sharedItems = ref([]);
-const groupId = 2;
 
-async function getItems() {
-  const url = `${serverUrl}/api/groups/${groupId}/items?type=${ITEM_TYPES.MESSAGE}`;
+async function getItems(userId) {
+  const url = `${serverUrl}/api/users/${userId}/items?type=${ITEM_TYPES.MESSAGE}`;
 
   const resp = await fetch(url);
   if (!resp.ok) {
-    console.log(`Can't get items for group`);
+    console.log(`Can't get items for this user`);
     return;
   }
   const items = await resp.json();
-  console.log(`items retrieved from `);
+  console.log(`received message items:`);
   console.log(items);
-  sharedItems.value = items; //items.map((i) => i.item);
+  const messages = items.map((i) => ({
+    ...i,
+    createdAt: new Date(i.createdAt),
+  }));
+  messages.sort((msg1, msg2) => msg1.createdAt - msg2.createdAt);
+  sharedItems.value = messages.reverse(); //items.map((i) => i.item);
   return;
 }
 
 onMounted(() => {
-  console.log(serverUrl);
-  console.log("Checking storage for user.");
-  const obj = get(keyFor("user"));
-  if (obj) {
-    const { email, id } = obj;
-    console.log(`Loaded user ${email} with id ${id}`);
-    // emailAddress.value = email;
+  if (props.user) {
+    console.log(`getting items for user with id ${props.user.id}`);
+    getItems(props.user.id);
+  } else {
+    console.log(`no props.user passed to MessageList`);
   }
-  getItems();
 });
 </script>
 
 <template>
   <h1>Your messages</h1>
-  <button @click="getItems">get new</button>
+  <button @click="getItems(props.user.id)">get new</button>
   <ul>
-    <li v-for="{ url } in sharedItems">
-      <a href="#" @click.stop="emits(`choose-url`, url)">{{ url }}</a>
+    <li v-for="{ url, createdAt } in sharedItems">
+      <a href="#" @click.stop="emits(`choose-url`, url)">{{
+        new Date(createdAt)
+      }}</a>
     </li>
   </ul>
 </template>
