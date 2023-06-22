@@ -84,6 +84,13 @@ app.post("/api/users", async (req, res) => {
   }
 });
 
+app.post("/api/users/exist", async (req, res) => {
+  const { email }: { email: string } = req.body;
+  const count = await userExists(email);
+  const exists = count === 1;
+  res.status(exists ? 200 : 404).send();
+});
+
 // "log in"
 // TODO: require a bearer token or something like it.
 app.post("/api/users/login", async (req, res) => {
