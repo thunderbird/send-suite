@@ -28,8 +28,9 @@ async function getItems(userId) {
     ...i,
     createdAt: new Date(i.createdAt),
   }));
-  messages.sort((msg1, msg2) => msg1.createdAt - msg2.createdAt);
-  sharedItems.value = messages.reverse(); //items.map((i) => i.item);
+  // messages.sort((msg1, msg2) => msg1.createdAt - msg2.createdAt);
+  // sharedItems.value = messages.reverse(); //items.map((i) => i.item);
+  sharedItems.value = messages;
   return;
 }
 

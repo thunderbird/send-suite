@@ -61,6 +61,9 @@ export async function getItemsForUser(userId: number, type: ItemType) {
         },
       },
     },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
   return items;
 }
