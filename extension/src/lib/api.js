@@ -39,6 +39,10 @@ export async function login(email) {
   return await callApi("users/login", { email }, "POST");
 }
 
+export async function userExists(email) {
+  return await callApi("users/exist", { email }, "POST");
+}
+
 // =============================================================================
 // Sharing helpers
 

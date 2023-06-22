@@ -88,7 +88,7 @@ app.post("/api/users/exist", async (req, res) => {
   const { email }: { email: string } = req.body;
   const count = await userExists(email);
   const exists = count === 1;
-  res.status(exists ? 200 : 404).send();
+  res.status(exists ? 200 : 404).json({});
 });
 
 // "log in"

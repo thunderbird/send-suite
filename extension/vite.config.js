@@ -15,6 +15,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         // background: resolve(__dirname, "src/background.js"),
+        main: resolve(__dirname, "index.tabs.html"),
         testpage: resolve(__dirname, "index.test.html"),
         management: resolve(__dirname, "index.management.html"),
         // stats: resolve(__dirname, 'index.stats.html'),

@@ -40,11 +40,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <h1>Your files</h1>
+  <h4>Your files</h4>
   <button @click="getItems(props.user.id)">get new</button>
   <ul>
     <li v-for="{ url, createdAt, sharedByEmail } in sharedItems">
-      <a href="#" @click.stop.prevent="emits(`choose-url`, url)"
+      <a href="#" @click.stop.prevent="emits(`choose-url`, url, 'file')"
         >{{ sharedByEmail }} @{{ new Date(createdAt) }}</a
       >
     </li>

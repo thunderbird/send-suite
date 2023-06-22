@@ -2,7 +2,7 @@
 import { ref, onMounted } from "vue";
 import Sender from "../lib/sender";
 import Archive from "../lib/archive";
-import { createItem, shareWith } from "../lib/api";
+import { createItem, shareWith, userExists } from "../lib/api";
 
 const props = defineProps({
   user: Object,
@@ -16,12 +16,19 @@ const isFile = ref(false);
 const emailAddresses = ref("");
 
 async function doSend(blob, user) {
-  const archive = new Archive([blob]);
-  const sender = new Sender();
-  const file = await sender.upload(archive, null, password.value);
-  const item = await createItem(file.url, user.id, isFile.value);
-  if (item) {
-    await shareWith(item.id, user.email, [emailAddresses.value]);
+  const isValidUser = await userExists(emailAddresses.value);
+  if (isValidUser) {
+    const archive = new Archive([blob]);
+    const sender = new Sender();
+    const file = await sender.upload(archive, null, password.value);
+    const item = await createItem(file.url, user.id, isFile.value);
+    if (item) {
+      await shareWith(item.id, user.email, [emailAddresses.value]);
+    } else {
+      alert(`could not share with ${emailAddresses.value}`);
+    }
+  } else {
+    alert(`User does not exist.`);
   }
 }
 
