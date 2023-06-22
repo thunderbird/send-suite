@@ -9,8 +9,16 @@ export async function createUser(email: string) {
   });
 }
 
+export async function userExists(email: string) {
+  return prisma.user.count({
+    where: {
+      email,
+    },
+  });
+}
+
 export async function getUser(userId: number) {
-  return prisma.user.findUnique({
+  const params = {
     where: {
       id: userId,
     },
@@ -27,7 +35,8 @@ export async function getUser(userId: number) {
         },
       },
     },
-  });
+  };
+  return prisma.user.findUnique(params);
 }
 
 export async function getUserByEmail(email: string) {
@@ -65,7 +74,25 @@ export async function getItemsForUser(userId: number, type: ItemType) {
       createdAt: "desc",
     },
   });
-  return items;
+
+  const sharedByIds = items.map((i) => i.sharedBy);
+  const userMap = (
+    await prisma.user.findMany({
+      where: {
+        id: {
+          in: sharedByIds,
+        },
+      },
+    })
+  ).reduce((users, u) => {
+    users[u.id] = u.email;
+    return users;
+  }, {});
+
+  return items.map((i) => ({
+    ...i,
+    sharedByEmail: userMap[i.sharedBy],
+  }));
 }
 
 // export async function getUserItems(userId: number) {

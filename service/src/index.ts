@@ -21,6 +21,7 @@ import {
   createItem,
   getUserByEmail,
   getItemsForUser,
+  userExists,
 } from "./models";
 import wsHandler from "./lib/wsHandler";
 import auth from "./lib/auth";

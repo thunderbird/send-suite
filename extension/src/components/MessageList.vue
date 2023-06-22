@@ -24,13 +24,8 @@ async function getItems(userId) {
   const items = await resp.json();
   console.log(`received message items:`);
   console.log(items);
-  const messages = items.map((i) => ({
-    ...i,
-    createdAt: new Date(i.createdAt),
-  }));
-  // messages.sort((msg1, msg2) => msg1.createdAt - msg2.createdAt);
-  // sharedItems.value = messages.reverse(); //items.map((i) => i.item);
-  sharedItems.value = messages;
+
+  sharedItems.value = items;
   return;
 }
 
@@ -48,10 +43,10 @@ onMounted(() => {
   <h1>Your messages</h1>
   <button @click="getItems(props.user.id)">get new</button>
   <ul>
-    <li v-for="{ url, createdAt } in sharedItems">
-      <a href="#" @click.stop="emits(`choose-url`, url)">{{
-        new Date(createdAt)
-      }}</a>
+    <li v-for="{ url, createdAt, sharedByEmail } in sharedItems">
+      <a href="#" @click.stop.prevent="emits(`choose-url`, url)"
+        >{{ sharedByEmail }} @{{ new Date(createdAt) }}</a
+      >
     </li>
   </ul>
 </template>
