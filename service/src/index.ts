@@ -51,6 +51,10 @@ app.use((req, res, next) => {
 // });
 app.use(express.static("public"));
 
+app.get("/", (req, res) => {
+  res.status(200).send("echo");
+});
+
 app.get("/api/", (req, res) => {
   res.sendFile(__dirname + "/public/index.html");
 });
