@@ -3,6 +3,11 @@ export const SEND_SERVER = {
   port: 8088,
   protocol: "https:",
 };
+// export const SEND_SERVER = {
+//   hostname: "ec2-54-191-45-104.us-west-2.compute.amazonaws.com",
+//   port: 443,
+//   protocol: "https:",
+// };
 
 export const ITEM_TYPES = {
   MESSAGE: "MESSAGE",

@@ -53,7 +53,7 @@ function handleChoice(url, type) {
       v-bind="{ user: user }"
       @choose-url="handleChoice"
     ></component>
-    <MessageViewer v-if="currentUrl" :url="currentUrl" />
+    <MessageViewer :url="currentUrl" />
   </div>
 </template>
 
