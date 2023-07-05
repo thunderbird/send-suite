@@ -1,7 +1,21 @@
 <script setup>
 import { ref, onMounted, nextTick } from "vue";
 import { createNewUser, login } from "../lib/api";
-import { loadUser, storeUser } from "../lib/sync";
+import {
+  loadUser,
+  storeUser,
+  loadServerUrl,
+  storeServerUrl,
+} from "../lib/sync";
+
+/*
+
+Since this component can get/set these values (and not just use them),
+is this a good candidate for `inject`?
+
+If it changes here, I need for it to update elsewhere (parents, siblings).
+
+*/
 
 // Create the `browser` object for use outside of TB.
 const browser = window.browser ?? {};
@@ -28,6 +42,7 @@ function setAccountConfigured(id) {
 }
 
 const debug = ref(null);
+const serverUrl = ref(null);
 const emailAddress = ref(null);
 const messages = ref("");
 const dlimit = ref(1);
@@ -63,20 +78,14 @@ async function saveConfiguration() {
       console.log(error);
     }
   }
-  // create if they don't exist
-
-  // const resp = await createNewUser(emailAddress.value);
-  // if (resp) {
-  //   const { email, id } = resp;
-  //   set(keyFor("user"), { email, id });
-  //   log(`User ${email} with id ${id}`);
-  // } else {
-  //   console.log(`Couldn't create user...maybe already exists?`);
-  // }
-  // else, show an error
+  log(`Storing server url`);
+  storeServerUrl(serverUrl.value);
 }
 
 onMounted(() => {
+  log("Checking storage for serverUrl");
+  const url = loadServerUrl();
+  serverUrl.value = url;
   setAccountConfigured(accountId);
   log("Checking storage for user.");
   try {
@@ -91,6 +100,11 @@ onMounted(() => {
 
 <template>
   <form @submit.prevent="saveConfiguration">
+    <label>
+      (debug only) TB Send Server URL
+      <input type="url" v-model="serverUrl" />
+    </label>
+    <br />
     <label>
       (debug only) TB Email Address
       <input type="email" v-model="emailAddress" />

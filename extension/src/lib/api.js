@@ -3,102 +3,112 @@ import { arrayToB64, b64ToArray, delay } from "./utils";
 import { ECE_RECORD_SIZE } from "./ece";
 
 // =============================================================================
-// User and group helpers
-async function callApi(path, body, method) {
-  const url = `${serverUrl}/api/${path}`;
-  const opts = {
-    mode: "cors",
-    method,
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      ...body,
-    }),
-  };
-
-  const resp = await fetch(url, opts);
-
-  if (!resp.ok) {
-    return null;
+// API wrapper
+export class ApiConnection {
+  constructor(serverUrl) {
+    this.serverUrl = serverUrl;
   }
-  return resp.json();
-}
 
-export async function createNewUser(email) {
-  const resp = await callApi("users/", { email }, "POST");
-  if (resp) {
-    const { user } = resp;
-    console.log(user);
-    return user;
-  } else {
-    console.log(`unable to create user`);
-    return null;
+  toString() {
+    return this.serverUrl;
   }
-}
 
-export async function login(email) {
-  return await callApi("users/login", { email }, "POST");
-}
+  async callApi(path, body, method) {
+    const url = `${this.serverUrl}/api/${path}`;
+    const opts = {
+      mode: "cors",
+      method,
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        ...body,
+      }),
+    };
 
-export async function userExists(email) {
-  return await callApi("users/exist", { email }, "POST");
-}
+    const resp = await fetch(url, opts);
 
-// =============================================================================
-// Sharing helpers
+    if (!resp.ok) {
+      return null;
+    }
+    return resp.json();
+  }
 
-export async function createItem(url, sharedBy, asFile) {
-  const itemType = asFile ? "FILE" : "MESSAGE";
-  const resp = await callApi(
-    `items?type=${itemType}`,
-    {
-      url,
-      sharedBy,
-    },
-    "POST"
-  );
-  if (resp) {
-    const { item } = resp;
-    console.log(item);
-    return item;
-  } else {
-    console.log(
-      "❌ Unable add create item in database",
-      `Error: Unable to create db item for message.`
+  async createNewUser(email) {
+    const resp = await this.callApi("users/", { email }, "POST");
+    if (resp) {
+      const { user } = resp;
+      console.log(user);
+      return user;
+    } else {
+      console.log(`unable to create user`);
+      return null;
+    }
+  }
+
+  async login(email) {
+    return await this.callApi("users/login", { email }, "POST");
+  }
+
+  async userExists(email) {
+    return await this.callApi("users/exist", { email }, "POST");
+  }
+
+  // =============================================================================
+  // Sharing helpers
+
+  async createItem(url, sharedBy, asFile) {
+    const itemType = asFile ? "FILE" : "MESSAGE";
+    const resp = await this.callApi(
+      `items?type=${itemType}`,
+      {
+        url,
+        sharedBy,
+      },
+      "POST"
     );
-    return null;
+    if (resp) {
+      const { item } = resp;
+      console.log(item);
+      return item;
+    } else {
+      console.log(
+        "❌ Unable add create item in database",
+        `Error: Unable to create db item for message.`
+      );
+      return null;
+    }
   }
-}
 
-async function shareToGroup(itemId, groupId) {
-  const resp = await callApi(
-    `groups/${groupId}/items`,
-    {
-      itemId,
-    },
-    "POST"
-  );
-  console.log(`sharing ${itemId} to group ${groupId}`);
-  console.log(resp);
-  return resp ?? null;
-}
+  async shareToGroup(itemId, groupId) {
+    const resp = await this.callApi(
+      `groups/${groupId}/items`,
+      {
+        itemId,
+      },
+      "POST"
+    );
+    console.log(`sharing ${itemId} to group ${groupId}`);
+    console.log(resp);
+    return resp ?? null;
+  }
 
-export async function shareWith(itemId, fromEmail, recipientEmails) {
-  const emailAddresses = [fromEmail, ...recipientEmails];
+  async shareWith(itemId, fromEmail, recipientEmails) {
+    const emailAddresses = [fromEmail, ...recipientEmails];
 
-  // POST `emailAddresses` in order to find existing group, or create new
-  const resp = await callApi(
-    `groups`,
-    {
-      emailAddresses,
-    },
-    "POST"
-  );
-  if (resp) {
-    const { group } = resp;
-    console.log(group);
-    return await shareToGroup(itemId, group.id);
-  } else {
-    return null;
+    // POST `emailAddresses` in order to find existing group, or create new
+    const resp = await this.callApi(
+      `groups`,
+      {
+        emailAddresses,
+      },
+      "POST"
+    );
+    if (resp) {
+      const { group } = resp;
+      console.log(group);
+      return await shareToGroup(itemId, group.id);
+    } else {
+      return null;
+    }
   }
 }
 
@@ -134,6 +144,8 @@ export function getFileProtocolWssUrl() {
 }
 
 export function getApiUrl(path) {
+  debugger;
+  // need to get rid of references to serverUrl
   return serverUrl + path;
 }
 

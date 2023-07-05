@@ -33,6 +33,7 @@ import password from "./api/password";
 
 // TODO: move these to `config.ts`
 const PORT = 8080;
+const HOST = "0.0.0.0";
 const WS_PATH = `/api/ws`;
 
 const ID_REGEX = "([0-9a-fA-F]{10,16})";
@@ -469,8 +470,8 @@ app.get(`*`, (req, res) => {
   res.status(404);
 });
 
-const server = app.listen(PORT, () =>
-  console.log(`🚀 Server ready at: http://localhost:${PORT}`)
+const server = app.listen(PORT, HOST, () =>
+  console.log(`🚀 Server ready at: http://${HOST}:${PORT}`)
 );
 
 // Listen for WebSocket connections

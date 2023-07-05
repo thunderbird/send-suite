@@ -1,29 +1,25 @@
 <script setup>
-import { ref, reactive, onMounted, computed } from "vue";
-import { loadUser } from "../lib/sync";
+import { ref, onMounted, inject } from "vue";
 
-import Compose from "./Compose.vue";
-import MessageList from "./MessageList.vue";
-import MessageViewer from "./MessageViewer.vue";
-import SharedFiles from "./SharedFiles.vue";
-import ManagementPage from "./ManagementPage.vue";
+// import Compose from "./Compose.vue";
+// import MessageList from "./MessageList.vue";
+// import MessageViewer from "./MessageViewer.vue";
+// import SharedFiles from "./SharedFiles.vue";
+// import ManagementPage from "./ManagementPage.vue";
 
-const user = ref(null);
+const user = inject("user");
+const { api } = inject("api");
+
 const currentTab = ref("MessageList");
-
 const tabs = {
-  MessageList,
-  SharedFiles,
-  ManagementPage,
+  // MessageList,
+  // SharedFiles,
+  // ManagementPage,
 };
 
 onMounted(() => {
-  console.log("Checking storage for user.");
-  try {
-    user.value = loadUser();
-    console.log(`Loaded user ${user.value.email} with id ${user.value.id}`);
-  } catch (error) {
-    console.log(error);
+  if (!api.value || !user.value) {
+    console.log(`no api defined, going to ManagementPage`);
   }
 });
 
@@ -37,7 +33,7 @@ function handleChoice(url, type) {
 <template>
   <div v-if="user">
     <h3>Logged in as {{ user.email }}</h3>
-    <Compose :user="user" />
+    <!-- <Compose :user="user" /> -->
     <br />
     <br />
     <button
@@ -48,12 +44,8 @@ function handleChoice(url, type) {
     >
       {{ tab }}
     </button>
-    <component
-      :is="tabs[currentTab]"
-      v-bind="{ user: user }"
-      @choose-url="handleChoice"
-    ></component>
-    <MessageViewer :url="currentUrl" />
+    <component :is="tabs[currentTab]" @choose-url="handleChoice"></component>
+    <!-- <MessageViewer :url="currentUrl" /> -->
   </div>
 </template>
 

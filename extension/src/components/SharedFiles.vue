@@ -1,18 +1,17 @@
 <script setup>
 import { serverUrl, ITEM_TYPES } from "../lib/const";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, inject } from "vue";
 
 // Props are like inputs
 // Emits are like outputs
 // A component declares both.
 // skewer in string form
 const emits = defineEmits(["choose-url"]);
-const props = defineProps({
-  user: Object,
-});
+const user = inject("user");
 
 const sharedItems = ref([]);
 
+// This should be moved to api.js
 async function getItems(userId) {
   const url = `${serverUrl}/api/users/${userId}/items?type=${ITEM_TYPES.FILE}`;
 
@@ -30,18 +29,18 @@ async function getItems(userId) {
 }
 
 onMounted(() => {
-  if (props.user) {
-    console.log(`getting items for user with id ${props.user.id}`);
-    getItems(props.user.id);
+  if (user) {
+    console.log(`getting items for user with id ${user.id}`);
+    getItems(user.id);
   } else {
-    console.log(`no props.user passed to SharedFiles`);
+    console.log(`no user passed to SharedFiles`);
   }
 });
 </script>
 
 <template>
   <h4>Your files</h4>
-  <button @click="getItems(props.user.id)">get new</button>
+  <button @click="getItems(user.id)">get new</button>
   <ul>
     <li v-for="{ url, createdAt, sharedByEmail } in sharedItems">
       <a href="#" @click.stop.prevent="emits(`choose-url`, url, 'file')"

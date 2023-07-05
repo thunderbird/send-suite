@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, inject } from "vue";
 import { serverUrl, ITEM_TYPES } from "../lib/const";
 
 // Props are like inputs
@@ -7,12 +7,11 @@ import { serverUrl, ITEM_TYPES } from "../lib/const";
 // A component declares both.
 // skewer in string form
 const emits = defineEmits(["choose-url"]);
-const props = defineProps({
-  user: Object,
-});
+const user = inject("user");
 
 const sharedItems = ref([]);
 
+// should also be moved to api.js
 async function getItems(userId) {
   const url = `${serverUrl}/api/users/${userId}/items?type=${ITEM_TYPES.MESSAGE}`;
 
@@ -30,18 +29,18 @@ async function getItems(userId) {
 }
 
 onMounted(() => {
-  if (props.user) {
-    console.log(`getting items for user with id ${props.user.id}`);
-    getItems(props.user.id);
+  if (user) {
+    console.log(`getting items for user with id ${user.id}`);
+    getItems(user.id);
   } else {
-    console.log(`no props.user passed to MessageList`);
+    console.log(`no user passed to MessageList`);
   }
 });
 </script>
 
 <template>
   <h4>Your messages</h4>
-  <button @click="getItems(props.user.id)">get new</button>
+  <button @click="getItems(user.id)">get new</button>
   <ul>
     <li v-for="{ url, createdAt, sharedByEmail } in sharedItems">
       <a href="#" @click.stop.prevent="emits(`choose-url`, url, 'message')"
