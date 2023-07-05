@@ -1,6 +1,6 @@
 <script setup>
 /* This component should download and decrypt the contents of the URL. */
-import Receiver from "../lib/receiver";
+import Receiver from "../lib/Receiver";
 import { ref, watch } from "vue";
 const props = defineProps({
   url: String,

@@ -29,7 +29,7 @@ onMounted(() => {
   <h4>Your messages {{ user.id }}</h4>
   <button @click="getMessages">get new</button>
   <ul>
-    <li v-for="{ url, createdAt, sharedByEmail } in sharedItems">
+    <li v-for="{ url, createdAt, sharedByEmail } in messages">
       <a href="#" @click.stop.prevent="emits(`choose-url`, url, 'message')"
         >{{ sharedByEmail }} @{{ new Date(createdAt) }}</a
       >

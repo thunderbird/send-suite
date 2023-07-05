@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted, inject } from "vue";
-import Sender from "../lib/sender";
-import Archive from "../lib/archive";
+import Sender from "../lib/Sender";
+import Archive from "../lib/Archive";
 
-const { api } = inject("api");
+const { api, fileManager } = inject("api");
 const { user } = inject("user");
 
 const message = ref(null);
@@ -18,7 +18,7 @@ async function sendBlob(blob) {
   const isValidUser = await api.value.userExists(recipientAddress.value);
   if (isValidUser) {
     const archive = new Archive([blob]);
-    const sender = new Sender();
+    const sender = new Sender(fileManager.value);
     const file = await sender.upload(archive, null, password.value);
     const item = await api.value.createItem(file.url, userObj.id, isFile.value);
     if (item) {
