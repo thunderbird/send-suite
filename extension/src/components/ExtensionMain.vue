@@ -5,6 +5,6 @@ import TabbedUI from "./TabbedUI.vue";
 
 <template>
   <Wrapper>
-    <TabbedUI></TabbedUI>
+    <TabbedUI />
   </Wrapper>
 </template>

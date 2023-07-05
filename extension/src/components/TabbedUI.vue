@@ -2,7 +2,7 @@
 import { ref, onMounted, inject } from "vue";
 
 import Compose from "./Compose.vue";
-// import MessageList from "./MessageList.vue";
+import MessageList from "./MessageList.vue";
 // import MessageViewer from "./MessageViewer.vue";
 // import SharedFiles from "./SharedFiles.vue";
 import ManagementPage from "./ManagementPage.vue";
@@ -12,7 +12,7 @@ const { api } = inject("api");
 
 const currentTab = ref("MessageList");
 const tabs = {
-  // MessageList,
+  MessageList,
   // SharedFiles,
   ManagementPage,
 };

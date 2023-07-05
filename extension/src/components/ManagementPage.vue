@@ -31,8 +31,8 @@ function setAccountConfigured(id) {
 }
 
 const debug = ref(null);
-const serverUrl = ref(api.value.serverUrl);
-const emailAddress = ref(user.value.email);
+const serverUrl = ref(api.value?.serverUrl ?? "");
+const emailAddress = ref(user.value?.email ?? "");
 const messages = ref("");
 const dlimit = ref(1);
 const days = ref(1);

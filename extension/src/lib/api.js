@@ -1,4 +1,4 @@
-import { SEND_SERVER, serverUrl } from "./const";
+import { SEND_SERVER, serverUrl, ITEM_TYPES } from "./const";
 import { arrayToB64, b64ToArray, delay } from "./utils";
 import { ECE_RECORD_SIZE } from "./ece";
 
@@ -19,10 +19,13 @@ export class ApiConnection {
       mode: "cors",
       method,
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        ...body,
-      }),
     };
+
+    if (method.trim().toUpperCase() === "POST") {
+      opts.body = JSON.stringify({
+        ...body,
+      });
+    }
 
     const resp = await fetch(url, opts);
 
@@ -53,7 +56,20 @@ export class ApiConnection {
   }
 
   // =============================================================================
-  // Sharing helpers
+  // Read helpers
+  async getMessages(userId) {
+    const messages = await this.callApi(
+      `users/${userId}/items?type=${ITEM_TYPES.MESSAGE}`,
+      null,
+      "GET"
+    );
+    console.log(`returned by getMessages:`);
+    console.log(messages);
+    return messages;
+  }
+
+  // =============================================================================
+  // Share helpers
 
   async createItem(url, sharedBy, asFile) {
     const itemType = asFile ? "FILE" : "MESSAGE";
