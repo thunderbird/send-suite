@@ -11,9 +11,9 @@ export default class Sender extends Nanobus {
       throw new Error("Wrapped Vue ref passed instead of instance");
       return;
     }
+    this.fileManager = fileManager;
     this.keychain = new Keychain();
     this.reset();
-    this.fileManager = fileManager;
   }
 
   get progressRatio() {
@@ -65,7 +65,7 @@ export default class Sender extends Nanobus {
     const authKeyB64 = await this.keychain.authKeyB64();
 
     console.log(`about to call uploadWs()`);
-    this.uploadRequest = this.fileManager.uploadWs(
+    this.uploadRequest = await this.fileManager.uploadWs(
       encStream,
       metadata,
       authKeyB64,

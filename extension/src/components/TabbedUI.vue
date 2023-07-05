@@ -3,7 +3,7 @@ import { ref, onMounted, inject } from "vue";
 
 import Compose from "./Compose.vue";
 import MessageList from "./MessageList.vue";
-// import MessageViewer from "./MessageViewer.vue";
+import MessageViewer from "./MessageViewer.vue";
 // import SharedFiles from "./SharedFiles.vue";
 import ManagementPage from "./ManagementPage.vue";
 
@@ -46,7 +46,7 @@ function handleChoice(url, type) {
       {{ tab }}
     </button>
     <component :is="tabs[currentTab]" @choose-url="handleChoice"></component>
-    <!-- <MessageViewer :url="currentUrl" /> -->
+    <MessageViewer :url="currentUrl" />
   </div>
 </template>
 

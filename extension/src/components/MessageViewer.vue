@@ -1,7 +1,8 @@
 <script setup>
 /* This component should download and decrypt the contents of the URL. */
 import Receiver from "../lib/Receiver";
-import { ref, watch } from "vue";
+import { ref, watch, inject } from "vue";
+const { fileManager } = inject("api");
 const props = defineProps({
   url: String,
 });
@@ -30,7 +31,7 @@ async function doDownload() {
       needsPassword.value = true;
       return;
     }
-    const receiver = new Receiver({
+    const receiver = new Receiver(fileManager.value, {
       secretKey: secretKey, // Not so secret - it's the hash at the end of the URL
       id: id,
       url: url.href,

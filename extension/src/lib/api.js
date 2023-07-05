@@ -234,7 +234,7 @@ export class FileManager {
 
   // Calls upload()
   // Returns a cancel() function and the result of upload()
-  uploadWs(
+  async uploadWs(
     encrypted,
     metadata,
     verifierB64,
@@ -250,7 +250,7 @@ export class FileManager {
         canceller.cancelled = true;
       },
 
-      result: this.upload(
+      result: await this.upload(
         encrypted,
         metadata,
         verifierB64,
@@ -260,6 +260,97 @@ export class FileManager {
         onprogress,
         canceller
       ),
+    };
+  }
+
+  getDownloadUrl(id) {
+    return `${this.api.serverUrl}/filemgr/download/${id}`;
+  }
+
+  getBlobUrl(id) {
+    return `${this.api.serverUrl}/filemgr/download/blob/${id}`;
+  }
+
+  async metadata(id, keychain) {
+    console.log(`api.js metadata()`);
+    const result = await fetchWithAuthAndRetry(
+      `${this.api.serverUrl}/filemgr/metadata/${id}`,
+      { method: "GET" },
+      keychain
+    );
+    if (result.ok) {
+      const data = await result.response.json();
+      const meta = await keychain.decryptMetadata(b64ToArray(data.metadata));
+      return {
+        size: meta.size,
+        ttl: data.ttl,
+        iv: meta.iv,
+        name: meta.name,
+        type: meta.type,
+        manifest: meta.manifest,
+      };
+    }
+    throw new Error(result.response.status);
+  }
+
+  async download(id, keychain, onprogress, canceller) {
+    const auth = await keychain.authHeader();
+    const xhr = new XMLHttpRequest();
+    canceller.oncancel = function () {
+      xhr.abort();
+    };
+    const that = this; // coding JS like it's 2007
+    return new Promise(function (resolve, reject) {
+      xhr.addEventListener("loadend", function () {
+        canceller.oncancel = function () {};
+        const authHeader = xhr.getResponseHeader("WWW-Authenticate");
+        if (authHeader) {
+          keychain.nonce = parseNonce(authHeader);
+        }
+        if (xhr.status !== 200) {
+          return reject(new Error(xhr.status));
+        }
+
+        const blob = new Blob([xhr.response]);
+        resolve(blob);
+      });
+
+      xhr.addEventListener("progress", function (event) {
+        if (event.target.status === 200) {
+          onprogress(event.loaded);
+        }
+      });
+      xhr.open("get", that.getBlobUrl(id));
+      xhr.setRequestHeader("Authorization", auth);
+      xhr.responseType = "blob";
+      xhr.send();
+      onprogress(0);
+    });
+  }
+
+  async tryDownload(id, keychain, onprogress, canceller, tries = 2) {
+    try {
+      const result = await this.download(id, keychain, onprogress, canceller);
+      console.log(`👿 no?`);
+      return result;
+    } catch (e) {
+      if (e.message === "401" && --tries > 0) {
+        return this.tryDownload(id, keychain, onprogress, canceller, tries);
+      }
+      throw e;
+    }
+  }
+
+  downloadFile(id, keychain, onprogress) {
+    const canceller = {
+      oncancel: function () {}, // download() sets this
+    };
+    function cancel() {
+      canceller.oncancel();
+    }
+    return {
+      cancel,
+      result: this.tryDownload(id, keychain, onprogress, canceller),
     };
   }
 }
@@ -282,39 +373,6 @@ function post(obj, bearerToken) {
     headers: new Headers(h),
     body: JSON.stringify(obj),
   };
-}
-
-function parseNonce(header) {
-  header = header || "";
-  return header.split(" ")[1];
-}
-
-async function fetchWithAuth(url, params, keychain) {
-  console.log(`fetchWithAuth()`);
-  const result = {};
-  params = params || {};
-  const h = await keychain.authHeader();
-  params.headers = new Headers({
-    Authorization: h,
-    "Content-Type": "application/json",
-  });
-  const response = await fetch(url, params);
-  result.response = response;
-  result.ok = response.ok;
-
-  const nonce = parseNonce(response.headers.get("WWW-Authenticate"));
-  result.shouldRetry = response.status === 401 && nonce !== keychain.nonce;
-  keychain.nonce = nonce;
-  return result;
-}
-
-async function fetchWithAuthAndRetry(url, params, keychain) {
-  console.log(`fetchWithAuthAndRetry()`);
-  const result = await fetchWithAuth(url, params, keychain);
-  if (result.shouldRetry) {
-    return fetchWithAuth(url, params, keychain);
-  }
-  return result;
 }
 
 export async function del(id, owner_token) {
@@ -353,28 +411,6 @@ export async function fileInfo(id, owner_token) {
   throw new Error(response.status);
 }
 
-export async function metadata(id, keychain) {
-  console.log(`api.js metadata()`);
-  const result = await fetchWithAuthAndRetry(
-    getApiUrl(`/filemgr/metadata/${id}`),
-    { method: "GET" },
-    keychain
-  );
-  if (result.ok) {
-    const data = await result.response.json();
-    const meta = await keychain.decryptMetadata(b64ToArray(data.metadata));
-    return {
-      size: meta.size,
-      ttl: data.ttl,
-      iv: meta.iv,
-      name: meta.name,
-      type: meta.type,
-      manifest: meta.manifest,
-    };
-  }
-  throw new Error(result.response.status);
-}
-
 export async function setPassword(id, owner_token, keychain) {
   const auth = await keychain.authKeyB64();
   const response = await fetch(
@@ -387,6 +423,7 @@ export async function setPassword(id, owner_token, keychain) {
 ////////////////////////
 
 async function downloadS(id, keychain, signal) {
+  debugger;
   const auth = await keychain.authHeader();
   console.log(`🧨 api.downloadS(): accessing filemgr/download/:id`);
   const response = await fetch(getApiUrl(`/filemgr/download/${id}`), {
@@ -435,66 +472,7 @@ export function downloadStream(id, keychain) {
 
 //////////////////
 
-async function download(id, keychain, onprogress, canceller) {
-  const auth = await keychain.authHeader();
-  const xhr = new XMLHttpRequest();
-  canceller.oncancel = function () {
-    xhr.abort();
-  };
-  return new Promise(function (resolve, reject) {
-    xhr.addEventListener("loadend", function () {
-      canceller.oncancel = function () {};
-      const authHeader = xhr.getResponseHeader("WWW-Authenticate");
-      if (authHeader) {
-        keychain.nonce = parseNonce(authHeader);
-      }
-      if (xhr.status !== 200) {
-        return reject(new Error(xhr.status));
-      }
-
-      const blob = new Blob([xhr.response]);
-      resolve(blob);
-    });
-
-    xhr.addEventListener("progress", function (event) {
-      if (event.target.status === 200) {
-        onprogress(event.loaded);
-      }
-    });
-    xhr.open("get", getApiUrl(`/filemgr/download/blob/${id}`));
-    xhr.setRequestHeader("Authorization", auth);
-    xhr.responseType = "blob";
-    xhr.send();
-    onprogress(0);
-  });
-}
-
-async function tryDownload(id, keychain, onprogress, canceller, tries = 2) {
-  try {
-    const result = await download(id, keychain, onprogress, canceller);
-    console.log(`👿 no?`);
-    return result;
-  } catch (e) {
-    if (e.message === "401" && --tries > 0) {
-      return tryDownload(id, keychain, onprogress, canceller, tries);
-    }
-    throw e;
-  }
-}
-
-export function downloadFile(id, keychain, onprogress) {
-  const canceller = {
-    oncancel: function () {}, // download() sets this
-  };
-  function cancel() {
-    canceller.oncancel();
-  }
-  return {
-    cancel,
-    result: tryDownload(id, keychain, onprogress, canceller),
-  };
-}
-
+//////////////////////////////////////////////////////////////////////////
 // ok to hoist
 
 function asyncInitWebSocket(server) {
@@ -532,4 +510,37 @@ function listenForResponse(ws, canceller) {
     ws.addEventListener("message", handleMessage, { once: true });
     ws.addEventListener("close", handleClose, { once: true });
   });
+}
+
+function parseNonce(header) {
+  header = header || "";
+  return header.split(" ")[1];
+}
+
+async function fetchWithAuth(url, params, keychain) {
+  console.log(`fetchWithAuth()`);
+  const result = {};
+  params = params || {};
+  const h = await keychain.authHeader();
+  params.headers = new Headers({
+    Authorization: h,
+    "Content-Type": "application/json",
+  });
+  const response = await fetch(url, params);
+  result.response = response;
+  result.ok = response.ok;
+
+  const nonce = parseNonce(response.headers.get("WWW-Authenticate"));
+  result.shouldRetry = response.status === 401 && nonce !== keychain.nonce;
+  keychain.nonce = nonce;
+  return result;
+}
+
+async function fetchWithAuthAndRetry(url, params, keychain) {
+  console.log(`fetchWithAuthAndRetry()`);
+  const result = await fetchWithAuth(url, params, keychain);
+  if (result.shouldRetry) {
+    return fetchWithAuth(url, params, keychain);
+  }
+  return result;
 }
