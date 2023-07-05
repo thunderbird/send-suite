@@ -284,7 +284,7 @@ function post(obj, bearerToken) {
   };
 }
 
-export function parseNonce(header) {
+function parseNonce(header) {
   header = header || "";
   return header.split(" ")[1];
 }

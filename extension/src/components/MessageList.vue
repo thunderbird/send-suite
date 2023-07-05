@@ -14,7 +14,7 @@ const messages = ref([]);
 async function getMessages() {
   if (user.value && api.value) {
     console.log(`getting items for user with id ${user?.value.id}`);
-    api.value.getMessages(user.value.id);
+    messages.value = await api.value.getMessages(user.value.id);
   } else {
     console.log(`no user passed to MessageList`);
   }
