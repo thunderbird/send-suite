@@ -1,21 +1,10 @@
 <script setup>
-import { ref, onMounted, nextTick } from "vue";
-import { createNewUser, login } from "../lib/api";
-import {
-  loadUser,
-  storeUser,
-  loadServerUrl,
-  storeServerUrl,
-} from "../lib/sync";
+import { ref, onMounted, nextTick, inject } from "vue";
 
-/*
+import { storeUser, storeServerUrl } from "../lib/sync";
 
-Since this component can get/set these values (and not just use them),
-is this a good candidate for `inject`?
-
-If it changes here, I need for it to update elsewhere (parents, siblings).
-
-*/
+const { api, updateApiUrl } = inject("api");
+const { user, updateUser } = inject("user");
 
 // Create the `browser` object for use outside of TB.
 const browser = window.browser ?? {};
@@ -42,8 +31,8 @@ function setAccountConfigured(id) {
 }
 
 const debug = ref(null);
-const serverUrl = ref(null);
-const emailAddress = ref(null);
+const serverUrl = ref(api.value.serverUrl);
+const emailAddress = ref(user.value.email);
 const messages = ref("");
 const dlimit = ref(1);
 const days = ref(1);
@@ -58,44 +47,32 @@ function log(msg) {
 }
 
 async function saveConfiguration() {
+  log(`Storing server url`);
+  storeServerUrl(serverUrl.value);
+  updateApiUrl(serverUrl.value);
+
   log("Confirming user before saving config");
-  // check for user
-  let user = await login(emailAddress.value);
-  if (user) {
+  let _user = await api.value.login(emailAddress.value);
+  if (_user) {
     console.log(`user exists on server`);
-    console.log(user);
-    storeUser(user.email, user.id);
-    log(`Storing user ${user.email} with id ${user.id}`);
+    console.log(_user);
+    storeUser(_user.email, _user.id);
+    log(`Storing user ${_user.email} with id ${_user.id}`);
+    log(`Updating user throughout Vue application`);
+    updateUser(_user);
   } else {
     try {
       log(`User does not exist, attempting to create...`);
-      const { email, id } = await createNewUser(emailAddress.value);
+      const { email, id } = await api.value.createNewUser(emailAddress.value);
       log(`User created`);
       storeUser(email, id);
       log(`Storing user ${email} with id ${id}`);
     } catch (error) {
-      console.log(`Couldn't create user...maybe already exists?`);
+      console.log(`Couldn't create user, but does not exist on server 💩`);
       console.log(error);
     }
   }
-  log(`Storing server url`);
-  storeServerUrl(serverUrl.value);
 }
-
-onMounted(() => {
-  log("Checking storage for serverUrl");
-  const url = loadServerUrl();
-  serverUrl.value = url;
-  setAccountConfigured(accountId);
-  log("Checking storage for user.");
-  try {
-    const { email, id } = loadUser();
-    log(`Loaded user ${email} with id ${id}`);
-    emailAddress.value = email;
-  } catch (error) {
-    console.log(error);
-  }
-});
 </script>
 
 <template>

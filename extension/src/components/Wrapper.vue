@@ -6,9 +6,19 @@ import { loadUser, loadServerUrl } from "../lib/sync";
 const isInitComplete = ref(false);
 
 const user = ref(null);
-provide("user", user);
+function updateUser(_user) {
+  if (_user) {
+    console.log(`Updating user`);
+    user.value = _user;
+  }
+}
+provide("user", {
+  user,
+  updateUser,
+});
 
 const api = ref(null);
+
 function updateApiUrl(_url) {
   if (_url) {
     console.log(`Updating url`);
