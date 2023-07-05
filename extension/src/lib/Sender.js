@@ -1,15 +1,19 @@
 import Nanobus from "nanobus";
-import OwnedFile from "./ownedFile";
-import Keychain from "./keychain";
+import OwnedFile from "./OwnedFile";
+import Keychain from "./Keychain";
 import { arrayToB64, bytes } from "./utils";
-import { uploadWs } from "./api";
 import { encryptedSize } from "./utils";
 
 export default class Sender extends Nanobus {
-  constructor() {
+  constructor(fileManager) {
     super("FileSender");
+    if (fileManager.value) {
+      throw new Error("Wrapped Vue ref passed instead of instance");
+      return;
+    }
     this.keychain = new Keychain();
     this.reset();
+    this.fileManager = fileManager;
   }
 
   get progressRatio() {
@@ -61,7 +65,7 @@ export default class Sender extends Nanobus {
     const authKeyB64 = await this.keychain.authKeyB64();
 
     console.log(`about to call uploadWs()`);
-    this.uploadRequest = uploadWs(
+    this.uploadRequest = this.fileManager.uploadWs(
       encStream,
       metadata,
       authKeyB64,
@@ -81,7 +85,7 @@ export default class Sender extends Nanobus {
     this.msg = "fileSizeProgress";
     this.emit("progress"); // HACK to kick MS Edge
     try {
-      const result = await this.uploadRequest.result;
+      const result = this.uploadRequest.result;
       this.msg = "notifyUploadEncryptDone";
       this.uploadRequest = null;
       this.progress = [1, 1];

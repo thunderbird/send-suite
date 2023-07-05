@@ -1,4 +1,5 @@
 import b64 from "base64-js";
+import { ECE_RECORD_SIZE } from "./ece";
 
 export function arrayToB64(array) {
   return b64
@@ -197,7 +198,6 @@ export function platform() {
   return "web";
 }
 
-const ECE_RECORD_SIZE = 1024 * 64;
 const TAG_LENGTH = 16;
 export function encryptedSize(
   size,

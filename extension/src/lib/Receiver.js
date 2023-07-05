@@ -1,5 +1,5 @@
 import Nanobus from "nanobus";
-import Keychain from "./keychain";
+import Keychain from "./Keychain";
 import { delay, bytes, streamToArrayBuffer } from "./utils";
 import { downloadFile, metadata, getApiUrl } from "./api";
 import { blobStream } from "./streams";

@@ -1,4 +1,4 @@
-import Keychain from "./keychain";
+import Keychain from "./Keychain";
 import { arrayToB64 } from "./utils";
 import { del, fileInfo, setParams, setPassword } from "./api";
 

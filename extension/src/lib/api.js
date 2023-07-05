@@ -121,7 +121,7 @@ export class ApiConnection {
     if (resp) {
       const { group } = resp;
       console.log(group);
-      return await shareToGroup(itemId, group.id);
+      return await this.shareToGroup(itemId, group.id);
     } else {
       return null;
     }
@@ -131,17 +131,7 @@ export class ApiConnection {
 // =============================================================================
 // Upload, download, and decryption helpers
 
-let fileProtocolWssUrl = null;
-try {
-  fileProtocolWssUrl = localStorage.getItem("wssURL");
-} catch (e) {
-  // NOOP
-}
-if (!fileProtocolWssUrl) {
-  fileProtocolWssUrl = "wss://send.firefox.com/api/ws";
-}
-
-export class ConnectionError extends Error {
+class ConnectionError extends Error {
   constructor(cancelled, duration, size) {
     super(cancelled ? "0" : "connection closed");
     this.cancelled = cancelled;
@@ -150,13 +140,128 @@ export class ConnectionError extends Error {
   }
 }
 
-export function setFileProtocolWssUrl(url) {
-  localStorage && localStorage.setItem("wssURL", url);
-  fileProtocolWssUrl = url;
-}
+export class FileManager {
+  // Expects to receive an instance of ApiConnection
+  constructor(api) {
+    if (api.value) {
+      alert(`Wrapped Vue ref passed instead of plain instance`);
+    }
+    this.api = api;
+    this.server_info = new URL(this.api.serverUrl);
+  }
 
-export function getFileProtocolWssUrl() {
-  return fileProtocolWssUrl;
+  async upload(
+    stream,
+    metadata,
+    verifierB64,
+    timeLimit,
+    dlimit,
+    bearerToken,
+    onprogress,
+    canceller
+  ) {
+    let size = 0;
+    const start = Date.now();
+    const host = this.server_info.hostname;
+    const port = this.server_info.port;
+    const protocol = this.server_info.protocol === "https:" ? "wss:" : "ws:";
+    const endpoint = `${protocol}//${host}${port ? ":" : ""}${port}/filemgr/ws`;
+
+    const ws = await asyncInitWebSocket(endpoint);
+
+    try {
+      const metadataHeader = arrayToB64(new Uint8Array(metadata));
+      const fileMeta = {
+        fileMetadata: metadataHeader,
+        authorization: `send-v1 ${verifierB64}`,
+        bearer: bearerToken,
+        timeLimit,
+        dlimit,
+      };
+
+      const uploadInfoResponse = listenForResponse(ws, canceller);
+      ws.send(JSON.stringify(fileMeta));
+      const uploadInfo = await uploadInfoResponse;
+      console.log(
+        `👍👍👍 we did the uploadInfo, which was ${
+          JSON.stringify(fileMeta).length
+        } chars long`
+      );
+      console.log(uploadInfo);
+      const completedResponse = listenForResponse(ws, canceller);
+
+      const reader = stream.getReader();
+      let state = await reader.read();
+      while (!state.done) {
+        if (canceller.cancelled) {
+          ws.close();
+        }
+        if (ws.readyState !== WebSocket.OPEN) {
+          break;
+        }
+        const buf = state.value;
+        ws.send(buf);
+        onprogress(size);
+        size += buf.length;
+        state = await reader.read();
+        while (
+          ws.bufferedAmount > ECE_RECORD_SIZE * 2 &&
+          ws.readyState === WebSocket.OPEN &&
+          !canceller.cancelled
+        ) {
+          await delay();
+        }
+      }
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(new Uint8Array([0])); //EOF
+      }
+
+      await completedResponse;
+      console.log(`👍👍👍 and...this is the completedResponse?`);
+      console.log(completedResponse);
+      uploadInfo.duration = Date.now() - start;
+      return uploadInfo;
+    } catch (e) {
+      e.size = size;
+      e.duration = Date.now() - start;
+      throw e;
+    } finally {
+      if (![WebSocket.CLOSED, WebSocket.CLOSING].includes(ws.readyState)) {
+        ws.close();
+      }
+    }
+  }
+
+  // Calls upload()
+  // Returns a cancel() function and the result of upload()
+  uploadWs(
+    encrypted,
+    metadata,
+    verifierB64,
+    timeLimit,
+    dlimit,
+    bearerToken,
+    onprogress
+  ) {
+    const canceller = { cancelled: false };
+
+    return {
+      cancel: function () {
+        canceller.cancelled = true;
+      },
+
+      result: this.upload(
+        encrypted,
+        metadata,
+        verifierB64,
+        timeLimit,
+        dlimit,
+        bearerToken,
+        onprogress,
+        canceller
+      ),
+    };
+  }
 }
 
 export function getApiUrl(path) {
@@ -214,7 +319,7 @@ async function fetchWithAuthAndRetry(url, params, keychain) {
 
 export async function del(id, owner_token) {
   const response = await fetch(
-    getApiUrl(`/api/delete/${id}`),
+    getApiUrl(`/filemgr/delete/${id}`),
     post({ owner_token })
   );
   return response.ok;
@@ -222,7 +327,7 @@ export async function del(id, owner_token) {
 
 export async function setParams(id, owner_token, bearerToken, params) {
   const response = await fetch(
-    getApiUrl(`/api/params/${id}`),
+    getApiUrl(`/filemgr/params/${id}`),
     post(
       {
         owner_token,
@@ -236,7 +341,7 @@ export async function setParams(id, owner_token, bearerToken, params) {
 
 export async function fileInfo(id, owner_token) {
   const response = await fetch(
-    getApiUrl(`/api/info/${id}`),
+    getApiUrl(`/filemgr/info/${id}`),
     post({ owner_token })
   );
 
@@ -251,7 +356,7 @@ export async function fileInfo(id, owner_token) {
 export async function metadata(id, keychain) {
   console.log(`api.js metadata()`);
   const result = await fetchWithAuthAndRetry(
-    getApiUrl(`/api/metadata/${id}`),
+    getApiUrl(`/filemgr/metadata/${id}`),
     { method: "GET" },
     keychain
   );
@@ -273,172 +378,18 @@ export async function metadata(id, keychain) {
 export async function setPassword(id, owner_token, keychain) {
   const auth = await keychain.authKeyB64();
   const response = await fetch(
-    getApiUrl(`/api/password/${id}`),
+    getApiUrl(`/filemgr/password/${id}`),
     post({ owner_token, auth })
   );
   return response.ok;
-}
-
-function asyncInitWebSocket(server) {
-  console.log(`opening websocket connection`);
-  return new Promise((resolve, reject) => {
-    try {
-      const ws = new WebSocket(server);
-      ws.addEventListener("open", () => resolve(ws), { once: true });
-    } catch (e) {
-      reject(new ConnectionError(false));
-    }
-  });
-}
-
-function listenForResponse(ws, canceller) {
-  return new Promise((resolve, reject) => {
-    function handleClose(event) {
-      // a 'close' event before a 'message' event means the request failed
-      ws.removeEventListener("message", handleMessage);
-      reject(new ConnectionError(canceller.cancelled));
-    }
-    function handleMessage(msg) {
-      ws.removeEventListener("close", handleClose);
-      try {
-        const response = JSON.parse(msg.data);
-        if (response.error) {
-          throw new Error(response.error);
-        } else {
-          resolve(response);
-        }
-      } catch (e) {
-        reject(e);
-      }
-    }
-    ws.addEventListener("message", handleMessage, { once: true });
-    ws.addEventListener("close", handleClose, { once: true });
-  });
-}
-
-async function upload(
-  stream,
-  metadata,
-  verifierB64,
-  timeLimit,
-  dlimit,
-  bearerToken,
-  onprogress,
-  canceller
-) {
-  let size = 0;
-  const start = Date.now();
-  const host = SEND_SERVER.hostname;
-  const port = SEND_SERVER.port;
-  const protocol = SEND_SERVER.protocol === "https:" ? "wss:" : "ws:";
-  const endpoint =
-    SEND_SERVER.protocol === "file:"
-      ? fileProtocolWssUrl
-      : `${protocol}//${host}${port ? ":" : ""}${port}/api/ws`;
-
-  const ws = await asyncInitWebSocket(endpoint);
-
-  try {
-    const metadataHeader = arrayToB64(new Uint8Array(metadata));
-    const fileMeta = {
-      fileMetadata: metadataHeader,
-      authorization: `send-v1 ${verifierB64}`,
-      bearer: bearerToken,
-      timeLimit,
-      dlimit,
-    };
-    // What if I skipped the meta-data?
-    // the server barfs, expecting the file to come immediately after the metadata
-    const uploadInfoResponse = listenForResponse(ws, canceller);
-    ws.send(JSON.stringify(fileMeta));
-    const uploadInfo = await uploadInfoResponse;
-    console.log(
-      `👍👍👍 we did the uploadInfo, which was ${
-        JSON.stringify(fileMeta).length
-      } chars long`
-    );
-    console.log(uploadInfo);
-    const completedResponse = listenForResponse(ws, canceller);
-
-    const reader = stream.getReader();
-    let state = await reader.read();
-    while (!state.done) {
-      if (canceller.cancelled) {
-        ws.close();
-      }
-      if (ws.readyState !== WebSocket.OPEN) {
-        break;
-      }
-      const buf = state.value;
-      ws.send(buf);
-      onprogress(size);
-      size += buf.length;
-      state = await reader.read();
-      while (
-        ws.bufferedAmount > ECE_RECORD_SIZE * 2 &&
-        ws.readyState === WebSocket.OPEN &&
-        !canceller.cancelled
-      ) {
-        await delay();
-      }
-    }
-    if (ws.readyState === WebSocket.OPEN) {
-      ws.send(new Uint8Array([0])); //EOF
-    }
-
-    await completedResponse;
-    console.log(`👍👍👍 and...this is the completedResponse?`);
-    console.log(completedResponse);
-    uploadInfo.duration = Date.now() - start;
-    return uploadInfo;
-  } catch (e) {
-    e.size = size;
-    e.duration = Date.now() - start;
-    throw e;
-  } finally {
-    if (![WebSocket.CLOSED, WebSocket.CLOSING].includes(ws.readyState)) {
-      ws.close();
-    }
-  }
-}
-
-// Calls upload()
-// Returns a cancel() function and the result of upload()
-export function uploadWs(
-  encrypted,
-  metadata,
-  verifierB64,
-  timeLimit,
-  dlimit,
-  bearerToken,
-  onprogress
-) {
-  const canceller = { cancelled: false };
-
-  return {
-    cancel: function () {
-      canceller.cancelled = true;
-    },
-
-    result: upload(
-      encrypted,
-      metadata,
-      verifierB64,
-      timeLimit,
-      dlimit,
-      bearerToken,
-      onprogress,
-      canceller
-    ),
-  };
 }
 
 ////////////////////////
 
 async function downloadS(id, keychain, signal) {
   const auth = await keychain.authHeader();
-  console.log(`🧨 api.downloadS(): accessing api/download/:id`);
-  const response = await fetch(getApiUrl(`/api/download/${id}`), {
+  console.log(`🧨 api.downloadS(): accessing filemgr/download/:id`);
+  const response = await fetch(getApiUrl(`/filemgr/download/${id}`), {
     signal: signal,
     method: "GET",
     headers: { Authorization: auth },
@@ -510,7 +461,7 @@ async function download(id, keychain, onprogress, canceller) {
         onprogress(event.loaded);
       }
     });
-    xhr.open("get", getApiUrl(`/api/download/blob/${id}`));
+    xhr.open("get", getApiUrl(`/filemgr/download/blob/${id}`));
     xhr.setRequestHeader("Authorization", auth);
     xhr.responseType = "blob";
     xhr.send();
@@ -544,38 +495,41 @@ export function downloadFile(id, keychain, onprogress) {
   };
 }
 
-// export async function getFileList(bearerToken, kid) {
-//   console.log(`we are about to get from /api/filelist/${kid}`);
-//   debugger;
-//   const headers = new Headers({ Authorization: `Bearer ${bearerToken}` });
-//   const response = await fetch(getApiUrl(`/api/filelist/${kid}`), { headers });
-//   if (response.ok) {
-//     const encrypted = await response.blob();
-//     return encrypted;
-//   }
-//   throw new Error(response.status);
-// }
+// ok to hoist
 
-// export async function setFileList(bearerToken, kid, data) {
-//   console.log(`we have just POSTed to /api/filelist/${kid}`);
-//   console.log(`it seems we want to included the Bearer token`);
-//   debugger;
-//   const headers = new Headers({ Authorization: `Bearer ${bearerToken}` });
-//   const response = await fetch(getApiUrl(`/api/filelist/${kid}`), {
-//     headers,
-//     method: "POST",
-//     body: data,
-//   });
-//   return response.ok;
-// }
+function asyncInitWebSocket(server) {
+  console.log(`opening websocket connection`);
+  return new Promise((resolve, reject) => {
+    try {
+      const ws = new WebSocket(server);
+      ws.addEventListener("open", () => resolve(ws), { once: true });
+    } catch (e) {
+      reject(new ConnectionError(false));
+    }
+  });
+}
 
-// export async function getConstants() {
-//   const response = await fetch(getApiUrl("/config"));
-
-//   if (response.ok) {
-//     const obj = await response.json();
-//     return obj;
-//   }
-
-//   throw new Error(response.status);
-// }
+function listenForResponse(ws, canceller) {
+  return new Promise((resolve, reject) => {
+    function handleClose(event) {
+      // a 'close' event before a 'message' event means the request failed
+      ws.removeEventListener("message", handleMessage);
+      reject(new ConnectionError(canceller.cancelled));
+    }
+    function handleMessage(msg) {
+      ws.removeEventListener("close", handleClose);
+      try {
+        const response = JSON.parse(msg.data);
+        if (response.error) {
+          throw new Error(response.error);
+        } else {
+          resolve(response);
+        }
+      } catch (e) {
+        reject(e);
+      }
+    }
+    ws.addEventListener("message", handleMessage, { once: true });
+    ws.addEventListener("close", handleClose, { once: true });
+  });
+}

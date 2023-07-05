@@ -1,6 +1,6 @@
-import Sender from "./lib/sender";
-import Receiver from "./lib/receiver";
-import Archive from "./lib/archive";
+import Sender from "./lib/Sender";
+import Receiver from "./lib/Receiver";
+import Archive from "./lib/Archive";
 import { serverUrl } from "./lib/const";
 
 let currentUrl;
