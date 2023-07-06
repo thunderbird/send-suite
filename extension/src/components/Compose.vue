@@ -1,31 +1,32 @@
 <script setup>
-import { ref, onMounted } from "vue";
-import Sender from "../lib/sender";
-import Archive from "../lib/archive";
-import { createItem, shareWith, userExists } from "../lib/api";
+import { ref, onMounted, inject } from "vue";
+import Sender from "../lib/Sender";
+import Archive from "../lib/Archive";
 
-const props = defineProps({
-  user: Object,
-});
+const { api, fileManager } = inject("api");
+const { user } = inject("user");
 
 const message = ref(null);
-
 const password = ref(null);
 const fileBlob = ref(null);
 const isFile = ref(false);
-const emailAddresses = ref("");
+const recipientAddress = ref("");
 
-async function doSend(blob, user) {
-  const isValidUser = await userExists(emailAddresses.value);
+async function sendBlob(blob) {
+  const userObj = user.value;
+  console.log(`sending from ${userObj.email} to ${recipientAddress.value}`);
+  const isValidUser = await api.value.userExists(recipientAddress.value);
   if (isValidUser) {
     const archive = new Archive([blob]);
-    const sender = new Sender();
+    const sender = new Sender(fileManager.value);
     const file = await sender.upload(archive, null, password.value);
-    const item = await createItem(file.url, user.id, isFile.value);
+    const item = await api.value.createItem(file.url, userObj.id, isFile.value);
     if (item) {
-      await shareWith(item.id, user.email, [emailAddresses.value]);
+      await api.value.shareWith(item.id, userObj.email, [
+        recipientAddress.value,
+      ]);
     } else {
-      alert(`could not share with ${emailAddresses.value}`);
+      alert(`could not share with ${recipientAddress.value}`);
     }
   } else {
     alert(`User does not exist.`);
@@ -46,7 +47,7 @@ async function handleFile(event) {
 
 async function sendFile() {
   isFile.value = true;
-  doSend(fileBlob.value, props.user);
+  sendBlob(fileBlob.value);
 }
 
 async function sendMessage() {
@@ -54,17 +55,10 @@ async function sendMessage() {
   const blob = new Blob([message.value], { type: "text/plain" });
   blob.name = `${new Date().getTime()}.txt`;
   isFile.value = false;
-  doSend(blob, props.user);
+  sendBlob(blob);
 }
 
-onMounted(() => {
-  if (props.user) {
-    console.log(`I have a props.user`);
-    console.log(props.user);
-  } else {
-    console.log(`no props.user for Compose.vue`);
-  }
-});
+onMounted(() => {});
 </script>
 
 <template>
@@ -86,7 +80,7 @@ onMounted(() => {
   <br />
   <label>
     Share with
-    <input type="email" v-model="emailAddresses" />
+    <input type="email" v-model="recipientAddress" />
   </label>
   <br />
   <button @click="sendMessage">Send Message</button>

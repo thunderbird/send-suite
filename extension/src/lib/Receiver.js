@@ -1,13 +1,17 @@
 import Nanobus from "nanobus";
-import Keychain from "./keychain";
+import Keychain from "./Keychain";
 import { delay, bytes, streamToArrayBuffer } from "./utils";
-import { downloadFile, metadata, getApiUrl } from "./api";
 import { blobStream } from "./streams";
 import Zip from "./zip";
 
 export default class Receiver extends Nanobus {
-  constructor(fileInfo) {
+  constructor(fileManager, fileInfo) {
     super("FileReceiver");
+    if (fileManager.value) {
+      throw new Error("Wrapped Vue ref passed instead of instance");
+      return;
+    }
+    this.fileManager = fileManager;
     this.keychain = new Keychain(fileInfo.secretKey, fileInfo.nonce);
     if (fileInfo.requiresPassword) {
       this.keychain.setPassword(fileInfo.password, fileInfo.url);
@@ -46,7 +50,10 @@ export default class Receiver extends Nanobus {
   }
 
   async getMetadata() {
-    const meta = await metadata(this.fileInfo.id, this.keychain);
+    const meta = await this.fileManager.metadata(
+      this.fileInfo.id,
+      this.keychain
+    );
     console.log(`in receiver.getMetadata()`);
     console.log(meta);
     this.fileInfo.name = meta.name;
@@ -82,7 +89,7 @@ export default class Receiver extends Nanobus {
 
   async downloadBlob(noSave = false) {
     this.state = "downloading";
-    this.downloadRequest = await downloadFile(
+    this.downloadRequest = await this.fileManager.downloadFile(
       this.fileInfo.id,
       this.keychain,
       (p) => {
@@ -129,6 +136,10 @@ export default class Receiver extends Nanobus {
   }
 
   async downloadStream(noSave = false) {
+    debugger;
+
+    return; // 2023-07-05: confirming that I do not use this
+
     const start = Date.now();
     const onprogress = (p) => {
       this.progress = [p, this.fileInfo.size];
@@ -162,13 +173,15 @@ export default class Receiver extends Nanobus {
       // await this.sendMessageToSw(info);
 
       onprogress(0);
-      debugger;
+
+      const downloadUrl = this.fileManager.getDownloadUrl(this.fileInfo.id);
       if (noSave) {
         console.log(
           `🧨 Receiver.downloadStream() - noSave: accessing api/download/:id`
         );
 
-        const res = await fetch(getApiUrl(`/api/download/${this.fileInfo.id}`));
+        // const res = await fetch(getApiUrl(`/api/download/${this.fileInfo.id}`));
+        const res = await fetch(downloadUrl);
         if (res.status !== 200) {
           throw new Error(res.status);
         }
@@ -177,11 +190,11 @@ export default class Receiver extends Nanobus {
           `🧨 Receiver.downloadStream() - !noSave: accessing api/download/:id`
         );
 
-        const downloadPath = `/api/download/${this.fileInfo.id}`;
-        let downloadUrl = getApiUrl(downloadPath);
-        if (downloadUrl === downloadPath) {
-          downloadUrl = `${location.protocol}//${location.host}${downloadPath}`;
-        }
+        // const downloadPath = `/api/download/${this.fileInfo.id}`;
+        // let downloadUrl = getApiUrl(downloadPath);
+        // if (downloadUrl === downloadPath) {
+        //   downloadUrl = `${location.protocol}//${location.host}${downloadPath}`;
+        // }
         const a = document.createElement("a");
         a.href = downloadUrl;
         document.body.appendChild(a);
@@ -239,6 +252,7 @@ export default class Receiver extends Nanobus {
 }
 
 async function saveFile(file) {
+  console.log(`In saveFile`);
   return new Promise(function (resolve, reject) {
     const dataView = new DataView(file.plaintext);
     const blob = new Blob([dataView], { type: file.type });

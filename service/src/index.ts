@@ -33,7 +33,8 @@ import password from "./api/password";
 
 // TODO: move these to `config.ts`
 const PORT = 8080;
-const WS_PATH = `/api/ws`;
+const HOST = "0.0.0.0";
+const WS_PATH = `/filemgr/ws`;
 
 const ID_REGEX = "([0-9a-fA-F]{10,16})";
 
@@ -459,18 +460,18 @@ app.delete("/api/groups/:groupId/items/:itemId", async (req, res) => {
 });
 
 app.get(`/download/:id${ID_REGEX}`, pages.download);
-app.get(`/api/metadata/:id${ID_REGEX}`, auth.hmac, metadata);
+app.get(`/filemgr/metadata/:id${ID_REGEX}`, auth.hmac, metadata);
 // app.get(`/api/download/:id${ID_REGEX}`, auth.hmac, download);
 // ^^ unsure if I need this one
-app.get(`/api/download/blob/:id${ID_REGEX}`, auth.hmac, download);
-app.post(`/api/password/:id${ID_REGEX}`, auth.owner, password);
+app.get(`/filemgr/download/blob/:id${ID_REGEX}`, auth.hmac, download);
+app.post(`/filemgr/password/:id${ID_REGEX}`, auth.owner, password);
 
 app.get(`*`, (req, res) => {
   res.status(404);
 });
 
-const server = app.listen(PORT, () =>
-  console.log(`🚀 Server ready at: http://localhost:${PORT}`)
+const server = app.listen(PORT, HOST, () =>
+  console.log(`🚀 Server ready at: http://${HOST}:${PORT}`)
 );
 
 // Listen for WebSocket connections

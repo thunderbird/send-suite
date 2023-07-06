@@ -1,12 +1,16 @@
-import Keychain from "./keychain";
+import Keychain from "./Keychain";
 import { arrayToB64 } from "./utils";
-import { del, fileInfo, setParams, setPassword } from "./api";
+import { del, fileInfo, setParams } from "./api";
 
 export default class OwnedFile {
-  constructor(obj) {
+  constructor(fileManager, obj) {
+    if (fileManager.value) {
+      throw new Error("Wrapped Vue ref passed instead of instance");
+    }
     if (!obj.manifest) {
       throw new Error("invalid file object");
     }
+    this.fileManager = fileManager;
     this.id = obj.id;
     this.url = obj.url;
     this.name = obj.name;
@@ -37,7 +41,11 @@ export default class OwnedFile {
       this.password = password;
       this._hasPassword = true;
       this.keychain.setPassword(password, this.url);
-      const result = await setPassword(this.id, this.ownerToken, this.keychain);
+      const result = await this.fileManager.setPassword(
+        this.id,
+        this.ownerToken,
+        this.keychain
+      );
       return result;
     } catch (e) {
       this.password = null;
@@ -47,10 +55,14 @@ export default class OwnedFile {
   }
 
   del() {
+    debugger; // TODO refactor to use fileManger
+
     return del(this.id, this.ownerToken);
   }
 
   changeLimit(dlimit, user = {}) {
+    debugger; // TODO refactor to use fileManger
+
     if (this.dlimit !== dlimit) {
       this.dlimit = dlimit;
       return setParams(this.id, this.ownerToken, user.bearerToken, { dlimit });
@@ -59,6 +71,8 @@ export default class OwnedFile {
   }
 
   async updateDownloadCount() {
+    debugger; // TODO refactor to use fileManger
+
     const oldTotal = this.dtotal;
     const oldLimit = this.dlimit;
     try {

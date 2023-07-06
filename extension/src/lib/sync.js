@@ -27,3 +27,20 @@ export function storeUser(email, id) {
   set(keyFor("user"), { email, id });
   // log(`Storing user ${email} with id ${id}`);
 }
+
+// TODO: create a more generic "loadSettings"
+export function loadServerUrl() {
+  let url = null;
+  try {
+    url = get(keyFor("server"));
+    console.log(`Loaded url: ${url}`);
+  } catch {
+    console.log(`No stored server url`);
+    alert(`No server url configured. Please enter one on the management page`);
+  }
+  return url;
+}
+
+export function storeServerUrl(url) {
+  set(keyFor("server"), url);
+}
