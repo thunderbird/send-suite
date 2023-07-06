@@ -91,7 +91,7 @@ export default class Sender extends Nanobus {
       this.progress = [1, 1];
       const secretKey = arrayToB64(this.keychain.rawSecret);
 
-      const ownedFile = new OwnedFile({
+      const ownedFile = new OwnedFile(this.fileManager, {
         id: result.id,
         url: `${result.url}#${secretKey}`, // HERE is where the URL is stamped onto the file
         name: payload.name,

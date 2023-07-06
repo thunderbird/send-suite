@@ -263,13 +263,10 @@ export class FileManager {
     };
   }
 
-  getDownloadUrl(id) {
-    return `${this.api.serverUrl}/filemgr/download/${id}`;
-  }
-
-  getBlobUrl(id) {
-    return `${this.api.serverUrl}/filemgr/download/blob/${id}`;
-  }
+  // Removed, since Receiver.downloadStream is unused in this version of Send.
+  // getDownloadUrl(id) {
+  //   return `${this.api.serverUrl}/download/${id}`;
+  // }
 
   async metadata(id, keychain) {
     console.log(`api.js metadata()`);
@@ -291,6 +288,15 @@ export class FileManager {
       };
     }
     throw new Error(result.response.status);
+  }
+
+  async setPassword(id, owner_token, keychain) {
+    const auth = await keychain.authKeyB64();
+    const response = await fetch(
+      `${this.api.serverUrl}/filemgr/password/${id}`,
+      post({ owner_token, auth })
+    );
+    return response.ok;
   }
 
   async download(id, keychain, onprogress, canceller) {
@@ -320,7 +326,7 @@ export class FileManager {
           onprogress(event.loaded);
         }
       });
-      xhr.open("get", that.getBlobUrl(id));
+      xhr.open("get", `${that.api.serverUrl}/filemgr/download/blob/${id}`);
       xhr.setRequestHeader("Authorization", auth);
       xhr.responseType = "blob";
       xhr.send();
@@ -409,15 +415,6 @@ export async function fileInfo(id, owner_token) {
   }
 
   throw new Error(response.status);
-}
-
-export async function setPassword(id, owner_token, keychain) {
-  const auth = await keychain.authKeyB64();
-  const response = await fetch(
-    getApiUrl(`/filemgr/password/${id}`),
-    post({ owner_token, auth })
-  );
-  return response.ok;
 }
 
 ////////////////////////
