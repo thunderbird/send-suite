@@ -1,16 +1,14 @@
-version: "3.8"
-
 services:
-  # app:
-  #   build: .
-  #   ports:
-  #     - "8080:8080"
-  #   environment:
-  #     - DATABASE_URL=postgres://postgres:postgres@db:5432/send-suite
-  #     # - REDIS_URL=redis://redis:6379
-  #   depends_on:
-  #     - db
-  #     # - redis
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/send-suite
+    depends_on:
+      - db
   reverse-proxy:
     image: nginx:latest
     volumes:
@@ -19,10 +17,8 @@ services:
       - ./tls-dev-proxy/logs:/var/log/nginx
     ports:
       - "8088:12345"
-    # depends_on:
-    #   - app
-    extra_hosts:
-      - host.docker.internal:10.0.0.145
+    depends_on:
+      - app
   db:
     image: "postgres:15"
     environment:
@@ -32,8 +28,6 @@ services:
       - postgres-data:/var/lib/postgresql/data
     ports:
       - "6432:5432"
-  # redis:
-  #   image: "redis:7"
 
 volumes:
   postgres-data:
