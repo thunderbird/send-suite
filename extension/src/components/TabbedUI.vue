@@ -48,6 +48,7 @@ function handleChoice(url, type) {
     <component :is="tabs[currentTab]" @choose-url="handleChoice"></component>
     <MessageViewer :url="currentUrl" />
   </div>
+  <ManagementPage v-else> </ManagementPage>
 </template>
 
 <style scoped>
