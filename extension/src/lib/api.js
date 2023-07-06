@@ -305,8 +305,7 @@ export class FileManager {
     canceller.oncancel = function () {
       xhr.abort();
     };
-    const that = this; // coding JS like it's 2007
-    return new Promise(function (resolve, reject) {
+    return new Promise((resolve, reject) => {
       xhr.addEventListener("loadend", function () {
         canceller.oncancel = function () {};
         const authHeader = xhr.getResponseHeader("WWW-Authenticate");
@@ -326,7 +325,7 @@ export class FileManager {
           onprogress(event.loaded);
         }
       });
-      xhr.open("get", `${that.api.serverUrl}/filemgr/download/blob/${id}`);
+      xhr.open("get", `${this.api.serverUrl}/filemgr/download/blob/${id}`);
       xhr.setRequestHeader("Authorization", auth);
       xhr.responseType = "blob";
       xhr.send();
