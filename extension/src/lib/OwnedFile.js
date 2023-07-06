@@ -2,13 +2,6 @@ import Keychain from "./Keychain";
 import { arrayToB64 } from "./utils";
 import { del, fileInfo, setParams } from "./api";
 
-/*
-move the imported stuff from api to fileManager
-then update the calls so it uses this.filemanager.whatever()
-
-
-*/
-
 export default class OwnedFile {
   constructor(fileManager, obj) {
     if (fileManager.value) {
@@ -62,10 +55,14 @@ export default class OwnedFile {
   }
 
   del() {
+    debugger; // TODO refactor to use fileManger
+
     return del(this.id, this.ownerToken);
   }
 
   changeLimit(dlimit, user = {}) {
+    debugger; // TODO refactor to use fileManger
+
     if (this.dlimit !== dlimit) {
       this.dlimit = dlimit;
       return setParams(this.id, this.ownerToken, user.bearerToken, { dlimit });
@@ -74,6 +71,8 @@ export default class OwnedFile {
   }
 
   async updateDownloadCount() {
+    debugger; // TODO refactor to use fileManger
+
     const oldTotal = this.dtotal;
     const oldLimit = this.dlimit;
     try {

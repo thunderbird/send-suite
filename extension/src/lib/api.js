@@ -68,6 +68,17 @@ export class ApiConnection {
     return messages;
   }
 
+  async getFiles(userId) {
+    const files = await this.callApi(
+      `users/${userId}/items?type=${ITEM_TYPES.FILE}`,
+      null,
+      "GET"
+    );
+    console.log(`returned by getFiles:`);
+    console.log(files);
+    return files;
+  }
+
   // =============================================================================
   // Share helpers
 
