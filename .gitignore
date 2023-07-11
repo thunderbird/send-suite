@@ -2,6 +2,8 @@
 migrations
 seed.ts
 
+docker-compose.yml
+
 # Dev droppings
 .env
 dev.db*
