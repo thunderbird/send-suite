@@ -1,6 +1,5 @@
-import Sender from "./lib/sender";
-import Receiver from "./lib/receiver";
-import Archive from "./lib/archive";
+import Sender from "./lib/Sender";
+import Archive from "./lib/Archive";
 import { serverUrl } from "./lib/const";
 
 console.log(`hello from background.js`);
@@ -223,7 +222,7 @@ async function awaitPopup() {
   //     messenger.windows.onRemoved.addListener(windowRemoveListener);
   //   });
   // }
-  browser.tabs.create({ active: true, url: "index.test.html" });
+  browser.tabs.create({ active: true, url: "index.extension-ui.html" });
   // let window = await messenger.windows.create({
   //   url: "index.test.html",
   //   type: "popup",

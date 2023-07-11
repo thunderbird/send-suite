@@ -11,7 +11,7 @@
     }
   },
   "action": {
-    "default_title": "secrets"
+    "default_title": "TB-Send"
   },
   "background": {
     "scripts": ["background.js"]
