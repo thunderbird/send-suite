@@ -3,6 +3,11 @@ import { ref, onMounted, provide } from "vue";
 import { ApiConnection, FileManager } from "../lib/api";
 import { loadUser, loadServerUrl } from "../lib/sync";
 
+// Optionally, we can pass in a serverUrl
+const props = defineProps({
+  serverUrl: String,
+});
+
 const isInitComplete = ref(false);
 
 const user = ref(null);
@@ -44,7 +49,7 @@ onMounted(() => {
     user.value = _user;
   }
   console.log("Checking storage for serverUrl.");
-  const _url = loadServerUrl();
+  const _url = props.serverUrl ?? loadServerUrl();
   if (_url) {
     console.log(`got a url:`, _url);
     const connection = new ApiConnection(_url);

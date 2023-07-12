@@ -1,11 +1,10 @@
 <script setup>
-import { ref, onMounted, nextTick, inject } from "vue";
+import { ref, watchEffect, nextTick, inject } from "vue";
 
 import { storeUser, storeServerUrl } from "../lib/sync";
 
 const { api, updateApiUrl } = inject("api");
 const { user, updateUser } = inject("user");
-
 // Create the `browser` object for use outside of TB.
 const browser = window.browser ?? {};
 
@@ -13,16 +12,21 @@ const browser = window.browser ?? {};
 // "Composition > Attachments" window.
 // This is necessary only for the management page.
 let accountId = new URL(location.href).searchParams.get("accountId");
+watchEffect(() => {
+  console.log(`accountId? ${accountId}`);
+  if (accountId) {
+    browser.storage?.local.get([accountId]).then((accountInfo) => {
+      setAccountConfigured(accountId);
 
-// Initialize the settings
-browser.storage?.local.get([accountId]).then((accountInfo) => {
-  setAccountConfigured(accountId);
-
-  if (accountInfo[accountId] && SERVER in accountInfo[accountId]) {
-    // input.value = accountInfo[accountId][SERVER];
-    setAccountConfigured(accountId);
+      if (accountInfo[accountId] && SERVER in accountInfo[accountId]) {
+        // input.value = accountInfo[accountId][SERVER];
+        setAccountConfigured(accountId);
+      }
+    });
   }
 });
+
+// Initialize the settings
 
 function setAccountConfigured(id) {
   browser.cloudFile?.updateAccount(id, {

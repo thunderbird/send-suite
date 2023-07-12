@@ -1,7 +1,7 @@
 <script setup>
 /* This component should download and decrypt the contents of the URL. */
 import Receiver from "../lib/Receiver";
-import { ref, watch, inject } from "vue";
+import { ref, watch, inject, onMounted } from "vue";
 const { fileManager } = inject("api");
 const props = defineProps({
   url: String,
@@ -53,6 +53,11 @@ async function doDownload() {
   }
 }
 
+onMounted(() => {
+  console.log(`Performing initial download attempt`);
+  doDownload();
+});
+
 watch(
   () => props.url,
   () => {
@@ -61,11 +66,9 @@ watch(
   needsPassword.value: ${needsPassword.value}
   password.value: ${password.value}
   `);
-
     if (!props.url) {
       return;
     }
-
     // Reset these any time the url changes
     needsPassword.value = false;
     password.value = null;
@@ -73,6 +76,7 @@ watch(
     doDownload();
   }
 );
+console.log(`finished the setup`);
 </script>
 
 <template>

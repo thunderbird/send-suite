@@ -6,7 +6,9 @@ import { ECE_RECORD_SIZE } from "./ece";
 // API wrapper
 export class ApiConnection {
   constructor(serverUrl) {
-    this.serverUrl = serverUrl;
+    // using new URL() trims off excess whitespace and trailing '/'
+    const u = new URL(serverUrl);
+    this.serverUrl = u.origin;
   }
 
   toString() {

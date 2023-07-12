@@ -26,7 +26,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <h4>Your messages {{ user.id }}</h4>
+  <h4>Messages for user id {{ user.id }}</h4>
   <button @click="getMessages">get new</button>
   <ul>
     <li v-for="{ url, createdAt, sharedByEmail } in messages">

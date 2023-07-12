@@ -1,10 +1,26 @@
 import Sender from "./lib/Sender";
 import Archive from "./lib/Archive";
-import { serverUrl } from "./lib/const";
+import { ApiConnection, FileManager } from "./lib/api";
+import { loadUser, loadServerUrl } from "./lib/sync";
 
 console.log(`hello from background.js`);
 const ALLOW_OPTIONS = true;
 const optionsPerUpload = new Map();
+
+let user;
+let connection;
+let fileManager;
+
+function init() {
+  const _url = loadServerUrl();
+  user = loadUser();
+  if (user && _url) {
+    connection = new ApiConnection(_url);
+    fileManager = new FileManager(connection);
+    return true;
+  }
+  return false;
+}
 
 // TODO: remove this when no longer testing
 async function uploadHandlerTest(account, { id, name, data }) {
@@ -29,6 +45,11 @@ async function uploadHandlerTest(account, { id, name, data }) {
 
 browser.cloudFile.onFileUpload.addListener(
   async (account, { id, name, data }) => {
+    if (!init()) {
+      console.log(`Could not init user and connection`);
+      return;
+    }
+
     console.log(`🐈 here are account, id, name, and data`);
     console.log(account);
     console.log(id);
@@ -41,7 +62,7 @@ browser.cloudFile.onFileUpload.addListener(
     // TODO: show the popup, giving the user an opportunity to
     // enter the password.
 
-    const sender = new Sender();
+    const sender = new Sender(fileManager);
     console.log("finished creating a Sender(), fire zee 🚀");
     const ownedFile = await sender.upload(archive);
     console.log(`secret message stored at ${ownedFile.url}`);
