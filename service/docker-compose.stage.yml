@@ -10,6 +10,7 @@ services:
       - DATABASE_URL=postgres://postgres:postgres@db:5432/send-suite
     depends_on:
       - db
+    restart: unless-stopped
   db:
     image: "postgres:15"
     environment:
@@ -19,6 +20,7 @@ services:
       - postgres-data:/var/lib/postgresql/data
     ports:
       - "6432:5432"
+    restart: unless-stopped
 
 volumes:
   postgres-data:
