@@ -5,6 +5,7 @@ services:
       - "8080:8080"
     volumes:
       - .:/app
+      - ./storage:/tmp
     environment:
       - DATABASE_URL=postgres://postgres:postgres@db:5432/send-suite
     depends_on:
