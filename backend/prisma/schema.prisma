@@ -12,10 +12,44 @@ datasource db {
 }
 
 model User {
-  id      Int     @id @default(autoincrement())
-  email   String  @unique
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
   publicKey String
   // links   Link[]
   // contents  Content[]
+  groups    GroupUser[]
+  folders   Folder[]
 }
 
+model Group {
+  id      Int     @id @default(autoincrement())
+  members GroupUser[]
+  folders GroupFolder[]
+}
+
+model GroupUser {
+  groupId Int
+  group   Group @relation(fields: [groupId], references: [id])
+  userId  Int
+  user    User  @relation(fields: [userId], references: [id])
+
+  @@id([groupId, userId])
+}
+
+model Folder {
+  id        Int      @id @default(autoincrement())
+  name      String
+  publicKey String
+  ownerId   Int
+  owner     User  @relation(fields: [ownerId], references: [id])
+  groups    GroupFolder[]
+}
+
+model GroupFolder {
+  groupId   Int
+  group     Group @relation(fields: [groupId], references: [id])
+  folderId  Int
+  folder    Folder  @relation(fields: [folderId], references: [id])
+
+  @@id([groupId, folderId])
+}

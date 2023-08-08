@@ -3,6 +3,7 @@ import cors from "cors";
 import express from "express";
 
 import users from './routes/users';
+import folders from './routes/folders';
 
 const PORT = 8080;
 const HOST = "0.0.0.0";
@@ -21,6 +22,7 @@ app.get("/", (req, res) => {
 });
 
 app.use('/api/users', users);
+app.use('/api/folders', folders);
 
 
 app.get(`*`, (req, res) => {
