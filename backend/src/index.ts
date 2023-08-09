@@ -5,6 +5,7 @@ import WebSocket from 'ws';
 
 import users from './routes/users';
 import folders from './routes/folders';
+import download from './routes/download';
 
 import wsHandler from './wsHandler';
 
@@ -28,6 +29,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/users', users);
 app.use('/api/folders', folders);
+app.use('/api/download', download);
 
 app.get(`*`, (req, res) => {
   res.status(404);

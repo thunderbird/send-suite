@@ -39,7 +39,7 @@ class Limiter extends Transform {
   }
 }
 
-async function handleUpload(req, ws, message, fileStream) {
+async function handleUpload(ws, message, fileStream) {
   const uploadId = crypto.randomBytes(8).toString('hex');
   // const owner = crypto.randomBytes(10).toString('hex');
 
@@ -106,12 +106,28 @@ async function handleUpload(req, ws, message, fileStream) {
     // TODO: we should handle cancelled uploads differently
     // in order to avoid having to check socket state and clean
     // up storage, possibly with an exception that we can catch.
-    ws.send(JSON.stringify({ ok: true }));
+    ws.send(
+      JSON.stringify({
+        ok: true,
+        id: uploadId,
+      })
+    );
 
     // Omits the entire `statUploadEvent`
     // I wonder if that's mozilla metrics? (looks like it)
   }
 }
+
+// async function handleDownload(ws, message) {
+//   const fileInfo = JSON.parse(message);
+//   const { id } = fileInfo;
+//   console.log(`they want to download ${id}`);
+//   const contentLength = await storage.length(id);
+//   const fileStream = await storage.get(id);
+
+//   const wsStream = ws.constructor.createWebSocketStream(ws);
+//   fileStream.pipe(wsStream);
+// }
 
 export default function (ws, req) {
   console.log(`wsHandler initialized`);
@@ -130,7 +146,7 @@ export default function (ws, req) {
       // whether we're uploading or downloading
       // if we have a pre-message, then we need to do the
       // attach/detach thing that other parts of the code are doing, yes?
-      await handleUpload(req, ws, message, fileStream);
+      await handleUpload(ws, message, fileStream);
     } catch (e) {
       console.error('upload', e);
       if (ws.readyState === 1) {

@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["filteredRelationCount"]
   binaryTargets = ["native"]
 }
 
@@ -8,20 +9,57 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
   id      Int     @id @default(autoincrement())
   email   String  @unique
-  links   Link[]
+  items     Item[]
+  groups  GroupUser[]
 }
 
-// Content that is stored on a filesystem
-// It can be shared with other pro-users via Groups, or it can
-// be shared with non-users via Links
+model Group {
+  id      Int     @id @default(autoincrement())
+  members GroupUser[]
+  items   GroupItem[]
+}
+
+model GroupUser {
+  groupId Int
+  group   Group @relation(fields: [groupId], references: [id])
+  userId  Int
+  user    User  @relation(fields: [userId], references: [id])
+
+  @@id([groupId, userId])
+}
+
+enum ItemType {
+  MESSAGE
+  FILE
+}
+
+model Item {
+  id        Int      @id @default(autoincrement())
+  url       String   @unique
+  sharedBy  Int      @map("shared_by")
+  user      User     @relation(fields: [sharedBy], references: [id])
+  groups    GroupItem[]
+  type      ItemType
+  createdAt DateTime?
+  updatedAt DateTime?
+}
+
+model GroupItem {
+  groupId Int
+  group   Group @relation(fields: [groupId], references: [id])
+  itemId  Int
+  item    Item  @relation(fields: [itemId], references: [id])
+
+  @@id([groupId, itemId])
+}
+
+// Putting in Postgres for now.
+// Used to live in Redis
 model Upload {
   id        String      @unique
-  links   Link[]
-
   owner     String
   metadata  String
   dlimit    Int
@@ -30,18 +68,4 @@ model Upload {
   pwd    Boolean
   // dl     Int
   createdAt DateTime?
-}
-
-// A Link is how we share to a non-user.
-//
-model Link {
-  id            String    @unique
-  upload        Upload    @relation(fields: [uploadId], references: [id])
-  uploadId      String
-  sharedBy      Int       @map("shared_by")
-  user          User      @relation(fields: [sharedBy], references: [id])
-  pwHash        String
-  downloadLimit Int?
-  createdAt     DateTime?
-  expiresAt     DateTime?
 }

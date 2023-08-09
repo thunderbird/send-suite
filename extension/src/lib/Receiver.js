@@ -89,6 +89,7 @@ export default class Receiver extends Nanobus {
 
   async downloadBlob(noSave = false) {
     this.state = "downloading";
+    debugger;
     this.downloadRequest = await this.fileManager.downloadFile(
       this.fileInfo.id,
       this.keychain,
@@ -113,6 +114,7 @@ export default class Receiver extends Nanobus {
       }
 
       const plaintext = await streamToArrayBuffer(plainStream, size);
+      debugger;
       if (!noSave) {
         return await saveFile({
           // plaintext: await streamToArrayBuffer(blobStream(ciphertext), size),
@@ -121,6 +123,7 @@ export default class Receiver extends Nanobus {
           type: this.fileInfo.type,
         });
       } else {
+        // THIS IS THE ONE USED FOR BOTH FILES AND MESSAGES
         const decoder = new TextDecoder();
         const plaintextString = decoder.decode(plaintext);
         return plaintextString;

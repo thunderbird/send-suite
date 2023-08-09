@@ -3,12 +3,14 @@ import { ref } from 'vue';
 import { upload } from '../lib/filesync';
 
 const fileBlob = ref(null);
+const uploadId = ref('');
 
 async function sendBlob(blob) {
   console.log(`want to send blob`);
   console.log(blob);
   const result = await upload(blob);
   console.log(result);
+  return result;
   // const userObj = user.value;
   // console.log(`sending from ${userObj.email} to ${recipientAddress.value}`);
   // const isValidUser = await api.value.userExists(recipientAddress.value);
@@ -41,19 +43,24 @@ async function handleFile(event) {
   reader.readAsArrayBuffer(file);
 }
 
-function sendFile() {
-  sendBlob(fileBlob.value);
+async function sendFile() {
+  const result = await sendBlob(fileBlob.value);
+  uploadId.value = result.id;
 }
 </script>
 
 <template>
-  <form @submit.prevent>
-    <label>
-      Upload a file:
-      <input type="file" @change="handleFile" />
-    </label>
-    <button @click="sendFile">Send File</button>
-  </form>
+  <div>
+    <form @submit.prevent>
+      <label>
+        Upload a file:
+        <input type="file" @change="handleFile" />
+      </label>
+      <br />
+      <button @click="sendFile">Send File</button>
+    </form>
+    <p v-if="uploadId">Uploaded: {{ uploadId }}</p>
+  </div>
 </template>
 
 <style scoped></style>
