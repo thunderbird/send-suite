@@ -16,7 +16,7 @@ model User {
   email     String  @unique
   publicKey String
   // links   Link[]
-  // contents  Content[]
+  items  Item[]
   groups    GroupUser[]
   folders   Folder[]
 }
@@ -49,6 +49,9 @@ model Folder {
   subfolders  Folder[]    @relation("Nesting")
   createdAt DateTime?
   updatedAt DateTime?
+
+  // unique folder names in a folder
+  @@unique([name, parentId])
 }
 
 model GroupFolder {
@@ -61,7 +64,13 @@ model GroupFolder {
 }
 
 model Item {
-  id        Int      @id @default(autoincrement())
-  folderId  Int?
-  folder    Folder?  @relation(fields: [folderId], references: [id])
+  id        Int       @id @default(autoincrement())
+  name      String
+  folderId  Int
+  folder    Folder    @relation(fields: [folderId], references: [id])
+  ownerId   Int
+  owner     User      @relation(fields: [ownerId], references: [id])
+
+  // unique "file names" in a folder
+  @@unique([name, folderId])
 }

@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { Router } from 'express';
-import { createFolder, getOwnedFolders } from '../models';
+import { createFolder, getOwnedFolders, createItem, getItems } from '../models';
 
 const router = Router();
 
@@ -59,6 +59,36 @@ router.get('/owner/:userId', async (req, res) => {
   try {
     const folders = await getOwnedFolders(parseInt(userId));
     res.status(200).json(folders);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+router.post('/:folderId', async (req, res) => {
+  const { folderId } = req.params;
+  const { name, ownerId } = req.body;
+  try {
+    const folders = await createItem(
+      name,
+      parseInt(folderId),
+      parseInt(ownerId)
+    );
+    res.status(200).json(folders);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+// Get a folder and its items
+router.get('/:folderId', async (req, res) => {
+  const { folderId } = req.params;
+  try {
+    const folderWithItems = await getItems(parseInt(folderId));
+    res.status(200).json(folderWithItems);
   } catch (error) {
     res.status(500).json({
       message: 'Server error.',

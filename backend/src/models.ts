@@ -25,7 +25,7 @@ export async function createFolder(
 }
 
 export async function getOwnedFolders(ownerId: number) {
-  return await prisma.folder.findMany({
+  return prisma.folder.findMany({
     where: {
       ownerId,
     },
@@ -34,3 +34,38 @@ export async function getOwnedFolders(ownerId: number) {
     },
   });
 }
+
+export async function createItem(
+  name: string,
+  folderId: number,
+  ownerId: number
+) {
+  console.log(name, ownerId, folderId);
+  return prisma.item.create({
+    data: {
+      name,
+      ownerId,
+      folderId,
+    },
+  });
+}
+
+// required: folderId
+// later, optional: groupId
+// wait, do I even want to search by groupId?
+// is that just a giant "all files for the group, no matter what folder?"
+// that doesn't seem useful right now
+export async function getItems(id: number) {
+  return prisma.folder.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      items: true,
+    },
+  });
+}
+
+// more functions:
+// - move item to another folder
+// - delete item
