@@ -1,13 +1,18 @@
 import 'dotenv/config';
 import cors from 'cors';
 import express from 'express';
+import WebSocket from 'ws';
 
 import users from './routes/users';
 import folders from './routes/folders';
 
+import wsHandler from './wsHandler';
+
 const PORT = 8080;
 const HOST = '0.0.0.0';
+const WS_PATH = `/api/ws`;
 
+const wsServer = new WebSocket.Server({ noServer: true });
 const app = express();
 
 app.use(express.json());
@@ -31,3 +36,16 @@ app.get(`*`, (req, res) => {
 const server = app.listen(PORT, HOST, () =>
   console.log(`🚀 Server ready at: http://${HOST}:${PORT}`)
 );
+
+// Listen for WebSocket connections
+server.on('upgrade', (req, socket, head) => {
+  console.log('got the upgrade request');
+  if (req.url === WS_PATH) {
+    console.log(`upgrading ${WS_PATH}`);
+    wsServer.handleUpgrade(req, socket, head, (ws) => {
+      console.log('handling upgrade');
+      wsServer.emit('connection', ws, req);
+      wsHandler(ws, req);
+    });
+  }
+});
