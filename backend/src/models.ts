@@ -1,9 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
-export async function createUser(
-  email: string, publicKey: string
-) {
+export async function createUser(email: string, publicKey: string) {
   return prisma.user.create({
     data: {
       email,
@@ -21,7 +19,18 @@ export async function createFolder(
     data: {
       name,
       publicKey,
-      ownerId
+      ownerId,
+    },
+  });
+}
+
+export async function getOwnedFolders(ownerId: number) {
+  return await prisma.folder.findMany({
+    where: {
+      ownerId,
+    },
+    orderBy: {
+      createdAt: 'desc',
     },
   });
 }

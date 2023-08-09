@@ -37,12 +37,18 @@ model GroupUser {
 }
 
 model Folder {
-  id        Int      @id @default(autoincrement())
+  id        Int           @id @default(autoincrement())
   name      String
   publicKey String
   ownerId   Int
-  owner     User  @relation(fields: [ownerId], references: [id])
+  owner     User          @relation(fields: [ownerId], references: [id])
   groups    GroupFolder[]
+  items     Item[]
+  parentId  Int?
+  parent    Folder?       @relation("Nesting", fields: [parentId], references: [id])
+  subfolders  Folder[]    @relation("Nesting")
+  createdAt DateTime?
+  updatedAt DateTime?
 }
 
 model GroupFolder {
@@ -52,4 +58,10 @@ model GroupFolder {
   folder    Folder  @relation(fields: [folderId], references: [id])
 
   @@id([groupId, folderId])
+}
+
+model Item {
+  id        Int      @id @default(autoincrement())
+  folderId  Int?
+  folder    Folder?  @relation(fields: [folderId], references: [id])
 }
