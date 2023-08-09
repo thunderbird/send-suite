@@ -117,10 +117,32 @@ export async function getAllUserGroupFolders(userId: number) {
 
 // for a folder, how many groups are there?
 // should there be only one?
-export async function addGroupMember(groupId: number, userId: number) {
+export async function addGroupMember(folderId: number, userId: number) {
+  const folder = await prisma.folder.findUnique({
+    where: {
+      id: folderId,
+    },
+    select: {
+      group: {
+        select: {
+          id: true,
+          // members: true,
+        },
+      },
+    },
+  });
+
+  if (!folder) {
+    return null;
+  }
+
+  const { group } = folder ?? {};
+  if (!group) {
+    return null;
+  }
   return prisma.groupUser.create({
     data: {
-      groupId,
+      groupId: group.id,
       userId,
     },
   });

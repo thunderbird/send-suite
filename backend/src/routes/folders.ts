@@ -5,6 +5,7 @@ import {
   getOwnedFolders,
   createItem,
   getItemsInFolder,
+  addGroupMember,
 } from '../models';
 
 const router = Router();
@@ -88,21 +89,19 @@ router.post('/:folderId', async (req, res) => {
   }
 });
 
-// router.post('/:folderId/member', async (req, res) => {
-//   const { folderId } = req.params;
-//   const { userId } = req.body;
-//   try {
-//     const folders = await createItem(
-//       parseInt(folderId),
-//       parseInt(userId)
-//     );
-//     res.status(200).json(folders);
-//   } catch (error) {
-//     res.status(500).json({
-//       message: 'Server error.',
-//     });
-//   }
-// });
+// Add member to access group for folder
+router.post('/:folderId/member', async (req, res) => {
+  const { folderId } = req.params;
+  const { userId } = req.body;
+  try {
+    const folder = await addGroupMember(parseInt(folderId), parseInt(userId));
+    res.status(200).json(folder);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
 
 // Get a folder and its items
 router.get('/:folderId', async (req, res) => {
