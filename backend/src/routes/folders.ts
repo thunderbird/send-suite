@@ -6,6 +6,7 @@ import {
   createItem,
   getItemsInFolder,
   addGroupMember,
+  removeGroupMember,
 } from '../models';
 
 const router = Router();
@@ -24,9 +25,6 @@ router.post('/', async (req, res) => {
     publicKey: string;
     ownerId: number;
   } = req.body;
-  console.log(name);
-  console.log(publicKey);
-  console.log(ownerId);
 
   const messagesByCode: Record<string, string> = {
     P2002: 'Folder already exists',
@@ -95,6 +93,37 @@ router.post('/:folderId/member', async (req, res) => {
   const { userId } = req.body;
   try {
     const folder = await addGroupMember(parseInt(folderId), parseInt(userId));
+    res.status(200).json(folder);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+// Add member to access group for folder
+router.post('/:folderId/member', async (req, res) => {
+  const { folderId } = req.params;
+  const { userId } = req.body;
+  try {
+    const folder = await addGroupMember(parseInt(folderId), parseInt(userId));
+    res.status(200).json(folder);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+// Remove member from access group for folder
+router.delete('/:folderId/member', async (req, res) => {
+  const { folderId } = req.params;
+  const { userId } = req.body;
+  try {
+    const folder = await removeGroupMember(
+      parseInt(folderId),
+      parseInt(userId)
+    );
     res.status(200).json(folder);
   } catch (error) {
     res.status(500).json({

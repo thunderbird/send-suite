@@ -58,7 +58,6 @@ export async function createItem(
   folderId: number,
   ownerId: number
 ) {
-  console.log(name, ownerId, folderId);
   return prisma.item.create({
     data: {
       name,
@@ -126,7 +125,6 @@ export async function addGroupMember(folderId: number, userId: number) {
       group: {
         select: {
           id: true,
-          // members: true,
         },
       },
     },
@@ -137,13 +135,23 @@ export async function addGroupMember(folderId: number, userId: number) {
   }
 
   const { group } = folder ?? {};
+
   if (!group) {
     return null;
   }
+
   return prisma.groupUser.create({
     data: {
       groupId: group.id,
       userId,
+    },
+  });
+}
+
+export async function removeGroupMember(groupId: number, userId: number) {
+  return prisma.groupUser.delete({
+    where: {
+      groupId_userId: { groupId, userId },
     },
   });
 }
