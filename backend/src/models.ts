@@ -10,18 +10,36 @@ export async function createUser(email: string, publicKey: string) {
   });
 }
 
+// Automatically creates a group for folder
+// owner is added to new group
 export async function createFolder(
   name: string,
   publicKey: string,
   ownerId: number
 ) {
-  return prisma.folder.create({
+  // TODO: figure out the nested create syntax:
+  // https://www.prisma.io/docs/reference/api-reference/prisma-client-reference#create-1
+  const group = await prisma.group.create({
+    data: {},
+  });
+
+  await prisma.groupUser.create({
+    data: {
+      groupId: group.id,
+      userId: ownerId,
+    },
+  });
+
+  const folder = await prisma.folder.create({
     data: {
       name,
       publicKey,
       ownerId,
+      groupId: group.id,
     },
   });
+
+  return folder;
 }
 
 export async function getOwnedFolders(ownerId: number) {
@@ -51,11 +69,7 @@ export async function createItem(
 }
 
 // required: folderId
-// later, optional: groupId
-// wait, do I even want to search by groupId?
-// is that just a giant "all files for the group, no matter what folder?"
-// that doesn't seem useful right now
-export async function getItems(id: number) {
+export async function getItemsInFolder(id: number) {
   return prisma.folder.findUnique({
     where: {
       id,
@@ -66,6 +80,48 @@ export async function getItems(id: number) {
   });
 }
 
-// more functions:
+// TODO:
 // - move item to another folder
 // - delete item
+
+export async function getAllUserGroupFolders(userId: number) {
+  const params = {
+    where: {
+      id: userId,
+    },
+    select: {
+      id: true,
+      groups: {
+        select: {
+          groupId: true,
+        },
+      },
+    },
+  };
+  const user = await prisma.user.findUnique(params);
+  if (!user) {
+    return null;
+  }
+  const groupIds = user.groups.map(({ groupId }) => groupId);
+  return prisma.folder.findMany({
+    where: {
+      groupId: {
+        in: groupIds,
+      },
+    },
+    include: {
+      items: true,
+    },
+  });
+}
+
+// for a folder, how many groups are there?
+// should there be only one?
+export async function addGroupMember(groupId: number, userId: number) {
+  return prisma.groupUser.create({
+    data: {
+      groupId,
+      userId,
+    },
+  });
+}

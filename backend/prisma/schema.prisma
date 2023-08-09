@@ -24,7 +24,7 @@ model User {
 model Group {
   id      Int     @id @default(autoincrement())
   members GroupUser[]
-  folders GroupFolder[]
+  folder  Folder?
 }
 
 model GroupUser {
@@ -42,7 +42,8 @@ model Folder {
   publicKey String
   ownerId   Int
   owner     User          @relation(fields: [ownerId], references: [id])
-  groups    GroupFolder[]
+  groupId   Int           @unique
+  group     Group         @relation(fields: [groupId], references: [id])
   items     Item[]
   parentId  Int?
   parent    Folder?       @relation("Nesting", fields: [parentId], references: [id])
@@ -54,14 +55,14 @@ model Folder {
   @@unique([name, parentId])
 }
 
-model GroupFolder {
-  groupId   Int
-  group     Group @relation(fields: [groupId], references: [id])
-  folderId  Int
-  folder    Folder  @relation(fields: [folderId], references: [id])
+// model GroupFolder {
+//   groupId   Int
+//   group     Group @relation(fields: [groupId], references: [id])
+//   folderId  Int
+//   folder    Folder  @relation(fields: [folderId], references: [id])
 
-  @@id([groupId, folderId])
-}
+//   @@id([groupId, folderId])
+// }
 
 model Item {
   id        Int       @id @default(autoincrement())

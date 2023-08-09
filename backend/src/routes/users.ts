@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { Router } from 'express';
-import { createUser } from '../models';
+import { createUser, getAllUserGroupFolders } from '../models';
 
 const router = Router();
 
@@ -39,6 +39,18 @@ router.post('/', async (req, res) => {
         // error: error.message,
       });
     }
+  }
+});
+
+router.get('/:userId/folders', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const folders = await getAllUserGroupFolders(parseInt(userId));
+    res.status(200).json(folders);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
   }
 });
 
