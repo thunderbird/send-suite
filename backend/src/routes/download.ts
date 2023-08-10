@@ -9,7 +9,7 @@ import { Router } from 'express';
 // } from '../models';
 import storage from '../storage';
 
-const router = Router();
+const router: Router = Router();
 
 // We should:
 // - find the item, given the file id

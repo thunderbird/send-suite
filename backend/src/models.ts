@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, ContainerType, ItemType } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export async function createUser(email: string, publicKey: string) {
@@ -10,12 +10,13 @@ export async function createUser(email: string, publicKey: string) {
   });
 }
 
-// Automatically creates a group for folder
+// Automatically creates a group for container
 // owner is added to new group
-export async function createFolder(
+export async function createContainer(
   name: string,
   publicKey: string,
-  ownerId: number
+  ownerId: number,
+  type: ContainerType
 ) {
   // TODO: figure out the nested create syntax:
   // https://www.prisma.io/docs/reference/api-reference/prisma-client-reference#create-1
@@ -30,20 +31,21 @@ export async function createFolder(
     },
   });
 
-  const folder = await prisma.folder.create({
+  const container = await prisma.container.create({
     data: {
       name,
       publicKey,
       ownerId,
       groupId: group.id,
+      type,
     },
   });
 
-  return folder;
+  return container;
 }
 
-export async function getOwnedFolders(ownerId: number) {
-  return prisma.folder.findMany({
+export async function getOwnedContainers(ownerId: number) {
+  return prisma.container.findMany({
     where: {
       ownerId,
     },
@@ -55,21 +57,23 @@ export async function getOwnedFolders(ownerId: number) {
 
 export async function createItem(
   name: string,
-  folderId: number,
-  ownerId: number
+  containerId: number,
+  ownerId: number,
+  type: ItemType
 ) {
   return prisma.item.create({
     data: {
       name,
       ownerId,
-      folderId,
+      containerId,
+      type,
     },
   });
 }
 
-// required: folderId
-export async function getItemsInFolder(id: number) {
-  return prisma.folder.findUnique({
+// required: containerId
+export async function getItemsInContainer(id: number) {
+  return prisma.container.findUnique({
     where: {
       id,
     },
@@ -80,10 +84,10 @@ export async function getItemsInFolder(id: number) {
 }
 
 // TODO:
-// - move item to another folder
+// - move item to another container
 // - delete item
 
-export async function getAllUserGroupFolders(userId: number) {
+export async function getAllUserGroupContainers(userId: number) {
   const params = {
     where: {
       id: userId,
@@ -102,7 +106,7 @@ export async function getAllUserGroupFolders(userId: number) {
     return null;
   }
   const groupIds = user.groups.map(({ groupId }) => groupId);
-  return prisma.folder.findMany({
+  return prisma.container.findMany({
     where: {
       groupId: {
         in: groupIds,
@@ -114,12 +118,12 @@ export async function getAllUserGroupFolders(userId: number) {
   });
 }
 
-// for a folder, how many groups are there?
+// for a container, how many groups are there?
 // should there be only one?
-export async function addGroupMember(folderId: number, userId: number) {
-  const folder = await prisma.folder.findUnique({
+export async function addGroupMember(containerId: number, userId: number) {
+  const container = await prisma.container.findUnique({
     where: {
-      id: folderId,
+      id: containerId,
     },
     select: {
       group: {
@@ -130,11 +134,11 @@ export async function addGroupMember(folderId: number, userId: number) {
     },
   });
 
-  if (!folder) {
+  if (!container) {
     return null;
   }
 
-  const { group } = folder ?? {};
+  const { group } = container ?? {};
 
   if (!group) {
     return null;

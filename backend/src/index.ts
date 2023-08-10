@@ -4,7 +4,7 @@ import express from 'express';
 import WebSocket from 'ws';
 
 import users from './routes/users';
-import folders from './routes/folders';
+import containers from './routes/containers';
 import download from './routes/download';
 
 import wsHandler from './wsHandler';
@@ -28,7 +28,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/users', users);
-app.use('/api/folders', folders);
+app.use('/api/containers', containers);
 app.use('/api/download', download);
 
 app.get(`*`, (req, res) => {
