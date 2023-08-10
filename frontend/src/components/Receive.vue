@@ -5,22 +5,17 @@ import { download } from '../lib/filesync';
 // import { blobStream } from '../lib/streams';
 
 const fileId = ref('');
+const message = ref('hello');
 
-async function downloadFile() {
+async function downloadMessage() {
   console.log(fileId.value);
   if (!fileId.value) {
     return;
   }
-  const downloadResponse = await download(fileId.value);
-  const { size } = downloadResponse;
-
-  // here's where we would decrypt:
-  // const plainStream = blobStream(ciphertext);
-  const plaintext = await downloadResponse.arrayBuffer();
-  const decoder = new TextDecoder();
-  const plaintextString = decoder.decode(plaintext);
-  // console.log(plaintextString);
-  return plaintextString;
+  const plaintextString = await download(fileId.value);
+  console.log(plaintextString);
+  message.value = plaintextString;
+  // return plaintextString;
 }
 </script>
 
@@ -28,12 +23,18 @@ async function downloadFile() {
   <div>
     <form @submit.prevent>
       <label>
-        Download a file:
+        Download a message:
         <input v-model="fileId" />
       </label>
-      <button @click="downloadFile">Download File</button>
+      <button @click="downloadMessage">Download Message</button>
     </form>
+    <textarea v-if="message">{{ message }}</textarea>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+textarea {
+  height: 5rem;
+  width: 100%;
+}
+</style>

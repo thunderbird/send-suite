@@ -116,6 +116,7 @@ export default class Receiver extends Nanobus {
       const plaintext = await streamToArrayBuffer(plainStream, size);
       debugger;
       if (!noSave) {
+        // For saving files
         return await saveFile({
           // plaintext: await streamToArrayBuffer(blobStream(ciphertext), size),
           plaintext,
@@ -123,7 +124,7 @@ export default class Receiver extends Nanobus {
           type: this.fileInfo.type,
         });
       } else {
-        // THIS IS THE ONE USED FOR BOTH FILES AND MESSAGES
+        // Used for messages
         const decoder = new TextDecoder();
         const plaintextString = decoder.decode(plaintext);
         return plaintextString;

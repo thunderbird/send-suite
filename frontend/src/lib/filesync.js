@@ -153,7 +153,7 @@ export async function upload(blob, canceller = {}, doEncrypt = true) {
 // }
 
 // async download(id, keychain, onprogress, canceller) {
-export async function download(id, canceller = {}) {
+async function _doDownload(id, canceller = {}) {
   const endpoint = 'https://localhost:8088/api/download';
   const xhr = new XMLHttpRequest();
   canceller.oncancel = function () {
@@ -183,4 +183,52 @@ export async function download(id, canceller = {}) {
     xhr.send();
     // onprogress(0);
   });
+}
+
+async function saveFile(file) {
+  return new Promise(function (resolve, reject) {
+    const dataView = new DataView(file.plaintext);
+    const blob = new Blob([dataView], { type: file.type });
+
+    if (navigator.msSaveBlob) {
+      navigator.msSaveBlob(blob, file.name);
+      return resolve();
+    } else {
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = file.name;
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(downloadUrl);
+      setTimeout(resolve, 100);
+    }
+  });
+}
+
+export async function download(id) {
+  const downloadResponse = await _doDownload(id);
+  const { size } = downloadResponse;
+  // here's where we figure out what type it is
+  // const { type } = downloadResponse;
+
+  // here's where we would decrypt:
+  // const plainStream = blobStream(ciphertext);
+  const plaintext = await downloadResponse.arrayBuffer();
+
+  // And do something different with the plaintext based on type
+  // if (type === 'MESSAGE') {}
+  const decoder = new TextDecoder();
+  const plaintextString = decoder.decode(plaintext);
+  return plaintextString;
+
+  // if (type === 'FILE') {}
+  /*
+        return await saveFile({
+          // plaintext: await streamToArrayBuffer(blobStream(ciphertext), size),
+          plaintext,
+          name: decodeURIComponent(this.fileInfo.name),
+          type: this.fileInfo.type,
+        });
+  */
 }
