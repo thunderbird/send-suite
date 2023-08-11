@@ -2,7 +2,6 @@ export function transformStream(readable, transformer, oncancel) {
   try {
     return readable.pipeThrough(new TransformStream(transformer));
   } catch (e) {
-    debugger;
     const reader = readable.getReader();
     return new ReadableStream({
       start(controller) {
@@ -69,4 +68,34 @@ class BlobStreamController {
 
 export function blobStream(blob, size) {
   return new ReadableStream(new BlobStreamController(blob, size));
+}
+
+class ConcatStreamController {
+  constructor(streams) {
+    this.streams = streams;
+    this.index = 0;
+    this.reader = null;
+    this.nextReader();
+  }
+
+  nextReader() {
+    const next = this.streams[this.index++];
+    this.reader = next && next.getReader();
+  }
+
+  async pull(controller) {
+    if (!this.reader) {
+      return controller.close();
+    }
+    const data = await this.reader.read();
+    if (data.done) {
+      this.nextReader();
+      return this.pull(controller);
+    }
+    controller.enqueue(data.value);
+  }
+}
+
+export function concatStream(streams) {
+  return new ReadableStream(new ConcatStreamController(streams));
 }

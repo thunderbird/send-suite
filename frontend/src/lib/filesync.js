@@ -1,6 +1,7 @@
 import { ECE_RECORD_SIZE } from './ece';
-import { delay, arrayToB64 } from './utils';
+import { delay, streamToArrayBuffer } from './utils';
 import { blobStream } from './streams';
+import { encryptStream, decryptStream } from './ece';
 
 class ConnectionError extends Error {
   constructor(cancelled, duration, size) {
@@ -48,15 +49,14 @@ function listenForResponse(ws, canceller) {
   });
 }
 
-export async function upload(blob, canceller = {}, doEncrypt = true) {
+export async function upload(blob, key, canceller = {}) {
   const endpoint = 'wss://localhost:8088/api/ws';
   const ws = await asyncInitWebSocket(endpoint);
 
   try {
     // Send a preamble
     const fileMeta = {
-      type: 'upload',
-      name: 'some file',
+      name: 'does this even matter?',
     };
 
     const uploadInfoResponse = listenForResponse(ws, canceller);
@@ -73,10 +73,11 @@ export async function upload(blob, canceller = {}, doEncrypt = true) {
     let size = 0;
     const completedResponse = listenForResponse(ws, canceller);
 
-    const stream = blobStream(blob);
-    if (doEncrypt) {
+    let stream = blob;
+    if (key) {
       // TODO: encrypt the stream
       // we want to make this optional for simple downloads
+      stream = encryptStream(stream, key);
     }
 
     const reader = stream.getReader();
@@ -206,16 +207,30 @@ async function saveFile(file) {
   });
 }
 
-export async function download(id) {
-  const downloadResponse = await _doDownload(id);
-  const { size } = downloadResponse;
-  // here's where we figure out what type it is
-  // const { type } = downloadResponse;
+export async function download(id, key) {
+  const downloadedBlob = await _doDownload(id);
+  const { size } = downloadedBlob;
 
+  // This is *not* where we figure out the type
+  // I can't just `const { type } = downloadedBlob`
+  // unless I want to add a mimetype to the blob
+  // I don't think this is the right place for that.
+
+  let plaintext;
   // here's where we would decrypt:
-  // const plainStream = blobStream(ciphertext);
-  const plaintext = await downloadResponse.arrayBuffer();
+  if (key) {
+    console.log(`decrypting with key`);
+    let plainStream = decryptStream(blobStream(downloadedBlob), key);
+    plaintext = await streamToArrayBuffer(plainStream, size);
+  } else {
+    console.log(`no decryption, just convert blob to array buffer`);
+    plaintext = await downloadedBlob.arrayBuffer();
+  }
+  // const plaintext = await downloadedBlob.arrayBuffer();
 
+  // but how did I figure out the type before in the old front-end?
+  // ... it came from the metadata I stored in the `Uploads` table
+  //
   // And do something different with the plaintext based on type
   // if (type === 'MESSAGE') {}
   const decoder = new TextDecoder();

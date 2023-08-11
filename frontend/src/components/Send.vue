@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from 'vue';
 import { upload } from '../lib/filesync';
+import { loadKeyFromStorage } from '../lib/crypt';
+import { encryptStream } from '../lib/ece';
+import { blobStream, concatStream } from '../lib/streams';
 
 const fileBlob = ref(null);
 const uploadId = ref('');
@@ -8,9 +11,20 @@ const uploadId = ref('');
 async function sendBlob(blob) {
   console.log(`want to send blob`);
   console.log(blob);
-  const result = await upload(blob);
-  console.log(result);
-  return result;
+  // const aesKey = crypto.getRandomValues(new Uint8Array(16)); //await loadKeyFromStorage();
+  const realKey = await loadKeyFromStorage();
+  let exported = await window.crypto.subtle.exportKey('raw', realKey);
+  exported = new Uint8Array(exported);
+  // debugger;
+  if (exported) {
+    console.log(`Encrypting blob before uploading using ${exported}`);
+    const stream = blobStream(blob);
+    const result = await upload(stream, exported);
+    console.log(result);
+    return result;
+  }
+  return;
+  // return result;
   // const userObj = user.value;
   // console.log(`sending from ${userObj.email} to ${recipientAddress.value}`);
   // const isValidUser = await api.value.userExists(recipientAddress.value);
@@ -44,7 +58,12 @@ async function handleFile(event) {
 }
 
 async function sendFile() {
-  const result = await sendBlob(fileBlob.value);
+  // const result = await sendBlob(fileBlob.value);
+  // uploadId.value = result.id;
+  const blob = new Blob(['hello there'], { type: 'text/plain' });
+  blob.name = `${new Date().getTime()}.txt`;
+  // isFile.value = false;
+  const result = await sendBlob(blob);
   uploadId.value = result.id;
 }
 </script>
@@ -52,12 +71,12 @@ async function sendFile() {
 <template>
   <div>
     <form @submit.prevent>
-      <label>
+      <!-- <label>
         Upload a file:
         <input type="file" @change="handleFile" />
       </label>
-      <br />
-      <button @click="sendFile">Send File</button>
+      <br /> -->
+      <button @click="sendFile">Send Message</button>
     </form>
     <p v-if="uploadId">Uploaded: {{ uploadId }}</p>
   </div>

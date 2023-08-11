@@ -1,0 +1,9 @@
+const CONTAINER_TYPE = {
+  CONVERSATION: 'CONVERSATION',
+  FOLDER: 'FOLDER',
+};
+
+const ITEM_TYPE = {
+  MESSAGE: 'MESSAGE',
+  FILE: 'FILE',
+};

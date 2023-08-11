@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { download } from '../lib/filesync';
 // import { streamToArrayBuffer } from '../lib/utils';
 // import { blobStream } from '../lib/streams';
+import { loadKeyFromStorage } from '../lib/crypt';
 
 const fileId = ref('');
 const message = ref('hello');
@@ -12,7 +13,10 @@ async function downloadMessage() {
   if (!fileId.value) {
     return;
   }
-  const plaintextString = await download(fileId.value);
+  const realKey = await loadKeyFromStorage();
+  let exported = await window.crypto.subtle.exportKey('raw', realKey);
+  exported = new Uint8Array(exported);
+  const plaintextString = await download(fileId.value, exported);
   console.log(plaintextString);
   message.value = plaintextString;
   // return plaintextString;
