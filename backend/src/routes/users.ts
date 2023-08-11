@@ -42,11 +42,11 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.get('/:userId/folders', async (req, res) => {
+router.get('/:userId/containers', async (req, res) => {
   const { userId } = req.params;
   try {
-    const folders = await getAllUserGroupContainers(parseInt(userId));
-    res.status(200).json(folders);
+    const containers = await getAllUserGroupContainers(parseInt(userId));
+    res.status(200).json(containers);
   } catch (error) {
     res.status(500).json({
       message: 'Server error.',
