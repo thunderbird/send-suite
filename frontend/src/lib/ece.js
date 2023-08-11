@@ -47,7 +47,7 @@ class ECETransformer {
       inputKey,
       {
         name: 'AES-GCM',
-        length: 128,
+        length: 256,
       },
       true, // Edge polyfill requires key to be extractable to encrypt :/
       ['encrypt', 'decrypt']
@@ -75,7 +75,7 @@ class ECETransformer {
         inputKey,
         {
           name: 'AES-GCM',
-          length: 128,
+          length: 256,
         },
         true,
         ['encrypt', 'decrypt']
