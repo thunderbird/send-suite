@@ -16,7 +16,7 @@ export async function generateAESKey() {
     const key = await window.crypto.subtle.generateKey(
       {
         name: 'AES-GCM',
-        length: 256, // can be  128, 192, or 256
+        length: 128, // can be  128, 192, or 256
       },
       true, // so we can export
       ['encrypt', 'decrypt']

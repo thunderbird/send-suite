@@ -3,7 +3,7 @@ import { transformStream } from './streams';
 
 const NONCE_LENGTH = 12;
 const TAG_LENGTH = 16;
-const KEY_LENGTH = 32;
+const KEY_LENGTH = 16;
 const MODE_ENCRYPT = 'encrypt';
 const MODE_DECRYPT = 'decrypt';
 export const ECE_RECORD_SIZE = 1024 * 64;
@@ -41,13 +41,13 @@ class ECETransformer {
       {
         name: 'HKDF',
         salt: this.salt,
-        info: encoder.encode('Content-Encoding: aes256gcm\0'),
+        info: encoder.encode('Content-Encoding: aes128gcm\0'),
         hash: 'SHA-256',
       },
       inputKey,
       {
         name: 'AES-GCM',
-        length: 256,
+        length: 128,
       },
       true, // Edge polyfill requires key to be extractable to encrypt :/
       ['encrypt', 'decrypt']
@@ -75,7 +75,7 @@ class ECETransformer {
         inputKey,
         {
           name: 'AES-GCM',
-          length: 256,
+          length: 128,
         },
         true,
         ['encrypt', 'decrypt']
@@ -168,7 +168,7 @@ class ECETransformer {
       {
         name: 'AES-GCM',
         iv: nonce,
-        tagLength: 256,
+        tagLength: 128,
       },
       this.key,
       buffer

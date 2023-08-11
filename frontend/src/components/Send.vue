@@ -9,7 +9,7 @@ const fileBlob = ref(null);
 const uploadId = ref('');
 
 async function sendBlob(blob) {
-  console.log(`want to send blob`);
+  console.log(`want to send blob of size ${blob.size}`);
   console.log(blob);
   // const aesKey = crypto.getRandomValues(new Uint8Array(16)); //await loadKeyFromStorage();
   const realKey = await loadKeyFromStorage();
@@ -60,7 +60,7 @@ async function handleFile(event) {
 async function sendFile() {
   // const result = await sendBlob(fileBlob.value);
   // uploadId.value = result.id;
-  const blob = new Blob(['hello there'], { type: 'text/plain' });
+  const blob = new Blob(['hello there hi hi hi'], { type: 'text/plain' });
   blob.name = `${new Date().getTime()}.txt`;
   // isFile.value = false;
   const result = await sendBlob(blob);
