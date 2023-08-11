@@ -56,7 +56,7 @@ model Container {
   createdAt DateTime?
   updatedAt DateTime?
   type      ContainerType
-  // unique container names in a container
+  // unique container names in the same parent
   @@unique([name, parentId])
 }
 
