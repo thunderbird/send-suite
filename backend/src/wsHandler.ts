@@ -40,7 +40,7 @@ class Limiter extends Transform {
 }
 
 async function handleUpload(ws, message, fileStream) {
-  const uploadId = crypto.randomBytes(8).toString('hex');
+  const uploadId = crypto.randomBytes(24).toString('hex');
   // const owner = crypto.randomBytes(10).toString('hex');
 
   const fileInfo = JSON.parse(message);
@@ -112,7 +112,6 @@ async function handleUpload(ws, message, fileStream) {
         id: uploadId,
       })
     );
-
     // Omits the entire `statUploadEvent`
     // I wonder if that's mozilla metrics? (looks like it)
   }
@@ -141,12 +140,11 @@ export default function (ws, req) {
 
   ws.once('message', async function (message) {
     try {
-      // we could either:
-      // accept a pre-message message that indicates
-      // whether we're uploading or downloading
-      // if we have a pre-message, then we need to do the
-      // attach/detach thing that other parts of the code are doing, yes?
       await handleUpload(ws, message, fileStream);
+      // Could I create the Upload db item here?
+      // I'd need the user's id, which I could get from the `req`.
+      // But I need the auth middleware, first
+      // In addition, I'd need the size of the original file
     } catch (e) {
       console.error('upload', e);
       if (ws.readyState === 1) {

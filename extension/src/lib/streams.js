@@ -2,6 +2,7 @@
 
 export function transformStream(readable, transformer, oncancel) {
   try {
+    debugger;
     return readable.pipeThrough(new TransformStream(transformer));
   } catch (e) {
     debugger;
@@ -52,10 +53,14 @@ class BlobStreamController {
     return new Promise((resolve, reject) => {
       const bytesLeft = this.blob.size - this.index;
       if (bytesLeft <= 0) {
+        debugger;
         controller.close();
         return resolve();
       }
       const size = Math.min(this.chunkSize, bytesLeft);
+      debugger;
+      // 2023-08-10: `this.blob` is a Blob
+      // which has a .slice, .arrayBuffer, .stream, .size
       const slice = this.blob.slice(this.index, this.index + size);
       const reader = new FileReader();
       reader.onload = () => {

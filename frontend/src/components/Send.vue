@@ -4,10 +4,13 @@ import { upload } from '../lib/filesync';
 import { loadKeyFromStorage } from '../lib/crypt';
 import { encryptStream } from '../lib/ece';
 import { blobStream, concatStream } from '../lib/streams';
+import { ApiConnection } from '../lib/api';
 
 const fileBlob = ref(null);
 const uploadId = ref('');
 
+const api = new ApiConnection('https://localhost:8088');
+console.log(api.toString());
 async function sendBlob(blob) {
   console.log(`want to send blob of size ${blob.size}`);
   console.log(blob);
@@ -60,11 +63,22 @@ async function handleFile(event) {
 async function sendFile() {
   // const result = await sendBlob(fileBlob.value);
   // uploadId.value = result.id;
-  const blob = new Blob(['hello there hi hi hi'], { type: 'text/plain' });
+  const blob = new Blob(
+    [
+      'hello there hi hi hi hello hello hello there hi hi hi hello hello ending with this period.',
+    ],
+    {
+      type: 'text/plain',
+    }
+  );
   blob.name = `${new Date().getTime()}.txt`;
   // isFile.value = false;
   const result = await sendBlob(blob);
   uploadId.value = result.id;
+
+  const { id } = result;
+  const apiResp = await api.createUpload(id, blob.size, 1);
+  console.log(apiResp);
 }
 </script>
 

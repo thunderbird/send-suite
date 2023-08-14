@@ -207,10 +207,8 @@ async function saveFile(file) {
   });
 }
 
-export async function download(id, key) {
+export async function download(id, size, key) {
   const downloadedBlob = await _doDownload(id);
-  const { size } = downloadedBlob;
-  debugger;
   // This is *not* where we figure out the type
   // I can't just `const { type } = downloadedBlob`
   // unless I want to add a mimetype to the blob

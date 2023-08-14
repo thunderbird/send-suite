@@ -10,6 +10,30 @@ export async function createUser(email: string, publicKey: string) {
   });
 }
 
+export async function createUpload(id: string, size: number, ownerId: number) {
+  const upload = await prisma.upload.create({
+    data: {
+      id,
+      size,
+      ownerId,
+      createdAt: new Date(),
+    },
+  });
+  return upload;
+}
+
+export async function getUploadSize(id: string) {
+  const upload = await prisma.upload.findUnique({
+    where: {
+      id,
+    },
+    select: {
+      size: true,
+    },
+  });
+  return upload.size;
+}
+
 // Automatically creates a group for container
 // owner is added to new group
 export async function createContainer(
@@ -58,14 +82,14 @@ export async function getOwnedContainers(ownerId: number) {
 export async function createItem(
   name: string,
   containerId: number,
-  ownerId: number,
+  uploadId: string,
   type: ItemType
 ) {
   return prisma.item.create({
     data: {
       name,
-      ownerId,
       containerId,
+      uploadId,
       type,
     },
   });

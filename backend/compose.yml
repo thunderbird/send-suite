@@ -2,7 +2,8 @@ services:
   app:
     build: .
     ports:
-      - "8080:8080"
+      - '8080:8080'
+      - '5555:5555' # for browsing db with prisma studio
     volumes:
       - .:/app
       # - ./storage:/tmp
@@ -17,18 +18,18 @@ services:
       - ./tls-dev-proxy/certs:/etc/ssl/certs
       - ./tls-dev-proxy/logs:/var/log/nginx
     ports:
-      - "8088:12345"
+      - '8088:12345'
     depends_on:
       - app
   db:
-    image: "postgres:15"
+    image: 'postgres:15'
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:
-      - "6432:5432"
+      - '6432:5432'
 
 volumes:
   postgres-data:

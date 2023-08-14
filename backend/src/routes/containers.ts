@@ -44,7 +44,7 @@ router.post('/', async (req, res) => {
     );
     res.status(201).json({
       message: 'Container created',
-      user: container,
+      container,
     });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -75,12 +75,12 @@ router.get('/owner/:userId', async (req, res) => {
 
 router.post('/:containerId', async (req, res) => {
   const { containerId } = req.params;
-  const { name, ownerId, type } = req.body;
+  const { name, uploadId, type } = req.body;
   try {
     const containers = await createItem(
       name,
       parseInt(containerId),
-      parseInt(ownerId),
+      uploadId,
       type
     );
     res.status(200).json(containers);

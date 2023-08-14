@@ -5,6 +5,7 @@ import WebSocket from 'ws';
 
 import users from './routes/users';
 import containers from './routes/containers';
+import uploads from './routes/uploads';
 import download from './routes/download';
 
 import wsHandler from './wsHandler';
@@ -18,10 +19,10 @@ const app = express();
 
 app.use(express.json());
 app.use(cors());
-app.use((req, res, next) => {
-  res.header('Access-Control-Expose-Headers', 'WWW-Authenticate');
-  next();
-});
+// app.use((req, res, next) => {
+//   res.header('Access-Control-Expose-Headers', 'WWW-Authenticate');
+//   next();
+// });
 
 app.get('/', (req, res) => {
   res.status(200).send('echo');
@@ -29,6 +30,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/users', users);
 app.use('/api/containers', containers);
+app.use('/api/uploads', uploads);
 app.use('/api/download', download);
 
 app.get(`*`, (req, res) => {

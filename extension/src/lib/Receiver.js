@@ -100,12 +100,16 @@ export default class Receiver extends Nanobus {
     );
     try {
       const ciphertext = await this.downloadRequest.result;
+      // ciphertext is a blob
+      debugger;
       this.downloadRequest = null;
       this.msg = "decryptingFile";
       this.state = "decrypting";
       this.emit("decrypting");
       let size = this.fileInfo.size;
 
+      // I turn the blob into a stream
+      // then I decrypt the stream
       let plainStream = this.keychain.decryptStream(blobStream(ciphertext));
       if (this.fileInfo.type === "send-archive") {
         const zip = new Zip(this.fileInfo.manifest, plainStream);
@@ -113,6 +117,7 @@ export default class Receiver extends Nanobus {
         size = zip.size;
       }
 
+      // the stream is turned into an array buffer
       const plaintext = await streamToArrayBuffer(plainStream, size);
       debugger;
       if (!noSave) {

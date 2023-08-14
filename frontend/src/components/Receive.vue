@@ -4,19 +4,29 @@ import { download } from '../lib/filesync';
 // import { streamToArrayBuffer } from '../lib/utils';
 // import { blobStream } from '../lib/streams';
 import { loadKeyFromStorage } from '../lib/crypt';
+import { ApiConnection } from '../lib/api';
 
 const fileId = ref('');
 const message = ref('hello');
+
+const api = new ApiConnection('https://localhost:8088');
 
 async function downloadMessage() {
   console.log(fileId.value);
   if (!fileId.value) {
     return;
   }
+  const id = fileId.value;
+  const size = await api.getUploadSize(id);
+
+  if (!size) {
+    return;
+  }
+
   const realKey = await loadKeyFromStorage();
   let exported = await window.crypto.subtle.exportKey('raw', realKey);
   exported = new Uint8Array(exported);
-  const plaintextString = await download(fileId.value, exported);
+  const plaintextString = await download(id, size, exported);
   console.log(plaintextString);
   message.value = plaintextString;
   // return plaintextString;

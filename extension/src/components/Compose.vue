@@ -2,32 +2,34 @@
 import { ref, onMounted, inject } from "vue";
 import Sender from "../lib/Sender";
 import Archive from "../lib/Archive";
+import { blobStream } from "../lib/streams";
 
 const { api, fileManager } = inject("api");
 const { user } = inject("user");
 
-const message = ref(null);
+const message = ref("hey");
 const password = ref(null);
 const fileBlob = ref(null);
 const isFile = ref(false);
-const recipientAddress = ref("");
+const recipientAddress = ref("bob@bob.com");
 
 async function sendBlob(blob) {
   const userObj = user.value;
   console.log(`sending from ${userObj.email} to ${recipientAddress.value}`);
   const isValidUser = await api.value.userExists(recipientAddress.value);
   if (isValidUser) {
-    const archive = new Archive([blob]);
+    // const archive = new Archive([blob]);
+    const archive = blobStream(blob);
     const sender = new Sender(fileManager.value);
     const file = await sender.upload(archive, null, password.value);
-    const item = await api.value.createItem(file.url, userObj.id, isFile.value);
-    if (item) {
-      await api.value.shareWith(item.id, userObj.email, [
-        recipientAddress.value,
-      ]);
-    } else {
-      alert(`could not share with ${recipientAddress.value}`);
-    }
+    // const item = await api.value.createItem(file.url, userObj.id, isFile.value);
+    // if (item) {
+    //   await api.value.shareWith(item.id, userObj.email, [
+    //     recipientAddress.value,
+    //   ]);
+    // } else {
+    //   alert(`could not share with ${recipientAddress.value}`);
+    // }
   } else {
     alert(`User does not exist.`);
   }

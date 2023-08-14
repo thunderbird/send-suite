@@ -16,7 +16,7 @@ model User {
   email       String  @unique
   publicKey   String
   // links   Link[]
-  items       Item[]
+  uploads     Upload[]
   groups      GroupUser[]
   containers  Container[]
 }
@@ -74,14 +74,50 @@ enum ItemType {
   FILE
 }
 model Item {
-  id        Int           @id @default(autoincrement())
-  name      String
-  containerId  Int
-  container    Container  @relation(fields: [containerId], references: [id])
-  ownerId   Int
-  owner     User          @relation(fields: [ownerId], references: [id])
-  type      ItemType
+  id            Int           @id @default(autoincrement())
+  name          String
+  containerId   Int
+  container     Container     @relation(fields: [containerId], references: [id])
+  uploadId      String
+  upload        Upload          @relation(fields: [uploadId], references: [id])
+  type          ItemType
 
   // unique "file names" in a container
   @@unique([name, containerId])
+}
+
+// This is how we facilitate links to encrypted items
+// A dummy user is created who has access to an individual file
+// one problem: folders have keys, not items
+// and we want the user to be able to share anything that already exists
+// in their lockbox to users and non-users...
+// options:
+// - create a "virtual/invisible" subfolder and make it so an Item can be in multiple containers
+//    - the dummy user gets access to the invisible folder, not the parent
+//    - or, we create a copy of the folder (db entity), copy the key, and copy the item
+//    - that way, there's no way to determine where original folder/item are in order to try to use the key
+// model ItemLink {
+//   id              Int           @id @default(autoincrement())
+//   hash            String
+//   expiresAt       DateTime?
+//   downloadLimit   Int?
+//   downloadCount   Int?
+//   createdAt       DateTime?
+// }
+
+// An upload is just a file or other piece of content that resides in storage.
+// It belongs to a User.
+// A user can share anything they've uploaded
+// Are users aware of their Uploads?
+// Aren't they only looking at Items in a folder?
+// are Uploads just the "backing data" for an Item?
+// (allowing them to create ItemLinks from existing items)
+// where ItemLinks have expirations and throwaway containers
+model Upload {
+  id        String        @unique
+  size      Int
+  ownerId   Int
+  owner     User          @relation(fields: [ownerId], references: [id])
+  items     Item[]        // A single Upload may back multiple Items
+  createdAt DateTime?
 }
