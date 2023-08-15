@@ -97,7 +97,7 @@ export class ApiConnection {
     const resp = await this.callApi(
       `containers`,
       {
-        name: name ?? timestamp(),
+        name: name ?? 'convo_' + timestamp(),
         publicKey,
         ownerId,
         type: CONTAINER_TYPE.CONVERSATION,

@@ -1,11 +1,28 @@
 <script setup>
 import Send from './components/Send.vue';
 import Receive from './components/Receive.vue';
+import Conversations from './views/Conversations.vue';
+import Wrapper from './Wrapper.vue';
 </script>
 
 <template>
-  <Send />
-  <Receive />
+  <Wrapper>
+    <h1 className="text-3xl font-bold underline">Hello world!</h1>
+    <div class="main">
+      <div class="column">
+        <Conversations />
+      </div>
+      <div class="column"></div>
+      <div class="column"></div>
+    </div>
+  </Wrapper>
 </template>
 
-<style scoped></style>
+<style scoped>
+.main {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+}
+</style>

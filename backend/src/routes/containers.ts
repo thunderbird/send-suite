@@ -35,6 +35,8 @@ router.post('/', async (req, res) => {
 
   const defaultMessage = 'Bad request';
 
+  console.log(typeof name);
+  console.log(`🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡`);
   try {
     const container = await createContainer(
       name.trim().toLowerCase(),

@@ -1,24 +1,24 @@
 import { createApp } from 'vue';
 import './style.css';
 import App from './App.vue';
-import {
-  generateAESKey,
-  loadKeyFromStorage,
-  saveKeyToStorage,
-} from './lib/crypt';
-import { encryptStream, decryptStream } from './lib/ece';
-import { blobStream } from './lib/streams';
-import { streamToArrayBuffer } from './lib/utils';
+// import {
+//   generateAESKey,
+//   loadKeyFromStorage,
+//   saveKeyToStorage,
+// } from './lib/crypt';
+// import { encryptStream, decryptStream } from './lib/ece';
+// import { blobStream } from './lib/streams';
+// import { streamToArrayBuffer } from './lib/utils';
 
-// This is our folder key
-let aesKey = await loadKeyFromStorage();
-if (!aesKey) {
-  console.log('no key, generating and storing');
-  aesKey = await generateAESKey();
-  saveKeyToStorage(aesKey);
-} else {
-  console.log(`I have the key already. gah. tina, eat your food.`);
-}
+// // This is our folder key
+// let aesKey = await loadKeyFromStorage();
+// if (!aesKey) {
+//   console.log('no key, generating and storing');
+//   aesKey = await generateAESKey();
+//   saveKeyToStorage(aesKey);
+// } else {
+//   console.log(`I have the key already. gah. tina, eat your food.`);
+// }
 
 // let exported = await window.crypto.subtle.exportKey('raw', aesKey);
 // exported = new Uint8Array(exported);

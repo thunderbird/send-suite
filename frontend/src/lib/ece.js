@@ -23,42 +23,41 @@ class ECETransformer {
     this.seq = 0;
     this.firstchunk = true;
     this.rs = rs;
-    this.ikm = ikm;
+    this.key = ikm;
     // this.ikm = ikm.buffer;
     this.salt = salt;
-    console.log(`will generate key from .buffer of ${ikm}`);
   }
 
-  async generateKey() {
-    return this.ikm;
-    // const inputKey = await crypto.subtle.importKey(
-    //   'raw',
-    //   this.ikm,
-    //   'HKDF',
-    //   false,
-    //   ['deriveKey']
-    // );
-    // // return this.ikm;
+  // async generateKey() {
+  //   return this.ikm;
+  //   // const inputKey = await crypto.subtle.importKey(
+  //   //   'raw',
+  //   //   this.ikm,
+  //   //   'HKDF',
+  //   //   false,
+  //   //   ['deriveKey']
+  //   // );
+  //   // // return this.ikm;
 
-    // return crypto.subtle.deriveKey(
-    //   {
-    //     name: 'HKDF',
-    //     salt: this.salt,
-    //     info: encoder.encode('Content-Encoding: aes128gcm\0'),
-    //     hash: 'SHA-256',
-    //   },
-    //   inputKey,
-    //   {
-    //     name: 'AES-GCM',
-    //     length: 256,
-    //   },
-    //   true, // Edge polyfill requires key to be extractable to encrypt :/
-    //   ['encrypt', 'decrypt']
-    // );
-  }
+  //   // return crypto.subtle.deriveKey(
+  //   //   {
+  //   //     name: 'HKDF',
+  //   //     salt: this.salt,
+  //   //     info: encoder.encode('Content-Encoding: aes128gcm\0'),
+  //   //     hash: 'SHA-256',
+  //   //   },
+  //   //   inputKey,
+  //   //   {
+  //   //     name: 'AES-GCM',
+  //   //     length: 256,
+  //   //   },
+  //   //   true, // Edge polyfill requires key to be extractable to encrypt :/
+  //   //   ['encrypt', 'decrypt']
+  //   // );
+  // }
 
   async generateNonceBase() {
-    const base = await window.crypto.subtle.exportKey('raw', this.ikm);
+    const base = await window.crypto.subtle.exportKey('raw', this.key);
     const exported = new Uint8Array(base);
     // const inputKey = await crypto.subtle.importKey(
     //   'raw',
@@ -161,8 +160,7 @@ class ECETransformer {
     const nonce = this.generateNonce(seq);
     const encrypted = await crypto.subtle.encrypt(
       { name: 'AES-GCM', iv: nonce },
-      this.ikm,
-      // this.key,
+      this.key,
       this.pad(buffer, isLast)
     );
     return Buffer.from(encrypted);
@@ -176,8 +174,7 @@ class ECETransformer {
         iv: nonce,
         tagLength: 128,
       },
-      this.ikm,
-      // this.key,
+      this.key,
       buffer
     );
 
