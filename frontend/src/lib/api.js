@@ -80,4 +80,14 @@ export class ApiConnection {
       return null;
     }
   }
+
+  async getContainerWithItems(containerId) {
+    const resp = await this.callApi(`containers/${containerId}`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get container ${containerId}`);
+      return null;
+    }
+  }
 }
