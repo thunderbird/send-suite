@@ -48,7 +48,7 @@ export class ApiConnection {
     if (resp) {
       return resp.upload;
     } else {
-      console.log(`Error: Unable to create db item for message.`);
+      console.log(`Error: Unable to create Upload.`);
       return null;
     }
   }
@@ -59,6 +59,24 @@ export class ApiConnection {
       return resp.size;
     } else {
       console.log(`Error: Could not get size of ${id}.`);
+      return null;
+    }
+  }
+
+  async createItemInContainer(uploadId, containerId, name, type) {
+    const resp = await this.callApi(
+      `containers/${containerId}`,
+      {
+        uploadId,
+        name,
+        type,
+      },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: Unable to create Item.`);
       return null;
     }
   }

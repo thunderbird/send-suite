@@ -77,14 +77,13 @@ router.post('/:containerId', async (req, res) => {
   const { containerId } = req.params;
   const { name, uploadId, type } = req.body;
   try {
-    const containers = await createItem(
-      name,
-      parseInt(containerId),
-      uploadId,
-      type
-    );
-    res.status(200).json(containers);
+    const item = await createItem(name, parseInt(containerId), uploadId, type);
+    res.status(200).json(item);
+    console.log(`just returned item as json for item create`);
+    console.log(item);
   } catch (error) {
+    console.log(error);
+    console.log(`🤡 why did it not create the item?`);
     res.status(500).json({
       message: 'Server error.',
     });

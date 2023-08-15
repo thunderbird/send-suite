@@ -35,6 +35,11 @@ async function downloadMessage() {
 
 <template>
   <div>
+    <ol>
+      <li>add form element for container id</li>
+      <li>retrieve private key for folder from storage</li>
+      <li>download/decrypt all items in container</li>
+    </ol>
     <form @submit.prevent>
       <label>
         Download a message:

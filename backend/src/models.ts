@@ -88,9 +88,19 @@ export async function createItem(
   return prisma.item.create({
     data: {
       name,
-      containerId,
-      uploadId,
+      // containerId,
+      // uploadId,
       type,
+      upload: {
+        connect: {
+          id: uploadId,
+        },
+      },
+      container: {
+        connect: {
+          id: containerId,
+        },
+      },
     },
   });
 }

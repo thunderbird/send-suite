@@ -1,20 +1,23 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { upload } from '../lib/filesync';
 import { loadKeyFromStorage } from '../lib/crypt';
 import { encryptStream } from '../lib/ece';
-import { blobStream, concatStream } from '../lib/streams';
+import { blobStream } from '../lib/streams';
 import { ApiConnection } from '../lib/api';
 
 const fileBlob = ref(null);
 const uploadId = ref('');
+const containerId = ref(1);
+const ownerId = ref(1);
+const message = ref('hello this is the default message');
 
 const api = new ApiConnection('https://localhost:8088');
 console.log(api.toString());
 async function sendBlob(blob) {
   console.log(`want to send blob of size ${blob.size}`);
   console.log(blob);
-  // const aesKey = crypto.getRandomValues(new Uint8Array(16)); //await loadKeyFromStorage();
+
   const realKey = await loadKeyFromStorage();
   let exported = await window.crypto.subtle.exportKey('raw', realKey);
   exported = new Uint8Array(exported);
@@ -24,7 +27,7 @@ async function sendBlob(blob) {
     const stream = blobStream(blob);
     const result = await upload(stream, exported);
     console.log(result);
-    return result;
+    return result.id;
   }
   return;
   // return result;
@@ -60,40 +63,80 @@ async function handleFile(event) {
   reader.readAsArrayBuffer(file);
 }
 
-async function sendFile() {
+async function sendMessage() {
   // const result = await sendBlob(fileBlob.value);
   // uploadId.value = result.id;
-  const blob = new Blob(
-    [
-      'hello there hi hi hi hello hello hello there hi hi hi hello hello ending with this period.',
-    ],
-    {
-      type: 'text/plain',
-    }
-  );
-  blob.name = `${new Date().getTime()}.txt`;
+  const filename = `${new Date().getTime()}.txt`;
+  const blob = new Blob([message.value], {
+    type: 'text/plain',
+  });
+  blob.name = filename;
   // isFile.value = false;
-  const result = await sendBlob(blob);
-  uploadId.value = result.id;
+  const id = await sendBlob(blob);
+  uploadId.value = id;
 
-  const { id } = result;
-  const apiResp = await api.createUpload(id, blob.size, 1);
-  console.log(apiResp);
+  const uploadResp = await api.createUpload(id, blob.size, 1);
+  console.log(uploadResp);
+
+  if (id !== uploadResp.id) {
+    debugger;
+  }
+  // create the Item, adding to `containerId`
+  const itemResp = await api.createItemInContainer(
+    id,
+    containerId.value,
+    filename,
+    'MESSAGE'
+  );
+  console.log(`🎉 here it is...`);
+  console.log(itemResp);
 }
 </script>
 
 <template>
   <div>
+    <ol>
+      <li class="done">
+        create a container in insomnia, add an input for the container id
+      </li>
+      <li class="done">create a private key for folder, store it locally</li>
+      <li class="done">encrypt with private key for each message</li>
+      <li>create an item for the upload, putting it in container</li>
+    </ol>
     <form @submit.prevent>
       <!-- <label>
         Upload a file:
         <input type="file" @change="handleFile" />
       </label>
       <br /> -->
-      <button @click="sendFile">Send Message</button>
+      <label>
+        Owner id:
+        <input type="number" v-model="ownerId" />
+      </label>
+      <br />
+      <label>
+        Container id:
+        <input type="number" v-model="containerId" />
+      </label>
+      <br />
+      <label>
+        Message:
+        <textarea v-model="message">{{ message }}</textarea>
+      </label>
+
+      <button @click="sendMessage">Send Message</button>
     </form>
     <p v-if="uploadId">Uploaded: {{ uploadId }}</p>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+textarea {
+  display: block;
+  width: 80%;
+  height: 5rem;
+}
+.done {
+  text-decoration: line-through;
+}
+</style>

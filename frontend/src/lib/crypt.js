@@ -21,7 +21,8 @@ export async function generateAESKey() {
       true, // so we can export
       ['encrypt', 'decrypt']
     );
-
+    console.log(`generating AES key`);
+    console.log(key);
     return key;
   } catch (err) {
     console.error(err);
