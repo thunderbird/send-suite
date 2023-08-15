@@ -81,7 +81,7 @@ model Item {
   uploadId      String
   upload        Upload          @relation(fields: [uploadId], references: [id])
   type          ItemType
-
+  createdAt     DateTime?
   // unique "file names" in a container
   @@unique([name, containerId])
 }

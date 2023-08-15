@@ -40,3 +40,7 @@ export async function streamToArrayBuffer(stream, size) {
   }
   return result.buffer;
 }
+
+export function timestamp() {
+  return new Date().getTime();
+}

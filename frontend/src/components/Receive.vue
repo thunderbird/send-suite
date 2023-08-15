@@ -30,9 +30,9 @@ async function downloadMessage(id = fileId.value) {
   }
 
   const realKey = await loadKeyFromStorage();
-  let exported = await window.crypto.subtle.exportKey('raw', realKey);
-  exported = new Uint8Array(exported);
-  const plaintextString = await download(id, size, exported);
+  // let exported = await window.crypto.subtle.exportKey('raw', realKey);
+  // exported = new Uint8Array(exported);
+  const plaintextString = await download(id, size, realKey);
   console.log(plaintextString);
   // message.value = plaintextString;
   return plaintextString;

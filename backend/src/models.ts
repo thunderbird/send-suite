@@ -121,7 +121,10 @@ export async function getItemsInContainer(id: number) {
 // - move item to another container
 // - delete item
 
-export async function getAllUserGroupContainers(userId: number) {
+export async function getAllUserGroupContainers(
+  userId: number,
+  type: ContainerType | null
+) {
   const params = {
     where: {
       id: userId,
@@ -140,12 +143,18 @@ export async function getAllUserGroupContainers(userId: number) {
     return null;
   }
   const groupIds = user.groups.map(({ groupId }) => groupId);
-  return prisma.container.findMany({
-    where: {
-      groupId: {
-        in: groupIds,
-      },
+  const where = {
+    groupId: {
+      in: groupIds,
     },
+  };
+
+  if (type) {
+    where['type'] = type;
+  }
+
+  return prisma.container.findMany({
+    where,
     include: {
       items: true,
     },

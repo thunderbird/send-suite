@@ -1,5 +1,6 @@
-// create user with public key
-//
+import { timestamp } from './utils';
+import { CONTAINER_TYPE, ITEM_TYPE } from './const';
+
 export class ApiConnection {
   constructor(serverUrl) {
     // using new URL() trims off excess whitespace and trailing '/'
@@ -87,6 +88,104 @@ export class ApiConnection {
       return resp;
     } else {
       console.log(`Error: could not get container ${containerId}`);
+      return null;
+    }
+  }
+
+  async createConversation(ownerId, publicKey, name) {
+    // TODO: shift the userId from frontend argument to backend session
+    const resp = await this.callApi(
+      `containers`,
+      {
+        name: name ?? timestamp(),
+        publicKey,
+        ownerId,
+        type: CONTAINER_TYPE.CONVERSATION,
+      },
+      'POST'
+    );
+    if (resp) {
+      return resp.container;
+    } else {
+      console.log(`Error: could not create conversations for user ${ownerId}`);
+      return null;
+    }
+  }
+
+  async createFolder(ownerId, publicKey, name) {
+    // TODO: shift the userId from frontend argument to backend session
+    const resp = await this.callApi(
+      `containers`,
+      {
+        name: name ?? timestamp(),
+        publicKey,
+        ownerId,
+        type: CONTAINER_TYPE.FOLDER,
+      },
+      'POST'
+    );
+    if (resp) {
+      return resp.container;
+    } else {
+      console.log(`Error: could not create folder for user ${ownerId}`);
+      return null;
+    }
+  }
+
+  async addMemberToContainer(userId, containerId) {
+    const resp = await this.callApi(
+      `containers/${containerId}/member`,
+      {
+        userId,
+      },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(
+        `Error: could not add user ${ownerId} to container ${containerId}`
+      );
+      return null;
+    }
+  }
+
+  async removeMemberFromGroup(userId, containerId) {
+    const resp = await this.callApi(
+      `containers/${containerId}/member`,
+      {
+        userId,
+      },
+      'DELETE'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(
+        `Error: could not remove user ${ownerId} from container ${containerId}`
+      );
+      return null;
+    }
+  }
+
+  async getAllConversations(userId) {
+    // TODO: shift the userId from frontend argument to backend session
+    const resp = await this.callApi(`users/${userId}/conversations/`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get conversations for user ${userId}`);
+      return null;
+    }
+  }
+
+  async getAllFolders(userId) {
+    // TODO: shift the userId from frontend argument to backend session
+    const resp = await this.callApi(`users/${userId}/folders/`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get folders for user ${userId}`);
       return null;
     }
   }

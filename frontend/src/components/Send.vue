@@ -22,10 +22,10 @@ async function sendBlob(blob) {
   let exported = await window.crypto.subtle.exportKey('raw', realKey);
   exported = new Uint8Array(exported);
   // debugger;
-  if (exported) {
-    console.log(`Encrypting blob before uploading using ${exported}`);
+  if (realKey) {
+    // console.log(`Encrypting blob before uploading using ${exported}`);
     const stream = blobStream(blob);
-    const result = await upload(stream, exported);
+    const result = await upload(stream, realKey);
     console.log(result);
     return result.id;
   }

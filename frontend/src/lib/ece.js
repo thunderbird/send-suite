@@ -23,66 +23,71 @@ class ECETransformer {
     this.seq = 0;
     this.firstchunk = true;
     this.rs = rs;
-    this.ikm = ikm.buffer;
+    this.ikm = ikm;
+    // this.ikm = ikm.buffer;
     this.salt = salt;
     console.log(`will generate key from .buffer of ${ikm}`);
   }
 
   async generateKey() {
-    const inputKey = await crypto.subtle.importKey(
-      'raw',
-      this.ikm,
-      'HKDF',
-      false,
-      ['deriveKey']
-    );
+    return this.ikm;
+    // const inputKey = await crypto.subtle.importKey(
+    //   'raw',
+    //   this.ikm,
+    //   'HKDF',
+    //   false,
+    //   ['deriveKey']
+    // );
+    // // return this.ikm;
 
-    return crypto.subtle.deriveKey(
-      {
-        name: 'HKDF',
-        salt: this.salt,
-        info: encoder.encode('Content-Encoding: aes128gcm\0'),
-        hash: 'SHA-256',
-      },
-      inputKey,
-      {
-        name: 'AES-GCM',
-        length: 256,
-      },
-      true, // Edge polyfill requires key to be extractable to encrypt :/
-      ['encrypt', 'decrypt']
-    );
+    // return crypto.subtle.deriveKey(
+    //   {
+    //     name: 'HKDF',
+    //     salt: this.salt,
+    //     info: encoder.encode('Content-Encoding: aes128gcm\0'),
+    //     hash: 'SHA-256',
+    //   },
+    //   inputKey,
+    //   {
+    //     name: 'AES-GCM',
+    //     length: 256,
+    //   },
+    //   true, // Edge polyfill requires key to be extractable to encrypt :/
+    //   ['encrypt', 'decrypt']
+    // );
   }
 
   async generateNonceBase() {
-    const inputKey = await crypto.subtle.importKey(
-      'raw',
-      this.ikm,
-      'HKDF',
-      false,
-      ['deriveKey']
-    );
+    const base = await window.crypto.subtle.exportKey('raw', this.ikm);
+    const exported = new Uint8Array(base);
+    // const inputKey = await crypto.subtle.importKey(
+    //   'raw',
+    //   this.ikm,
+    //   'HKDF',
+    //   false,
+    //   ['deriveKey']
+    // );
 
-    const base = await crypto.subtle.exportKey(
-      'raw',
-      await crypto.subtle.deriveKey(
-        {
-          name: 'HKDF',
-          salt: this.salt,
-          info: encoder.encode('Content-Encoding: nonce\0'),
-          hash: 'SHA-256',
-        },
-        inputKey,
-        {
-          name: 'AES-GCM',
-          length: 256,
-        },
-        true,
-        ['encrypt', 'decrypt']
-      )
-    );
+    // const base = await crypto.subtle.exportKey(
+    //   'raw',
+    //   await crypto.subtle.deriveKey(
+    //     {
+    //       name: 'HKDF',
+    //       salt: this.salt,
+    //       info: encoder.encode('Content-Encoding: nonce\0'),
+    //       hash: 'SHA-256',
+    //     },
+    //     inputKey,
+    //     {
+    //       name: 'AES-GCM',
+    //       length: 256,
+    //     },
+    //     true,
+    //     ['encrypt', 'decrypt']
+    //   )
+    // );
 
-    return Buffer.from(base.slice(0, NONCE_LENGTH));
+    return Buffer.from(exported.slice(0, NONCE_LENGTH));
   }
 
   generateNonce(seq) {
@@ -156,7 +161,8 @@ class ECETransformer {
     const nonce = this.generateNonce(seq);
     const encrypted = await crypto.subtle.encrypt(
       { name: 'AES-GCM', iv: nonce },
-      this.key,
+      this.ikm,
+      // this.key,
       this.pad(buffer, isLast)
     );
     return Buffer.from(encrypted);
@@ -170,7 +176,8 @@ class ECETransformer {
         iv: nonce,
         tagLength: 128,
       },
-      this.key,
+      this.ikm,
+      // this.key,
       buffer
     );
 
@@ -179,7 +186,7 @@ class ECETransformer {
 
   async start(controller) {
     if (this.mode === MODE_ENCRYPT) {
-      this.key = await this.generateKey();
+      // this.key = await this.generateKey();
       this.nonceBase = await this.generateNonceBase();
       controller.enqueue(this.createHeader());
     } else if (this.mode !== MODE_DECRYPT) {
@@ -199,7 +206,7 @@ class ECETransformer {
         const header = this.readHeader(this.prevChunk);
         this.salt = header.salt;
         this.rs = header.rs;
-        this.key = await this.generateKey();
+        // this.key = await this.generateKey();
         this.nonceBase = await this.generateNonceBase();
       } else {
         controller.enqueue(

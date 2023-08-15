@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, ContainerType } from '@prisma/client';
 import { Router } from 'express';
 import { createUser, getAllUserGroupContainers } from '../models';
 
@@ -42,10 +42,40 @@ router.post('/', async (req, res) => {
   }
 });
 
+// All containers, regardless of type
 router.get('/:userId/containers', async (req, res) => {
   const { userId } = req.params;
   try {
-    const containers = await getAllUserGroupContainers(parseInt(userId));
+    const containers = await getAllUserGroupContainers(parseInt(userId), null);
+    res.status(200).json(containers);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+router.get('/:userId/conversations', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const containers = await getAllUserGroupContainers(
+      parseInt(userId),
+      ContainerType.CONVERSATION
+    );
+    res.status(200).json(containers);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+router.get('/:userId/folders', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const containers = await getAllUserGroupContainers(
+      parseInt(userId),
+      ContainerType.FOLDER
+    );
     res.status(200).json(containers);
   } catch (error) {
     res.status(500).json({
