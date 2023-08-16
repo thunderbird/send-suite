@@ -7,7 +7,7 @@ import { download } from '../lib/filesync';
 // add a button to add a participant
 
 const props = defineProps({
-  id: Number,
+  conversationId: Number,
 });
 
 const api = inject('api');
@@ -27,7 +27,7 @@ async function downloadMessage(id) {
   }
 
   const keychainObj = keychain.value;
-  const realKey = keychainObj['1'];
+  const realKey = keychainObj.get(props.conversationId);
   if (!realKey) {
     console.log(`no key`);
     return;
@@ -58,27 +58,27 @@ async function fillMessageList(uploadIds) {
 }
 
 onMounted(() => {
-  if (!props.id) {
+  if (!props.conversationId) {
     return;
   }
-  getContainerWithItems(props.id);
+  getContainerWithItems(props.conversationId);
 });
 
 watch(
-  () => props.id,
+  () => props.conversationId,
   () => {
-    console.log(`props.id: ${props.id}`);
-    if (!props.id) {
+    console.log(`props.conversationId: ${props.conversationId}`);
+    if (!props.conversationId) {
       return;
     }
     console.log(`🤡🤡🤡🤡🤡🤡🤡🤡🤡`);
-    getContainerWithItems(props.id);
+    getContainerWithItems(props.conversationId);
   }
 );
 </script>
 <template>
-  <p>Conversation Id {{ props.id }}</p>
-  <div v-if="props.id">
+  <p>Conversation Id {{ props.conversationId }}</p>
+  <div v-if="props.conversationId">
     <div>
       <button>Add Person</button>
     </div>

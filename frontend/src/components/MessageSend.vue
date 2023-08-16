@@ -4,7 +4,7 @@ import { upload } from '../lib/filesync';
 import { blobStream } from '../lib/streams';
 
 const props = defineProps({
-  id: Number,
+  conversationId: Number,
 });
 
 const api = inject('api');
@@ -18,7 +18,7 @@ async function sendBlob(blob) {
   console.log(blob);
 
   const keychainObj = keychain.value;
-  const realKey = keychainObj['1'];
+  const realKey = keychainObj.get(props.conversationId);
   if (!realKey) {
     return;
   }
@@ -29,7 +29,7 @@ async function sendBlob(blob) {
 }
 
 async function sendMessage() {
-  if (!props.id) {
+  if (!props.conversationId) {
     console.log(`cannot send message - no conversation selected`);
     return;
   }
@@ -54,7 +54,7 @@ async function sendMessage() {
   }
   const itemResp = await api.createItemInContainer(
     id,
-    props.id,
+    props.conversationId,
     filename,
     'MESSAGE'
   );
@@ -64,7 +64,7 @@ async function sendMessage() {
 </script>
 
 <template>
-  <div v-if="props.id">
+  <div v-if="props.conversationId">
     <form @submit.prevent>
       <label>
         Message:

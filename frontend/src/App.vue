@@ -1,11 +1,15 @@
 <script setup>
 import Conversations from './views/Conversations.vue';
+import Debug from './views/Debug.vue';
 import Wrapper from './Wrapper.vue';
 </script>
 
 <template>
   <Wrapper>
     <h1 className="text-3xl font-bold underline">Hello world!</h1>
+    <div>
+      <Debug></Debug>
+    </div>
     <div class="main">
       <div class="column">
         <Conversations />

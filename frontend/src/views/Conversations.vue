@@ -14,6 +14,6 @@ function handleChoice(conversationId) {
 
 <template>
   <ConversationList @choose-conversation="handleChoice" />
-  <MessageList :id="currentConversation" />
-  <MessageSend :id="currentConversation" />
+  <MessageList :conversationId="currentConversation" />
+  <MessageSend :conversationId="currentConversation" />
 </template>

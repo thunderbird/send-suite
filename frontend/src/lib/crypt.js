@@ -4,10 +4,20 @@ const privPrefix = 'send-priv';
 export class Keychain {
   constructor(storage) {
     this.storage = storage;
-    this.keys = {};
+    this.keysets = {};
   }
 
-  setKeyPair(publicKey, privateKey) {
+  showKeys() {
+    Object.keys(this.keysets).forEach((id) => {
+      const keyset = this.keysets[id];
+      console.log(id);
+      Object.keys(keyset).forEach((kname) => {
+        console.log(`\t${kname}: ${keyset[kname]}`);
+      });
+    });
+  }
+
+  setUserKeyPair(publicKey, privateKey) {
     console.log(`only use this when first creating a user`);
     console.log(`don't forget to .store() to localStorage immediately`);
 
@@ -15,41 +25,26 @@ export class Keychain {
     this.publicKey = publicKey;
   }
 
-  async generateKeyPair() {
+  async generateUserKeyPair() {
     console.log(`only use this when first creating a user`);
     console.log(`don't forget to .store() to localStorage immediately`);
 
-    const keyPair = await window.crypto.subtle.generateKey(
-      {
-        name: 'RSA-OAEP',
-        modulusLength: 2048, //can be 1024, 2048, or 4096
-        publicExponent: new Uint8Array([1, 0, 1]),
-        hash: 'SHA-256', //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
-      },
-      true, //whether the key is extractable (i.e., can be used in exportKey)
-      ['wrapKey', 'unwrapKey'] //can be any combination of "encrypt", "decrypt", "wrapKey", or "unwrapKey"
-    );
-    // If you want to export your keys to handle them externally
-    //const publicKey = await crypto.subtle.exportKey("spki", keyPair.publicKey);
-    //const privateKey = await crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
-
-    // return keyPair; // {publicKey, privateKey}
+    const keyPair = await generateRSAKeyPair();
     this.publicKey = keyPair.publicKey;
     this.privateKey = keyPair.privateKey;
   }
 
   async createAndAddContainerKey(id) {
-    if (!this.publicKey) {
-      console.log(`no public key`);
-      return;
-    }
-    if (!this.privateKey) {
-      console.log(`no private key`);
-      return;
-    }
-
+    // AES key is for encrypting/decrypting messages and files
     const aesKey = await generateAESKey();
-    this.add(id, aesKey);
+
+    // RSA keypair is for encrypting/decrypting AES keys
+    const keyPair = await generateRSAKeyPair();
+    this.add(id, {
+      aesKey,
+      publicKey: keyPair.publicKey,
+      privateKey: keyPair.privateKey,
+    });
   }
 
   async load() {
@@ -58,39 +53,21 @@ export class Keychain {
       return;
     }
 
+    // Load User keys
     const publicKeyJwk = this.storage.get(pubPrefix);
     const privateKeyJwk = this.storage.get(privPrefix);
 
-    this.publicKey = await crypto.subtle.importKey(
-      'jwk',
-      publicKeyJwk,
-      {
-        name: 'RSA-OAEP',
-        hash: { name: 'SHA-256' },
-      },
-      true,
-      ['wrapKey']
-    );
-
-    this.privateKey = await crypto.subtle.importKey(
-      'jwk',
-      privateKeyJwk,
-      {
-        name: 'RSA-OAEP',
-        hash: { name: 'SHA-256' },
-      },
-      true,
-      ['unwrapKey']
-    );
+    this.publicKey = await jwkToRsa(publicKeyJwk);
+    this.privateKey = await jwkToRsa(privateKeyJwk);
 
     // load this.keys individually
-    this.keys = {};
+    this.keysets = {};
     for (let k of this.storage.keys()) {
       if (k.startsWith(prefix)) {
         const id = k.split('/')[1];
         const val = this.storage.get(k);
         if (val) {
-          this.keys[id] = val;
+          this.keysets[id] = val;
         }
       }
     }
@@ -109,46 +86,63 @@ export class Keychain {
     this.storage.set(privPrefix, privateKeyJwk);
 
     // store items from this.keys individually
-    Object.keys(this.keys).forEach((id) => {
-      const index = `${prefix}${id}`;
-      this.storage.set(index, this.keys[id]);
+    Object.keys(this.keysets).forEach(async (id) => {
+      const { aesKey, publicKey, privateKey } = this.keysets[id];
+      let index;
+      debugger;
+      index = `${prefix}${id}/privateKey`;
+      this.storage.set(index, await rsaToJwk(privateKey));
+      index = `${prefix}${id}/publicKey`;
+      this.storage.set(index, await rsaToJwk(publicKey));
+      index = `${prefix}${id}/aesKey`;
+      this.storage.set(index, await wrapAESKey(aesKey, publicKey));
     });
   }
 
-  async add(id, key) {
-    // wrap key using public key
-    this.keys[id] = await wrapAESKey(key, this.publicKey);
+  async add(id, keyset) {
+    this.keysets[id] = keyset;
+    // // wrap key using public key
+    // this.keys[id] = await wrapAESKey(key, this.publicKey);
   }
 
   async get(id) {
+    // Returns: {
+    //   aesKey,
+    //   publicKey,
+    //   privateKey,
+    // }
+    return this.keysets[id];
+
     // unwrap key using private key
-    const wrappedKey = this.keys[id];
-    if (!wrappedKey) {
-      return null;
-    }
-    const buffer = Uint8Array.from(wrappedKey, (c) => c.charCodeAt(0)).buffer;
-    return await unwrapAESKey(buffer, this.privateKey);
+    // const wrappedKey = this.keys[id];
+    // if (!wrappedKey) {
+    //   return null;
+    // }
+    // const buffer = Uint8Array.from(wrappedKey, (c) => c.charCodeAt(0)).buffer;
+    // return await unwrapAESKey(buffer, this.privateKey);
   }
 
   remove(id) {
-    delete this.keys[id];
+    delete this.keysets[id];
   }
 }
 
-// export async function generateRSAKeyPair() {
-//   return await window.crypto.subtle.generateKey(
-//     {
-//       name: 'RSA-OAEP',
-//       modulusLength: 4096,
-//       publicExponent: new Uint8Array([1, 0, 1]),
-//       hash: 'SHA-256',
-//     },
-//     true,
-//     ['encrypt', 'decrypt']
-//   );
-// }
+export async function generateRSAKeyPair() {
+  const keyPair = await window.crypto.subtle.generateKey(
+    {
+      name: 'RSA-OAEP',
+      modulusLength: 2048, //can be 1024, 2048, or 4096
+      publicExponent: new Uint8Array([1, 0, 1]),
+      hash: 'SHA-256', //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
+    },
+    true, //whether the key is extractable (i.e., can be used in exportKey)
+    ['wrapKey', 'unwrapKey'] //can be any combination of "encrypt", "decrypt", "wrapKey", or "unwrapKey"
+  );
 
-async function generateAESKey() {
+  return keyPair;
+}
+
+export async function generateAESKey() {
   try {
     const key = await window.crypto.subtle.generateKey(
       {
@@ -166,34 +160,7 @@ async function generateAESKey() {
   }
 }
 
-// export async function saveKeyToStorage(key) {
-//   // Export the key as JWK format
-//   const exportedKey = await window.crypto.subtle.exportKey('jwk', key);
-//   // Save the stringified version to localStorage
-//   window.localStorage.setItem('AESKey', JSON.stringify(exportedKey));
-// }
-
-// export async function loadKeyFromStorage() {
-//   const keyData = JSON.parse(window.localStorage.getItem('AESKey'));
-//   if (keyData) {
-//     return await window.crypto.subtle.importKey(
-//       'jwk',
-//       keyData,
-//       {
-//         //these are the algorithm options
-//         name: 'AES-GCM',
-//         length: 256,
-//       },
-//       true, //whether the key is extractable
-//       ['encrypt', 'decrypt'] //can be any combination of ["encrypt", "decrypt", "wrapKey", "unwrapKey"]
-//     );
-//   }
-//   return null;
-// }
-
-// These are the ones I really want to use
-
-async function wrapAESKey(aesKey, publicKey) {
+export async function wrapAESKey(aesKey, publicKey) {
   const wrappedKey = await window.crypto.subtle.wrapKey(
     'jwk',
     aesKey,
@@ -213,18 +180,6 @@ async function wrapAESKey(aesKey, publicKey) {
 
   return wrappedKeyStr;
 }
-
-// function storeWrappedAESKeyToLocalStorage(wrappedKeyStr) {
-//   window.localStorage.setItem('wrappedAESKey', wrappedKeyStr);
-// }
-
-// async function loadWrappedAESKeyFromLocalStorage() {
-//   let wrappedKeyStr = window.localStorage.getItem('wrappedAESKey');
-
-//   if (wrappedKeyStr) {
-//     return Uint8Array.from(wrappedKeyStr, (c) => c.charCodeAt(0)).buffer;
-//   }
-// }
 
 async function unwrapAESKey(wrappedAESKey, privateKey) {
   const unwrappedKey = await window.crypto.subtle.unwrapKey(
@@ -246,6 +201,23 @@ async function unwrapAESKey(wrappedAESKey, privateKey) {
   );
 
   return unwrappedKey;
+}
+
+async function rsaToJwk(key) {
+  return await crypto.subtle.exportKey('jwk', key);
+}
+
+async function jwkToRsa(jwk) {
+  return await crypto.subtle.importKey(
+    'jwk',
+    jwk,
+    {
+      name: 'RSA-OAEP',
+      hash: { name: 'SHA-256' },
+    },
+    true,
+    ['wrapKey']
+  );
 }
 
 async function arrayBufferToBase64(buffer) {
