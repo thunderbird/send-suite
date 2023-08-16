@@ -16,7 +16,7 @@ import {
   // compareKeys,
 } from './lib/crypt';
 
-const keychain = ref(null);
+// const keychain = ref(null);
 const isInitComplete = ref({});
 
 const api = new ApiConnection('https://localhost:8088');
@@ -27,9 +27,11 @@ provide('user', {
   name: 'me',
 });
 
+const keychain = new Keychain(new Storage());
 provide('keychain', keychain);
 
 onMounted(async () => {
+  keychain.load();
   console.log('TODO: get/set auth0 user');
 
   console.log(`api should have a value now`);
@@ -47,10 +49,10 @@ onMounted(async () => {
   //   1: aesKey,
   // };
 
-  const kc = new Keychain(new Storage());
-  keychain.value = kc;
+  // const kc = new Keychain(new Storage());
+  // keychain.value = kc;
 
-  window.keychain = keychain.value;
+  window.keychain = keychain;
   // window.generateAESKey = generateAESKey;
   // window.generateRSAKeyPair = generateRSAKeyPair;
   // window.wrapAESKey = wrapAESKey;

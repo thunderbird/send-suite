@@ -36,12 +36,12 @@ export class Keychain {
     this.privateKey = keyPair.privateKey;
   }
 
-  async createAndAddContainerKey(id) {
+  async createAndAddContainerKey(id, keyPair) {
     // AES key is for encrypting/decrypting messages and files
     const aesKey = await generateAESKey();
 
     // RSA keypair is for encrypting/decrypting AES keys
-    const keyPair = await generateRSAKeyPair();
+    // const keyPair = await generateRSAKeyPair();
     this.add(id, {
       aesKey,
       publicKey: keyPair.publicKey,
@@ -54,7 +54,7 @@ export class Keychain {
       console.log(`no storage`);
       return;
     }
-
+    console.log('loading from localStorage');
     // Load User keys
     const publicKeyJwk = this.storage.get(pubPrefix);
     const privateKeyJwk = this.storage.get(privPrefix);

@@ -1,11 +1,25 @@
 <script setup>
-import { ref, onMounted, inject } from 'vue';
+import { ref, onMounted, inject, watch } from 'vue';
+import { generateRSAKeyPair, rsaToJwk } from '../lib/crypt';
 
 const emits = defineEmits(['choose-conversation']);
 
 const api = inject('api');
 const user = inject('user');
+const keychain = inject('keychain');
 const conversations = ref([]);
+
+watch(
+  () => keychain,
+  async () => {
+    console.log(`ConversationList has the updated keychain`);
+    // publicKey.value = await crypto.subtle.exportKey(
+    //   'jwk',
+    //   keychain.value.publicKey
+    // );
+  }
+);
+
 // then, call "up" to the common container to set a convo/container id
 // which it should then pass down to the messageslist
 
@@ -24,10 +38,18 @@ async function loadAllConversations() {
 
 async function createConversation() {
   console.log(`you want to create a convo`);
+  const keyPair = await generateRSAKeyPair();
+  const publicKeyJwkString = JSON.stringify(await rsaToJwk(keyPair.publicKey));
 
-  const response = await api.createConversation(user.id, '');
-  console.log(response);
-  loadAllConversations();
+  if (publicKeyJwkString) {
+    const response = await api.createConversation(user.id, publicKeyJwkString);
+    console.log(response);
+    await keychain.createAndAddContainerKey(response.id, keyPair);
+    await keychain.store();
+    loadAllConversations();
+  } else {
+    console.log(`no public key, no convo`);
+  }
 }
 
 onMounted(async () => {

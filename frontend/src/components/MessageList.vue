@@ -26,14 +26,14 @@ async function downloadMessage(id) {
     return;
   }
 
-  const keychainObj = keychain.value;
-  const realKey = keychainObj.get(props.conversationId);
-  if (!realKey) {
+  const keyset = await keychain.get(props.conversationId);
+  const { aesKey } = keyset;
+  if (!aesKey) {
     console.log(`no key`);
     return;
   }
-  console.log(realKey);
-  const plaintextString = await download(id, size, realKey);
+  console.log(aesKey);
+  const plaintextString = await download(id, size, aesKey);
   console.log(plaintextString);
   return plaintextString;
 }

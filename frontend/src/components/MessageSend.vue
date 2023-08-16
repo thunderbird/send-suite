@@ -17,13 +17,13 @@ async function sendBlob(blob) {
   console.log(`want to send blob of size ${blob.size}`);
   console.log(blob);
 
-  const keychainObj = keychain.value;
-  const realKey = keychainObj.get(props.conversationId);
-  if (!realKey) {
+  const keyset = await keychain.get(props.conversationId);
+  const { aesKey } = keyset;
+  if (!aesKey) {
     return;
   }
   const stream = blobStream(blob);
-  const result = await upload(stream, realKey);
+  const result = await upload(stream, aesKey);
   console.log(result);
   return result.id;
 }

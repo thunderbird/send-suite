@@ -8,7 +8,7 @@ import Wrapper from './Wrapper.vue';
   <Wrapper>
     <h1 className="text-3xl font-bold underline">Hello world!</h1>
     <div>
-      <Debug></Debug>
+      <Debug />
     </div>
     <div class="main">
       <div class="column">
