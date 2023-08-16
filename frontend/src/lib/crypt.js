@@ -2,18 +2,23 @@ const prefix = 'send-keychain/';
 const pubPrefix = 'send-pub';
 const privPrefix = 'send-priv';
 export class Keychain {
-  constructor(publicKey, privateKey) {
-    this.privateKey = privateKey;
-    this.publicKey = publicKey;
-    // this.storage = storage;
+  constructor(storage) {
+    this.storage = storage;
     this.keys = {};
   }
 
-  initStorage(storage) {
-    this.storage = storage;
+  setKeyPair(publicKey, privateKey) {
+    console.log(`only use this when first creating a user`);
+    console.log(`don't forget to .store() to localStorage immediately`);
+
+    this.privateKey = privateKey;
+    this.publicKey = publicKey;
   }
 
   async generateKeyPair() {
+    console.log(`only use this when first creating a user`);
+    console.log(`don't forget to .store() to localStorage immediately`);
+
     const keyPair = await window.crypto.subtle.generateKey(
       {
         name: 'RSA-OAEP',
@@ -33,13 +38,52 @@ export class Keychain {
     this.privateKey = keyPair.privateKey;
   }
 
-  load() {
+  async createAndAddContainerKey(id) {
+    if (!this.publicKey) {
+      console.log(`no public key`);
+      return;
+    }
+    if (!this.privateKey) {
+      console.log(`no private key`);
+      return;
+    }
+
+    const aesKey = await generateAESKey();
+    this.add(id, aesKey);
+  }
+
+  async load() {
     if (!this.storage) {
       console.log(`no storage`);
       return;
     }
 
-    // load individually
+    const publicKeyJwk = this.storage.get(pubPrefix);
+    const privateKeyJwk = this.storage.get(privPrefix);
+
+    this.publicKey = await crypto.subtle.importKey(
+      'jwk',
+      publicKeyJwk,
+      {
+        name: 'RSA-OAEP',
+        hash: { name: 'SHA-256' },
+      },
+      true,
+      ['wrapKey']
+    );
+
+    this.privateKey = await crypto.subtle.importKey(
+      'jwk',
+      privateKeyJwk,
+      {
+        name: 'RSA-OAEP',
+        hash: { name: 'SHA-256' },
+      },
+      true,
+      ['unwrapKey']
+    );
+
+    // load this.keys individually
     this.keys = {};
     for (let k of this.storage.keys()) {
       if (k.startsWith(prefix)) {
@@ -52,13 +96,19 @@ export class Keychain {
     }
   }
 
-  store() {
+  async store() {
     if (!this.storage) {
       console.log(`no storage`);
       return;
     }
 
-    // store individually
+    const publicKeyJwk = await crypto.subtle.exportKey('jwk', this.publicKey);
+    const privateKeyJwk = await crypto.subtle.exportKey('jwk', this.privateKey);
+
+    this.storage.set(pubPrefix, publicKeyJwk);
+    this.storage.set(privPrefix, privateKeyJwk);
+
+    // store items from this.keys individually
     Object.keys(this.keys).forEach((id) => {
       const index = `${prefix}${id}`;
       this.storage.set(index, this.keys[id]);
@@ -85,20 +135,20 @@ export class Keychain {
   }
 }
 
-export async function generateRSAKeyPair() {
-  return await window.crypto.subtle.generateKey(
-    {
-      name: 'RSA-OAEP',
-      modulusLength: 4096,
-      publicExponent: new Uint8Array([1, 0, 1]),
-      hash: 'SHA-256',
-    },
-    true,
-    ['encrypt', 'decrypt']
-  );
-}
+// export async function generateRSAKeyPair() {
+//   return await window.crypto.subtle.generateKey(
+//     {
+//       name: 'RSA-OAEP',
+//       modulusLength: 4096,
+//       publicExponent: new Uint8Array([1, 0, 1]),
+//       hash: 'SHA-256',
+//     },
+//     true,
+//     ['encrypt', 'decrypt']
+//   );
+// }
 
-export async function generateAESKey() {
+async function generateAESKey() {
   try {
     const key = await window.crypto.subtle.generateKey(
       {
@@ -116,30 +166,30 @@ export async function generateAESKey() {
   }
 }
 
-export async function saveKeyToStorage(key) {
-  // Export the key as JWK format
-  const exportedKey = await window.crypto.subtle.exportKey('jwk', key);
-  // Save the stringified version to localStorage
-  window.localStorage.setItem('AESKey', JSON.stringify(exportedKey));
-}
+// export async function saveKeyToStorage(key) {
+//   // Export the key as JWK format
+//   const exportedKey = await window.crypto.subtle.exportKey('jwk', key);
+//   // Save the stringified version to localStorage
+//   window.localStorage.setItem('AESKey', JSON.stringify(exportedKey));
+// }
 
-export async function loadKeyFromStorage() {
-  const keyData = JSON.parse(window.localStorage.getItem('AESKey'));
-  if (keyData) {
-    return await window.crypto.subtle.importKey(
-      'jwk',
-      keyData,
-      {
-        //these are the algorithm options
-        name: 'AES-GCM',
-        length: 256,
-      },
-      true, //whether the key is extractable
-      ['encrypt', 'decrypt'] //can be any combination of ["encrypt", "decrypt", "wrapKey", "unwrapKey"]
-    );
-  }
-  return null;
-}
+// export async function loadKeyFromStorage() {
+//   const keyData = JSON.parse(window.localStorage.getItem('AESKey'));
+//   if (keyData) {
+//     return await window.crypto.subtle.importKey(
+//       'jwk',
+//       keyData,
+//       {
+//         //these are the algorithm options
+//         name: 'AES-GCM',
+//         length: 256,
+//       },
+//       true, //whether the key is extractable
+//       ['encrypt', 'decrypt'] //can be any combination of ["encrypt", "decrypt", "wrapKey", "unwrapKey"]
+//     );
+//   }
+//   return null;
+// }
 
 // These are the ones I really want to use
 
@@ -164,17 +214,17 @@ async function wrapAESKey(aesKey, publicKey) {
   return wrappedKeyStr;
 }
 
-function storeWrappedAESKeyToLocalStorage(wrappedKeyStr) {
-  window.localStorage.setItem('wrappedAESKey', wrappedKeyStr);
-}
+// function storeWrappedAESKeyToLocalStorage(wrappedKeyStr) {
+//   window.localStorage.setItem('wrappedAESKey', wrappedKeyStr);
+// }
 
-async function loadWrappedAESKeyFromLocalStorage() {
-  let wrappedKeyStr = window.localStorage.getItem('wrappedAESKey');
+// async function loadWrappedAESKeyFromLocalStorage() {
+//   let wrappedKeyStr = window.localStorage.getItem('wrappedAESKey');
 
-  if (wrappedKeyStr) {
-    return Uint8Array.from(wrappedKeyStr, (c) => c.charCodeAt(0)).buffer;
-  }
-}
+//   if (wrappedKeyStr) {
+//     return Uint8Array.from(wrappedKeyStr, (c) => c.charCodeAt(0)).buffer;
+//   }
+// }
 
 async function unwrapAESKey(wrappedAESKey, privateKey) {
   const unwrappedKey = await window.crypto.subtle.unwrapKey(
@@ -216,7 +266,7 @@ async function exportKeyToBase64(key) {
   return keyBase64;
 }
 
-export async function compareKeys(k1, k2) {
+async function compareKeys(k1, k2) {
   const originalAESBase64 = await exportKeyToBase64(k1);
   const unwrappedAESBase64 = await exportKeyToBase64(k2);
   return originalAESBase64 === unwrappedAESBase64;

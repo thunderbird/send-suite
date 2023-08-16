@@ -12,11 +12,11 @@ import { ref, onMounted, provide } from 'vue';
 import { ApiConnection } from './lib/api';
 import Storage from './lib/storage/localStorage';
 import {
-  generateAESKey,
-  loadKeyFromStorage,
-  saveKeyToStorage,
+  // generateAESKey,
+  // loadKeyFromStorage,
+  // saveKeyToStorage,
   Keychain,
-  compareKeys,
+  // compareKeys,
 } from './lib/crypt';
 
 const keychain = ref(null);
@@ -50,13 +50,13 @@ onMounted(async () => {
   //   1: aesKey,
   // };
 
-  const kc = new Keychain();
-  kc.initStorage(new Storage());
+  const kc = new Keychain(new Storage());
   keychain.value = kc;
+
   window.keychain = keychain.value;
-  window.generateAESKey = generateAESKey;
-  window.compareKeys = compareKeys;
-  window.Storage = Storage;
+  // window.generateAESKey = generateAESKey;
+  // window.compareKeys = compareKeys;
+  // window.Storage = Storage;
   // const aes = await generateAESKey();
   // await window.keychain.generateKeyPair();
   // await window.keychain.add('1', aes);

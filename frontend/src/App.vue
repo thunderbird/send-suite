@@ -1,6 +1,4 @@
 <script setup>
-import Send from './components/Send.vue';
-import Receive from './components/Receive.vue';
 import Conversations from './views/Conversations.vue';
 import Wrapper from './Wrapper.vue';
 </script>
