@@ -11,7 +11,7 @@ const props = defineProps({
 });
 
 const api = inject('api');
-const keyStore = inject('keyStore');
+const keychain = inject('keychain');
 const messageList = ref();
 
 async function downloadMessage(id) {
@@ -26,8 +26,8 @@ async function downloadMessage(id) {
     return;
   }
 
-  const keyStoreObj = keyStore.value;
-  const realKey = keyStoreObj['1'];
+  const keychainObj = keychain.value;
+  const realKey = keychainObj['1'];
   if (!realKey) {
     console.log(`no key`);
     return;

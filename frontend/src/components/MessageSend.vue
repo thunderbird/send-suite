@@ -8,8 +8,8 @@ const props = defineProps({
 });
 
 const api = inject('api');
-const keyStore = inject('keyStore');
-console.log(keyStore.value);
+const keychain = inject('keychain');
+console.log(keychain.value);
 
 const message = ref('hello this is the default message');
 
@@ -17,8 +17,8 @@ async function sendBlob(blob) {
   console.log(`want to send blob of size ${blob.size}`);
   console.log(blob);
 
-  const keyStoreObj = keyStore.value;
-  const realKey = keyStoreObj['1'];
+  const keychainObj = keychain.value;
+  const realKey = keychainObj['1'];
   if (!realKey) {
     return;
   }
