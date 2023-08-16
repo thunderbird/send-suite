@@ -7,6 +7,8 @@ import {
   getItemsInContainer,
   addGroupMember,
   removeGroupMember,
+  shareKeyWithGroupMember,
+  acceptInvitation,
 } from '../models';
 
 const router: Router = Router();
@@ -102,6 +104,36 @@ router.post('/:containerId/member', async (req, res) => {
       parseInt(userId)
     );
     res.status(200).json(container);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+router.post('/:containerId/member/sharekey', async (req, res) => {
+  const { containerId } = req.params;
+  const { userId, senderId, wrappedKey } = req.body;
+  try {
+    const invitation = await shareKeyWithGroupMember(
+      parseInt(containerId),
+      wrappedKey,
+      parseInt(userId),
+      parseInt(senderId)
+    );
+    res.status(200).json(invitation);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+router.post('/:containerId/member/accept/:invitationId', async (req, res) => {
+  const { invitationId } = req.params;
+  try {
+    const result = await acceptInvitation(parseInt(invitationId));
+    res.status(200).json(result);
   } catch (error) {
     res.status(500).json({
       message: 'Server error.',

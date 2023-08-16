@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import ConversationList from '../components/ConversationList.vue';
 import MessageList from '../components/MessageList.vue';
 import MessageSend from '../components/MessageSend.vue';
+import AddPerson from '../components/AddPerson.vue';
 
 const currentConversation = ref(null);
 
@@ -14,6 +15,7 @@ function handleChoice(conversationId) {
 
 <template>
   <ConversationList @choose-conversation="handleChoice" />
+  <AddPerson :conversationId="currentConversation" />
   <MessageList :conversationId="currentConversation" />
   <MessageSend :conversationId="currentConversation" />
 </template>

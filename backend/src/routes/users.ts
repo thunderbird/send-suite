@@ -1,11 +1,27 @@
 import { Prisma, ContainerType } from '@prisma/client';
 import { Router } from 'express';
-import { createUser, getAllUserGroupContainers } from '../models';
+import {
+  createUser,
+  getAllUserGroupContainers,
+  getUserPublicKey,
+} from '../models';
 
 const router: Router = Router();
 
 router.get('/', (req, res) => {
   res.status(200).send('hey from user router');
+});
+
+router.get('/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await getUserPublicKey(parseInt(id));
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
 });
 
 router.post('/', async (req, res) => {
@@ -17,10 +33,13 @@ router.post('/', async (req, res) => {
     publicKey: string;
   } = req.body;
   console.log(email);
-  console.log(publicKey);
+  console.log(typeof publicKey);
 
   try {
-    const user = await createUser(email.trim().toLowerCase(), publicKey.trim());
+    const user = await createUser(
+      email.trim().toLowerCase(),
+      JSON.stringify(publicKey).trim()
+    );
     res.status(201).json({
       message: 'User created',
       user,
@@ -34,6 +53,8 @@ router.post('/', async (req, res) => {
         message: 'User already exists',
       });
     } else {
+      console.log(`🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡`);
+      console.log(error);
       res.status(500).json({
         message: 'Server error.',
         // error: error.message,

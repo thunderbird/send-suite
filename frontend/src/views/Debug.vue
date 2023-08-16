@@ -1,9 +1,13 @@
 <script setup>
-import { ref, watch, watchEffect, inject } from 'vue';
+import { ref, watch, watchEffect, inject, onMounted } from 'vue';
+const api = inject('api');
 const keychain = inject('keychain');
+const { user, setUser } = inject('user');
 
 // const privateKey = ref(null);
 // const publicKey = ref(null);
+
+const jwkPublicKey = ref('');
 
 // watch(
 //   [() => keychain],
@@ -15,26 +19,85 @@ const keychain = inject('keychain');
 //   true
 // );
 
-function loadKeychain() {
-  keychain.load();
+async function loadKeychain() {
+  await keychain.load();
+  jwkPublicKey.value = JSON.stringify(await keychain.getUserPublicKeyJwk());
 }
 
-// watch(
-//   () => keychain.publicKey,
-//   async () => {
-//     publicKey.value = keychain.publicKey;
-//     console.log(`debug: have publicKey`);
-//   }
-// );
-// watch(
-//   () => keychain.privateKey,
-//   async () => {
-//     privateKey.value = keychain.privateKey;
-//     console.log(`debug: have privateKey`);
-//   }
-// );
+onMounted(() => {
+  loadKeychain();
+  loadUser();
+  // setUser({
+  //   id: 1,
+  // });
+});
+
+function loadUser() {
+  const jsonUser = localStorage.getItem('send-user');
+  if (jsonUser) {
+    setUser(JSON.parse(jsonUser));
+  }
+}
+function storeUser() {
+  const jsonUser = JSON.stringify({
+    id: user.value.id,
+    email: user.value.email,
+  });
+  localStorage.setItem('send-user', jsonUser);
+}
+
+function generateKeys() {
+  if (keychain.generateUserKeyPair) {
+    keychain.generateUserKeyPair();
+  }
+}
+
+function saveKeys() {
+  if (keychain.store) {
+    keychain.store();
+  }
+}
+
+async function createApiUser() {
+  const email = user.value.email;
+  jwkPublicKey.value = await keychain.getUserPublicKeyJwk();
+
+  const resp = await api.createUser(email, jwkPublicKey.value);
+  if (resp) {
+    const { id } = resp.user;
+    setUser({
+      id,
+      email,
+    });
+    storeUser();
+  }
+}
 </script>
 <template>
+  <label>
+    User id:
+    <input type="number" v-model="user.id" />
+  </label>
+  <br />
+  <button @click="storeUser">Save User</button>
+  <br />
+  <button @click="generateKeys">Create User Keys</button>
+  <br />
+  <button @click="saveKeys">Save User Keys</button>
+  <br />
+  <label>
+    Email:
+    <input type="email" v-model="user.email" />
+  </label>
+  <br />
+  <label>
+    Public Key:
+    <br />
+    <textarea v-model="jwkPublicKey">{{ jwkPublicKey }}</textarea>
+  </label>
+  <br />
+  <button @click="createApiUser">Create Api User</button>
+  <!-- <br />
   <label>
     <input type="checkbox" disabled :checked="keychain.privateKey" />
     privateKey: {{ keychain.privateKey }}
@@ -45,5 +108,12 @@ function loadKeychain() {
     publicKey: {{ keychain.publicKey }}
   </label>
   <br />
-  <button @click.prevent="loadKeychain()">Load Keys</button>
+  <button @click.prevent="loadKeychain()">Load Keys</button> -->
 </template>
+
+<style scoped>
+textarea {
+  width: 80%;
+  height: 5em;
+}
+</style>

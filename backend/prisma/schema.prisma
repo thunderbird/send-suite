@@ -12,13 +12,15 @@ datasource db {
 }
 
 model User {
-  id          Int     @id @default(autoincrement())
-  email       String  @unique
-  publicKey   String
-  // links   Link[]
-  uploads     Upload[]
-  groups      GroupUser[]
-  containers  Container[]
+  id                  Int           @id @default(autoincrement())
+  email               String        @unique
+  publicKey           String
+  // links            Link[]
+  uploads             Upload[]
+  groups              GroupUser[]
+  containers          Container[]
+  invitationsSent     Invitation[]  @relation("Sender")
+  invitationsReceived Invitation[]  @relation("Recipient")
 }
 
 model Group {
@@ -34,6 +36,17 @@ model GroupUser {
   user    User  @relation(fields: [userId], references: [id])
 
   @@id([groupId, userId])
+}
+
+
+model Invitation {
+  id              Int     @id @default(autoincrement())
+  senderId        Int
+  sender          User    @relation("Sender", fields: [senderId], references: [id])
+  recipientId     Int
+  recipient       User    @relation("Recipient", fields: [recipientId], references: [id])
+  wrappedKey      String
+  containerId         Int
 }
 
 enum ContainerType {

@@ -8,7 +8,7 @@ Should:
 Does vue already have the notion of a store?
 (Or is this why Pinia exists?)
 */
-import { ref, onMounted, provide } from 'vue';
+import { ref, onMounted, provide, watch } from 'vue';
 import { ApiConnection } from './lib/api';
 import Storage from './lib/storage/localStorage';
 import {
@@ -16,19 +16,37 @@ import {
   // compareKeys,
 } from './lib/crypt';
 
-// const keychain = ref(null);
 const isInitComplete = ref({});
 
 const api = new ApiConnection('https://localhost:8088');
 
+// const keychain = ref(null);
+const user = ref({
+  id: 0,
+  email: '',
+});
+function setUser(obj) {
+  user.value = {
+    ...user.value,
+    ...obj,
+  };
+  console.log(`🤷 Updated user`);
+}
+
 provide('api', api);
 provide('user', {
-  id: 1,
-  name: 'me',
+  user,
+  setUser,
 });
 
 const keychain = new Keychain(new Storage());
 provide('keychain', keychain);
+
+watch(user, () => {
+  if (user.value.id !== 0) {
+    isInitComplete.value = true;
+  }
+});
 
 onMounted(async () => {
   keychain.load();
@@ -65,8 +83,6 @@ onMounted(async () => {
   // const unwrapped = await window.keychain.get('1');
   // const didMatch = await compareKeys(aes, unwrapped);
   // console.log(`Did the original and the unwrapped match? ${didMatch}`);
-
-  isInitComplete.value = true;
 });
 </script>
 

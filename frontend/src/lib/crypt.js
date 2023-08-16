@@ -54,6 +54,12 @@ export class Keychain {
       console.log(`no storage`);
       return;
     }
+
+    if (!this.storage.get(privPrefix)) {
+      console.log(`no private key`);
+      return;
+    }
+
     console.log('loading from localStorage');
     // Load User keys
     const publicKeyJwk = this.storage.get(pubPrefix);
@@ -193,6 +199,16 @@ export class Keychain {
     // }
     // const buffer = Uint8Array.from(wrappedKey, (c) => c.charCodeAt(0)).buffer;
     // return await unwrapAESKey(buffer, this.privateKey);
+  }
+
+  async getUserPublicKeyJwk() {
+    const publicKeyJwk = await rsaToJwk(this.publicKey);
+    return publicKeyJwk;
+  }
+
+  async getAndWrap(id, publicKey) {
+    const { aesKey } = await this.get(id);
+    return await wrapAESKey(aesKey, publicKey);
   }
 
   remove(id) {

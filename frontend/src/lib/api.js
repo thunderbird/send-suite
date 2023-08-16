@@ -168,6 +168,45 @@ export class ApiConnection {
     }
   }
 
+  async shareKeyWithGroupMember(containerId, wrappedKey, userId, senderId) {
+    const resp = await this.callApi(
+      `containers/${containerId}/member/sharekey`,
+      {
+        containerId,
+        wrappedKey,
+        userId,
+        senderId,
+      },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(
+        `Error: could not share key with ${userId} for container ${containerId}`
+      );
+      return null;
+    }
+  }
+
+  // async removeKeyAfterReceived(userId, containerId) {
+  //   const resp = await this.callApi(
+  //     `containers/${containerId}/member`,
+  //     {
+  //       userId,
+  //     },
+  //     'DELETE'
+  //   );
+  //   if (resp) {
+  //     return resp;
+  //   } else {
+  //     console.log(
+  //       `Error: could not remove user ${ownerId} from container ${containerId}`
+  //     );
+  //     return null;
+  //   }
+  // }
+
   async getAllConversations(userId) {
     // TODO: shift the userId from frontend argument to backend session
     const resp = await this.callApi(`users/${userId}/conversations/`);
@@ -186,6 +225,35 @@ export class ApiConnection {
       return resp;
     } else {
       console.log(`Error: could not get folders for user ${userId}`);
+      return null;
+    }
+  }
+
+  async getUserPublicKey(userId) {
+    console.log(`getting user public key`);
+    const resp = await this.callApi(`users/${userId}/`);
+    if (resp) {
+      debugger;
+      return resp;
+    } else {
+      console.log(`Error: could not get public key for user ${userId}`);
+      return null;
+    }
+  }
+
+  async createUser(email, publicKey) {
+    const resp = await this.callApi(
+      `users`,
+      {
+        email,
+        publicKey,
+      },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not create user`);
       return null;
     }
   }

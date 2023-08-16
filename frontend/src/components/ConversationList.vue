@@ -5,7 +5,7 @@ import { generateRSAKeyPair, rsaToJwk } from '../lib/crypt';
 const emits = defineEmits(['choose-conversation']);
 
 const api = inject('api');
-const user = inject('user');
+const { user } = inject('user');
 const keychain = inject('keychain');
 const conversations = ref([]);
 
@@ -29,7 +29,14 @@ function loadConversation(id) {
 }
 
 async function loadAllConversations() {
-  const cons = await api.getAllConversations(user.id);
+  if (!user.value.id) {
+    console.log(`no valid user id`);
+    return;
+  }
+  const cons = await api.getAllConversations(user.value.id);
+  if (!cons) {
+    return;
+  }
   for (let c of cons) {
     console.log(c);
   }
@@ -42,7 +49,10 @@ async function createConversation() {
   const publicKeyJwkString = JSON.stringify(await rsaToJwk(keyPair.publicKey));
 
   if (publicKeyJwkString) {
-    const response = await api.createConversation(user.id, publicKeyJwkString);
+    const response = await api.createConversation(
+      user.value.id,
+      publicKeyJwkString
+    );
     console.log(response);
     await keychain.createAndAddContainerKey(response.id, keyPair);
     await keychain.store();

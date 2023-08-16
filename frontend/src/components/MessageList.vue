@@ -79,11 +79,8 @@ watch(
 <template>
   <p>Conversation Id {{ props.conversationId }}</p>
   <div v-if="props.conversationId">
-    <div>
-      <button>Add Person</button>
-    </div>
     <div v-if="messageList">
-      <p>you've got mail</p>
+      <p>Messages:</p>
       <ul>
         <li v-for="messageText in messageList">
           {{ messageText }}

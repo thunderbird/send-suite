@@ -10,6 +10,17 @@ export async function createUser(email: string, publicKey: string) {
   });
 }
 
+export async function getUserPublicKey(id: number) {
+  return prisma.user.findUnique({
+    where: {
+      id,
+    },
+    select: {
+      publicKey: true,
+    },
+  });
+}
+
 export async function createUpload(id: string, size: number, ownerId: number) {
   const upload = await prisma.upload.create({
     data: {
@@ -47,13 +58,14 @@ export async function createContainer(
   const group = await prisma.group.create({
     data: {},
   });
-
+  console.log(`👿 just created group`);
   await prisma.groupUser.create({
     data: {
       groupId: group.id,
       userId: ownerId,
     },
   });
+  console.log(`👿 just added owner to group`);
 
   const container = await prisma.container.create({
     data: {
@@ -64,6 +76,7 @@ export async function createContainer(
       type,
     },
   });
+  console.log(`👿 just created container, connected to group`);
 
   return container;
 }
@@ -191,6 +204,57 @@ export async function addGroupMember(containerId: number, userId: number) {
     data: {
       groupId: group.id,
       userId,
+    },
+  });
+}
+
+export async function shareKeyWithGroupMember(
+  containerId: number,
+  wrappedKey: string,
+  userId: number,
+  senderId: number
+) {
+  return prisma.invitation.create({
+    data: {
+      containerId,
+      wrappedKey,
+      sender: {
+        connect: {
+          id: senderId,
+        },
+      },
+      recipient: {
+        connect: {
+          id: userId,
+        },
+      },
+    },
+  });
+}
+
+export async function acceptInvitation(invitationId: number) {
+  console.log(`accepting invitation for ${invitationId}`);
+  // get invitation from database
+  const invitation = await prisma.invitation.findUnique({
+    where: {
+      id: invitationId,
+    },
+  });
+  if (!invitation) {
+    return null;
+  }
+  // console.log(invitation);
+  // get the recipientId from invitation
+  // get container from the invitation
+  const { recipientId, containerId } = invitation;
+
+  // create a new groupUser for recipientId and group
+  const groupUser = await addGroupMember(containerId, recipientId);
+
+  // delete the invitation
+  return prisma.invitation.delete({
+    where: {
+      id: invitationId,
     },
   });
 }
