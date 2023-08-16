@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 const prefix = 'send-keychain/';
 const pubPrefix = 'send-pub';
 const privPrefix = 'send-priv';
@@ -57,17 +59,89 @@ export class Keychain {
     const publicKeyJwk = this.storage.get(pubPrefix);
     const privateKeyJwk = this.storage.get(privPrefix);
 
-    this.publicKey = await jwkToRsa(publicKeyJwk);
-    this.privateKey = await jwkToRsa(privateKeyJwk);
+    this.publicKey = await crypto.subtle.importKey(
+      'jwk',
+      publicKeyJwk,
+      {
+        name: 'RSA-OAEP',
+        hash: { name: 'SHA-256' },
+      },
+      true,
+      ['wrapKey']
+    );
 
-    // load this.keys individually
+    this.privateKey = await crypto.subtle.importKey(
+      'jwk',
+      privateKeyJwk,
+      {
+        name: 'RSA-OAEP',
+        hash: { name: 'SHA-256' },
+      },
+      true,
+      ['unwrapKey']
+    );
+
     this.keysets = {};
+    // the aesKey must be unwrapped with the private key
+    // we'll do the public and private keys first
     for (let k of this.storage.keys()) {
       if (k.startsWith(prefix)) {
-        const id = k.split('/')[1];
+        const [_, id, type] = k.split('/');
         const val = this.storage.get(k);
         if (val) {
-          this.keysets[id] = val;
+          if (!this.keysets[id]) {
+            this.keysets[id] = {};
+          }
+          switch (type) {
+            case 'privateKey':
+              this.keysets[id][type] = await crypto.subtle.importKey(
+                'jwk',
+                val,
+                {
+                  name: 'RSA-OAEP',
+                  hash: { name: 'SHA-256' },
+                },
+                true,
+                ['unwrapKey']
+              );
+              break;
+            case 'publicKey':
+              this.keysets[id][type] = await crypto.subtle.importKey(
+                'jwk',
+                val,
+                {
+                  name: 'RSA-OAEP',
+                  hash: { name: 'SHA-256' },
+                },
+                true,
+                ['wrapKey']
+              );
+              break;
+            // case 'aesKey':
+            //   // I need to do this after doing the privatekey
+            //   this.keysets[id][type] = await unwrapAESKey(val);
+            //   break;
+            default:
+              break;
+          }
+        }
+      }
+    }
+
+    // TODO: find a smarter way to do the aesKey after the private key
+    for (let k of this.storage.keys()) {
+      if (k.startsWith(prefix)) {
+        const [_, id, type] = k.split('/');
+        const val = this.storage.get(k);
+        if (val && type === 'aesKey') {
+          if (!this.keysets[id]['privateKey']) {
+            console.log(`👿 no private key for this aes key? ${id}`);
+            continue;
+          }
+          this.keysets[id][type] = await unwrapAESKey(
+            base64ToArrayBuffer(val),
+            this.keysets[id]['privateKey']
+          );
         }
       }
     }
@@ -79,8 +153,8 @@ export class Keychain {
       return;
     }
 
-    const publicKeyJwk = await crypto.subtle.exportKey('jwk', this.publicKey);
-    const privateKeyJwk = await crypto.subtle.exportKey('jwk', this.privateKey);
+    const publicKeyJwk = await rsaToJwk(this.publicKey);
+    const privateKeyJwk = await rsaToJwk(this.privateKey);
 
     this.storage.set(pubPrefix, publicKeyJwk);
     this.storage.set(privPrefix, privateKeyJwk);
@@ -89,7 +163,6 @@ export class Keychain {
     Object.keys(this.keysets).forEach(async (id) => {
       const { aesKey, publicKey, privateKey } = this.keysets[id];
       let index;
-      debugger;
       index = `${prefix}${id}/privateKey`;
       this.storage.set(index, await rsaToJwk(privateKey));
       index = `${prefix}${id}/publicKey`;
@@ -173,10 +246,7 @@ export async function wrapAESKey(aesKey, publicKey) {
   );
 
   // Transferring buffer to string to ease the storage
-  const wrappedKeyStr = String.fromCharCode.apply(
-    null,
-    new Uint8Array(wrappedKey)
-  );
+  const wrappedKeyStr = bufferToBase64(wrappedKey);
 
   return wrappedKeyStr;
 }
@@ -203,24 +273,11 @@ async function unwrapAESKey(wrappedAESKey, privateKey) {
   return unwrappedKey;
 }
 
-async function rsaToJwk(key) {
+export async function rsaToJwk(key) {
   return await crypto.subtle.exportKey('jwk', key);
 }
 
-async function jwkToRsa(jwk) {
-  return await crypto.subtle.importKey(
-    'jwk',
-    jwk,
-    {
-      name: 'RSA-OAEP',
-      hash: { name: 'SHA-256' },
-    },
-    true,
-    ['wrapKey']
-  );
-}
-
-async function arrayBufferToBase64(buffer) {
+function arrayBufferToBase64(buffer) {
   let binary = '';
   let bytes = new Uint8Array(buffer);
   let len = bytes.byteLength;
@@ -230,11 +287,51 @@ async function arrayBufferToBase64(buffer) {
   return window.btoa(binary);
 }
 
+// Encoding function
+function bufferToBase64(buf) {
+  var bufferInstance = Buffer.from(buf);
+  return bufferInstance.toString('base64');
+}
+
+// Decoding function
+function base64ToArrayBuffer(base64Str) {
+  var bufferInstance = Buffer.from(base64Str, 'base64');
+  return Uint8Array.from(bufferInstance).buffer;
+}
+// function bufferToBase64(buffer) {
+//   let array = new Uint8Array(buffer);
+//   let str = new TextDecoder().decode(array);
+//   return btoa(str);
+// }
+
+// function base64ToArrayBuffer(base64) {
+//   let str = atob(base64);
+//   let array = new TextEncoder().encode(str);
+//   return array.buffer;
+// }
+// function base64ToArrayBuffer(base64) {
+//   var binaryString = decodeURIComponent(
+//     atob(base64)
+//       .split('')
+//       .map(function (c) {
+//         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+//       })
+//       .join('')
+//   );
+
+//   var len = binaryString.length;
+//   var bytes = new Uint8Array(len);
+//   for (var i = 0; i < len; i++) {
+//     bytes[i] = binaryString.charCodeAt(i);
+//   }
+//   return bytes.buffer;
+// }
+
 async function exportKeyToBase64(key) {
   // Export the key as 'raw'
   const keyBuffer = await window.crypto.subtle.exportKey('raw', key);
   // Convert the buffer to base64 for easy comparison
-  const keyBase64 = await arrayBufferToBase64(keyBuffer);
+  const keyBase64 = await bufferToBase64(keyBuffer);
   return keyBase64;
 }
 

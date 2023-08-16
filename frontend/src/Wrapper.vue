@@ -12,9 +12,6 @@ import { ref, onMounted, provide } from 'vue';
 import { ApiConnection } from './lib/api';
 import Storage from './lib/storage/localStorage';
 import {
-  generateAESKey,
-  generateRSAKeyPair,
-  wrapAESKey,
   Keychain,
   // compareKeys,
 } from './lib/crypt';
@@ -59,6 +56,7 @@ onMounted(async () => {
   // window.wrapAESKey = wrapAESKey;
   // window.compareKeys = compareKeys;
   // window.Storage = Storage;
+
   // const aes = await generateAESKey();
   // await window.keychain.generateKeyPair();
   // await window.keychain.add('1', aes);
