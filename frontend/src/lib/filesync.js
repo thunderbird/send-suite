@@ -220,7 +220,6 @@ export async function download(id, size, key) {
     console.log(`decrypting with key`);
     let plainStream = decryptStream(blobStream(downloadedBlob), key);
     console.log(plainStream);
-    debugger;
 
     plaintext = await streamToArrayBuffer(plainStream, size);
   } else {

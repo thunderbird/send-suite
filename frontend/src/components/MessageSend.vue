@@ -17,8 +17,7 @@ async function sendBlob(blob) {
   console.log(`want to send blob of size ${blob.size}`);
   console.log(blob);
 
-  const keyset = await keychain.get(props.conversationId);
-  const { aesKey } = keyset;
+  const aesKey = await keychain.get(props.conversationId);
   if (!aesKey) {
     return;
   }

@@ -50,9 +50,7 @@ privateKey: ${this.privateKey}`);
     // in a container (i.e., a folder or conversation)
     const aesKey = await generateAESKey();
 
-    this.add(id, {
-      aesKey,
-    });
+    this.add(id, aesKey);
   }
 
   async load() {

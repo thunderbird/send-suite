@@ -107,19 +107,19 @@ async function createApiUser() {
     class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
     @click="generateKeys"
   >
-    Create User Keys
+    Gen Keypair
   </button>
   <button
     class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
     @click="saveKeys"
   >
-    Save User Keys
+    Store Keys
   </button>
   <button
     class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
     @click="loadKeys"
   >
-    Load User Keys
+    Load Keys
   </button>
   <br />
   <label>
@@ -163,8 +163,7 @@ async function createApiUser() {
   </label>
   <br />
   <button @click.prevent="loadKeychain()">Load Keys</button> -->
-  <br />
-  <br />
+  <hr />
 </template>
 
 <style scoped>
@@ -172,5 +171,11 @@ textarea {
   width: 80%;
   height: 8em;
   font-size: 10px;
+}
+hr {
+  margin-top: 1em;
+  padding-top: 1em;
+  /* padding-bottom: 1em; */
+  margin-bottom: 0;
 }
 </style>
