@@ -126,9 +126,10 @@ privateKey: ${this.privateKey}`);
 
     // store items from this.keys individually
     Object.keys(this.keys).forEach(async (id) => {
-      const key = this.get(id);
+      // Do not use `.get(id)` to keep the key wrapped.
+      const key = this.keys[id];
       const index = `${prefix}${id}`;
-      // The key is already wrapped, store it as-is.
+      // Store the wrapped it as-is.
       this.storage.set(index, key);
     });
   }
