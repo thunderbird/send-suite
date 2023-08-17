@@ -263,4 +263,23 @@ export class ApiConnection {
       return null;
     }
   }
+
+  async createEphemeralLink(containerId, wrappedKey, senderId, salt) {
+    const resp = await this.callApi(
+      `ephemeral`,
+      {
+        containerId,
+        wrappedKey,
+        senderId,
+        salt,
+      },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not create ephemeral link`);
+      return null;
+    }
+  }
 }

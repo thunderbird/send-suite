@@ -9,8 +9,10 @@ import {
   exportKeyToBase64,
   unwrapAESKey,
   wrapAESKey,
-  bufferToBase64,
+  arrayBufferToBase64,
   base64ToArrayBuffer,
+  passwordWrapAESKey,
+  passwordUnwrapAESKey,
 } from '../lib/crypt';
 
 onMounted(async () => {
@@ -35,8 +37,10 @@ onMounted(async () => {
   window.exportKeyToBase64 = exportKeyToBase64;
   window.unwrapAESKey = unwrapAESKey;
   window.wrapAESKey = wrapAESKey;
-  window.bufferToBase64 = bufferToBase64;
+  window.arrayBufferToBase64 = arrayBufferToBase64;
   window.base64ToArrayBuffer = base64ToArrayBuffer;
+  window.passwordWrapAESKey = passwordWrapAESKey;
+  window.passwordUnwrapAESKey = passwordUnwrapAESKey;
   // const aes = await generateAESKey();
   // await window.keychain.generateKeyPair();
   // await window.keychain.add('1', aes);

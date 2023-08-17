@@ -7,7 +7,7 @@ import {
   getItemsInContainer,
   addGroupMember,
   removeGroupMember,
-  shareKeyWithGroupMember,
+  createInvitation,
   acceptInvitation,
 } from '../models';
 
@@ -113,7 +113,7 @@ router.post('/:containerId/member/sharekey', async (req, res) => {
   const { containerId } = req.params;
   const { userId, senderId, wrappedKey } = req.body;
   try {
-    const invitation = await shareKeyWithGroupMember(
+    const invitation = await createInvitation(
       parseInt(containerId),
       wrappedKey,
       parseInt(userId),

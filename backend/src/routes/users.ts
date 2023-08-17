@@ -27,20 +27,20 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   const {
-    email,
     publicKey,
+    email,
   }: {
-    email: string;
     publicKey: string;
+    email: string;
   } = req.body;
   console.log(email);
   console.log(typeof publicKey);
-
+  let userEmail = email;
+  if (email) {
+    userEmail = email.trim().toLowerCase();
+  }
   try {
-    const user = await createUser(
-      email.trim().toLowerCase(),
-      JSON.stringify(publicKey).trim()
-    );
+    const user = await createUser(JSON.stringify(publicKey).trim(), userEmail);
     res.status(201).json({
       message: 'User created',
       user,

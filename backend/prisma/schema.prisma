@@ -11,16 +11,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserTier {
+  PRO
+  EPHEMERAL
+}
+
 model User {
   id                  Int           @id @default(autoincrement())
-  email               String        @unique
+  email               String?        @unique
   publicKey           String
   // links            Link[]
   uploads             Upload[]
   groups              GroupUser[]
   containers          Container[]
-  invitationsSent     Invitation[]  @relation("Sender")
-  invitationsReceived Invitation[]  @relation("Recipient")
+  sentInvitations     Invitation[]    @relation("Sender")
+  receivedInvitations Invitation[]    @relation("Recipient")
+  ephemeralLinks      EphemeralLink[] @relation("Ephemeral")
+  tier                UserTier
+  createdAt           DateTime?
+  updatedAt           DateTime?
+  activatedAt         DateTime?
 }
 
 model Group {
@@ -38,7 +48,6 @@ model GroupUser {
   @@id([groupId, userId])
 }
 
-
 model Invitation {
   id              Int     @id @default(autoincrement())
   senderId        Int
@@ -46,7 +55,17 @@ model Invitation {
   recipientId     Int
   recipient       User    @relation("Recipient", fields: [recipientId], references: [id])
   wrappedKey      String
-  containerId         Int
+  containerId     Int
+}
+
+model EphemeralLink {
+  id              String @unique
+  containerId     Int
+  wrappedKey      String
+  salt            String
+  senderId        Int
+  sender          User    @relation("Ephemeral", fields: [senderId], references: [id])
+  // challenge       String
 }
 
 enum ContainerType {

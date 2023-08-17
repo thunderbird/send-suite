@@ -50,7 +50,7 @@ privateKey: ${this.privateKey}`);
     // in a container (i.e., a folder or conversation)
     const aesKey = await generateAESKey();
 
-    this.add(id, aesKey);
+    await this.add(id, aesKey);
   }
 
   async load() {
@@ -218,7 +218,7 @@ export async function wrapAESKey(aesKey, publicKey) {
   );
 
   // Transferring buffer to string to ease the storage
-  const wrappedKeyStr = bufferToBase64(wrappedKey);
+  const wrappedKeyStr = arrayBufferToBase64(wrappedKey);
 
   return wrappedKeyStr;
 }
@@ -253,7 +253,7 @@ export async function rsaToJwk(key) {
 }
 
 // Encoding function
-export function bufferToBase64(buf) {
+export function arrayBufferToBase64(buf) {
   var bufferInstance = Buffer.from(buf);
   return bufferInstance.toString('base64');
 }
@@ -264,11 +264,18 @@ export function base64ToArrayBuffer(base64Str) {
   return Uint8Array.from(bufferInstance).buffer;
 }
 
+function bytesToArrayBuffer(bytes) {
+  const bytesAsArrayBuffer = new ArrayBuffer(bytes.length);
+  const bytesUint8 = new Uint8Array(bytesAsArrayBuffer);
+  bytesUint8.set(bytes);
+  return bytesAsArrayBuffer;
+}
+
 export async function exportKeyToBase64(key) {
   // Export the key as 'raw'
   const keyBuffer = await window.crypto.subtle.exportKey('raw', key);
   // Convert the buffer to base64 for easy comparison
-  const keyBase64 = await bufferToBase64(keyBuffer);
+  const keyBase64 = arrayBufferToBase64(keyBuffer);
   return keyBase64;
 }
 
@@ -277,3 +284,114 @@ export async function compareKeys(k1, k2) {
   const unwrappedAESBase64 = await exportKeyToBase64(k2);
   return originalAESBase64 === unwrappedAESBase64;
 }
+
+export function generateSalt() {
+  let salt = window.crypto.getRandomValues(new Uint8Array(16));
+  return salt;
+}
+
+/*
+Get some key material to use as input to the deriveKey method.
+The key material is a password supplied by the user.
+*/
+function getKeyMaterial(password) {
+  const enc = new TextEncoder();
+  return window.crypto.subtle.importKey(
+    'raw',
+    enc.encode(password),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveBits', 'deriveKey']
+  );
+}
+
+/*
+Given some key material and some random salt
+derive an AES-KW key using PBKDF2.
+*/
+function getKey(keyMaterial, salt) {
+  return window.crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt,
+      iterations: 100000,
+      hash: 'SHA-256',
+    },
+    keyMaterial,
+    { name: 'AES-KW', length: 256 },
+    true,
+    ['wrapKey', 'unwrapKey']
+  );
+}
+
+/*
+Derive an AES-KW key using PBKDF2.
+*/
+async function getUnwrappingKey(password, salt) {
+  // 1. get the key material (user-supplied password)
+  const keyMaterial = await getKeyMaterial(password);
+  // 2 initialize the salt parameter.
+  // The salt must match the salt originally used to derive the key.
+  // const saltBuffer = bytesToArrayBuffer(saltBytes);
+  // const saltBuffer = bytesToArrayBuffer(salt);
+  // 3 derive the key from key material and salt
+  return window.crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt,
+      iterations: 100000,
+      hash: 'SHA-256',
+    },
+    keyMaterial,
+    { name: 'AES-KW', length: 256 },
+    true,
+    ['wrapKey', 'unwrapKey']
+  );
+}
+
+/*
+Wrap the given key.
+*/
+export async function passwordWrapAESKey(keyToWrap, password, salt) {
+  // get the key encryption key
+  const keyMaterial = await getKeyMaterial(password);
+  // let salt = window.crypto.getRandomValues(new Uint8Array(16));
+  const wrappingKey = await getKey(keyMaterial, salt);
+
+  return window.crypto.subtle.wrapKey('raw', keyToWrap, wrappingKey, 'AES-KW');
+}
+
+export async function passwordUnwrapAESKey(wrappedKey, password, salt) {
+  // 1. get the unwrapping key
+  const unwrappingKey = await getUnwrappingKey(password, salt);
+  // 2. initialize the wrapped key
+  const wrappedKeyBuffer = base64ToArrayBuffer(wrappedKey);
+  // const wrappedKeyBuffer = bytesToArrayBuffer(wrappedKey);
+
+  // 3. unwrap the key
+  return window.crypto.subtle.unwrapKey(
+    'raw', // import format
+    wrappedKeyBuffer, // ArrayBuffer representing key to unwrap
+    unwrappingKey, // CryptoKey representing key encryption key
+    'AES-KW', // algorithm identifier for key encryption key
+    'AES-GCM', // algorithm identifier for key to unwrap
+    true, // extractability of key to unwrap
+    ['encrypt', 'decrypt'] // key usages for key to unwrap
+  );
+}
+
+/*
+Generate an encrypt/decrypt secret key,
+then wrap it.
+*/
+// window.crypto.subtle
+//   .generateKey(
+//     {
+//       name: "AES-GCM",
+//       length: 256,
+//     },
+//     true,
+//     ["encrypt", "decrypt"],
+//   )
+//   .then((secretKey) => wrapCryptoKey(secretKey))
+//   .then((wrappedKey) => console.log(wrappedKey));

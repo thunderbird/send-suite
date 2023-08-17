@@ -7,6 +7,7 @@ import users from './routes/users';
 import containers from './routes/containers';
 import uploads from './routes/uploads';
 import download from './routes/download';
+import ephemeral from './routes/ephemeral';
 
 import wsHandler from './wsHandler';
 
@@ -32,6 +33,7 @@ app.use('/api/users', users);
 app.use('/api/containers', containers);
 app.use('/api/uploads', uploads);
 app.use('/api/download', download);
+app.use('/api/ephemeral', ephemeral);
 
 app.get(`*`, (req, res) => {
   res.status(404);

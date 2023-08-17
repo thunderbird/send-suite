@@ -36,7 +36,7 @@ async function createConversation() {
   console.log(`you want to create a convo`);
   const response = await api.createConversation(user.value.id);
   console.log(response);
-  await keychain.createAndAddContainerKey(1);
+  // await keychain.createAndAddContainerKey(1);
   await keychain.createAndAddContainerKey(response.id);
   await keychain.store();
   loadAllConversations();

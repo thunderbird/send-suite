@@ -5,6 +5,7 @@ import MessageList from '../components/MessageList.vue';
 import MessageSend from '../components/MessageSend.vue';
 import AddPerson from '../components/AddPerson.vue';
 import InvitationList from '../components/InvitationList.vue';
+import AddEphemeral from '../components/AddEphemeral.vue';
 
 const currentConversation = ref(null);
 
@@ -17,7 +18,11 @@ function handleChoice(conversationId) {
 <template>
   <InvitationList />
   <ConversationList @choose-conversation="handleChoice" />
-  <AddPerson :conversationId="currentConversation" />
-  <MessageList :conversationId="currentConversation" />
-  <MessageSend :conversationId="currentConversation" />
+  <AddEphemeral />
+  <div v-if="currentConversation">
+    <AddPerson :conversationId="currentConversation" />
+    <!-- consider only allowing AddEphemeral for fresh conversations -->
+    <MessageList :conversationId="currentConversation" />
+    <MessageSend :conversationId="currentConversation" />
+  </div>
 </template>

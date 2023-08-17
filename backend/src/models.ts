@@ -1,11 +1,23 @@
-import { PrismaClient, ContainerType, ItemType } from '@prisma/client';
+import {
+  PrismaClient,
+  ContainerType,
+  ItemType,
+  UserTier,
+} from '@prisma/client';
 const prisma = new PrismaClient();
+import { randomBytes } from 'crypto';
+import { base64url } from './utils';
 
-export async function createUser(email: string, publicKey: string) {
+export async function createUser(
+  publicKey: string,
+  email: string,
+  tier = UserTier.PRO
+) {
   return prisma.user.create({
     data: {
-      email,
       publicKey,
+      email,
+      tier,
     },
   });
 }
@@ -208,7 +220,7 @@ export async function addGroupMember(containerId: number, userId: number) {
   });
 }
 
-export async function shareKeyWithGroupMember(
+export async function createInvitation(
   containerId: number,
   wrappedKey: string,
   userId: number,
@@ -284,4 +296,33 @@ export async function removeGroupMember(groupId: number, userId: number) {
       groupId_userId: { groupId, userId },
     },
   });
+}
+
+export async function createEphemeralLink(
+  containerId: number,
+  wrappedKey: string,
+  senderId: number,
+  salt: string
+) {
+  const id = base64url(randomBytes(64));
+  return prisma.ephemeralLink.create({
+    data: {
+      id,
+      containerId,
+      wrappedKey,
+      sender: {
+        connect: {
+          id: senderId,
+        },
+      },
+      salt,
+    },
+  });
+}
+
+export async function acceptEphemeralLink(hash: string) {
+  // find the ephemeralLink in the database
+  // for the hash, does the challenge match
+  // what's in the database?
+  // skipping the challenge for now
 }
