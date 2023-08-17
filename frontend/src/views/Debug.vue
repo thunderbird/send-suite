@@ -13,6 +13,9 @@ import {
   base64ToArrayBuffer,
   passwordWrapAESKey,
   passwordUnwrapAESKey,
+  aesEncryptChallenge,
+  aesDecryptChallenge,
+  generateSalt,
 } from '../lib/crypt';
 
 onMounted(async () => {
@@ -41,6 +44,9 @@ onMounted(async () => {
   window.base64ToArrayBuffer = base64ToArrayBuffer;
   window.passwordWrapAESKey = passwordWrapAESKey;
   window.passwordUnwrapAESKey = passwordUnwrapAESKey;
+  window.aesEncryptChallenge = aesEncryptChallenge;
+  window.generateSalt = generateSalt;
+  window.aesDecryptChallenge = aesDecryptChallenge;
   // const aes = await generateAESKey();
   // await window.keychain.generateKeyPair();
   // await window.keychain.add('1', aes);

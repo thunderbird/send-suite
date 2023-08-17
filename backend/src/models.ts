@@ -302,7 +302,9 @@ export async function createEphemeralLink(
   containerId: number,
   wrappedKey: string,
   senderId: number,
-  salt: string
+  salt: string,
+  challengeCiphertext: string,
+  challengePlaintext: string
 ) {
   const id = base64url(randomBytes(64));
   return prisma.ephemeralLink.create({
@@ -316,13 +318,43 @@ export async function createEphemeralLink(
         },
       },
       salt,
+      challengeCiphertext,
+      challengePlaintext,
     },
   });
 }
 
-export async function acceptEphemeralLink(hash: string) {
-  // find the ephemeralLink in the database
-  // for the hash, does the challenge match
-  // what's in the database?
-  // skipping the challenge for now
+export async function getEphemeralLinkChallenge(hash: string) {
+  return prisma.ephemeralLink.findUnique({
+    where: {
+      id: hash,
+    },
+    select: {
+      salt: true,
+      challengeCiphertext: true,
+      wrappedKey: true,
+    },
+  });
+}
+
+export async function acceptEphemeralLink(
+  hash: string,
+  challengePlaintext: string
+) {
+  try {
+    // find the ephemeralLink in the database
+    // for the hash, does the challenge match
+    // what's in the database?
+    const ephemeralLink = await prisma.ephemeralLink.findUnique({
+      where: {
+        id: hash,
+        challengePlaintext,
+      },
+    });
+    console.log(`challenge text matches, continuing 🚀🚀`);
+    console.log(`here is where we should create the user, etc.`);
+  } catch (e) {
+    console.log(e);
+    return null;
+  }
 }

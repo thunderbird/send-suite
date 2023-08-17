@@ -1,6 +1,9 @@
 lockfileVersion: '6.0'
 
 dependencies:
+  base64-js:
+    specifier: ^1.5.1
+    version: 1.5.1
   vue:
     specifier: ^3.3.4
     version: 3.3.4
@@ -548,7 +551,6 @@ packages:
 
   /base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
-    dev: true
 
   /binary-extensions@2.2.0:
     resolution: {integrity: sha512-jDctJ/IVQbZoJykoeHbhXpOlNBqGNcwXJKJog42E5HDPUwQTSdjCHdihjj0DlnheQ7blbT6dHOafNAiS8ooQKA==}

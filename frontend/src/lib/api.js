@@ -264,7 +264,14 @@ export class ApiConnection {
     }
   }
 
-  async createEphemeralLink(containerId, wrappedKey, senderId, salt) {
+  async createEphemeralLink(
+    containerId,
+    wrappedKey,
+    senderId,
+    salt,
+    challengePlaintext,
+    challengeCiphertext
+  ) {
     const resp = await this.callApi(
       `ephemeral`,
       {
@@ -272,6 +279,8 @@ export class ApiConnection {
         wrappedKey,
         senderId,
         salt,
+        challengePlaintext,
+        challengeCiphertext,
       },
       'POST'
     );
@@ -282,4 +291,16 @@ export class ApiConnection {
       return null;
     }
   }
+
+  async getEphemeralLinkChallenge(hash) {
+    const resp = await this.callApi(`ephemeral/${hash}/challenge`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get ephemeral challenge data`);
+      return null;
+    }
+  }
+
+  async acceptEphemeralLink(hash) {}
 }

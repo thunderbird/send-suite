@@ -1,6 +1,11 @@
 import { Prisma, ContainerType } from '@prisma/client';
 import { Router } from 'express';
-import { createUser, createEphemeralLink } from '../models';
+import {
+  createUser,
+  createEphemeralLink,
+  getEphemeralLinkChallenge,
+  acceptEphemeralLink,
+} from '../models';
 
 const router: Router = Router();
 
@@ -11,18 +16,24 @@ router.post('/', async (req, res) => {
     wrappedKey,
     senderId,
     salt,
+    challengeCiphertext,
+    challengePlaintext,
   }: {
     containerId: number;
     wrappedKey: string;
     senderId: number;
     salt: string;
+    challengeCiphertext: string;
+    challengePlaintext: string;
   } = req.body;
   try {
     const ephemeralLink = await createEphemeralLink(
       containerId,
       wrappedKey,
       senderId,
-      salt
+      salt,
+      challengeCiphertext,
+      challengePlaintext
     );
 
     res.status(200).json({
@@ -35,8 +46,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// activate the hash for an ephemeral user
-router.post('/:hash', async (req, res) => {
+// get the challenge info
+router.get('/:hash/challenge', async (req, res) => {
   const { hash } = req.params;
   if (!hash) {
     res.status(400).json({
@@ -44,6 +55,28 @@ router.post('/:hash', async (req, res) => {
     });
   }
   try {
+    const data = await getEphemeralLinkChallenge(hash);
+    res.status(200).json({
+      ...data,
+    });
+  } catch (e) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+// activate the hash for an ephemeral user
+// if the challenge is correct
+router.post('/:hash/challenge', async (req, res) => {
+  const { hash } = req.params;
+  if (!hash) {
+    res.status(400).json({
+      message: 'Cannot create ephemeral user without hash',
+    });
+  }
+  try {
+    const link = await getEphemeralLinkChallenge(hash);
     res.status(200).json({});
   } catch (e) {
     res.status(500).json({

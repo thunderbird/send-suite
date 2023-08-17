@@ -1,6 +1,10 @@
 <script setup>
 import { ref, inject } from 'vue';
-import { passwordWrapAESKey, generateSalt } from '../lib/crypt';
+import {
+  passwordWrapAESKey,
+  generateSalt,
+  aesEncryptChallenge,
+} from '../lib/crypt';
 
 const api = inject('api');
 const { user } = inject('user');
@@ -36,14 +40,27 @@ async function requestEphemeralLink() {
     const strPasswordWrappedKey = arrayBufferToBase64(passwordWrappedKey);
     const strSalt = arrayBufferToBase64(salt);
 
+    const challengePlaintext = 'abc123';
+    // const challengePlaintext = arrayBufferToBase64(generateSalt(128));
+    const challengeCiphertext = arrayBufferToBase64(
+      await aesEncryptChallenge(
+        base64ToArrayBuffer(challengePlaintext),
+        unwrappedKey,
+        salt
+      )
+    );
+
     // with the password protected key and the salt, create an ephemeral link
     const resp = await api.createEphemeralLink(
       id,
       strPasswordWrappedKey,
       user.value.id,
-      strSalt
+      strSalt,
+      challengePlaintext,
+      challengeCiphertext
     );
 
+    console.log(`created ephemeral link for convo ${id}`);
     if (resp.id) {
       const hash = resp.id;
       const { origin } = new URL(window.location.href);

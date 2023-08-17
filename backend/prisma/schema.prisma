@@ -59,13 +59,14 @@ model Invitation {
 }
 
 model EphemeralLink {
-  id              String @unique
-  containerId     Int
-  wrappedKey      String
-  salt            String
-  senderId        Int
-  sender          User    @relation("Ephemeral", fields: [senderId], references: [id])
-  // challenge       String
+  id                  String @unique
+  containerId         Int
+  wrappedKey          String
+  salt                String
+  senderId            Int
+  sender              User    @relation("Ephemeral", fields: [senderId], references: [id])
+  challengeCiphertext String
+  challengePlaintext  String
 }
 
 enum ContainerType {

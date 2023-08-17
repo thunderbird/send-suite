@@ -1,4 +1,5 @@
-import { Buffer } from 'buffer';
+// import { Buffer } from 'buffer';
+import base64js from 'base64-js';
 
 const prefix = 'send-keychain/';
 const pubPrefix = 'send-pub';
@@ -252,16 +253,51 @@ export async function rsaToJwk(key) {
   return await crypto.subtle.exportKey('jwk', key);
 }
 
-// Encoding function
-export function arrayBufferToBase64(buf) {
-  var bufferInstance = Buffer.from(buf);
-  return bufferInstance.toString('base64');
+// // Encoding function
+// export function arrayBufferToBase64(buf) {
+//   var bufferInstance = Buffer.from(buf);
+//   return bufferInstance.toString('base64');
+// }
+
+// // Decoding function
+// export function base64ToArrayBuffer(base64Str) {
+//   var bufferInstance = Buffer.from(base64Str, 'base64');
+//   return Uint8Array.from(bufferInstance).buffer;
+// }
+
+// // Encoding function
+// export function arrayBufferToBase64(arrayBuffer) {
+//   // const byteArray = new Uint8Array(arrayBuffer);
+//   // const byteString = String.fromCharCode(...byteArray);
+//   // return btoa(encodeURIComponent(byteString));
+//   return base64js.fromByteArray(arrayBuffer);
+// }
+
+// // Decoding function
+// export function base64ToArrayBuffer(base64) {
+//   // const byteString = decodeURIComponent(atob(base64));
+//   // const byteArray = new Uint8Array(byteString.length);
+//   // for (let i = 0; i < byteString.length; i++) {
+//   //   byteArray[i] = byteString.charCodeAt(i);
+//   // }
+//   // return byteArray.buffer;
+//   return base64js.toByteArray(base64);
+// }
+
+export function arrayBufferToBase64(arrayBuffer) {
+  const byteArray = new Uint8Array(arrayBuffer);
+  const byteString = String.fromCharCode(...byteArray);
+  return btoa(encodeURIComponent(byteString));
 }
 
 // Decoding function
-export function base64ToArrayBuffer(base64Str) {
-  var bufferInstance = Buffer.from(base64Str, 'base64');
-  return Uint8Array.from(bufferInstance).buffer;
+export function base64ToArrayBuffer(base64) {
+  const byteString = decodeURIComponent(atob(base64));
+  const byteArray = new Uint8Array(byteString.length);
+  for (let i = 0; i < byteString.length; i++) {
+    byteArray[i] = byteString.charCodeAt(i);
+  }
+  return byteArray.buffer;
 }
 
 function bytesToArrayBuffer(bytes) {
@@ -285,8 +321,12 @@ export async function compareKeys(k1, k2) {
   return originalAESBase64 === unwrappedAESBase64;
 }
 
-export function generateSalt() {
-  let salt = window.crypto.getRandomValues(new Uint8Array(16));
+export function generateSalt(size = 16) {
+  // const saltBuffer = window.crypto.getRandomValues(new Uint8Array(length));
+  // // Convert the salt ArrayBuffer to Base64.
+  // return arrayBufferToBase64(saltBuffer);
+  let salt = window.crypto.getRandomValues(new Uint8Array(size));
+
   return salt;
 }
 
@@ -333,7 +373,8 @@ async function getUnwrappingKey(password, salt) {
   // 2 initialize the salt parameter.
   // The salt must match the salt originally used to derive the key.
   // const saltBuffer = bytesToArrayBuffer(saltBytes);
-  // const saltBuffer = bytesToArrayBuffer(salt);
+  const saltBuffer = bytesToArrayBuffer(salt);
+
   // 3 derive the key from key material and salt
   return window.crypto.subtle.deriveKey(
     {
@@ -365,18 +406,33 @@ export async function passwordUnwrapAESKey(wrappedKey, password, salt) {
   // 1. get the unwrapping key
   const unwrappingKey = await getUnwrappingKey(password, salt);
   // 2. initialize the wrapped key
-  const wrappedKeyBuffer = base64ToArrayBuffer(wrappedKey);
+  // const wrappedKeyBuffer = base64ToArrayBuffer(wrappedKey);
   // const wrappedKeyBuffer = bytesToArrayBuffer(wrappedKey);
 
   // 3. unwrap the key
   return window.crypto.subtle.unwrapKey(
     'raw', // import format
-    wrappedKeyBuffer, // ArrayBuffer representing key to unwrap
+    wrappedKey, // ArrayBuffer representing key to unwrap
     unwrappingKey, // CryptoKey representing key encryption key
     'AES-KW', // algorithm identifier for key encryption key
     'AES-GCM', // algorithm identifier for key to unwrap
     true, // extractability of key to unwrap
     ['encrypt', 'decrypt'] // key usages for key to unwrap
+  );
+}
+
+export function aesEncryptChallenge(challengePlaintext, key, iv) {
+  return window.crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv: iv },
+    key,
+    challengePlaintext
+  );
+}
+export function aesDecryptChallenge(challengeCiphertext, key, iv) {
+  return window.crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    challengeCiphertext
   );
 }
 
