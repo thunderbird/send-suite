@@ -43,11 +43,7 @@ async function requestEphemeralLink() {
     const challengePlaintext = 'abc123';
     // const challengePlaintext = arrayBufferToBase64(generateSalt(128));
     const challengeCiphertext = arrayBufferToBase64(
-      await aesEncryptChallenge(
-        base64ToArrayBuffer(challengePlaintext),
-        unwrappedKey,
-        salt
-      )
+      await aesEncryptChallenge(challengePlaintext, unwrappedKey, salt)
     );
 
     // with the password protected key and the salt, create an ephemeral link
@@ -64,7 +60,8 @@ async function requestEphemeralLink() {
     if (resp.id) {
       const hash = resp.id;
       const { origin } = new URL(window.location.href);
-      const url = `${origin}/ephemeral/${hash}`;
+      // const url = `${origin}/ephemeral/${hash}`;
+      const url = hash;
       ephemeralHash.value = url;
     }
   }

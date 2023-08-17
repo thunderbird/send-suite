@@ -9,7 +9,7 @@ import {
 const api = inject('api');
 const password = ref('abc');
 const hash = ref(
-  '3BUOOjnSKFTNj-otohlrKjXD2TQG9HmKxctp6AaMccdtxtsX6faUhBoqAp1F76Gm2l6BkVF5snxuHJQnmj0QxA'
+  'rXcUWM1F11ciVWqJs4H8Q7M2-zHWZ8dtZmEXhHwRJ0lkQ9na5mx6I0zWVab6WcxKRCTrCiqf2t2o3_9EKoZjqA'
 );
 
 async function acceptEphemeralLink() {
@@ -22,11 +22,25 @@ async function acceptEphemeralLink() {
   }
   // receive the wrapped key, salt, and challengeCiphertext
   const { salt, challengeCiphertext, wrappedKey } = resp;
-
+  const keyBuffer = base64ToArrayBuffer(wrappedKey);
+  const saltBuffer = base64ToArrayBuffer(salt);
   try {
     // unwrap the key with the password
-    let result = await passwordUnwrapAESKey(wrappedKey, password.value, salt);
-    console.log(`it worked!`);
+    let unwrappedKey = await passwordUnwrapAESKey(
+      keyBuffer,
+      password.value,
+      saltBuffer
+    );
+    console.log(`unwrapping worked!`);
+
+    let challengePlaintext = await aesDecryptChallenge(
+      base64ToArrayBuffer(challengeCiphertext),
+      unwrappedKey,
+      saltBuffer
+    );
+
+    console.log(`drum roll`);
+    console.log(challengePlaintext);
 
     // decrypt the challenge ciphertext and send it back
     // this allows me to create a user?

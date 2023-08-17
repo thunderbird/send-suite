@@ -421,19 +421,25 @@ export async function passwordUnwrapAESKey(wrappedKey, password, salt) {
   );
 }
 
-export function aesEncryptChallenge(challengePlaintext, key, iv) {
-  return window.crypto.subtle.encrypt(
+export async function aesEncryptChallenge(challengePlaintext, key, iv) {
+  const textEncoder = new TextEncoder();
+  const arrayBuffer = textEncoder.encode(challengePlaintext);
+
+  return await window.crypto.subtle.encrypt(
     { name: 'AES-GCM', iv: iv },
     key,
-    challengePlaintext
+    arrayBuffer
   );
 }
-export function aesDecryptChallenge(challengeCiphertext, key, iv) {
-  return window.crypto.subtle.decrypt(
+export async function aesDecryptChallenge(challengeCiphertext, key, iv) {
+  const arrayBuffer = await window.crypto.subtle.decrypt(
     { name: 'AES-GCM', iv },
     key,
     challengeCiphertext
   );
+  const textDecoder = new TextDecoder();
+  return textDecoder.decode(arrayBuffer);
+  // return arrayBuffer;
 }
 
 /*
