@@ -57,7 +57,7 @@ enum ContainerType {
 model Container {
   id        Int             @id @default(autoincrement())
   name      String
-  publicKey String
+  // publicKey String
   ownerId   Int
   owner     User            @relation(fields: [ownerId], references: [id])
   groupId   Int             @unique

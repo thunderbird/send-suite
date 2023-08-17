@@ -36,7 +36,8 @@ export class Keychain {
     this.privateKey = keyPair.privateKey;
   }
 
-  async createAndAddContainerKey(id, keyPair) {
+  // No longer using an external keypair
+  async createAndAddContainerKey(id /*, keyPair*/) {
     // AES key is for encrypting/decrypting messages and files
     const aesKey = await generateAESKey();
 
@@ -44,8 +45,8 @@ export class Keychain {
     // const keyPair = await generateRSAKeyPair();
     this.add(id, {
       aesKey,
-      publicKey: keyPair.publicKey,
-      privateKey: keyPair.privateKey,
+      // publicKey: keyPair.publicKey,
+      // privateKey: keyPair.privateKey,
     });
   }
 
@@ -88,8 +89,10 @@ export class Keychain {
     );
 
     this.keysets = {};
+
     // the aesKey must be unwrapped with the private key
     // we'll do the public and private keys first
+    // UPDATE: not caring about public/private keys for containers
     for (let k of this.storage.keys()) {
       if (k.startsWith(prefix)) {
         const [_, id, type] = k.split('/');
@@ -99,34 +102,36 @@ export class Keychain {
             this.keysets[id] = {};
           }
           switch (type) {
-            case 'privateKey':
-              this.keysets[id][type] = await crypto.subtle.importKey(
-                'jwk',
-                val,
-                {
-                  name: 'RSA-OAEP',
-                  hash: { name: 'SHA-256' },
-                },
-                true,
-                ['unwrapKey']
-              );
-              break;
-            case 'publicKey':
-              this.keysets[id][type] = await crypto.subtle.importKey(
-                'jwk',
-                val,
-                {
-                  name: 'RSA-OAEP',
-                  hash: { name: 'SHA-256' },
-                },
-                true,
-                ['wrapKey']
-              );
-              break;
-            // case 'aesKey':
-            //   // I need to do this after doing the privatekey
-            //   this.keysets[id][type] = await unwrapAESKey(val);
+            // case 'privateKey':
+            //   this.keysets[id][type] = await crypto.subtle.importKey(
+            //     'jwk',
+            //     val,
+            //     {
+            //       name: 'RSA-OAEP',
+            //       hash: { name: 'SHA-256' },
+            //     },
+            //     true,
+            //     ['unwrapKey']
+            //   );
             //   break;
+            // case 'publicKey':
+            //   this.keysets[id][type] = await crypto.subtle.importKey(
+            //     'jwk',
+            //     val,
+            //     {
+            //       name: 'RSA-OAEP',
+            //       hash: { name: 'SHA-256' },
+            //     },
+            //     true,
+            //     ['wrapKey']
+            //   );
+            //   break;
+            case 'aesKey':
+              // I need to do this after doing the privatekey
+              // Update: no I don't. just using personal private key
+
+              this.keysets[id][type] = await unwrapAESKey(val, this.privateKey);
+              break;
             default:
               break;
           }
@@ -135,22 +140,22 @@ export class Keychain {
     }
 
     // TODO: find a smarter way to do the aesKey after the private key
-    for (let k of this.storage.keys()) {
-      if (k.startsWith(prefix)) {
-        const [_, id, type] = k.split('/');
-        const val = this.storage.get(k);
-        if (val && type === 'aesKey') {
-          if (!this.keysets[id]['privateKey']) {
-            console.log(`👿 no private key for this aes key? ${id}`);
-            continue;
-          }
-          this.keysets[id][type] = await unwrapAESKey(
-            base64ToArrayBuffer(val),
-            this.keysets[id]['privateKey']
-          );
-        }
-      }
-    }
+    // for (let k of this.storage.keys()) {
+    //   if (k.startsWith(prefix)) {
+    //     const [_, id, type] = k.split('/');
+    //     const val = this.storage.get(k);
+    //     if (val && type === 'aesKey') {
+    //       if (!this.keysets[id]['privateKey']) {
+    //         console.log(`👿 no private key for this aes key? ${id}`);
+    //         continue;
+    //       }
+    //       this.keysets[id][type] = await unwrapAESKey(
+    //         base64ToArrayBuffer(val),
+    //         this.keysets[id]['privateKey']
+    //       );
+    //     }
+    //   }
+    // }
   }
 
   async store() {
@@ -167,14 +172,21 @@ export class Keychain {
 
     // store items from this.keys individually
     Object.keys(this.keysets).forEach(async (id) => {
-      const { aesKey, publicKey, privateKey } = this.keysets[id];
+      const { aesKey } = this.keysets[id];
+      // const { aesKey, publicKey, privateKey } = this.keysets[id];
       let index;
-      index = `${prefix}${id}/privateKey`;
-      this.storage.set(index, await rsaToJwk(privateKey));
-      index = `${prefix}${id}/publicKey`;
-      this.storage.set(index, await rsaToJwk(publicKey));
-      index = `${prefix}${id}/aesKey`;
-      this.storage.set(index, await wrapAESKey(aesKey, publicKey));
+      // if (privateKey) {
+      //   index = `${prefix}${id}/privateKey`;
+      //   this.storage.set(index, await rsaToJwk(privateKey));
+      // }
+      // if (publicKey) {
+      //   index = `${prefix}${id}/publicKey`;
+      //   this.storage.set(index, await rsaToJwk(publicKey));
+      // }
+      if (aesKey) {
+        index = `${prefix}${id}/aesKey`;
+        this.storage.set(index, await wrapAESKey(aesKey, this.publicKey));
+      }
     });
   }
 
@@ -206,9 +218,20 @@ export class Keychain {
     return publicKeyJwk;
   }
 
-  async getAndWrap(id, publicKey) {
+  async getAndWrapContainerKey(id, publicKey) {
     const { aesKey } = await this.get(id);
     return await wrapAESKey(aesKey, publicKey);
+  }
+
+  async unwrapAndStoreContainerKey(wrappedKey, containerId) {
+    const aesKey = await unwrapAESKey(
+      base64ToArrayBuffer(wrappedKey),
+      this.privateKey
+    );
+    debugger;
+    this.add(containerId, {
+      aesKey,
+    });
   }
 
   remove(id) {
@@ -267,7 +290,7 @@ export async function wrapAESKey(aesKey, publicKey) {
   return wrappedKeyStr;
 }
 
-async function unwrapAESKey(wrappedAESKey, privateKey) {
+export async function unwrapAESKey(wrappedAESKey, privateKey) {
   const unwrappedKey = await window.crypto.subtle.unwrapKey(
     'jwk', // The format of the key to be unwrapped
     wrappedAESKey, // The wrapped key
@@ -293,24 +316,24 @@ export async function rsaToJwk(key) {
   return await crypto.subtle.exportKey('jwk', key);
 }
 
-function arrayBufferToBase64(buffer) {
-  let binary = '';
-  let bytes = new Uint8Array(buffer);
-  let len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return window.btoa(binary);
-}
+// function arrayBufferToBase64(buffer) {
+//   let binary = '';
+//   let bytes = new Uint8Array(buffer);
+//   let len = bytes.byteLength;
+//   for (let i = 0; i < len; i++) {
+//     binary += String.fromCharCode(bytes[i]);
+//   }
+//   return window.btoa(binary);
+// }
 
 // Encoding function
-function bufferToBase64(buf) {
+export function bufferToBase64(buf) {
   var bufferInstance = Buffer.from(buf);
   return bufferInstance.toString('base64');
 }
 
 // Decoding function
-function base64ToArrayBuffer(base64Str) {
+export function base64ToArrayBuffer(base64Str) {
   var bufferInstance = Buffer.from(base64Str, 'base64');
   return Uint8Array.from(bufferInstance).buffer;
 }

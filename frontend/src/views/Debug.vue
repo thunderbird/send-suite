@@ -79,11 +79,26 @@ async function createApiUser() {
     <input type="number" v-model="user.id" />
   </label>
   <br />
-  <button @click="storeUser">Save User</button>
+  <button
+    class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+    @click="storeUser"
+  >
+    Save User
+  </button>
   <br />
-  <button @click="generateKeys">Create User Keys</button>
+  <button
+    class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+    @click="generateKeys"
+  >
+    Create User Keys
+  </button>
   <br />
-  <button @click="saveKeys">Save User Keys</button>
+  <button
+    class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+    @click="saveKeys"
+  >
+    Save User Keys
+  </button>
   <br />
   <label>
     Email:
@@ -96,7 +111,12 @@ async function createApiUser() {
     <textarea v-model="jwkPublicKey">{{ jwkPublicKey }}</textarea>
   </label>
   <br />
-  <button @click="createApiUser">Create Api User</button>
+  <button
+    class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+    @click="createApiUser"
+  >
+    Create Api User
+  </button>
   <!-- <br />
   <label>
     <input type="checkbox" disabled :checked="keychain.privateKey" />

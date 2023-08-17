@@ -30,13 +30,12 @@ async function addPerson() {
       ['wrapKey']
     );
 
-    const wrappedKey = await keychain.getAndWrap(
+    const wrappedKey = await keychain.getAndWrapContainerKey(
       props.conversationId,
       importedPublicKey
     );
 
-    // // ^^^^^ THIS HASN'T BEEN TESTED YET
-    const resp = await api.shareKeyWithGroupMember(
+    const resp = await api.inviteGroupMember(
       props.conversationId,
       wrappedKey,
       recipientId.value,
@@ -46,10 +45,9 @@ async function addPerson() {
       message.value = `User ${recipientId.value} invited`;
     }
   }
-
-  function dismiss() {
-    message.value = '';
-  }
+}
+function dismiss() {
+  message.value = '';
 }
 </script>
 

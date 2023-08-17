@@ -4,6 +4,7 @@ import ConversationList from '../components/ConversationList.vue';
 import MessageList from '../components/MessageList.vue';
 import MessageSend from '../components/MessageSend.vue';
 import AddPerson from '../components/AddPerson.vue';
+import InvitationList from '../components/InvitationList.vue';
 
 const currentConversation = ref(null);
 
@@ -14,6 +15,7 @@ function handleChoice(conversationId) {
 </script>
 
 <template>
+  <InvitationList />
   <ConversationList @choose-conversation="handleChoice" />
   <AddPerson :conversationId="currentConversation" />
   <MessageList :conversationId="currentConversation" />

@@ -27,9 +27,13 @@ async function downloadMessage(id) {
   }
 
   const keyset = await keychain.get(props.conversationId);
+  if (!keyset) {
+    console.log(`no keyset in keychain`);
+    return;
+  }
   const { aesKey } = keyset;
   if (!aesKey) {
-    console.log(`no key`);
+    console.log(`no aes key`);
     return;
   }
   console.log(aesKey);

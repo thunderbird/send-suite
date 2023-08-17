@@ -4,6 +4,7 @@ import {
   createUser,
   getAllUserGroupContainers,
   getUserPublicKey,
+  getAllInvitations,
 } from '../models';
 
 const router: Router = Router();
@@ -53,8 +54,6 @@ router.post('/', async (req, res) => {
         message: 'User already exists',
       });
     } else {
-      console.log(`🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡`);
-      console.log(error);
       res.status(500).json({
         message: 'Server error.',
         // error: error.message,
@@ -90,6 +89,7 @@ router.get('/:userId/conversations', async (req, res) => {
     });
   }
 });
+
 router.get('/:userId/folders', async (req, res) => {
   const { userId } = req.params;
   try {
@@ -98,6 +98,18 @@ router.get('/:userId/folders', async (req, res) => {
       ContainerType.FOLDER
     );
     res.status(200).json(containers);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+router.get('/:userId/invitations', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const invitations = await getAllInvitations(parseInt(userId));
+    res.status(200).json(invitations);
   } catch (error) {
     res.status(500).json({
       message: 'Server error.',

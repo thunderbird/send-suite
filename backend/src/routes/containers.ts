@@ -20,12 +20,12 @@ router.get('/', (req, res) => {
 router.post('/', async (req, res) => {
   const {
     name,
-    publicKey,
+    // publicKey,
     ownerId,
     type,
   }: {
     name: string;
-    publicKey: string;
+    // publicKey: string;
     ownerId: number;
     type: ContainerType;
   } = req.body;
@@ -37,12 +37,10 @@ router.post('/', async (req, res) => {
 
   const defaultMessage = 'Bad request';
 
-  console.log(typeof name);
-  console.log(`🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡`);
   try {
     const container = await createContainer(
       name.trim().toLowerCase(),
-      publicKey.trim(),
+      // publicKey.trim(),
       ownerId,
       type
     );

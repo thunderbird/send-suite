@@ -49,7 +49,7 @@ export async function getUploadSize(id: string) {
 // owner is added to new group
 export async function createContainer(
   name: string,
-  publicKey: string,
+  // publicKey: string,
   ownerId: number,
   type: ContainerType
 ) {
@@ -70,7 +70,7 @@ export async function createContainer(
   const container = await prisma.container.create({
     data: {
       name,
-      publicKey,
+      // publicKey,
       ownerId,
       groupId: group.id,
       type,
@@ -232,6 +232,15 @@ export async function shareKeyWithGroupMember(
   });
 }
 
+export async function getAllInvitations(userId: number) {
+  const invitations = await prisma.invitation.findMany({
+    where: {
+      recipientId: userId,
+    },
+  });
+  return invitations;
+}
+
 export async function acceptInvitation(invitationId: number) {
   console.log(`accepting invitation for ${invitationId}`);
   // get invitation from database
@@ -243,20 +252,30 @@ export async function acceptInvitation(invitationId: number) {
   if (!invitation) {
     return null;
   }
-  // console.log(invitation);
+
   // get the recipientId from invitation
   // get container from the invitation
   const { recipientId, containerId } = invitation;
-
+  console.log(
+    `creating membership to container ${containerId} for user ${recipientId} `
+  );
   // create a new groupUser for recipientId and group
   const groupUser = await addGroupMember(containerId, recipientId);
 
   // delete the invitation
-  return prisma.invitation.delete({
+  const result = await prisma.invitation.delete({
     where: {
       id: invitationId,
     },
   });
+
+  if (!result) {
+    return null;
+  }
+
+  return {
+    success: 'did not delete because we are not ready yet',
+  };
 }
 
 export async function removeGroupMember(groupId: number, userId: number) {

@@ -45,21 +45,11 @@ async function loadAllConversations() {
 
 async function createConversation() {
   console.log(`you want to create a convo`);
-  const keyPair = await generateRSAKeyPair();
-  const publicKeyJwkString = JSON.stringify(await rsaToJwk(keyPair.publicKey));
-
-  if (publicKeyJwkString) {
-    const response = await api.createConversation(
-      user.value.id,
-      publicKeyJwkString
-    );
-    console.log(response);
-    await keychain.createAndAddContainerKey(response.id, keyPair);
-    await keychain.store();
-    loadAllConversations();
-  } else {
-    console.log(`no public key, no convo`);
-  }
+  const response = await api.createConversation(user.value.id);
+  console.log(response);
+  await keychain.createAndAddContainerKey(response.id);
+  await keychain.store();
+  loadAllConversations();
 }
 
 onMounted(async () => {

@@ -92,13 +92,12 @@ export class ApiConnection {
     }
   }
 
-  async createConversation(ownerId, publicKey, name) {
+  async createConversation(ownerId, name) {
     // TODO: shift the userId from frontend argument to backend session
     const resp = await this.callApi(
       `containers`,
       {
         name: name ?? 'convo_' + timestamp(),
-        publicKey,
         ownerId,
         type: CONTAINER_TYPE.CONVERSATION,
       },
@@ -112,13 +111,12 @@ export class ApiConnection {
     }
   }
 
-  async createFolder(ownerId, publicKey, name) {
+  async createFolder(ownerId, name) {
     // TODO: shift the userId from frontend argument to backend session
     const resp = await this.callApi(
       `containers`,
       {
         name: name ?? timestamp(),
-        publicKey,
         ownerId,
         type: CONTAINER_TYPE.FOLDER,
       },
@@ -150,7 +148,7 @@ export class ApiConnection {
     }
   }
 
-  async removeMemberFromGroup(userId, containerId) {
+  async removeMemberFromContainer(userId, containerId) {
     const resp = await this.callApi(
       `containers/${containerId}/member`,
       {
@@ -168,7 +166,7 @@ export class ApiConnection {
     }
   }
 
-  async shareKeyWithGroupMember(containerId, wrappedKey, userId, senderId) {
+  async inviteGroupMember(containerId, wrappedKey, userId, senderId) {
     const resp = await this.callApi(
       `containers/${containerId}/member/sharekey`,
       {
@@ -189,23 +187,32 @@ export class ApiConnection {
     }
   }
 
-  // async removeKeyAfterReceived(userId, containerId) {
-  //   const resp = await this.callApi(
-  //     `containers/${containerId}/member`,
-  //     {
-  //       userId,
-  //     },
-  //     'DELETE'
-  //   );
-  //   if (resp) {
-  //     return resp;
-  //   } else {
-  //     console.log(
-  //       `Error: could not remove user ${ownerId} from container ${containerId}`
-  //     );
-  //     return null;
-  //   }
-  // }
+  async getInvitations(userId) {
+    // TODO: shift the userId from frontend argument to backend session
+    const resp = await this.callApi(`users/${userId}/invitations/`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get conversations for user ${userId}`);
+      return null;
+    }
+  }
+
+  async acceptInvitation(invitationId, containerId) {
+    const resp = await this.callApi(
+      `containers/${containerId}/member/accept/${invitationId}`,
+      {},
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(
+        `Error: could not accept invitation ${invitationId} for container ${containerId}`
+      );
+      return null;
+    }
+  }
 
   async getAllConversations(userId) {
     // TODO: shift the userId from frontend argument to backend session
@@ -233,7 +240,6 @@ export class ApiConnection {
     console.log(`getting user public key`);
     const resp = await this.callApi(`users/${userId}/`);
     if (resp) {
-      debugger;
       return resp;
     } else {
       console.log(`Error: could not get public key for user ${userId}`);
