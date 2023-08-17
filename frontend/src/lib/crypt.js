@@ -6,15 +6,24 @@ const privPrefix = 'send-priv';
 export class Keychain {
   constructor(storage) {
     this.storage = storage;
-    this.keysets = {};
+    this.keys = {};
   }
 
+  status() {
+    console.log(`
+publicKey: ${this.publicKey}
+privateKey: ${this.privateKey}`);
+    this.showKeys();
+  }
   showKeys() {
-    Object.keys(this.keysets).forEach((id) => {
-      const keyset = this.keysets[id];
-      console.log(id);
-      Object.keys(keyset).forEach((kname) => {
-        console.log(`\t${kname}: ${keyset[kname]}`);
+    const ids = Object.keys(this.keys);
+    if (ids.length === 0) {
+      console.log('no keys');
+      return;
+    }
+    ids.forEach((id) => {
+      Object.keys(this.keys).forEach((k) => {
+        console.log(`\t${k}: ${this.keys[k]}`);
       });
     });
   }
@@ -36,17 +45,13 @@ export class Keychain {
     this.privateKey = keyPair.privateKey;
   }
 
-  // No longer using an external keypair
-  async createAndAddContainerKey(id /*, keyPair*/) {
+  async createAndAddContainerKey(id) {
     // AES key is for encrypting/decrypting messages and files
+    // in a container (i.e., a folder or conversation)
     const aesKey = await generateAESKey();
 
-    // RSA keypair is for encrypting/decrypting AES keys
-    // const keyPair = await generateRSAKeyPair();
     this.add(id, {
       aesKey,
-      // publicKey: keyPair.publicKey,
-      // privateKey: keyPair.privateKey,
     });
   }
 
@@ -88,7 +93,7 @@ export class Keychain {
       ['unwrapKey']
     );
 
-    this.keysets = {};
+    this.keys = {};
 
     // the aesKey must be unwrapped with the private key
     // we'll do the public and private keys first
@@ -98,8 +103,8 @@ export class Keychain {
         const [_, id, type] = k.split('/');
         const val = this.storage.get(k);
         if (val) {
-          if (!this.keysets[id]) {
-            this.keysets[id] = {};
+          if (!this.keys[id]) {
+            this.keys[id] = {};
           }
           switch (type) {
             // case 'privateKey':
@@ -130,7 +135,7 @@ export class Keychain {
               // I need to do this after doing the privatekey
               // Update: no I don't. just using personal private key
 
-              this.keysets[id][type] = await unwrapAESKey(val, this.privateKey);
+              this.keys[id][type] = await unwrapAESKey(val, this.privateKey);
               break;
             default:
               break;
@@ -171,8 +176,8 @@ export class Keychain {
     this.storage.set(privPrefix, privateKeyJwk);
 
     // store items from this.keys individually
-    Object.keys(this.keysets).forEach(async (id) => {
-      const { aesKey } = this.keysets[id];
+    Object.keys(this.keys).forEach(async (id) => {
+      const { aesKey } = this.keys[id];
       // const { aesKey, publicKey, privateKey } = this.keysets[id];
       let index;
       // if (privateKey) {
@@ -190,27 +195,26 @@ export class Keychain {
     });
   }
 
-  async add(id, keyset) {
-    this.keysets[id] = keyset;
-    // // wrap key using public key
-    // this.keys[id] = await wrapAESKey(key, this.publicKey);
+  async add(id, key) {
+    if (!this.publicKey) {
+      throw Error('Missing public key, required for wrapping aes key');
+    }
+    // this.keys[id] = keyset;
+    // wrap key using public key
+    this.keys[id] = await wrapAESKey(key, this.publicKey);
   }
 
   async get(id) {
-    // Returns: {
-    //   aesKey,
-    //   publicKey,
-    //   privateKey,
-    // }
-    return this.keysets[id];
-
     // unwrap key using private key
-    // const wrappedKey = this.keys[id];
-    // if (!wrappedKey) {
-    //   return null;
-    // }
+    const wrappedKey = this.keys[id];
+    if (!wrappedKey) {
+      throw Error('Key does not exist');
+      // return null;
+    }
     // const buffer = Uint8Array.from(wrappedKey, (c) => c.charCodeAt(0)).buffer;
-    // return await unwrapAESKey(buffer, this.privateKey);
+    // console.log(`here's the buffer`);
+    // console.log(buffer);
+    return await unwrapAESKey(wrappedKey, this.privateKey);
   }
 
   async getUserPublicKeyJwk() {
@@ -228,14 +232,11 @@ export class Keychain {
       base64ToArrayBuffer(wrappedKey),
       this.privateKey
     );
-    debugger;
-    this.add(containerId, {
-      aesKey,
-    });
+    this.add(containerId, aesKey);
   }
 
   remove(id) {
-    delete this.keysets[id];
+    delete this.keys[id];
   }
 }
 
@@ -264,8 +265,6 @@ export async function generateAESKey() {
       true, // so we can export
       ['encrypt', 'decrypt']
     );
-    console.log(`generating AES key`);
-    console.log(key);
     return key;
   } catch (err) {
     console.error(err);
@@ -291,9 +290,12 @@ export async function wrapAESKey(aesKey, publicKey) {
 }
 
 export async function unwrapAESKey(wrappedAESKey, privateKey) {
+  console.log(
+    `does a wrapped key always need to be base64 to array buffer converted?`
+  );
   const unwrappedKey = await window.crypto.subtle.unwrapKey(
     'jwk', // The format of the key to be unwrapped
-    wrappedAESKey, // The wrapped key
+    base64ToArrayBuffer(wrappedAESKey), // The wrapped key
     privateKey, // RSA private key
     {
       // Unwrapping details
@@ -316,16 +318,6 @@ export async function rsaToJwk(key) {
   return await crypto.subtle.exportKey('jwk', key);
 }
 
-// function arrayBufferToBase64(buffer) {
-//   let binary = '';
-//   let bytes = new Uint8Array(buffer);
-//   let len = bytes.byteLength;
-//   for (let i = 0; i < len; i++) {
-//     binary += String.fromCharCode(bytes[i]);
-//   }
-//   return window.btoa(binary);
-// }
-
 // Encoding function
 export function bufferToBase64(buf) {
   var bufferInstance = Buffer.from(buf);
@@ -337,36 +329,8 @@ export function base64ToArrayBuffer(base64Str) {
   var bufferInstance = Buffer.from(base64Str, 'base64');
   return Uint8Array.from(bufferInstance).buffer;
 }
-// function bufferToBase64(buffer) {
-//   let array = new Uint8Array(buffer);
-//   let str = new TextDecoder().decode(array);
-//   return btoa(str);
-// }
 
-// function base64ToArrayBuffer(base64) {
-//   let str = atob(base64);
-//   let array = new TextEncoder().encode(str);
-//   return array.buffer;
-// }
-// function base64ToArrayBuffer(base64) {
-//   var binaryString = decodeURIComponent(
-//     atob(base64)
-//       .split('')
-//       .map(function (c) {
-//         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-//       })
-//       .join('')
-//   );
-
-//   var len = binaryString.length;
-//   var bytes = new Uint8Array(len);
-//   for (var i = 0; i < len; i++) {
-//     bytes[i] = binaryString.charCodeAt(i);
-//   }
-//   return bytes.buffer;
-// }
-
-async function exportKeyToBase64(key) {
+export async function exportKeyToBase64(key) {
   // Export the key as 'raw'
   const keyBuffer = await window.crypto.subtle.exportKey('raw', key);
   // Convert the buffer to base64 for easy comparison
@@ -374,7 +338,7 @@ async function exportKeyToBase64(key) {
   return keyBase64;
 }
 
-async function compareKeys(k1, k2) {
+export async function compareKeys(k1, k2) {
   const originalAESBase64 = await exportKeyToBase64(k1);
   const unwrappedAESBase64 = await exportKeyToBase64(k2);
   return originalAESBase64 === unwrappedAESBase64;

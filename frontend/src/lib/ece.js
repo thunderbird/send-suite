@@ -28,63 +28,9 @@ class ECETransformer {
     this.salt = salt;
   }
 
-  // async generateKey() {
-  //   return this.ikm;
-  //   // const inputKey = await crypto.subtle.importKey(
-  //   //   'raw',
-  //   //   this.ikm,
-  //   //   'HKDF',
-  //   //   false,
-  //   //   ['deriveKey']
-  //   // );
-  //   // // return this.ikm;
-
-  //   // return crypto.subtle.deriveKey(
-  //   //   {
-  //   //     name: 'HKDF',
-  //   //     salt: this.salt,
-  //   //     info: encoder.encode('Content-Encoding: aes128gcm\0'),
-  //   //     hash: 'SHA-256',
-  //   //   },
-  //   //   inputKey,
-  //   //   {
-  //   //     name: 'AES-GCM',
-  //   //     length: 256,
-  //   //   },
-  //   //   true, // Edge polyfill requires key to be extractable to encrypt :/
-  //   //   ['encrypt', 'decrypt']
-  //   // );
-  // }
-
   async generateNonceBase() {
     const base = await window.crypto.subtle.exportKey('raw', this.key);
     const exported = new Uint8Array(base);
-    // const inputKey = await crypto.subtle.importKey(
-    //   'raw',
-    //   this.ikm,
-    //   'HKDF',
-    //   false,
-    //   ['deriveKey']
-    // );
-
-    // const base = await crypto.subtle.exportKey(
-    //   'raw',
-    //   await crypto.subtle.deriveKey(
-    //     {
-    //       name: 'HKDF',
-    //       salt: this.salt,
-    //       info: encoder.encode('Content-Encoding: nonce\0'),
-    //       hash: 'SHA-256',
-    //     },
-    //     inputKey,
-    //     {
-    //       name: 'AES-GCM',
-    //       length: 256,
-    //     },
-    //     true,
-    //     ['encrypt', 'decrypt']
-    //   )
-    // );
 
     return Buffer.from(exported.slice(0, NONCE_LENGTH));
   }

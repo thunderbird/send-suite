@@ -25,8 +25,8 @@ async function loadKeychain() {
 }
 
 onMounted(() => {
-  loadKeychain();
-  loadUser();
+  // loadKeychain();
+  // loadUser();
   // setUser({
   //   id: 1,
   // });

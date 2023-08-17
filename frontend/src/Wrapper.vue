@@ -13,7 +13,13 @@ import { ApiConnection } from './lib/api';
 import Storage from './lib/storage/localStorage';
 import {
   Keychain,
-  // compareKeys,
+  generateAESKey,
+  compareKeys,
+  exportKeyToBase64,
+  unwrapAESKey,
+  wrapAESKey,
+  bufferToBase64,
+  base64ToArrayBuffer,
 } from './lib/crypt';
 
 const isInitComplete = ref({});
@@ -44,39 +50,33 @@ provide('keychain', keychain);
 
 watch(user, () => {
   if (user.value.id !== 0) {
-    isInitComplete.value = true;
+    // isInitComplete.value = true;
   }
 });
 
 onMounted(async () => {
-  keychain.load();
-  console.log('TODO: get/set auth0 user');
+  // keychain.load();
+  // console.log('TODO: get/set auth0 user');
 
-  console.log(`api should have a value now`);
-
-  // Really, I want to do this per folder - not the same key for all folders/convos/etc.
-  // let aesKey = await loadKeyFromStorage();
-  // if (!aesKey) {
-  //   console.log('no key, generating and storing');
-  //   aesKey = await generateAESKey();
-  //   saveKeyToStorage(aesKey);
-  // } else {
-  //   console.log(`I have the key already. gah. tina, eat your food.`);
-  // }
-  // keychain.value = {
-  //   1: aesKey,
-  // };
-
-  // const kc = new Keychain(new Storage());
-  // keychain.value = kc;
+  // console.log(`api should have a value now`);
 
   window.keychain = keychain;
-  // window.generateAESKey = generateAESKey;
+  window.generateAESKey = generateAESKey;
+
+  keychain.status();
+  await keychain.generateUserKeyPair();
+  window.aes = await generateAESKey();
+  keychain.add('a', aes);
+
   // window.generateRSAKeyPair = generateRSAKeyPair;
   // window.wrapAESKey = wrapAESKey;
-  // window.compareKeys = compareKeys;
+  window.compareKeys = compareKeys;
   // window.Storage = Storage;
-
+  window.exportKeyToBase64 = exportKeyToBase64;
+  window.unwrapAESKey = unwrapAESKey;
+  window.wrapAESKey = wrapAESKey;
+  window.bufferToBase64 = bufferToBase64;
+  window.base64ToArrayBuffer = base64ToArrayBuffer;
   // const aes = await generateAESKey();
   // await window.keychain.generateKeyPair();
   // await window.keychain.add('1', aes);
