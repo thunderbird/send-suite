@@ -62,7 +62,7 @@ privateKey: ${this.privateKey}`);
     }
 
     if (!this.storage.get(privPrefix)) {
-      console.log(`no private key`);
+      throw Error('No private key; cannot wrap other keys');
       return;
     }
 
@@ -95,78 +95,27 @@ privateKey: ${this.privateKey}`);
 
     this.keys = {};
 
-    // the aesKey must be unwrapped with the private key
-    // we'll do the public and private keys first
-    // UPDATE: not caring about public/private keys for containers
     for (let k of this.storage.keys()) {
       if (k.startsWith(prefix)) {
-        const [_, id, type] = k.split('/');
+        const [_, id] = k.split('/');
         const val = this.storage.get(k);
         if (val) {
-          if (!this.keys[id]) {
-            this.keys[id] = {};
-          }
-          switch (type) {
-            // case 'privateKey':
-            //   this.keysets[id][type] = await crypto.subtle.importKey(
-            //     'jwk',
-            //     val,
-            //     {
-            //       name: 'RSA-OAEP',
-            //       hash: { name: 'SHA-256' },
-            //     },
-            //     true,
-            //     ['unwrapKey']
-            //   );
-            //   break;
-            // case 'publicKey':
-            //   this.keysets[id][type] = await crypto.subtle.importKey(
-            //     'jwk',
-            //     val,
-            //     {
-            //       name: 'RSA-OAEP',
-            //       hash: { name: 'SHA-256' },
-            //     },
-            //     true,
-            //     ['wrapKey']
-            //   );
-            //   break;
-            case 'aesKey':
-              // I need to do this after doing the privatekey
-              // Update: no I don't. just using personal private key
-
-              this.keys[id][type] = await unwrapAESKey(val, this.privateKey);
-              break;
-            default:
-              break;
-          }
+          // The key is already wrapped.
+          // We set it as-is in this.keys[id]
+          this.keys[id] = val;
         }
       }
     }
-
-    // TODO: find a smarter way to do the aesKey after the private key
-    // for (let k of this.storage.keys()) {
-    //   if (k.startsWith(prefix)) {
-    //     const [_, id, type] = k.split('/');
-    //     const val = this.storage.get(k);
-    //     if (val && type === 'aesKey') {
-    //       if (!this.keysets[id]['privateKey']) {
-    //         console.log(`👿 no private key for this aes key? ${id}`);
-    //         continue;
-    //       }
-    //       this.keysets[id][type] = await unwrapAESKey(
-    //         base64ToArrayBuffer(val),
-    //         this.keysets[id]['privateKey']
-    //       );
-    //     }
-    //   }
-    // }
   }
 
   async store() {
     if (!this.storage) {
       console.log(`no storage`);
       return;
+    }
+
+    if (!this.privateKey) {
+      throw Error('No private key; cannot wrap other keys');
     }
 
     const publicKeyJwk = await rsaToJwk(this.publicKey);
@@ -177,21 +126,10 @@ privateKey: ${this.privateKey}`);
 
     // store items from this.keys individually
     Object.keys(this.keys).forEach(async (id) => {
-      const { aesKey } = this.keys[id];
-      // const { aesKey, publicKey, privateKey } = this.keysets[id];
-      let index;
-      // if (privateKey) {
-      //   index = `${prefix}${id}/privateKey`;
-      //   this.storage.set(index, await rsaToJwk(privateKey));
-      // }
-      // if (publicKey) {
-      //   index = `${prefix}${id}/publicKey`;
-      //   this.storage.set(index, await rsaToJwk(publicKey));
-      // }
-      if (aesKey) {
-        index = `${prefix}${id}/aesKey`;
-        this.storage.set(index, await wrapAESKey(aesKey, this.publicKey));
-      }
+      const key = this.get(id);
+      const index = `${prefix}${id}`;
+      // The key is already wrapped, store it as-is.
+      this.storage.set(index, key);
     });
   }
 
@@ -199,8 +137,7 @@ privateKey: ${this.privateKey}`);
     if (!this.publicKey) {
       throw Error('Missing public key, required for wrapping aes key');
     }
-    // this.keys[id] = keyset;
-    // wrap key using public key
+
     this.keys[id] = await wrapAESKey(key, this.publicKey);
   }
 
@@ -211,9 +148,7 @@ privateKey: ${this.privateKey}`);
       throw Error('Key does not exist');
       // return null;
     }
-    // const buffer = Uint8Array.from(wrappedKey, (c) => c.charCodeAt(0)).buffer;
-    // console.log(`here's the buffer`);
-    // console.log(buffer);
+
     return await unwrapAESKey(wrappedKey, this.privateKey);
   }
 
