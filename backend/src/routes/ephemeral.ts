@@ -70,14 +70,22 @@ router.get('/:hash/challenge', async (req, res) => {
 // if the challenge is correct
 router.post('/:hash/challenge', async (req, res) => {
   const { hash } = req.params;
+  const { challengePlaintext } = req.body;
   if (!hash) {
     res.status(400).json({
       message: 'Cannot create ephemeral user without hash',
     });
   }
   try {
-    const link = await getEphemeralLinkChallenge(hash);
-    res.status(200).json({});
+    const link = await acceptEphemeralLink(hash, challengePlaintext);
+    if (link) {
+      res.status(200).json({
+        status:
+          'I guess I should create a user for you and put info here or something',
+      });
+    } else {
+      res.status(400).json({});
+    }
   } catch (e) {
     res.status(500).json({
       message: 'Server error.',

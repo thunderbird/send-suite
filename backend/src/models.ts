@@ -353,7 +353,9 @@ export async function acceptEphemeralLink(
     });
     console.log(`challenge text matches, continuing 🚀🚀`);
     console.log(`here is where we should create the user, etc.`);
+    return ephemeralLink;
   } catch (e) {
+    console.log(`👿😿`);
     console.log(e);
     return null;
   }

@@ -302,5 +302,19 @@ export class ApiConnection {
     }
   }
 
-  async acceptEphemeralLink(hash) {}
+  async acceptEphemeralLink(hash, challengePlaintext) {
+    const resp = await this.callApi(
+      `ephemeral/${hash}/challenge`,
+      {
+        challengePlaintext,
+      },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get ephemeral challenge data`);
+      return null;
+    }
+  }
 }

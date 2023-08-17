@@ -40,8 +40,8 @@ async function requestEphemeralLink() {
     const strPasswordWrappedKey = arrayBufferToBase64(passwordWrappedKey);
     const strSalt = arrayBufferToBase64(salt);
 
-    const challengePlaintext = 'abc123';
-    // const challengePlaintext = arrayBufferToBase64(generateSalt(128));
+    // const challengePlaintext = 'abc123';
+    const challengePlaintext = arrayBufferToBase64(generateSalt(128));
     const challengeCiphertext = arrayBufferToBase64(
       await aesEncryptChallenge(challengePlaintext, unwrappedKey, salt)
     );
