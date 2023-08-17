@@ -54,13 +54,23 @@ function dismiss() {
 <template>
   <div v-if="message">
     <h2>{{ message }}</h2>
-    <button @click="dismiss">dismiss</button>
+    <button
+      class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+      @click="dismiss"
+    >
+      dismiss
+    </button>
   </div>
   <div v-if="props.conversationId">
     <label>
       User ID:
       <input type="nubmer" v-model="recipientId" />
     </label>
-    <button @click="addPerson">Add Person</button>
+    <button
+      class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+      @click="addPerson"
+    >
+      Add Person
+    </button>
   </div>
 </template>

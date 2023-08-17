@@ -63,7 +63,7 @@ function storeUser() {
 
 async function generateKeys() {
   if (keychain.generateUserKeyPair) {
-    keychain.generateUserKeyPair();
+    await keychain.generateUserKeyPair();
     jwkPublicKey.value = JSON.stringify(await keychain.getUserPublicKeyJwk());
   }
 }

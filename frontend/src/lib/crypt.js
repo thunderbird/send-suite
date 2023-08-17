@@ -157,7 +157,7 @@ privateKey: ${this.privateKey}`);
   }
 
   async getAndWrapContainerKey(id, publicKey) {
-    const { aesKey } = await this.get(id);
+    const aesKey = await this.get(id);
     return await wrapAESKey(aesKey, publicKey);
   }
 

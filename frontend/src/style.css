@@ -15,3 +15,8 @@ textarea,
 input {
   outline: 1px solid grey;
 }
+
+a {
+  text-decoration: underline;
+  color: #990099;
+}
