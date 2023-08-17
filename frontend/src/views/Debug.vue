@@ -3,34 +3,49 @@ import { ref, watch, watchEffect, inject, onMounted } from 'vue';
 const api = inject('api');
 const keychain = inject('keychain');
 const { user, setUser } = inject('user');
+import {
+  generateAESKey,
+  compareKeys,
+  exportKeyToBase64,
+  unwrapAESKey,
+  wrapAESKey,
+  bufferToBase64,
+  base64ToArrayBuffer,
+} from '../lib/crypt';
 
-// const privateKey = ref(null);
-// const publicKey = ref(null);
-
-const jwkPublicKey = ref('');
-
-// watch(
-//   [() => keychain],
-//   () => {
-//     debugger;
-//     privateKey.value = keychain.privateKey;
-//     publicKey.value = keychain.publicKey;
-//   },
-//   true
-// );
-
-async function loadKeychain() {
-  await keychain.load();
-  jwkPublicKey.value = JSON.stringify(await keychain.getUserPublicKeyJwk());
-}
-
-onMounted(() => {
+onMounted(async () => {
   // loadKeychain();
   // loadUser();
   // setUser({
   //   id: 1,
   // });
+
+  window.keychain = keychain;
+  window.generateAESKey = generateAESKey;
+
+  keychain.status();
+  // await keychain.generateUserKeyPair();
+  // window.aes = await generateAESKey();
+  // keychain.add('a', aes);
+
+  // window.generateRSAKeyPair = generateRSAKeyPair;
+  // window.wrapAESKey = wrapAESKey;
+  // window.Storage = Storage;
+  window.compareKeys = compareKeys;
+  window.exportKeyToBase64 = exportKeyToBase64;
+  window.unwrapAESKey = unwrapAESKey;
+  window.wrapAESKey = wrapAESKey;
+  window.bufferToBase64 = bufferToBase64;
+  window.base64ToArrayBuffer = base64ToArrayBuffer;
+  // const aes = await generateAESKey();
+  // await window.keychain.generateKeyPair();
+  // await window.keychain.add('1', aes);
+  // const unwrapped = await window.keychain.get('1');
+  // const didMatch = await compareKeys(aes, unwrapped);
+  // console.log(`Did the original and the unwrapped match? ${didMatch}`);
 });
+
+const jwkPublicKey = ref('');
 
 function loadUser() {
   const jsonUser = localStorage.getItem('send-user');
@@ -46,15 +61,23 @@ function storeUser() {
   localStorage.setItem('send-user', jsonUser);
 }
 
-function generateKeys() {
+async function generateKeys() {
   if (keychain.generateUserKeyPair) {
     keychain.generateUserKeyPair();
+    jwkPublicKey.value = JSON.stringify(await keychain.getUserPublicKeyJwk());
   }
 }
 
-function saveKeys() {
+async function saveKeys() {
   if (keychain.store) {
-    keychain.store();
+    await keychain.store();
+  }
+}
+
+async function loadKeys() {
+  if (keychain.load) {
+    await keychain.load();
+    jwkPublicKey.value = JSON.stringify(await keychain.getUserPublicKeyJwk());
   }
 }
 
@@ -75,41 +98,52 @@ async function createApiUser() {
 </script>
 <template>
   <label>
-    User id:
-    <input type="number" v-model="user.id" />
+    Public Key:
+    <br />
+    <textarea v-model="jwkPublicKey">{{ jwkPublicKey }}</textarea>
   </label>
   <br />
   <button
-    class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-    @click="storeUser"
-  >
-    Save User
-  </button>
-  <br />
-  <button
-    class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+    class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
     @click="generateKeys"
   >
     Create User Keys
   </button>
-  <br />
   <button
-    class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+    class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
     @click="saveKeys"
   >
     Save User Keys
   </button>
+  <button
+    class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+    @click="loadKeys"
+  >
+    Load User Keys
+  </button>
+  <br />
+  <label>
+    User id:
+    <input type="number" v-model="user.id" />
+  </label>
   <br />
   <label>
     Email:
     <input type="email" v-model="user.email" />
   </label>
   <br />
-  <label>
-    Public Key:
-    <br />
-    <textarea v-model="jwkPublicKey">{{ jwkPublicKey }}</textarea>
-  </label>
+  <button
+    class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+    @click="storeUser"
+  >
+    Save User
+  </button>
+  <button
+    class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+    @click="loadUser"
+  >
+    Load User
+  </button>
   <br />
   <button
     class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
@@ -129,11 +163,14 @@ async function createApiUser() {
   </label>
   <br />
   <button @click.prevent="loadKeychain()">Load Keys</button> -->
+  <br />
+  <br />
 </template>
 
 <style scoped>
 textarea {
   width: 80%;
-  height: 5em;
+  height: 8em;
+  font-size: 10px;
 }
 </style>
