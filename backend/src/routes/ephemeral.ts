@@ -79,9 +79,10 @@ router.post('/:hash/challenge', async (req, res) => {
   try {
     const link = await acceptEphemeralLink(hash, challengePlaintext);
     if (link) {
+      console.log(link);
       res.status(200).json({
-        status:
-          'I guess I should create a user for you and put info here or something',
+        status: 'success',
+        containerId: link.containerId,
       });
     } else {
       res.status(400).json({});

@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "base64-js": "^1.5.1",
-    "vue": "^3.3.4"
+    "install": "^0.13.0",
+    "vue": "^3.3.4",
+    "vue-router": "4"
   },
   "devDependencies": {
     "@types/ws": "^8.5.5",

@@ -1,6 +1,7 @@
 import { createApp } from 'vue';
 import './style.css';
 import App from './App.vue';
+import router from './router';
 // import {
 //   generateAESKey,
 //   loadKeyFromStorage,
@@ -35,4 +36,6 @@ import App from './App.vue';
 // // debugger;
 // const plaintext = await streamToArrayBuffer(decStream, blob.size);
 // console.log(plaintext);
-createApp(App).mount('#app');
+const app = createApp(App);
+app.use(router);
+app.mount('#app');

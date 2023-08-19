@@ -9,6 +9,7 @@ import {
 const api = inject('api');
 const password = ref('');
 const hash = ref('');
+const message = ref('');
 
 async function acceptEphemeralLink() {
   // call api at /api/ephemeral/:hash
@@ -47,9 +48,17 @@ async function acceptEphemeralLink() {
     );
 
     console.log(challengeResp);
+    message.value = 'Successful challenge!';
+
     // this allows me to create a user?
-    // or will I do that on the backend?
+    // next:
+    // - store the unwrappedKey under challengeResp.containerId
+    // - generate keys
+    // - create an api user
+    // - store user info to localStorage
+    // - then...go to the conversation?
   } catch (e) {
+    message.value = 'Incorrect hash or password';
     console.log(e);
     return;
   }
@@ -63,10 +72,14 @@ async function acceptEphemeralLink() {
     Hash (get this from route in future):
     <input v-model="hash" />
   </label>
+  <br />
   <label>
     Password:
     <input v-model="password" />
   </label>
+  <div>
+    {{ message }}
+  </div>
   <button
     class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
     @click="acceptEphemeralLink"

@@ -16,9 +16,9 @@ function handleChoice(conversationId) {
 </script>
 
 <template>
+  <AddEphemeral />
   <InvitationList />
   <ConversationList @choose-conversation="handleChoice" />
-  <AddEphemeral />
   <div v-if="currentConversation">
     <AddPerson :conversationId="currentConversation" />
     <!-- consider only allowing AddEphemeral for fresh conversations -->
