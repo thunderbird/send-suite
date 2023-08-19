@@ -8,12 +8,18 @@ import {
 } from '../lib/crypt';
 const api = inject('api');
 const password = ref('');
-const hash = ref('');
+// const hash = ref('');
 const message = ref('');
+
+const props = defineProps({
+  hash: String,
+});
+
+const emit = defineEmits(['setConversationId']);
 
 async function acceptEphemeralLink() {
   // call api at /api/ephemeral/:hash
-  const resp = await api.getEphemeralLinkChallenge(hash.value);
+  const resp = await api.getEphemeralLinkChallenge(props.hash);
 
   if (!resp) {
     console.log('uh oh');
@@ -43,12 +49,14 @@ async function acceptEphemeralLink() {
     console.log(challengePlaintext);
 
     const challengeResp = await api.acceptEphemeralLink(
-      hash.value,
+      props.hash,
       challengePlaintext
     );
 
     console.log(challengeResp);
     message.value = 'Successful challenge!';
+
+    emit('setConversationId', challengeResp.containerId);
 
     // this allows me to create a user?
     // next:
@@ -69,8 +77,8 @@ async function acceptEphemeralLink() {
   <hr />
   <h1>Ephemeral Link</h1>
   <label>
-    Hash (get this from route in future):
-    <input v-model="hash" />
+    Hash from the route:
+    <input :value="props.hash" disabled />
   </label>
   <br />
   <label>
