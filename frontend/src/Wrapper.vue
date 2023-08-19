@@ -29,9 +29,18 @@ function setUser(obj) {
   };
 }
 
+function storeUser(id, email) {
+  const jsonUser = JSON.stringify({
+    id,
+    email,
+  });
+  localStorage.setItem('send-user', jsonUser);
+}
+
 provide('user', {
   user,
   setUser,
+  storeUser,
 });
 
 const isInitComplete = ref({});
@@ -46,7 +55,7 @@ watch(user, () => {
 });
 
 onMounted(async () => {
-  keychain.load();
+  // keychain.load();
   // console.log('TODO: get/set auth0 user');
   // console.log(`api should have a value now`);
 });

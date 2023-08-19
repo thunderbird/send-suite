@@ -1,14 +1,15 @@
 <script setup>
 import { ref, inject } from 'vue';
 import {
-  arrayBufferToBase64,
   base64ToArrayBuffer,
   aesDecryptChallenge,
   passwordUnwrapAESKey,
 } from '../lib/crypt';
 const api = inject('api');
+const keychain = inject('keychain');
+const { setUser, storeUser } = inject('user');
+
 const password = ref('');
-// const hash = ref('');
 const message = ref('');
 
 const props = defineProps({
@@ -54,17 +55,49 @@ async function acceptEphemeralLink() {
     );
 
     console.log(challengeResp);
+    if (!challengeResp.containerId) {
+      throw Error('Challenge unsuccessful');
+      return;
+    }
+    const { containerId } = challengeResp;
     message.value = 'Successful challenge!';
-
-    emit('setConversationId', challengeResp.containerId);
 
     // this allows me to create a user?
     // next:
-    // - store the unwrappedKey under challengeResp.containerId
-    // - generate keys
-    // - create an api user
-    // - store user info to localStorage
-    // - then...go to the conversation?
+    // - [X] generate personal keys
+    await keychain.generateUserKeyPair();
+    console.log(`generating user key pair`);
+    console.log(keychain.publicKey);
+    await keychain.store();
+    // - [ ] create an api user (with public key)
+    const jwkPublicKey = JSON.stringify(await keychain.getUserPublicKeyJwk());
+    console.log(`here's my public key as jwk`);
+    console.log(jwkPublicKey);
+
+    const email = new Date().getTime() + '@example.com';
+    const resp = await api.createUser(email, jwkPublicKey);
+    if (resp) {
+      const { id } = resp.user;
+      // - [ ] store the unwrappedKey under challengeResp.containerId
+      await keychain.add(containerId, unwrappedKey);
+
+      // - [ ] store user info to localStorage
+      setUser({
+        id,
+        email,
+      });
+      storeUser(id, email);
+
+      // - [ ] add user to the conversation id
+      const addMemberResp = await api.addMemberToContainer(id, containerId);
+      console.log(`adding user to convo`);
+      console.log(addMemberResp);
+
+      // - [ ] redirect to /ephemeral?
+    }
+
+    // - [X] then...go to the conversation?
+    // emit('setConversationId', containerId);
   } catch (e) {
     message.value = 'Incorrect hash or password';
     console.log(e);
