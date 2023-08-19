@@ -167,8 +167,8 @@ async function _doDownload(id, canceller = {}) {
       if (xhr.status !== 200) {
         return reject(new Error(xhr.status));
       }
-      console.log(`got xhr.response`);
-      console.log(xhr.response);
+      // console.log(`got xhr.response`);
+      // console.log(xhr.response);
       const blob = new Blob([xhr.response]);
       resolve(blob);
     });
@@ -217,9 +217,9 @@ export async function download(id, size, key) {
   let plaintext;
   // here's where we would decrypt:
   if (key) {
-    console.log(`decrypting with key`);
+    // console.log(`decrypting with key`);
     let plainStream = decryptStream(blobStream(downloadedBlob), key);
-    console.log(plainStream);
+    // console.log(plainStream);
 
     plaintext = await streamToArrayBuffer(plainStream, size);
   } else {

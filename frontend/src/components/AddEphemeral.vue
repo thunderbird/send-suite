@@ -24,6 +24,7 @@ async function requestEphemeralLink() {
   if (response && response.id) {
     const { id } = response;
     await keychain.createAndAddContainerKey(id);
+    await keychain.store();
 
     // get the key (which unwraps it),
     const unwrappedKey = await keychain.get(id);

@@ -36,28 +36,32 @@ async function downloadMessage(id) {
     console.log(`no aes key`);
     return;
   }
-  console.log(aesKey);
+  // console.log(aesKey);
   const plaintextString = await download(id, size, aesKey);
-  console.log(plaintextString);
+  // console.log(plaintextString);
   return plaintextString;
 }
 
 async function getContainerWithItems(id) {
   const container = await api.getContainerWithItems(id);
-  console.log(`got items`);
-  console.log(container.items);
+  console.log(container);
+  // console.log(`got items`);
+  // console.log(container.items);
   const uploadIds = container.items.map(({ uploadId }) => uploadId);
-  console.log(`got uploadIds`);
-  console.log(uploadIds);
+  // console.log(`got uploadIds`);
+  // console.log(uploadIds);
   await fillMessageList(uploadIds);
 }
 
 async function fillMessageList(uploadIds) {
   const messages = await Promise.all(
-    uploadIds.map((id) => downloadMessage(id))
+    uploadIds.map(async (id) => ({
+      messageText: await downloadMessage(id),
+      id,
+    }))
   );
-  console.log(`got messages`);
-  console.log(messages);
+  // console.log(`got messages`);
+  // console.log(messages);
   messageList.value = messages;
 }
 
@@ -66,6 +70,9 @@ onMounted(() => {
     return;
   }
   getContainerWithItems(props.conversationId);
+  setInterval(() => {
+    getContainerWithItems(props.conversationId);
+  }, 5000);
 });
 
 watch(
@@ -86,8 +93,8 @@ watch(
     <div v-if="messageList">
       <p>Messages:</p>
       <ul>
-        <li v-for="messageText in messageList">
-          {{ messageText }}
+        <li v-for="m in messageList" :key="m.id">
+          {{ m.messageText }}
         </li>
       </ul>
     </div>

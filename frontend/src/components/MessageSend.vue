@@ -11,7 +11,7 @@ const api = inject('api');
 const keychain = inject('keychain');
 console.log(keychain.value);
 
-const message = ref('hello this is the default message');
+const message = ref('');
 
 async function sendBlob(blob) {
   console.log(`want to send blob of size ${blob.size}`);
@@ -59,6 +59,7 @@ async function sendMessage() {
   );
   console.log(`🎉 here it is...`);
   console.log(itemResp);
+  message.value = '';
 }
 </script>
 

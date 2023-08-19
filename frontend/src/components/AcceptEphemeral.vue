@@ -1,10 +1,15 @@
 <script setup>
 import { ref, inject } from 'vue';
+import { useRouter } from 'vue-router';
+
 import {
   base64ToArrayBuffer,
   aesDecryptChallenge,
   passwordUnwrapAESKey,
 } from '../lib/crypt';
+
+const router = useRouter();
+
 const api = inject('api');
 const keychain = inject('keychain');
 const { setUser, storeUser } = inject('user');
@@ -78,26 +83,27 @@ async function acceptEphemeralLink() {
     const resp = await api.createUser(email, jwkPublicKey);
     if (resp) {
       const { id } = resp.user;
-      // - [ ] store the unwrappedKey under challengeResp.containerId
+      // - [X] store the unwrappedKey under challengeResp.containerId
       await keychain.add(containerId, unwrappedKey);
-
-      // - [ ] store user info to localStorage
+      await keychain.store();
+      // - [X] store user info to localStorage
       setUser({
         id,
         email,
       });
       storeUser(id, email);
 
-      // - [ ] add user to the conversation id
+      // - [X] add user to the conversation id
       const addMemberResp = await api.addMemberToContainer(id, containerId);
       console.log(`adding user to convo`);
       console.log(addMemberResp);
 
-      // - [ ] redirect to /ephemeral?
-    }
+      // - [X] then...go to the conversation?
+      emit('setConversationId', containerId);
 
-    // - [X] then...go to the conversation?
-    // emit('setConversationId', containerId);
+      // - [ ] redirect to /ephemeral?
+      router.push('/ephemeral');
+    }
   } catch (e) {
     message.value = 'Incorrect hash or password';
     console.log(e);

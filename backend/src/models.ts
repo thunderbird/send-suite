@@ -138,6 +138,7 @@ export async function getItemsInContainer(id: number) {
     },
     include: {
       items: true,
+      // how do I include the upload.ownerId here?
     },
   });
 }

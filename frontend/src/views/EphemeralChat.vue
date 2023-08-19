@@ -6,8 +6,8 @@ import MessageList from '../components/MessageList.vue';
 import MessageSend from '../components/MessageSend.vue';
 
 const route = useRoute();
-const router = useRouter();
 const conversationId = ref(null);
+
 function setConversationId(id) {
   conversationId.value = id;
   console.log(`we got a conversation id`);
@@ -17,10 +17,17 @@ function setConversationId(id) {
 - [X] read the hash from the URL (I think the router can give this to me)
 - [X] pass hash to accept ephemeral (after updating accept ephemeral to receive a prop)
 - [X] also give accept ephemeral a function that can set the conversation id (prob need to defineEmits on it)
-- [ ] you need to save-key/create-user/add-user-to-convo
-- [ ] update MessageList to receive a conversationId prop
-- [ ] also update MessageSend for a conversationId prop
+- [X] you need to save-key/create-user/add-user-to-convo
 */
+
+onMounted(() => {
+  // check storage for all of these:
+  // - conversation id
+  // if we have one, use it
+  // - keys
+  // - a user id
+  // although, those last two should be already checked for...
+});
 </script>
 <template>
   <AcceptEphemeral
@@ -29,7 +36,7 @@ function setConversationId(id) {
     @setConversationId="setConversationId"
   />
   <div v-if="conversationId">
-    <MessageList />
-    <MessageSend />
+    <MessageList :conversationId="conversationId" />
+    <MessageSend :conversationId="conversationId" />
   </div>
 </template>

@@ -225,9 +225,6 @@ export async function wrapAESKey(aesKey, publicKey) {
 }
 
 export async function unwrapAESKey(wrappedAESKey, privateKey) {
-  console.log(
-    `does a wrapped key always need to be base64 to array buffer converted?`
-  );
   const unwrappedKey = await window.crypto.subtle.unwrapKey(
     'jwk', // The format of the key to be unwrapped
     base64ToArrayBuffer(wrappedAESKey), // The wrapped key
