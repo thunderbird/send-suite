@@ -318,4 +318,20 @@ export class ApiConnection {
       return null;
     }
   }
+
+  async burnAfterReading(containerId) {
+    const resp = await this.callApi(
+      `ephemeral/burn`,
+      {
+        containerId,
+      },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not burn ephemeral conversation`);
+      return null;
+    }
+  }
 }

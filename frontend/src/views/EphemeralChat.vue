@@ -3,6 +3,7 @@ import { ref, onMounted, inject, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import AcceptEphemeral from '../components/AcceptEphemeral.vue';
 import ConversationList from '../components/ConversationList.vue';
+import BurnButton from '../components/BurnButton.vue';
 import MessageList from '../components/MessageList.vue';
 import MessageSend from '../components/MessageSend.vue';
 
@@ -46,6 +47,7 @@ onMounted(() => {});
   />
   <div v-else-if="conversationId">
     <ConversationList @setConversationId="setConversationId" />
+    <BurnButton :conversationId="conversationId" />
     <MessageList :conversationId="conversationId" />
     <MessageSend :conversationId="conversationId" />
   </div>

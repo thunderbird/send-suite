@@ -434,23 +434,27 @@ export async function burnEphemeralConversation(containerId: number) {
 
   console.log(`🤡 deleting items and uploads`);
   const uploadIds = container.items.map((item) => item.uploadId);
-  container.items.forEach(async ({ id }) => {
-    await prisma.item.delete({
-      where: {
-        id,
-      },
-    });
-    console.log(`✅ deleted item ${id}`);
-  });
+  await Promise.all(
+    container.items.map(async ({ id }) => {
+      console.log(`✅ deleting item ${id}`);
+      return prisma.item.delete({
+        where: {
+          id,
+        },
+      });
+    })
+  );
 
-  uploadIds.forEach(async (id) => {
-    await prisma.upload.delete({
-      where: {
-        id,
-      },
-    });
-    console.log(`✅ deleted upload ${id}`);
-  });
+  await Promise.all(
+    uploadIds.map(async (id) => {
+      console.log(`✅ deleting upload ${id}`);
+      return prisma.upload.delete({
+        where: {
+          id,
+        },
+      });
+    })
+  );
 
   const deleteResp = await prisma.container.delete({
     where: {
@@ -461,15 +465,20 @@ export async function burnEphemeralConversation(containerId: number) {
     console.log(`👿👿👿👿 oh noes.`);
     return null;
   }
-  console.log(`🤡 would delete ephemeral users`);
+
   users.forEach(async ({ id, tier }) => {
+    await prisma.groupUser.deleteMany({
+      where: {
+        groupId: container.group.id,
+        // don't specify the user id
+        // remove all groupUser records for this group
+        // userId: id,
+      },
+    });
+    console.log(
+      `✅ deleted groupUser relations for group ${container.group.id}`
+    );
     if (tier === UserTier.EPHEMERAL) {
-      await prisma.groupUser.deleteMany({
-        where: {
-          groupId: container.group.id,
-          userId: id,
-        },
-      });
       await prisma.user.delete({
         where: {
           id,
@@ -478,6 +487,13 @@ export async function burnEphemeralConversation(containerId: number) {
       console.log(`✅ deleted ephemeral user ${id}`);
     }
   });
+
+  await prisma.group.delete({
+    where: {
+      id: container.group.id,
+    },
+  });
+
   return deleteResp;
 
   // return {

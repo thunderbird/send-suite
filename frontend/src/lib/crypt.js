@@ -144,6 +144,11 @@ privateKey: ${this.privateKey}`);
     });
   }
 
+  clear() {
+    this.storage.remove(pubPrefix);
+    this.storage.remove(privPrefix);
+  }
+
   async add(id, key) {
     if (!this.publicKey) {
       throw Error('Missing public key, required for wrapping aes key');
@@ -183,6 +188,8 @@ privateKey: ${this.privateKey}`);
 
   remove(id) {
     delete this.keys[id];
+    const index = `${prefix}${id}`;
+    this.storage.remove(index);
   }
 }
 

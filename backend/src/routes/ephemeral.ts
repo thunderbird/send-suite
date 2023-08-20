@@ -98,7 +98,7 @@ router.post('/burn', async (req, res) => {
   const { containerId } = req.body;
   console.log(`👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿`);
   try {
-    const result = await burnEphemeralConversation(containerId);
+    const result = await burnEphemeralConversation(parseInt(containerId));
     res.status(200).json({
       result,
     });
