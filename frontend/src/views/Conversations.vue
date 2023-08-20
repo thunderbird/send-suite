@@ -17,14 +17,24 @@ function setConversationId(conversationId) {
 </script>
 
 <template>
-  <NewEphemeral />
-  <InvitationList />
-  <NewConversation />
-  <ConversationList @setConversationId="setConversationId" />
-  <div v-if="currentConversation">
-    <AddPerson :conversationId="currentConversation" />
-    <!-- consider only allowing NewEphemeral for fresh conversations -->
-    <MessageList :conversationId="currentConversation" />
-    <MessageSend :conversationId="currentConversation" />
+  <div class="w-full">
+    <NewEphemeral />
+    <InvitationList />
+    <NewConversation />
+    <div class="flex flex-row border-double border-4 border-sky-500">
+      <div
+        class="w-full sm:w-1/2 md:w-1/3 mx-auto border-solid border-2 border-red-500"
+      >
+        <ConversationList @setConversationId="setConversationId" />
+      </div>
+      <div class="w-full md:w-2/3 border-solid border-2 border-red-500">
+        <template v-if="currentConversation">
+          <AddPerson :conversationId="currentConversation" />
+          <!-- consider only allowing NewEphemeral for fresh conversations -->
+          <MessageList :conversationId="currentConversation" />
+          <MessageSend :conversationId="currentConversation" />
+        </template>
+      </div>
+    </div>
   </div>
 </template>

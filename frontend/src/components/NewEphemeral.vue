@@ -70,8 +70,8 @@ async function requestEphemeralLink() {
       console.log(`created ephemeral link for convo ${id}`);
       const hash = resp.id;
       const { origin } = new URL(window.location.href);
-      // const url = `${origin}/ephemeral/${hash}`;
-      const url = hash;
+      const url = `${origin}/ephemeral/${hash}`;
+      // const url = hash;
       ephemeralHash.value = url;
       message.value = '';
     }
@@ -100,7 +100,7 @@ async function requestEphemeralLink() {
   </button>
   <br />
   <div v-if="ephemeralHash">
-    <input v-model="ephemeralHash" />
+    <a :href="ephemeralHash" @click.prevent>{{ ephemeralHash }}</a>
   </div>
   <hr />
   <br />

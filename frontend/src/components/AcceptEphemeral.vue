@@ -33,8 +33,15 @@ async function acceptEphemeralLink() {
   }
   // receive the wrapped key, salt, and challengeCiphertext
   const { salt, challengeCiphertext, wrappedKey } = resp;
-  const keyBuffer = base64ToArrayBuffer(wrappedKey);
-  const saltBuffer = base64ToArrayBuffer(salt);
+  let keyBuffer;
+  let saltBuffer;
+  try {
+    keyBuffer = base64ToArrayBuffer(wrappedKey);
+    saltBuffer = base64ToArrayBuffer(salt);
+  } catch (e) {
+    message.value = 'Link is not valid';
+    return;
+  }
   try {
     // unwrap the key with the password
     let unwrappedKey = await passwordUnwrapAESKey(
@@ -133,14 +140,11 @@ watch(user, () => {
 });
 </script>
 <template>
-  <br />
-  <hr />
-  <h1>Ephemeral Link</h1>
-  <label>
+  <!-- <label>
     Hash from the route:
     <input :value="props.hash" disabled />
   </label>
-  <br />
+  <br /> -->
   <label>
     Password:
     <input v-model="password" />

@@ -44,6 +44,9 @@ async function downloadMessage(id) {
 
 async function getContainerWithItems(id) {
   const container = await api.getContainerWithItems(id);
+  if (!container?.items) {
+    return;
+  }
   // console.log(container);
   // console.log(`got items`);
   // console.log(container.items);

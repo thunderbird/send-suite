@@ -39,8 +39,6 @@ router.get('/:id/size', async (req, res) => {
   const { id } = req.params;
   try {
     const size = await getUploadSize(id);
-    // console.log(size);
-    // console.log?(`🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡`);
     res.status(201).json({
       size,
     });

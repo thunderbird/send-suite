@@ -40,15 +40,24 @@ keychain.addOnload(async () => {
 onMounted(() => {});
 </script>
 <template>
-  <AcceptEphemeral
-    v-if="route.params.hash"
-    :hash="route.params.hash"
-    @setConversationId="setConversationId"
-  />
-  <div v-else-if="conversationId">
-    <ConversationList @setConversationId="setConversationId" />
-    <BurnButton :conversationId="conversationId" />
-    <MessageList :conversationId="conversationId" />
-    <MessageSend :conversationId="conversationId" />
+  <h1 className="text-3xl font-bold underline">Ephemeral Chat</h1>
+  <div class="main w-full">
+    <AcceptEphemeral
+      v-if="route.params.hash"
+      :hash="route.params.hash"
+      @setConversationId="setConversationId"
+    />
+    <div v-else-if="conversationId" class="flex flex-row">
+      <div
+        class="w-full sm:w-1/2 md:w-1/3 mx-auto border-solid border-2 border-red-500"
+      >
+        <ConversationList @setConversationId="setConversationId" />
+      </div>
+      <div class="w-full md:w-2/3 border-solid border-2 border-red-500">
+        <BurnButton :conversationId="conversationId" />
+        <MessageList :conversationId="conversationId" />
+        <MessageSend :conversationId="conversationId" />
+      </div>
+    </div>
   </div>
 </template>

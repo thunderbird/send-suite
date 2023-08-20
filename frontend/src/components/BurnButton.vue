@@ -21,7 +21,7 @@ async function burnAfterReading() {
     keychain.remove(props.conversationId);
     keychain.clear();
     localStorage.removeItem('send-user');
-    debugger;
+
     alert('🗨️🔥');
     router.push('/');
   }

@@ -4,12 +4,8 @@ import Conversations from './Conversations.vue';
 
 <template>
   <h1 className="text-3xl font-bold underline">Home for logged in users</h1>
-  <div class="main">
-    <div class="column">
-      <Conversations />
-    </div>
-    <div class="column"></div>
-    <div class="column"></div>
+  <div class="main w-full">
+    <Conversations />
   </div>
 </template>
 
