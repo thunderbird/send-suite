@@ -50,7 +50,18 @@ async function getContainerWithItems(id) {
   const uploadIds = container.items.map(({ uploadId }) => uploadId);
   // console.log(`got uploadIds`);
   // console.log(uploadIds);
-  await fillMessageList(uploadIds);
+  let items = await fillMessageList(uploadIds);
+  const messages = items.map((item, i) => {
+    // debugger;
+
+    return {
+      messageText: item.messageText,
+      id: item.id,
+      sender: container.items[i].upload.owner,
+    };
+  });
+
+  messageList.value = messages;
 }
 
 async function fillMessageList(uploadIds) {
@@ -62,7 +73,7 @@ async function fillMessageList(uploadIds) {
   );
   // console.log(`got messages`);
   // console.log(messages);
-  messageList.value = messages;
+  return messages;
 }
 
 onMounted(() => {
@@ -94,7 +105,7 @@ watch(
       <p>Messages:</p>
       <ul>
         <li v-for="m in messageList" :key="m.id">
-          {{ m.messageText }}
+          {{ m.sender.email }} {{ m.messageText }}
         </li>
       </ul>
     </div>

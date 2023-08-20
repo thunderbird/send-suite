@@ -112,6 +112,7 @@ export async function createItem(
 ) {
   return prisma.item.create({
     data: {
+      createdAt: new Date(),
       name,
       // containerId,
       // uploadId,
@@ -136,10 +137,27 @@ export async function getItemsInContainer(id: number) {
     where: {
       id,
     },
-    include: {
-      items: true,
-      // how do I include the upload.ownerId here?
+    select: {
+      type: true,
+      items: {
+        select: {
+          uploadId: true,
+          createdAt: true,
+          upload: {
+            select: {
+              owner: {
+                select: {
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+      },
     },
+    // include: {
+    //   items: true,
+    // },
   });
 }
 

@@ -8,6 +8,7 @@ const props = defineProps({
 });
 
 const api = inject('api');
+const { user } = inject('user');
 const keychain = inject('keychain');
 console.log(keychain.value);
 
@@ -45,7 +46,7 @@ async function sendMessage() {
     return;
   }
 
-  const uploadResp = await api.createUpload(id, blob.size, 1);
+  const uploadResp = await api.createUpload(id, blob.size, user.value.id);
   console.log(uploadResp);
 
   if (id !== uploadResp.id) {
