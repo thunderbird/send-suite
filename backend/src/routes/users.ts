@@ -1,4 +1,4 @@
-import { Prisma, ContainerType } from '@prisma/client';
+import { Prisma, ContainerType, UserTier } from '@prisma/client';
 import { Router } from 'express';
 import {
   createUser,
@@ -29,9 +29,11 @@ router.post('/', async (req, res) => {
   const {
     publicKey,
     email,
+    tier,
   }: {
     publicKey: string;
     email: string;
+    tier: UserTier | null;
   } = req.body;
   console.log(email);
   console.log(typeof publicKey);
@@ -40,7 +42,11 @@ router.post('/', async (req, res) => {
     userEmail = email.trim().toLowerCase();
   }
   try {
-    const user = await createUser(JSON.stringify(publicKey).trim(), userEmail);
+    const user = await createUser(
+      JSON.stringify(publicKey).trim(),
+      userEmail,
+      tier
+    );
     res.status(201).json({
       message: 'User created',
       user,

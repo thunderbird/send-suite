@@ -11,7 +11,7 @@ import { base64url } from './utils';
 export async function createUser(
   publicKey: string,
   email: string,
-  tier = UserTier.PRO
+  tier: UserTier = UserTier.PRO
 ) {
   return prisma.user.create({
     data: {
@@ -70,6 +70,7 @@ export async function createContainer(
   const group = await prisma.group.create({
     data: {},
   });
+
   console.log(`👿 just created group`);
   await prisma.groupUser.create({
     data: {
@@ -378,4 +379,108 @@ export async function acceptEphemeralLink(
     console.log(e);
     return null;
   }
+}
+
+export async function burnEphemeralConversation(containerId: number) {
+  // delete the ephemeral link
+  console.log(`🤡 burning container id: ${containerId}`);
+  const links = await prisma.ephemeralLink.deleteMany({
+    where: {
+      containerId,
+    },
+    // select: {
+    //   id: true,
+    // },
+  });
+  console.log(`✅ deleted ephemeral links`);
+  // links.forEach(({ id }) => {
+  //   console.log(`✅ link id: ${id}`);
+  // });
+  // console.log(links);
+
+  // get the container so we can get the
+  // - groups (so we can get users)
+  // - items (so we can get uploads)
+  const container = await prisma.container.findUnique({
+    where: {
+      id: containerId,
+    },
+    select: {
+      group: {
+        select: {
+          id: true,
+          members: {
+            select: {
+              user: {
+                select: {
+                  id: true,
+                  tier: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      items: {
+        select: {
+          id: true,
+          uploadId: true,
+        },
+      },
+    },
+  });
+
+  const users = container.group.members.map(({ user }) => user);
+
+  console.log(`🤡 deleting items and uploads`);
+  const uploadIds = container.items.map((item) => item.uploadId);
+  container.items.forEach(async ({ id }) => {
+    await prisma.item.delete({
+      where: {
+        id,
+      },
+    });
+    console.log(`✅ deleted item ${id}`);
+  });
+
+  uploadIds.forEach(async (id) => {
+    await prisma.upload.delete({
+      where: {
+        id,
+      },
+    });
+    console.log(`✅ deleted upload ${id}`);
+  });
+
+  const deleteResp = await prisma.container.delete({
+    where: {
+      id: containerId,
+    },
+  });
+  if (!deleteResp) {
+    console.log(`👿👿👿👿 oh noes.`);
+    return null;
+  }
+  console.log(`🤡 would delete ephemeral users`);
+  users.forEach(async ({ id, tier }) => {
+    if (tier === UserTier.EPHEMERAL) {
+      await prisma.groupUser.deleteMany({
+        where: {
+          groupId: container.group.id,
+          userId: id,
+        },
+      });
+      await prisma.user.delete({
+        where: {
+          id,
+        },
+      });
+      console.log(`✅ deleted ephemeral user ${id}`);
+    }
+  });
+  return deleteResp;
+
+  // return {
+  //   container,
+  // };
 }

@@ -67,7 +67,12 @@ keychain.addOnload(() => {
 });
 
 onMounted(async () => {
-  await keychain.load();
+  try {
+    await keychain.load();
+  } catch (e) {
+    console.log(`no keys`);
+    return;
+  }
   console.log(`keychain loaded`);
   if (keychain.keys) {
     console.log(`we have keys`);

@@ -247,12 +247,13 @@ export class ApiConnection {
     }
   }
 
-  async createUser(email, publicKey) {
+  async createUser(email, publicKey, isEphemeral = false) {
     const resp = await this.callApi(
       `users`,
       {
         email,
         publicKey,
+        tier: isEphemeral ? 'EPHEMERAL' : 'PRO',
       },
       'POST'
     );

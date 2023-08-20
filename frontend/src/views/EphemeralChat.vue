@@ -22,7 +22,6 @@ function setConversationId(id) {
 */
 const { user } = inject('user');
 watch(user, () => {
-  console.log(`ephemeral chat sees user 🎉`);
   // for now, sort the keys alphabetically to get the latest one
   const conversationIds = Object.keys(keychain.keys).sort();
   const mostRecentId = conversationIds[conversationIds.length - 1];
@@ -46,7 +45,7 @@ onMounted(() => {});
     @setConversationId="setConversationId"
   />
   <div v-else-if="conversationId">
-    <ConversationList @choose-conversation="setConversationId" />
+    <ConversationList @setConversationId="setConversationId" />
     <MessageList :conversationId="conversationId" />
     <MessageSend :conversationId="conversationId" />
   </div>

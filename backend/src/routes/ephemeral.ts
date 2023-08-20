@@ -1,7 +1,7 @@
 import { Prisma, ContainerType } from '@prisma/client';
 import { Router } from 'express';
 import {
-  createUser,
+  burnEphemeralConversation,
   createEphemeralLink,
   getEphemeralLinkChallenge,
   acceptEphemeralLink,
@@ -90,6 +90,22 @@ router.post('/:hash/challenge', async (req, res) => {
   } catch (e) {
     res.status(500).json({
       message: 'Server error.',
+    });
+  }
+});
+
+router.post('/burn', async (req, res) => {
+  const { containerId } = req.body;
+  console.log(`👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿`);
+  try {
+    const result = await burnEphemeralConversation(containerId);
+    res.status(200).json({
+      result,
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({
+      message: 'Server error',
     });
   }
 });

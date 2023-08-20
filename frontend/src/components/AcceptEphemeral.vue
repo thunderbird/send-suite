@@ -1,5 +1,5 @@
 <script setup>
-import { ref, inject } from 'vue';
+import { ref, watch, inject } from 'vue';
 import { useRouter } from 'vue-router';
 
 import {
@@ -12,7 +12,7 @@ const router = useRouter();
 
 const api = inject('api');
 const keychain = inject('keychain');
-const { setUser, storeUser } = inject('user');
+const { user, setUser, storeUser } = inject('user');
 
 const password = ref('');
 const message = ref('');
@@ -79,37 +79,58 @@ async function acceptEphemeralLink() {
     console.log(`here's my public key as jwk`);
     console.log(jwkPublicKey);
 
-    const email = new Date().getTime() + '@example.com';
-    const resp = await api.createUser(email, jwkPublicKey);
-    if (resp) {
-      const { id } = resp.user;
-      // - [X] store the unwrappedKey under challengeResp.containerId
-      await keychain.add(containerId, unwrappedKey);
-      await keychain.store();
-      // - [X] store user info to localStorage
-      setUser({
-        id,
-        email,
-      });
-      storeUser(id, email);
+    let id;
+    if (user?.value?.id) {
+      console.log(`Using existing user id`);
+      id = user.value.id;
+      debugger;
+    } else {
+      const email = new Date().getTime() + '@example.com';
+      const resp = await api.createUser(email, jwkPublicKey, true);
+      if (resp) {
+        id = resp.user.id;
 
-      // - [X] add user to the conversation id
-      const addMemberResp = await api.addMemberToContainer(id, containerId);
-      console.log(`adding user to convo`);
-      console.log(addMemberResp);
-
-      // - [X] then...go to the conversation?
-      emit('setConversationId', containerId);
-
-      // - [ ] redirect to /ephemeral?
-      router.push('/ephemeral');
+        // - [X] store user info to localStorage
+        setUser({
+          id,
+          email,
+        });
+        storeUser(id, email);
+      }
     }
+
+    // - [X] add user to the conversation id
+    const addMemberResp = await api.addMemberToContainer(id, containerId);
+    console.log(`adding user to convo`);
+    console.log(addMemberResp);
+
+    // - [X] store the unwrappedKey under challengeResp.containerId
+    await keychain.add(containerId, unwrappedKey);
+    await keychain.store();
+
+    // - [X] then...go to the conversation?
+    emit('setConversationId', containerId);
+
+    // - [ ] redirect to /ephemeral?
+    router.push('/ephemeral');
   } catch (e) {
     message.value = 'Incorrect hash or password';
     console.log(e);
     return;
   }
 }
+
+watch(user, () => {
+  console.log(`accept ephemeral sees user 🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉 with id:`);
+  console.log(user.value.id);
+  // for now, sort the keys alphabetically to get the latest one
+  // const conversationIds = Object.keys(keychain.keys).sort();
+  // const mostRecentId = conversationIds[conversationIds.length - 1];
+  // if (mostRecentId) {
+  //   // setConversationId(mostRecentId);
+  //   emit(`setConversationId`, mostRecentId);
+  // }
+});
 </script>
 <template>
   <br />

@@ -2,11 +2,10 @@
 import { ref, onMounted, inject, watch, watchEffect } from 'vue';
 import { generateRSAKeyPair, rsaToJwk } from '../lib/crypt';
 
-const emits = defineEmits(['choose-conversation']);
+const emit = defineEmits(['setConversationId']);
 
 const api = inject('api');
 const { user } = inject('user');
-const keychain = inject('keychain');
 const conversations = ref([]);
 
 // then, call "up" to the common container to set a convo/container id
@@ -14,7 +13,7 @@ const conversations = ref([]);
 
 function loadConversation(id) {
   console.log(`you want to load convo ${id}`);
-  emits(`choose-conversation`, id);
+  emit(`setConversationId`, id);
 }
 
 async function loadAllConversations() {

@@ -21,6 +21,12 @@ async function requestEphemeralLink() {
     return;
   }
 
+  if (!user.value.id) {
+    console.log(`no logged in user`);
+    message.value = 'Please log in';
+    return;
+  }
+
   // request a convo id, add it to my keychain
   const response = await api.createConversation(user.value.id);
   if (response && response.id) {
