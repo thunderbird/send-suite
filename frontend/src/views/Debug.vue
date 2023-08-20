@@ -27,8 +27,9 @@ onMounted(async () => {
 
   window.keychain = keychain;
   window.generateAESKey = generateAESKey;
-
-  keychain.status();
+  if (keychain.status) {
+    keychain.status();
+  }
   // await keychain.generateUserKeyPair();
   // window.aes = await generateAESKey();
   // keychain.add('a', aes);
@@ -87,9 +88,12 @@ async function saveKeys() {
 async function loadKeys() {
   if (keychain.load) {
     await keychain.load();
-    jwkPublicKey.value = JSON.stringify(await keychain.getUserPublicKeyJwk());
   }
 }
+
+keychain.addOnload(async () => {
+  jwkPublicKey.value = JSON.stringify(await keychain.getUserPublicKeyJwk());
+});
 
 async function createApiUser() {
   const email = user.value.email;

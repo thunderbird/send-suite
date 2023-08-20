@@ -1,7 +1,8 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, inject, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import AcceptEphemeral from '../components/AcceptEphemeral.vue';
+import ConversationList from '../components/ConversationList.vue';
 import MessageList from '../components/MessageList.vue';
 import MessageSend from '../components/MessageSend.vue';
 
@@ -19,23 +20,33 @@ function setConversationId(id) {
 - [X] also give accept ephemeral a function that can set the conversation id (prob need to defineEmits on it)
 - [X] you need to save-key/create-user/add-user-to-convo
 */
-
-onMounted(() => {
-  // check storage for all of these:
-  // - conversation id
-  // if we have one, use it
-  // - keys
-  // - a user id
-  // although, those last two should be already checked for...
+const { user } = inject('user');
+watch(user, () => {
+  console.log(`ephemeral chat sees user 🎉`);
+  // for now, sort the keys alphabetically to get the latest one
+  const conversationIds = Object.keys(keychain.keys).sort();
+  const mostRecentId = conversationIds[conversationIds.length - 1];
+  if (mostRecentId) {
+    setConversationId(mostRecentId);
+  }
 });
+
+const keychain = inject('keychain');
+keychain.addOnload(async () => {
+  console.log(`🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉`);
+  // get the keys
+});
+
+onMounted(() => {});
 </script>
 <template>
   <AcceptEphemeral
-    v-if="!conversationId"
+    v-if="route.params.hash"
     :hash="route.params.hash"
     @setConversationId="setConversationId"
   />
-  <div v-if="conversationId">
+  <div v-else-if="conversationId">
+    <ConversationList @choose-conversation="setConversationId" />
     <MessageList :conversationId="conversationId" />
     <MessageSend :conversationId="conversationId" />
   </div>

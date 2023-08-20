@@ -12,10 +12,12 @@ const keychain = inject('keychain');
 
 const password = ref('');
 const ephemeralHash = ref('');
+const message = ref('');
 
 async function requestEphemeralLink() {
   if (!password.value) {
     console.log(`no password provided`);
+    message.value = 'Please enter a password';
     return;
   }
 
@@ -58,13 +60,14 @@ async function requestEphemeralLink() {
       challengeCiphertext
     );
 
-    console.log(`created ephemeral link for convo ${id}`);
     if (resp.id) {
+      console.log(`created ephemeral link for convo ${id}`);
       const hash = resp.id;
       const { origin } = new URL(window.location.href);
       // const url = `${origin}/ephemeral/${hash}`;
       const url = hash;
       ephemeralHash.value = url;
+      message.value = '';
     }
   }
 }
@@ -79,6 +82,10 @@ async function requestEphemeralLink() {
     <input v-model="password" />
   </label>
   <br />
+  <b v-if="message">
+    {{ message }}
+    <br />
+  </b>
   <button
     class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
     @click="requestEphemeralLink"

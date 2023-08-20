@@ -4,10 +4,12 @@ import base64js from 'base64-js';
 const prefix = 'send-keychain/';
 const pubPrefix = 'send-pub';
 const privPrefix = 'send-priv';
+
 export class Keychain {
   constructor(storage) {
     this.storage = storage;
     this.keys = {};
+    this._onloadArray = [];
   }
 
   status() {
@@ -52,6 +54,12 @@ privateKey: ${this.privateKey}`);
     const aesKey = await generateAESKey();
 
     await this.add(id, aesKey);
+  }
+
+  async addOnload(cb) {
+    if (typeof cb === 'function') {
+      this._onloadArray.push(cb);
+    }
   }
 
   async load() {
@@ -105,6 +113,9 @@ privateKey: ${this.privateKey}`);
         }
       }
     }
+
+    console.log(`Running this._onloadArray callbacks`);
+    this._onloadArray.forEach((fn) => fn());
   }
 
   async store() {

@@ -8,7 +8,7 @@ Should:
 Does vue already have the notion of a store?
 (Or is this why Pinia exists?)
 */
-import { ref, onMounted, provide, watch } from 'vue';
+import { ref, onMounted, provide, watch, computed } from 'vue';
 import { ApiConnection } from './lib/api';
 import Storage from './lib/storage/localStorage';
 import { Keychain } from './lib/crypt';
@@ -27,6 +27,8 @@ function setUser(obj) {
     ...user.value,
     ...obj,
   };
+  console.log(`set user object as ref`);
+  console.log(obj);
 }
 
 function storeUser(id, email) {
@@ -36,9 +38,15 @@ function storeUser(id, email) {
   });
   localStorage.setItem('send-user', jsonUser);
 }
+function loadUser() {
+  const jsonUser = localStorage.getItem('send-user');
+  if (jsonUser) {
+    setUser(JSON.parse(jsonUser));
+  }
+}
 
 provide('user', {
-  user,
+  user: computed(() => user.value),
   setUser,
   storeUser,
 });
@@ -54,8 +62,17 @@ watch(user, () => {
   }
 });
 
+keychain.addOnload(() => {
+  console.log(`confirming keychain.addOnload works`);
+});
+
 onMounted(async () => {
-  // keychain.load();
+  await keychain.load();
+  console.log(`keychain loaded`);
+  if (keychain.keys) {
+    console.log(`we have keys`);
+    loadUser();
+  }
   // console.log('TODO: get/set auth0 user');
   // console.log(`api should have a value now`);
 });

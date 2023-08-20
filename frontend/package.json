@@ -9,7 +9,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "base64-js": "^1.5.1",
     "install": "^0.13.0",
     "vue": "^3.3.4",
     "vue-router": "4"
