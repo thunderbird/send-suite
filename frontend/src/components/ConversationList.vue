@@ -32,16 +32,6 @@ async function loadAllConversations() {
   conversations.value = cons;
 }
 
-async function createConversation() {
-  console.log(`you want to create a convo`);
-  const response = await api.createConversation(user.value.id);
-  console.log(response);
-  // await keychain.createAndAddContainerKey(1);
-  await keychain.createAndAddContainerKey(response.id);
-  await keychain.store();
-  loadAllConversations();
-}
-
 onMounted(async () => {
   console.log(api);
   loadAllConversations();
@@ -62,17 +52,10 @@ onMounted(async () => {
   </div> -->
   <button
     class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-    @click="createConversation"
-  >
-    New Conversation
-  </button>
-  <button
-    class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
     @click="loadAllConversations"
   >
     Load Conversations
   </button>
-  <br />
   <ul>
     <li v-for="convo of conversations">
       <a href="#" @click.prevent="loadConversation(convo.id)">

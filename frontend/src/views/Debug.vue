@@ -18,6 +18,8 @@ import {
   generateSalt,
 } from '../lib/crypt';
 
+const showDebug = ref(false);
+
 onMounted(async () => {
   // loadKeychain();
   // loadUser();
@@ -111,61 +113,65 @@ async function createApiUser() {
 }
 </script>
 <template>
-  <label>
-    Public Key:
+  <a href="#" @click.prevent="showDebug = !showDebug">
+    {{ showDebug ? 'Hide' : 'Show' }} debug panel
+  </a>
+  <div v-if="showDebug">
+    <label>
+      Public Key:
+      <br />
+      <textarea v-model="jwkPublicKey">{{ jwkPublicKey }}</textarea>
+    </label>
     <br />
-    <textarea v-model="jwkPublicKey">{{ jwkPublicKey }}</textarea>
-  </label>
-  <br />
-  <button
-    class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-    @click="generateKeys"
-  >
-    Gen Keypair
-  </button>
-  <button
-    class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-    @click="saveKeys"
-  >
-    Store Keys
-  </button>
-  <button
-    class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-    @click="loadKeys"
-  >
-    Load Keys
-  </button>
-  <br />
-  <label>
-    User id:
-    <input type="number" v-model="user.id" />
-  </label>
-  <br />
-  <label>
-    Email:
-    <input type="email" v-model="user.email" />
-  </label>
-  <br />
-  <button
-    class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-    @click="storeUser"
-  >
-    Save User
-  </button>
-  <button
-    class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-    @click="loadUser"
-  >
-    Load User
-  </button>
-  <br />
-  <button
-    class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-    @click="createApiUser"
-  >
-    Create Api User
-  </button>
-  <!-- <br />
+    <button
+      class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+      @click="generateKeys"
+    >
+      Gen Keypair
+    </button>
+    <button
+      class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+      @click="saveKeys"
+    >
+      Store Keys
+    </button>
+    <button
+      class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+      @click="loadKeys"
+    >
+      Load Keys
+    </button>
+    <br />
+    <label>
+      User id:
+      <input type="number" v-model="user.id" />
+    </label>
+    <br />
+    <label>
+      Email:
+      <input type="email" v-model="user.email" />
+    </label>
+    <br />
+    <button
+      class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+      @click="storeUser"
+    >
+      Save User
+    </button>
+    <button
+      class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+      @click="loadUser"
+    >
+      Load User
+    </button>
+    <br />
+    <button
+      class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+      @click="createApiUser"
+    >
+      Create Api User
+    </button>
+    <!-- <br />
   <label>
     <input type="checkbox" disabled :checked="keychain.privateKey" />
     privateKey: {{ keychain.privateKey }}
@@ -177,7 +183,8 @@ async function createApiUser() {
   </label>
   <br />
   <button @click.prevent="loadKeychain()">Load Keys</button> -->
-  <hr />
+    <hr />
+  </div>
 </template>
 
 <style scoped>

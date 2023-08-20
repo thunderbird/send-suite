@@ -44,7 +44,7 @@ async function downloadMessage(id) {
 
 async function getContainerWithItems(id) {
   const container = await api.getContainerWithItems(id);
-  console.log(container);
+  // console.log(container);
   // console.log(`got items`);
   // console.log(container.items);
   const uploadIds = container.items.map(({ uploadId }) => uploadId);
@@ -83,7 +83,7 @@ onMounted(() => {
   getContainerWithItems(props.conversationId);
   setInterval(() => {
     getContainerWithItems(props.conversationId);
-  }, 5000);
+  }, 500);
 });
 
 watch(
