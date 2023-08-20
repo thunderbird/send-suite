@@ -1,6 +1,7 @@
 <script setup>
 import { inject } from 'vue';
 import { useRouter } from 'vue-router';
+const { user } = inject('user');
 const props = defineProps({
   conversationId: Number,
 });
@@ -19,11 +20,15 @@ async function burnAfterReading() {
       return;
     }
     keychain.remove(props.conversationId);
-    keychain.clear();
-    localStorage.removeItem('send-user');
+    // do not do the following for pro users
 
+    if (user.value.tier !== 'PRO') {
+      keychain.clear();
+      localStorage.removeItem('send-user');
+      router.push('/');
+    }
     alert('🗨️🔥');
-    router.push('/');
+    window.location.reload();
   }
 }
 </script>

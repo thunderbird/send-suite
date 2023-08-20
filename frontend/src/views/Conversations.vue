@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import ConversationList from '../components/ConversationList.vue';
+import BurnButton from '../components/BurnButton.vue';
 import MessageList from '../components/MessageList.vue';
 import MessageSend from '../components/MessageSend.vue';
 import AddPerson from '../components/AddPerson.vue';
@@ -8,11 +9,11 @@ import NewConversation from '../components/NewConversation.vue';
 import InvitationList from '../components/InvitationList.vue';
 import NewEphemeral from '../components/NewEphemeral.vue';
 
-const currentConversation = ref(null);
+const conversationId = ref(null);
 
-function setConversationId(conversationId) {
-  console.log(`Conversations view sees choice of ${conversationId}`);
-  currentConversation.value = conversationId;
+function setConversationId(id) {
+  console.log(`Conversations view sees choice of ${id}`);
+  conversationId.value = id;
 }
 </script>
 
@@ -28,11 +29,12 @@ function setConversationId(conversationId) {
         <ConversationList @setConversationId="setConversationId" />
       </div>
       <div class="w-full md:w-2/3 border-solid border-2 border-red-500">
-        <template v-if="currentConversation">
-          <AddPerson :conversationId="currentConversation" />
+        <template v-if="conversationId">
+          <AddPerson :conversationId="conversationId" />
           <!-- consider only allowing NewEphemeral for fresh conversations -->
-          <MessageList :conversationId="currentConversation" />
-          <MessageSend :conversationId="currentConversation" />
+          <BurnButton :conversationId="conversationId" />
+          <MessageList :conversationId="conversationId" />
+          <MessageSend :conversationId="conversationId" />
         </template>
       </div>
     </div>

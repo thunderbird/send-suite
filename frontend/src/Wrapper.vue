@@ -31,10 +31,11 @@ function setUser(obj) {
   console.log(obj);
 }
 
-function storeUser(id, email) {
+function storeUser(id, email, tier) {
   const jsonUser = JSON.stringify({
     id,
     email,
+    tier,
   });
   localStorage.setItem('send-user', jsonUser);
 }
@@ -49,6 +50,7 @@ provide('user', {
   user: computed(() => user.value),
   setUser,
   storeUser,
+  loadUser,
 });
 
 const isInitComplete = ref({});

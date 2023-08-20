@@ -2,7 +2,7 @@
 import { ref, watch, watchEffect, inject, onMounted } from 'vue';
 const api = inject('api');
 const keychain = inject('keychain');
-const { user, setUser } = inject('user');
+const { user, setUser, storeUser, loadUser } = inject('user');
 import {
   generateAESKey,
   compareKeys,
@@ -60,20 +60,6 @@ onMounted(async () => {
 
 const jwkPublicKey = ref('');
 
-function loadUser() {
-  const jsonUser = localStorage.getItem('send-user');
-  if (jsonUser) {
-    setUser(JSON.parse(jsonUser));
-  }
-}
-function storeUser() {
-  const jsonUser = JSON.stringify({
-    id: user.value.id,
-    email: user.value.email,
-  });
-  localStorage.setItem('send-user', jsonUser);
-}
-
 async function generateKeys() {
   if (keychain.generateUserKeyPair) {
     await keychain.generateUserKeyPair();
@@ -103,12 +89,14 @@ async function createApiUser() {
 
   const resp = await api.createUser(email, jwkPublicKey.value);
   if (resp) {
-    const { id } = resp.user;
+    const { id, tier } = resp.user;
     setUser({
       id,
       email,
+      tier,
     });
-    storeUser();
+
+    storeUser(id, email, tier);
   }
 }
 </script>
