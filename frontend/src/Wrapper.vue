@@ -9,9 +9,11 @@ Does vue already have the notion of a store?
 (Or is this why Pinia exists?)
 */
 import { ref, onMounted, provide, watch, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { ApiConnection } from './lib/api';
 import Storage from './lib/storage/localStorage';
 import { Keychain } from './lib/crypt';
+const router = useRouter();
 
 const api = new ApiConnection('https://localhost:8088');
 
@@ -83,6 +85,24 @@ onMounted(async () => {
   // console.log('TODO: get/set auth0 user');
   // console.log(`api should have a value now`);
 });
+
+provide('burn', burnAfterReading);
+async function burnAfterReading(conversationId) {
+  const resp = await api.burnAfterReading(conversationId);
+  if (!resp) {
+    return;
+  }
+  keychain.remove(conversationId);
+  // do not do the following for pro users
+
+  if (user.value.tier !== 'PRO') {
+    keychain.clear();
+    localStorage.removeItem('send-user');
+    router.push('/');
+  }
+  alert('🗨️🔥');
+  window.location.reload();
+}
 </script>
 
 <template>
