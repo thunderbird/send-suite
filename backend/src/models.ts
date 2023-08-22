@@ -144,6 +144,7 @@ export async function getItemsInContainer(id: number) {
         select: {
           uploadId: true,
           createdAt: true,
+          type: true,
           upload: {
             select: {
               owner: {

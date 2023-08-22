@@ -16,6 +16,7 @@ const { user } = inject('user');
 const api = inject('api');
 const keychain = inject('keychain');
 const messageList = ref();
+const messageContainer = ref(null);
 
 async function downloadMessage(id) {
   if (!id) {
@@ -50,13 +51,13 @@ async function getContainerWithItems(id) {
   if (!container?.items) {
     return;
   }
-  // console.log(container);
-  // console.log(`got items`);
-  // console.log(container.items);
-  const uploadIds = container.items.map(({ uploadId }) => uploadId);
-  // console.log(`got uploadIds`);
-  // console.log(uploadIds);
-  let items = await fillMessageList(uploadIds);
+
+  const idAndTypeArray = container.items.map(({ uploadId, type }) => ({
+    id: uploadId,
+    type,
+  }));
+
+  let items = await fillMessageList(idAndTypeArray);
   const messages = items.map((item, i) => {
     // debugger;
 
@@ -68,14 +69,27 @@ async function getContainerWithItems(id) {
   });
 
   messageList.value = messages;
+
+  // if (messageList.value) {
+  //   messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
+  // }
 }
 
-async function fillMessageList(uploadIds) {
+async function fillMessageList(idAndTypeArray) {
   const messages = await Promise.all(
-    uploadIds.map(async (id) => ({
-      messageText: await downloadMessage(id),
-      id,
-    }))
+    idAndTypeArray.map(async ({ id, type }) => {
+      if (type === 'MESSAGE') {
+        return {
+          messageText: await downloadMessage(id),
+          id,
+        };
+      } else if (type === 'FILE') {
+        return {
+          messageText: `this should be a download icon for ${id}`,
+          id,
+        };
+      }
+    })
   );
   // console.log(`got messages`);
   // console.log(messages);
@@ -175,6 +189,7 @@ watch(
     <div
       v-if="messageList"
       id="messages"
+      ref="messageContainer"
       class="flex flex-col space-y-4 p-3 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch"
     >
       <div class="chat-message mb-2" v-for="m in messageList" :key="m.id">

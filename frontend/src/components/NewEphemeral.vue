@@ -85,7 +85,7 @@ async function requestEphemeralLink() {
   <h1>Ephemeral Link Creation</h1>
   <label>
     Password:
-    <input v-model="password" />
+    <input v-model="password" type="password" />
   </label>
   <br />
   <b v-if="message">
@@ -105,3 +105,10 @@ async function requestEphemeralLink() {
   <hr />
   <br />
 </template>
+
+<style scoped>
+a {
+  text-decoration: underline;
+  color: #990099;
+}
+</style>

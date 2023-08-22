@@ -3,7 +3,7 @@ import Conversations from './Conversations.vue';
 </script>
 
 <template>
-  <h1 className="text-3xl font-bold underline">Home for logged in users</h1>
+  <h1 className="text-3xl font-bold">Pro Chat Demo</h1>
   <div class="main w-full">
     <Conversations />
   </div>

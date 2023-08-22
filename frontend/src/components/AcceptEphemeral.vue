@@ -147,7 +147,7 @@ watch(user, () => {
   <br /> -->
   <label>
     Password:
-    <input v-model="password" />
+    <input v-model="password" type="password" />
   </label>
   <div>
     {{ message }}

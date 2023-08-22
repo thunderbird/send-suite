@@ -40,7 +40,7 @@ keychain.addOnload(async () => {
 onMounted(() => {});
 </script>
 <template>
-  <h1 className="text-3xl font-bold underline">Ephemeral Chat</h1>
+  <h1 className="text-3xl font-bold ">Ephemeral Chat Demo</h1>
   <div class="main w-full">
     <AcceptEphemeral
       v-if="route.params.hash"
