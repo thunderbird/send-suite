@@ -10,6 +10,7 @@ const props = defineProps({
   conversationId: Number,
 });
 
+const { user } = inject('user');
 const api = inject('api');
 const keychain = inject('keychain');
 const messageList = ref();
@@ -106,11 +107,55 @@ watch(
   <div v-if="props.conversationId">
     <div v-if="messageList">
       <p>Messages:</p>
-      <ul>
+
+      <div class="chat-message mb-2" v-for="m in messageList" :key="m.id">
+        <template v-if="m.sender.email === user.email">
+          <div class="flex items-end justify-end">
+            <div
+              class="flex flex-col space-y-2 text-xs max-w-xs mx-2 order-1 items-end"
+            >
+              <div>
+                <span
+                  class="px-4 py-2 rounded-lg inline-block rounded-br-none bg-blue-600 text-white"
+                >
+                  {{ m.messageText }}
+                </span>
+              </div>
+            </div>
+            <img
+              src="https://images.unsplash.com/photo-1590031905470-a1a1feacbb0b?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=facearea&amp;facepad=3&amp;w=144&amp;h=144"
+              alt="My profile"
+              class="w-6 h-6 rounded-full order-2"
+            />
+          </div>
+        </template>
+        <template v-else>
+          <div class="flex items-end">
+            <div
+              class="flex flex-col space-y-2 text-xs max-w-xs mx-2 order-2 items-start"
+            >
+              <div>
+                <span
+                  class="px-4 py-2 rounded-lg inline-block rounded-bl-none bg-gray-300 text-gray-600"
+                >
+                  {{ m.messageText }}
+                </span>
+              </div>
+            </div>
+            <img
+              src="https://images.unsplash.com/photo-1549078642-b2ba4bda0cdb?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=facearea&amp;facepad=3&amp;w=144&amp;h=144"
+              alt="My profile"
+              class="w-6 h-6 rounded-full order-1"
+            />
+          </div>
+        </template>
+      </div>
+
+      <!-- <ul>
         <li v-for="m in messageList" :key="m.id">
           {{ m.sender.email }} {{ m.messageText }}
         </li>
-      </ul>
+      </ul> -->
     </div>
   </div>
 </template>

@@ -117,16 +117,23 @@ async function burnAfterReading(conversationId) {
 
 provide('clean', cleanAfterBurning);
 function cleanAfterBurning(conversationId) {
-  console.log(`CLEANING ${conversationId}`);
-  keychain.remove(conversationId);
+  try {
+    keychain.get(conversationId);
+    console.log(`CLEANING ${conversationId}`);
+    keychain.remove(conversationId);
 
-  if (user.value.tier !== 'PRO') {
-    keychain.clear();
-    localStorage.removeItem('send-user');
-    router.push('/');
+    if (user.value.tier !== 'PRO') {
+      keychain.clear();
+      localStorage.removeItem('send-user');
+      router.push('/');
+    }
+    alert('🗨️🔥');
+    window.location.reload();
+  } catch (e) {
+    console.log(
+      `not burning ${conversationId}, as this client isn't part of it`
+    );
   }
-  alert('🗨️🔥');
-  window.location.reload();
 }
 </script>
 
