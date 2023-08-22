@@ -3,7 +3,7 @@ import { ref, onMounted, inject, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import AcceptEphemeral from '../components/AcceptEphemeral.vue';
 import ConversationList from '../components/ConversationList.vue';
-import BurnButton from '../components/BurnButton.vue';
+// import BurnButton from '../components/BurnButton.vue';
 import MessageList from '../components/MessageList.vue';
 import MessageSend from '../components/MessageSend.vue';
 
@@ -48,13 +48,11 @@ onMounted(() => {});
       @setConversationId="setConversationId"
     />
     <div v-else-if="conversationId" class="flex flex-row">
-      <div
-        class="w-full sm:w-1/2 md:w-1/3 mx-auto border-solid border-2 border-red-500"
-      >
+      <div class="w-full sm:w-1/2 md:w-1/3 mx-auto">
         <ConversationList @setConversationId="setConversationId" />
       </div>
-      <div class="w-full md:w-2/3 border-solid border-2 border-red-500">
-        <BurnButton :conversationId="conversationId" />
+      <div class="w-full md:w-2/3">
+        <!-- <BurnButton :conversationId="conversationId" /> -->
         <MessageList :conversationId="conversationId" />
         <MessageSend :conversationId="conversationId" />
       </div>

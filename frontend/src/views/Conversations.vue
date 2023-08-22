@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue';
 import ConversationList from '../components/ConversationList.vue';
-import BurnButton from '../components/BurnButton.vue';
 import MessageList from '../components/MessageList.vue';
 import MessageSend from '../components/MessageSend.vue';
 import AddPerson from '../components/AddPerson.vue';
@@ -19,20 +18,18 @@ function setConversationId(id) {
 
 <template>
   <div class="w-full">
-    <NewEphemeral />
     <InvitationList />
     <NewConversation />
-    <div class="flex flex-row border-double border-4 border-sky-500">
-      <div
-        class="w-full sm:w-1/2 md:w-1/3 mx-auto border-solid border-2 border-red-500"
-      >
+    <NewEphemeral />
+    <div class="flex flex-row border-2 border-grey-500">
+      <div class="w-full sm:w-1/2 md:w-1/3 mx-auto">
         <ConversationList @setConversationId="setConversationId" />
       </div>
-      <div class="w-full md:w-2/3 border-solid border-2 border-red-500">
+      <div class="h-fit w-full md:w-2/3">
         <template v-if="conversationId">
-          <AddPerson :conversationId="conversationId" />
+          <!-- <AddPerson :conversationId="conversationId" /> -->
           <!-- consider only allowing NewEphemeral for fresh conversations -->
-          <BurnButton :conversationId="conversationId" />
+          <!-- <BurnButton :conversationId="conversationId" /> -->
           <MessageList :conversationId="conversationId" />
           <MessageSend :conversationId="conversationId" />
         </template>
