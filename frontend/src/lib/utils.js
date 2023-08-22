@@ -44,3 +44,61 @@ export async function streamToArrayBuffer(stream, size) {
 export function timestamp() {
   return new Date().getTime();
 }
+
+class ConnectionError extends Error {
+  constructor(cancelled, duration, size) {
+    super(cancelled ? '0' : 'connection closed');
+    this.cancelled = cancelled;
+    this.duration = duration;
+    this.size = size;
+  }
+}
+
+export function asyncInitWebSocket(server) {
+  return new Promise((resolve, reject) => {
+    try {
+      const ws = new WebSocket(server);
+      ws.addEventListener('open', () => resolve(ws), { once: true });
+    } catch (e) {
+      reject(new ConnectionError(false));
+    }
+  });
+}
+
+// This one should retry
+export async function connectToWebSocketServer(server) {
+  const ws = new WebSocket(server);
+  return new Promise((resolve, reject) => {
+    const timer = setInterval(() => {
+      if (ws.readyState === 1) {
+        clearInterval(timer);
+        resolve(ws);
+      }
+    }, 10);
+  });
+}
+
+export function listenForResponse(ws, canceller) {
+  return new Promise((resolve, reject) => {
+    function handleClose(event) {
+      // a 'close' event before a 'message' event means the request failed
+      ws.removeEventListener('message', handleMessage);
+      reject(new ConnectionError(canceller.cancelled));
+    }
+    function handleMessage(msg) {
+      ws.removeEventListener('close', handleClose);
+      try {
+        const response = JSON.parse(msg.data);
+        if (response.error) {
+          throw new Error(response.error);
+        } else {
+          resolve(response);
+        }
+      } catch (e) {
+        reject(e);
+      }
+    }
+    ws.addEventListener('message', handleMessage, { once: true });
+    ws.addEventListener('close', handleClose, { once: true });
+  });
+}

@@ -334,4 +334,38 @@ export class ApiConnection {
       return null;
     }
   }
+
+  // getEventSource(id) {
+  //   // Future improvement: use "@microsoft/fetch-event-source"
+  //   // which lets you POST.
+  //   // We could use that for storing last seen message id on server.
+  //   // This would enable "see new messages" like Discourse forum
+  //   try {
+  //     debugger;
+  //     const eventSource = new EventSource(
+  //       `${this.serverUrl}/api/stream/register/${id}`
+  //     );
+  //     if (eventSource) {
+  //       console.log(`returning eventSource object`);
+  //       return eventSource;
+  //     } else {
+  //       console.log(`Error: could not burn ephemeral conversation`);
+  //       return null;
+  //     }
+  //   } catch (e) {
+  //     console.log(`could not establish connection to event source server`);
+  //     console.log(e);
+  //     return null;
+  //   }
+  // }
+
+  // async sendHeartbeat(id) {
+  //   const resp = await this.callApi(`stream/ping`, { id }, 'POST');
+  //   if (resp) {
+  //     return resp;
+  //   } else {
+  //     console.log(`Error: could not send heartbeat`);
+  //     return null;
+  //   }
+  // }
 }

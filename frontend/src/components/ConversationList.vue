@@ -1,6 +1,6 @@
 <script setup>
-import { ref, onMounted, inject, watch, watchEffect } from 'vue';
-import { generateRSAKeyPair, rsaToJwk } from '../lib/crypt';
+import { ref, onMounted, inject } from 'vue';
+// import { generateRSAKeyPair, rsaToJwk } from '../lib/crypt';
 
 const emit = defineEmits(['setConversationId']);
 

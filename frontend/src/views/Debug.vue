@@ -1,8 +1,5 @@
 <script setup>
 import { ref, watch, watchEffect, inject, onMounted } from 'vue';
-const api = inject('api');
-const keychain = inject('keychain');
-const { user, setUser, storeUser, loadUser } = inject('user');
 import {
   generateAESKey,
   compareKeys,
@@ -18,6 +15,12 @@ import {
   generateSalt,
 } from '../lib/crypt';
 
+const api = inject('api');
+const keychain = inject('keychain');
+const { user, setUser, storeUser, loadUser } = inject('user');
+// const eventSource = inject('eventSource');
+const messageSocket = inject('messageSocket');
+
 const showDebug = ref(false);
 
 onMounted(async () => {
@@ -32,6 +35,24 @@ onMounted(async () => {
   if (keychain.status) {
     keychain.status();
   }
+
+  // establish eventSource connection
+  // const interval = setInterval(() => {
+  //   if (eventSource.value) {
+  //     console.log(`establishing eventSource connection`);
+  //     eventSource.value.onmessage = (event) => {
+  //       console.log(event.data);
+  //       try {
+  //         const newMessage = JSON.parse(event.data);
+  //         console.log(`parsed eventSource data`);
+  //         console.log(newMessage);
+  //       } catch (e) {
+  //         console.error('Error with message stream', e);
+  //       }
+  //     };
+  //     clearInterval(interval);
+  //   }
+  // }, 1000);
   // await keychain.generateUserKeyPair();
   // window.aes = await generateAESKey();
   // keychain.add('a', aes);
@@ -98,6 +119,20 @@ async function createApiUser() {
 
     storeUser(id, email, tier);
   }
+}
+
+async function sendHeartbeat() {
+  console.log(`sending heartbeat`);
+  messageSocket.value.send(
+    JSON.stringify({
+      id: user.value.id,
+      ts: new Date().getTime(),
+    })
+  );
+  // const resp = await api.sendHeartbeat(user.value.id);
+  // if (resp) {
+  //   console.log(resp);
+  // }
 }
 </script>
 <template>
@@ -171,6 +206,13 @@ async function createApiUser() {
   </label>
   <br />
   <button @click.prevent="loadKeychain()">Load Keys</button> -->
+    <br />
+    <button
+      class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+      @click="sendHeartbeat"
+    >
+      Send heartbeat
+    </button>
     <hr />
   </div>
 </template>

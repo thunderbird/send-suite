@@ -13,6 +13,7 @@ import { useRouter } from 'vue-router';
 import { ApiConnection } from './lib/api';
 import Storage from './lib/storage/localStorage';
 import { Keychain } from './lib/crypt';
+import { createMessageSocket } from './lib/messageSocket';
 const router = useRouter();
 
 const api = new ApiConnection('https://localhost:8088');
@@ -23,6 +24,14 @@ const user = ref({
   id: 0,
   email: '',
 });
+
+// const eventSource = ref(null);
+// provide('eventSource', eventSource);
+const messageSocket = ref(null);
+provide('messageSocket', messageSocket);
+
+const messageBus = ref(null);
+provide('messageBus', messageBus);
 
 function setUser(obj) {
   user.value = {
@@ -60,8 +69,20 @@ const isInitComplete = ref({});
 const keychain = new Keychain(new Storage());
 provide('keychain', keychain);
 
-watch(user, () => {
+watch(user, async () => {
   if (user.value.id !== 0) {
+    messageSocket.value = await createMessageSocket(user.value.id);
+    if (messageSocket.value) {
+      console.log(`created messageSocket`);
+      messageSocket.value.onmessage = (event) => {
+        console.log(`heard from the messageSocket`);
+        console.log(event.data);
+        const data = JSON.parse(event.data);
+        if (data?.type === 'burn' && data?.conversationId) {
+          cleanAfterBurning(data.conversationId);
+        }
+      };
+    }
     isInitComplete.value = true;
   }
 });
@@ -88,12 +109,16 @@ onMounted(async () => {
 
 provide('burn', burnAfterReading);
 async function burnAfterReading(conversationId) {
+  console.log(`BURNING ${conversationId}`);
   const resp = await api.burnAfterReading(conversationId);
-  if (!resp) {
-    return;
-  }
+  console.log(resp);
+  return resp;
+}
+
+provide('clean', cleanAfterBurning);
+function cleanAfterBurning(conversationId) {
+  console.log(`CLEANING ${conversationId}`);
   keychain.remove(conversationId);
-  // do not do the following for pro users
 
   if (user.value.tier !== 'PRO') {
     keychain.clear();

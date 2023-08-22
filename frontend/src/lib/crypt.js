@@ -1,5 +1,4 @@
 // import { Buffer } from 'buffer';
-import base64js from 'base64-js';
 
 const prefix = 'send-keychain/';
 const pubPrefix = 'send-pub';

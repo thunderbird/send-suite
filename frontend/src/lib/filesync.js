@@ -1,53 +1,12 @@
 import { ECE_RECORD_SIZE } from './ece';
-import { delay, streamToArrayBuffer } from './utils';
+import {
+  delay,
+  streamToArrayBuffer,
+  asyncInitWebSocket,
+  listenForResponse,
+} from './utils';
 import { blobStream } from './streams';
 import { encryptStream, decryptStream } from './ece';
-
-class ConnectionError extends Error {
-  constructor(cancelled, duration, size) {
-    super(cancelled ? '0' : 'connection closed');
-    this.cancelled = cancelled;
-    this.duration = duration;
-    this.size = size;
-  }
-}
-
-function asyncInitWebSocket(server) {
-  console.log(`opening websocket connection`);
-  return new Promise((resolve, reject) => {
-    try {
-      const ws = new WebSocket(server);
-      ws.addEventListener('open', () => resolve(ws), { once: true });
-    } catch (e) {
-      reject(new ConnectionError(false));
-    }
-  });
-}
-
-function listenForResponse(ws, canceller) {
-  return new Promise((resolve, reject) => {
-    function handleClose(event) {
-      // a 'close' event before a 'message' event means the request failed
-      ws.removeEventListener('message', handleMessage);
-      reject(new ConnectionError(canceller.cancelled));
-    }
-    function handleMessage(msg) {
-      ws.removeEventListener('close', handleClose);
-      try {
-        const response = JSON.parse(msg.data);
-        if (response.error) {
-          throw new Error(response.error);
-        } else {
-          resolve(response);
-        }
-      } catch (e) {
-        reject(e);
-      }
-    }
-    ws.addEventListener('message', handleMessage, { once: true });
-    ws.addEventListener('close', handleClose, { once: true });
-  });
-}
 
 export async function upload(blob, key, canceller = {}) {
   const endpoint = 'wss://localhost:8088/api/ws';
