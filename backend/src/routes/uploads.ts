@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { createUpload, getUploadSize } from '../models';
+import { createUpload, getUploadSize, getUploadMetadata } from '../models';
 import storage from '../storage';
 
 const router: Router = Router();
 
 router.post('/', async (req, res) => {
-  const { id, size, ownerId } = req.body;
+  const { id, size, ownerId, type } = req.body;
 
   try {
     // Confirm that file `id` exists and what's on disk
@@ -15,7 +15,7 @@ router.post('/', async (req, res) => {
 
     const sizeOnDisk = await storage.length(id);
     if (sizeOnDisk >= size) {
-      const upload = await createUpload(id, size, ownerId);
+      const upload = await createUpload(id, size, ownerId, type);
       res.status(201).json({
         message: 'Upload created',
         upload,
@@ -41,6 +41,21 @@ router.get('/:id/size', async (req, res) => {
     const size = await getUploadSize(id);
     res.status(201).json({
       size,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+router.get('/:id/metadata', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const metadata = await getUploadMetadata(id);
+    res.status(201).json({
+      ...metadata,
     });
   } catch (error) {
     console.log(error);

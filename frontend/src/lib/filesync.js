@@ -145,7 +145,7 @@ async function _doDownload(id, canceller = {}) {
   });
 }
 
-async function saveFile(file) {
+export async function saveFile(file) {
   return new Promise(function (resolve, reject) {
     const dataView = new DataView(file.plaintext);
     const blob = new Blob([dataView], { type: file.type });
@@ -166,7 +166,14 @@ async function saveFile(file) {
   });
 }
 
-export async function download(id, size, key) {
+export async function download(
+  id,
+  size,
+  key,
+  isMessage = true,
+  filename = 'dummy.file',
+  type = 'text/plain'
+) {
   const downloadedBlob = await _doDownload(id);
   // This is *not* where we figure out the type
   // I can't just `const { type } = downloadedBlob`
@@ -192,17 +199,20 @@ export async function download(id, size, key) {
   //
   // And do something different with the plaintext based on type
   // if (type === 'MESSAGE') {}
-  const decoder = new TextDecoder();
-  const plaintextString = decoder.decode(plaintext);
-  return plaintextString;
+  if (isMessage) {
+    const decoder = new TextDecoder();
+    const plaintextString = decoder.decode(plaintext);
+    return plaintextString;
+  } else {
+    return await saveFile({
+      // plaintext: await streamToArrayBuffer(blobStream(ciphertext), size),
+      plaintext,
+      name: decodeURIComponent(filename),
+      type, // mime type of the upload
+    });
+  }
 
   // if (type === 'FILE') {}
   /*
-        return await saveFile({
-          // plaintext: await streamToArrayBuffer(blobStream(ciphertext), size),
-          plaintext,
-          name: decodeURIComponent(this.fileInfo.name),
-          type: this.fileInfo.type,
-        });
-  */
+   */
 }

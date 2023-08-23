@@ -18,12 +18,14 @@ const keychain = inject('keychain');
 const messageList = ref();
 const messageContainer = ref(null);
 
-async function downloadMessage(id) {
+async function downloadContent(id, filename, isMessage = true) {
   if (!id) {
     console.log(`no id`);
     return;
   }
-  const size = await api.getUploadSize(id);
+  const { size, type } = await api.getUploadMetadata(id);
+  // const size = await api.getUploadSize(id);
+  // const type = await api.getUploadType(id);
 
   if (!size) {
     console.log(`no size`);
@@ -40,10 +42,15 @@ async function downloadMessage(id) {
     console.log(`no aes key`);
     return;
   }
-  // console.log(aesKey);
-  const plaintextString = await download(id, size, aesKey);
-  // console.log(plaintextString);
-  return plaintextString;
+
+  if (isMessage) {
+    // console.log(aesKey);
+    const plaintextString = await download(id, size, aesKey);
+    // console.log(plaintextString);
+    return plaintextString;
+  }
+  // download the file, specifying the id, size, aesKey, isMessage=false, filename, and (mime)type
+  await download(id, size, aesKey, false, filename, type);
 }
 
 async function getContainerWithItems(id) {
@@ -59,12 +66,12 @@ async function getContainerWithItems(id) {
 
   let items = await fillMessageList(idAndTypeArray);
   const messages = items.map((item, i) => {
-    // debugger;
-
     return {
       messageText: item.messageText,
       id: item.id,
       sender: container.items[i].upload.owner,
+      type: item.type,
+      name: container.items[i].name,
     };
   });
 
@@ -80,13 +87,15 @@ async function fillMessageList(idAndTypeArray) {
     idAndTypeArray.map(async ({ id, type }) => {
       if (type === 'MESSAGE') {
         return {
-          messageText: await downloadMessage(id),
+          messageText: await downloadContent(id),
           id,
+          type,
         };
       } else if (type === 'FILE') {
         return {
-          messageText: `this should be a download icon for ${id}`,
+          messageText: `bad mime type ${id}`,
           id,
+          type,
         };
       }
     })
@@ -202,7 +211,16 @@ watch(
                 <span
                   class="px-4 py-2 rounded-lg inline-block rounded-br-none bg-blue-600 text-white"
                 >
-                  {{ m.messageText }}
+                  <span v-if="m.type === 'MESSAGE'">
+                    {{ m.messageText }}
+                  </span>
+                  <span v-else-if="m.type === 'FILE'">
+                    <a
+                      href="#"
+                      @click.prevent="downloadContent(m.id, m.name, false)"
+                      >⬇️ {{ m.name }}</a
+                    >
+                  </span>
                 </span>
               </div>
             </div>
@@ -222,7 +240,16 @@ watch(
                 <span
                   class="px-4 py-2 rounded-lg inline-block rounded-bl-none bg-gray-300 text-gray-600"
                 >
-                  {{ m.messageText }}
+                  <span v-if="m.type === 'MESSAGE'">
+                    {{ m.messageText }}
+                  </span>
+                  <span v-else-if="m.type === 'FILE'">
+                    <a
+                      href="#"
+                      @click.prevent="downloadContent(m.id, m.name, false)"
+                      >⬇️ {{ m.name }}</a
+                    >
+                  </span>
                 </span>
               </div>
             </div>

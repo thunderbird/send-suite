@@ -87,6 +87,7 @@ export default class Receiver extends Nanobus {
     });
   }
 
+  // noSave will be true if it's a message
   async downloadBlob(noSave = false) {
     this.state = "downloading";
     debugger;

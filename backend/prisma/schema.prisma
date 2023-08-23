@@ -152,5 +152,6 @@ model Upload {
   ownerId   Int
   owner     User          @relation(fields: [ownerId], references: [id])
   items     Item[]        // A single Upload may back multiple Items
+  type      String        // mime type
   createdAt DateTime?
 }

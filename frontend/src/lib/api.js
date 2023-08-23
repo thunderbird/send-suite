@@ -34,7 +34,7 @@ export class ApiConnection {
     return resp.json();
   }
 
-  async createUpload(id, size, ownerId) {
+  async createUpload(id, size, ownerId, type) {
     // TODO: remove ownerId as arg
     // the backend should get this from session
     const resp = await this.callApi(
@@ -43,6 +43,7 @@ export class ApiConnection {
         id,
         size,
         ownerId,
+        type,
       },
       'POST'
     );
@@ -64,13 +65,23 @@ export class ApiConnection {
     }
   }
 
+  async getUploadMetadata(id) {
+    const resp = await this.callApi(`uploads/${id}/metadata`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: Could not get size of ${id}.`);
+      return null;
+    }
+  }
+
   async createItemInContainer(uploadId, containerId, name, type) {
     const resp = await this.callApi(
       `containers/${containerId}`,
       {
         uploadId,
         name,
-        type,
+        type, // this is 'FILE' or 'MESSAGE'
       },
       'POST'
     );

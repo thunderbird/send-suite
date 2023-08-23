@@ -13,6 +13,19 @@ const keychain = inject('keychain');
 console.log(keychain.value);
 
 const message = ref('');
+const fileBlob = ref(null);
+
+async function handleFile(event) {
+  const file = event.target.files[0];
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    const buffer = reader.result;
+    fileBlob.value = new Blob([buffer], { type: file.type });
+    fileBlob.value.name = file.name;
+  };
+  reader.readAsArrayBuffer(file);
+}
 
 async function sendBlob(blob) {
   console.log(`want to send blob of size ${blob.size}`);
@@ -28,25 +41,36 @@ async function sendBlob(blob) {
   return result.id;
 }
 
-async function sendMessage() {
+async function sendMessage(isText = true) {
   if (!props.conversationId) {
     console.log(`cannot send message - no conversation selected`);
     return;
   }
-
-  const filename = `${new Date().getTime()}.txt`;
-  const blob = new Blob([message.value], {
-    type: 'text/plain',
-  });
-  blob.name = filename;
+  let filename = `${new Date().getTime()}.txt`;
+  let blob;
+  if (isText) {
+    blob = new Blob([message.value], {
+      type: 'text/plain',
+    });
+    blob.name = filename;
+  } else {
+    blob = fileBlob.value;
+    filename = blob.name;
+  }
 
   const id = await sendBlob(blob);
   if (!id) {
     console.log(`could not upload`);
     return;
   }
-
-  const uploadResp = await api.createUpload(id, blob.size, user.value.id);
+  console.log(`🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀`);
+  console.log(blob.type);
+  const uploadResp = await api.createUpload(
+    id,
+    blob.size,
+    user.value.id,
+    blob.type
+  );
   console.log(uploadResp);
 
   if (id !== uploadResp.id) {
@@ -56,7 +80,7 @@ async function sendMessage() {
     id,
     props.conversationId,
     filename,
-    'MESSAGE'
+    isText ? 'MESSAGE' : 'FILE'
   );
   console.log(`🎉 here it is...`);
   console.log(itemResp);
@@ -65,6 +89,8 @@ async function sendMessage() {
 </script>
 
 <template>
+  <input type="file" @change="handleFile" />
+  <button @click="sendMessage(false)">Send File</button>
   <div v-if="props.conversationId" class="sticky bottom-0">
     <form @submit.prevent="sendMessage">
       <div class="border-t-2 border-gray-200 px-4 pt-4 mb-2 sm:mb-0 bg-white">
