@@ -78,19 +78,25 @@ watch(user, async () => {
         console.log(`heard from the messageSocket`);
         console.log(event.data);
         const data = JSON.parse(event.data);
-        if (data?.conversationId) {
-          switch (data?.type) {
-            case 'burn':
+        switch (data?.type) {
+          case 'burn':
+            if (data?.conversationId) {
               cleanAfterBurning(data.conversationId);
-              break;
-            case 'newMessage':
+            }
+            break;
+          case 'newMessage':
+            if (data?.conversationId) {
               newMessageCallbacks.forEach((cb) => {
                 cb(data.conversationId);
               });
-              break;
-            default:
-              break;
-          }
+            }
+            break;
+          case 'newChat':
+            newChatCallbacks.forEach((cb) => {
+              cb();
+            });
+          default:
+            break;
         }
       };
     }
@@ -122,6 +128,12 @@ provide('onNewMessage', onNewMessage);
 const newMessageCallbacks = [];
 async function onNewMessage(cb) {
   newMessageCallbacks.push(cb);
+}
+
+provide('onNewChat', onNewChat);
+const newChatCallbacks = [];
+async function onNewChat(cb) {
+  newChatCallbacks.push(cb);
 }
 
 provide('burn', burnAfterReading);

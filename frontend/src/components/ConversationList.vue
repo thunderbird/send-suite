@@ -1,15 +1,15 @@
 <script setup>
-import { ref, onMounted, inject } from 'vue';
+import { ref, onMounted, inject, watch } from 'vue';
 // import { generateRSAKeyPair, rsaToJwk } from '../lib/crypt';
 
 const emit = defineEmits(['setConversationId']);
 
 const api = inject('api');
 const onNewMessage = inject('onNewMessage');
+const onNewChat = inject('onNewChat');
 
 const { user } = inject('user');
 const conversations = ref([]);
-const mostRecent = ref({});
 
 // then, call "up" to the common container to set a convo/container id
 // which it should then pass down to the messageslist
@@ -35,6 +35,16 @@ async function loadAllConversations() {
   console.log(cons);
   conversations.value = cons;
 }
+
+watch(user, async () => {
+  if (user.value.id !== 0) {
+    console.log(api);
+    loadAllConversations();
+  }
+});
+onNewChat(() => {
+  loadAllConversations();
+});
 
 onMounted(async () => {
   console.log(api);
@@ -151,11 +161,9 @@ onMounted(async () => {
       <div class="w-full pb-2">
         <div class="flex justify-between">
           <span class="block ml-2 font-semibold text-gray-600">
-            {{ convo?.mostRecent?.upload?.owner?.email || '---' }}
-            {{ console.log('these are the items') }}
-            {{ console.log(convo?.value?.items) }}
+            {{ convo?.mostRecent?.upload?.owner?.email || '' }}
           </span>
-          <span class="block ml-2 text-sm text-gray-600">11 minutes</span>
+          <!-- <span class="block ml-2 text-sm text-gray-600">11 minutes</span> -->
         </div>
         <span class="block ml-2 text-sm text-gray-600">{{ convo.name }}</span>
       </div>

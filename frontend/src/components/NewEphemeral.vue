@@ -9,6 +9,7 @@ import {
 const api = inject('api');
 const { user } = inject('user');
 const keychain = inject('keychain');
+const messageSocket = inject('messageSocket');
 
 const password = ref('');
 const ephemeralHash = ref('');
@@ -74,6 +75,12 @@ async function requestEphemeralLink() {
       // const url = hash;
       ephemeralHash.value = url;
       message.value = '';
+      messageSocket.value.send(
+        JSON.stringify({
+          type: 'newChat',
+          // conversationId: props.conversationId,
+        })
+      );
     }
   }
 }

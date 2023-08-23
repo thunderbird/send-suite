@@ -4,6 +4,7 @@ import { inject } from 'vue';
 const api = inject('api');
 const { user } = inject('user');
 const keychain = inject('keychain');
+const messageSocket = inject('messageSocket');
 
 async function createConversation() {
   console.log(`you want to create a convo`);
@@ -13,6 +14,12 @@ async function createConversation() {
   await keychain.createAndAddContainerKey(response.id);
   await keychain.store();
   // loadAllConversations();
+  messageSocket.value.send(
+    JSON.stringify({
+      type: 'newChat',
+      // conversationId: props.conversationId,
+    })
+  );
 }
 </script>
 <template>
