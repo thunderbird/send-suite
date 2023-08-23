@@ -78,8 +78,19 @@ watch(user, async () => {
         console.log(`heard from the messageSocket`);
         console.log(event.data);
         const data = JSON.parse(event.data);
-        if (data?.type === 'burn' && data?.conversationId) {
-          cleanAfterBurning(data.conversationId);
+        if (data?.conversationId) {
+          switch (data?.type) {
+            case 'burn':
+              cleanAfterBurning(data.conversationId);
+              break;
+            case 'newMessage':
+              newMessageCallbacks.forEach((cb) => {
+                cb(data.conversationId);
+              });
+              break;
+            default:
+              break;
+          }
         }
       };
     }
@@ -106,6 +117,12 @@ onMounted(async () => {
   // console.log('TODO: get/set auth0 user');
   // console.log(`api should have a value now`);
 });
+
+provide('onNewMessage', onNewMessage);
+const newMessageCallbacks = [];
+async function onNewMessage(cb) {
+  newMessageCallbacks.push(cb);
+}
 
 provide('burn', burnAfterReading);
 async function burnAfterReading(conversationId) {

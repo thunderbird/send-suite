@@ -15,6 +15,7 @@ const props = defineProps({
 const { user } = inject('user');
 const api = inject('api');
 const keychain = inject('keychain');
+const onNewMessage = inject('onNewMessage');
 const messageList = ref();
 const messageContainer = ref(null);
 
@@ -110,9 +111,13 @@ onMounted(() => {
     return;
   }
   getContainerWithItems(props.conversationId);
-  setInterval(() => {
-    getContainerWithItems(props.conversationId);
-  }, 500);
+  onNewMessage((id) => {
+    console.log(`got new message notification for ${id}`);
+    if (parseInt(id) === parseInt(props.conversationId)) {
+      console.log(`it matches, so I'm updating the container`);
+      getContainerWithItems(props.conversationId);
+    }
+  });
 });
 
 watch(

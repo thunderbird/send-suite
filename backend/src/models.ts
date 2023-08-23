@@ -489,30 +489,35 @@ export async function burnEphemeralConversation(containerId: number) {
     return null;
   }
   console.log(`✅ deleting container ${containerId}`);
-  users.forEach(async ({ id, tier }) => {
-    await prisma.groupUser.deleteMany({
-      where: {
-        groupId: container.group.id,
-        // don't specify the user id
-        // remove all groupUser records for this group
-        // userId: id,
-      },
-    });
-    console.log(
-      `✅ deleted groupUser relations for group ${container.group.id}`
-    );
-  });
-  // must do *after* deleting groupUser
-  users.forEach(async ({ id, tier }) => {
-    if (tier === UserTier.EPHEMERAL) {
-      await prisma.user.delete({
+  await Promise.all(
+    users.map(async ({ id, tier }) => {
+      return await prisma.groupUser.deleteMany({
         where: {
-          id,
+          groupId: container.group.id,
+          // don't specify the user id
+          // remove all groupUser records for this group
+          // userId: id,
         },
       });
-      console.log(`✅ deleted ephemeral user ${id}`);
-    }
-  });
+      console.log(
+        `✅ deleted groupUser relations for group ${container.group.id}`
+      );
+    })
+  );
+
+  // must do *after* deleting groupUser
+  await Promise.all(
+    users
+      .filter((user) => user.tier === UserTier.EPHEMERAL)
+      .map(async ({ id, tier }) => {
+        await prisma.user.delete({
+          where: {
+            id,
+          },
+        });
+        console.log(`✅ deleted ephemeral user ${id}`);
+      })
+  );
 
   await prisma.group.delete({
     where: {

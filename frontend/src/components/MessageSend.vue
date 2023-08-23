@@ -10,6 +10,8 @@ const props = defineProps({
 const api = inject('api');
 const { user } = inject('user');
 const keychain = inject('keychain');
+const messageSocket = inject('messageSocket');
+
 console.log(keychain.value);
 
 const message = ref('');
@@ -92,6 +94,12 @@ async function sendMessage(isText = true) {
   fileBlob.value = null;
   msgInput.value.disabled = false;
   msgInput.value.focus();
+  messageSocket.value.send(
+    JSON.stringify({
+      type: 'newMessage',
+      conversationId: props.conversationId,
+    })
+  );
 }
 </script>
 
