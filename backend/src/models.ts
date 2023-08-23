@@ -223,8 +223,29 @@ export async function getAllUserGroupContainers(
 
   return prisma.container.findMany({
     where,
-    include: {
-      items: true,
+    // include: {
+    //   items: true,
+    // },
+    select: {
+      id: true,
+      items: {
+        select: {
+          name: true,
+          // uploadId: true,
+          // createdAt: true,
+          // type: true,
+          upload: {
+            select: {
+              // type: true,
+              owner: {
+                select: {
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+      },
     },
   });
 }

@@ -5,8 +5,11 @@ import { ref, onMounted, inject } from 'vue';
 const emit = defineEmits(['setConversationId']);
 
 const api = inject('api');
+const onNewMessage = inject('onNewMessage');
+
 const { user } = inject('user');
 const conversations = ref([]);
+const mostRecent = ref({});
 
 // then, call "up" to the common container to set a convo/container id
 // which it should then pass down to the messageslist
@@ -26,14 +29,22 @@ async function loadAllConversations() {
     return;
   }
   for (let c of cons) {
+    c.mostRecent = c?.items[c.items.length - 1];
     console.log(c);
   }
+  console.log(cons);
   conversations.value = cons;
 }
 
 onMounted(async () => {
   console.log(api);
   loadAllConversations();
+
+  onNewMessage((id) => {
+    // debugger;
+    console.log(`got new message notification for ${id}`);
+    loadAllConversations();
+  });
 });
 </script>
 
@@ -139,7 +150,11 @@ onMounted(async () => {
       />
       <div class="w-full pb-2">
         <div class="flex justify-between">
-          <span class="block ml-2 font-semibold text-gray-600">Bob User</span>
+          <span class="block ml-2 font-semibold text-gray-600">
+            {{ convo?.mostRecent?.upload?.owner?.email || '---' }}
+            {{ console.log('these are the items') }}
+            {{ console.log(convo?.value?.items) }}
+          </span>
           <span class="block ml-2 text-sm text-gray-600">11 minutes</span>
         </div>
         <span class="block ml-2 text-sm text-gray-600">{{ convo.name }}</span>
