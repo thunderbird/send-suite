@@ -488,7 +488,7 @@ export async function burnEphemeralConversation(containerId: number) {
     console.log(`👿👿👿👿 oh noes.`);
     return null;
   }
-
+  console.log(`✅ deleting container ${containerId}`);
   users.forEach(async ({ id, tier }) => {
     await prisma.groupUser.deleteMany({
       where: {
@@ -501,6 +501,9 @@ export async function burnEphemeralConversation(containerId: number) {
     console.log(
       `✅ deleted groupUser relations for group ${container.group.id}`
     );
+  });
+  // must do *after* deleting groupUser
+  users.forEach(async ({ id, tier }) => {
     if (tier === UserTier.EPHEMERAL) {
       await prisma.user.delete({
         where: {
@@ -516,10 +519,9 @@ export async function burnEphemeralConversation(containerId: number) {
       id: container.group.id,
     },
   });
+  console.log(`✅ deleted group user ${container.group.id}`);
 
+  // Basically, if we got this far, everything was burned successfully.
+  // TODO: add some sort of retry mechanism.
   return deleteResp;
-
-  // return {
-  //   container,
-  // };
 }

@@ -90,7 +90,7 @@ async function acceptEphemeralLink() {
     if (user?.value?.id) {
       console.log(`Using existing user id`);
       id = user.value.id;
-      debugger;
+      // debugger;
     } else {
       const email = new Date().getTime() + '@example.com';
       const resp = await api.createUser(email, jwkPublicKey, true);

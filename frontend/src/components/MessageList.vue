@@ -192,7 +192,7 @@ watch(
             ></path>
           </svg>
         </button> -->
-        <BurnButton />
+        <BurnButton :conversationId="conversationId" />
       </div>
     </div>
     <div
