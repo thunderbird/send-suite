@@ -53,15 +53,16 @@ export default class Sender extends Nanobus {
 
   The actual work of uploading is via `uploadWs`
   */
-  async upload(payload, bearerToken, password) {
+  async upload(blob, bearerToken, password) {
     if (this.cancelled) {
       throw new Error(0);
     }
     this.msg = "encryptingFile";
     this.emit("encrypting");
-    const totalSize = encryptedSize(payload.size);
-    const encStream = await this.keychain.encryptStream(payload.stream);
-    const metadata = await this.keychain.encryptMetadata(payload);
+    const totalSize = encryptedSize(blob.size);
+    const encStream = await this.keychain.encryptStream(blob);
+
+    const metadata = await this.keychain.encryptMetadata(blob);
     const authKeyB64 = await this.keychain.authKeyB64();
 
     console.log(`about to call uploadWs()`);
@@ -69,8 +70,8 @@ export default class Sender extends Nanobus {
       encStream,
       metadata,
       authKeyB64,
-      payload.timeLimit,
-      payload.dlimit,
+      blob.timeLimit,
+      blob.dlimit,
       bearerToken,
       (p) => {
         this.progress = [p, totalSize];
@@ -90,22 +91,22 @@ export default class Sender extends Nanobus {
       this.uploadRequest = null;
       this.progress = [1, 1];
       const secretKey = arrayToB64(this.keychain.rawSecret);
-
+      return;
       const ownedFile = new OwnedFile(this.fileManager, {
         id: result.id,
         url: `${result.url}#${secretKey}`, // HERE is where the URL is stamped onto the file
-        name: payload.name,
-        size: payload.size,
-        manifest: payload.manifest,
+        name: blob.name,
+        size: blob.size,
+        manifest: blob.manifest,
         time: result.duration,
-        speed: payload.size / (result.duration / 1000),
+        speed: blob.size / (result.duration / 1000),
         createdAt: Date.now(),
-        expiresAt: Date.now() + payload.timeLimit * 1000,
+        expiresAt: Date.now() + blob.timeLimit * 1000,
         secretKey: secretKey,
         nonce: this.keychain.nonce,
         ownerToken: result.ownerToken,
-        dlimit: payload.dlimit,
-        timeLimit: payload.timeLimit,
+        dlimit: blob.dlimit,
+        timeLimit: blob.timeLimit,
       });
       console.log(`
       ⁉️⁉️⁉️ did you send a password? ${password}

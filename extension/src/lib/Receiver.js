@@ -87,8 +87,10 @@ export default class Receiver extends Nanobus {
     });
   }
 
+  // noSave will be true if it's a message
   async downloadBlob(noSave = false) {
     this.state = "downloading";
+    debugger;
     this.downloadRequest = await this.fileManager.downloadFile(
       this.fileInfo.id,
       this.keychain,
@@ -99,12 +101,16 @@ export default class Receiver extends Nanobus {
     );
     try {
       const ciphertext = await this.downloadRequest.result;
+      // ciphertext is a blob
+      debugger;
       this.downloadRequest = null;
       this.msg = "decryptingFile";
       this.state = "decrypting";
       this.emit("decrypting");
       let size = this.fileInfo.size;
 
+      // I turn the blob into a stream
+      // then I decrypt the stream
       let plainStream = this.keychain.decryptStream(blobStream(ciphertext));
       if (this.fileInfo.type === "send-archive") {
         const zip = new Zip(this.fileInfo.manifest, plainStream);
@@ -112,8 +118,11 @@ export default class Receiver extends Nanobus {
         size = zip.size;
       }
 
+      // the stream is turned into an array buffer
       const plaintext = await streamToArrayBuffer(plainStream, size);
+      debugger;
       if (!noSave) {
+        // For saving files
         return await saveFile({
           // plaintext: await streamToArrayBuffer(blobStream(ciphertext), size),
           plaintext,
@@ -121,6 +130,7 @@ export default class Receiver extends Nanobus {
           type: this.fileInfo.type,
         });
       } else {
+        // Used for messages
         const decoder = new TextDecoder();
         const plaintextString = decoder.decode(plaintext);
         return plaintextString;

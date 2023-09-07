@@ -248,7 +248,7 @@ export class FileManager {
   // Calls upload()
   // Returns a cancel() function and the result of upload()
   async uploadWs(
-    encrypted,
+    encStream,
     metadata,
     verifierB64,
     timeLimit,
@@ -264,7 +264,7 @@ export class FileManager {
       },
 
       result: await this.upload(
-        encrypted,
+        encStream,
         metadata,
         verifierB64,
         timeLimit,

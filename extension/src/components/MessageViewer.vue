@@ -15,9 +15,13 @@ const isMessage = (fileType) =>
   ["text/plain", "application/html"].includes(fileType);
 
 async function doDownload() {
+  if (!props.url) {
+    return;
+  }
   const url = new URL(props.url);
   const secretKey = url.hash.substring(1);
   const id = url.pathname.split("/")[2];
+
   const result = await fetch(url.href, {
     method: "GET",
     headers: {
@@ -25,6 +29,7 @@ async function doDownload() {
       "X-Requested-With": "XMLHttpRequest",
     },
   });
+  // This gets us the metadata
   if (result.ok) {
     const data = await result.json();
     if (data.metadata.pwd && !password.value) {

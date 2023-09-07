@@ -1,0 +1,9 @@
+export const CONTAINER_TYPE = {
+  CONVERSATION: 'CONVERSATION',
+  FOLDER: 'FOLDER',
+};
+
+export const ITEM_TYPE = {
+  MESSAGE: 'MESSAGE',
+  FILE: 'FILE',
+};
