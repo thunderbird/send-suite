@@ -77,9 +77,15 @@ router.get('/owner/:userId', async (req, res) => {
 
 router.post('/:containerId', async (req, res) => {
   const { containerId } = req.params;
-  const { name, uploadId, type } = req.body;
+  const { name, uploadId, type, wrappedKey } = req.body;
   try {
-    const item = await createItem(name, parseInt(containerId), uploadId, type);
+    const item = await createItem(
+      name,
+      parseInt(containerId),
+      uploadId,
+      type,
+      wrappedKey
+    );
     res.status(200).json(item);
     console.log(`just returned item as json for item create`);
     console.log(item);

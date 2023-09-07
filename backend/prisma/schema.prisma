@@ -109,6 +109,7 @@ enum ItemType {
 model Item {
   id            Int           @id @default(autoincrement())
   name          String
+  wrappedKey    String
   containerId   Int
   container     Container     @relation(fields: [containerId], references: [id], onDelete: Cascade)
   uploadId      String

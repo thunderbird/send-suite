@@ -129,12 +129,14 @@ export async function createItem(
   name: string,
   containerId: number,
   uploadId: string,
-  type: ItemType
+  type: ItemType,
+  wrappedKey: string
 ) {
   return prisma.item.create({
     data: {
       createdAt: new Date(),
       name,
+      wrappedKey,
       // containerId,
       // uploadId,
       type,

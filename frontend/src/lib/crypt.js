@@ -215,7 +215,24 @@ export async function generateAESKey() {
         length: 256, // can be  128, 192, or 256
       },
       true, // so we can export
+      // can I use AES keys for wrapping and unwrapping?
       ['encrypt', 'decrypt']
+    );
+    return key;
+  } catch (err) {
+    console.error(err);
+  }
+}
+export async function generateAESWrappingKey() {
+  try {
+    const key = await window.crypto.subtle.generateKey(
+      {
+        name: 'AES-KW',
+        length: 256,
+      },
+      true, // so we can export
+      // can I use AES keys for wrapping and unwrapping?
+      ['wrapKey', 'unwrapKey']
     );
     return key;
   } catch (err) {

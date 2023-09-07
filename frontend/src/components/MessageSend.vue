@@ -33,14 +33,14 @@ async function handleFile(event) {
   msgInput.value.disabled = true;
 }
 
-async function sendBlob(blob) {
+async function sendBlob(blob, aesKey) {
   console.log(`want to send blob of size ${blob.size}`);
   console.log(blob);
 
-  const aesKey = await keychain.get(props.conversationId);
-  if (!aesKey) {
-    return;
-  }
+  // const aesKey = await keychain.get(props.conversationId);
+  // if (!aesKey) {
+  //   return;
+  // }
   const stream = blobStream(blob);
   const result = await upload(stream, aesKey);
   console.log(result);
@@ -63,6 +63,8 @@ async function sendMessage(isText = true) {
     blob = fileBlob.value;
     filename = blob.name;
   }
+
+  // generate new AES key for this upload
 
   const id = await sendBlob(blob);
   if (!id) {

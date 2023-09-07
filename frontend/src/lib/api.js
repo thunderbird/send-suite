@@ -75,13 +75,14 @@ export class ApiConnection {
     }
   }
 
-  async createItemInContainer(uploadId, containerId, name, type) {
+  async createItemInContainer(uploadId, containerId, name, type, wrappedKey) {
     const resp = await this.callApi(
       `containers/${containerId}`,
       {
         uploadId,
         name,
         type, // this is 'FILE' or 'MESSAGE'
+        wrappedKey,
       },
       'POST'
     );

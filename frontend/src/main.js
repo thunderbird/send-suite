@@ -2,11 +2,37 @@ import { createApp } from 'vue';
 import './style.css';
 import App from './App.vue';
 import router from './router';
-// import {
-//   generateAESKey,
-//   loadKeyFromStorage,
-//   saveKeyToStorage,
-// } from './lib/crypt';
+import {
+  generateAESKey,
+  generateAESWrappingKey,
+  compareKeys,
+} from './lib/crypt';
+
+console.log(`ready to 🤡`);
+window.generateAESKey = generateAESKey;
+window.generateAESWrappingKey = generateAESWrappingKey;
+
+let aesKey = await generateAESKey();
+let wrappingKey = await generateAESWrappingKey();
+let wrappedKey = await crypto.subtle.wrapKey(
+  'raw',
+  aesKey,
+  wrappingKey,
+  'AES-KW'
+);
+let unwrappedKey = await crypto.subtle.unwrapKey(
+  'raw',
+  wrappedKey,
+  wrappingKey,
+  'AES-KW',
+  'AES-GCM',
+  true,
+  ['encrypt', 'decrypt']
+);
+
+const isSame = await compareKeys(aesKey, unwrappedKey);
+console.log(`isSame? ${isSame}`);
+
 // import { encryptStream, decryptStream } from './lib/ece';
 // import { blobStream } from './lib/streams';
 // import { streamToArrayBuffer } from './lib/utils';
@@ -36,6 +62,6 @@ import router from './router';
 // // debugger;
 // const plaintext = await streamToArrayBuffer(decStream, blob.size);
 // console.log(plaintext);
-const app = createApp(App);
-app.use(router);
-app.mount('#app');
+// const app = createApp(App);
+// app.use(router);
+// app.mount('#app');
