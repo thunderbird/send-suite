@@ -20,7 +20,7 @@ class Content {
 }
 
 class Container {
-  async generateWrappingKey() {
+  async generateContainerKey() {
     try {
       const key = await crypto.subtle.generateKey(
         {
@@ -37,12 +37,12 @@ class Container {
   }
 
   // Wrap an AES-GCM (content) key
-  async wrap(key, wrappingKey) {
+  async wrapContentKey(key, wrappingKey) {
     return await crypto.subtle.wrapKey('raw', key, wrappingKey, 'AES-KW');
   }
 
   // Unwrap an AES-GCM (content) key
-  async unwrap(wrappedKey, wrappingKey) {
+  async unwrapContentKey(wrappedKey, wrappingKey) {
     return await crypto.subtle.unwrapKey(
       'raw',
       wrappedKey,
@@ -56,7 +56,7 @@ class Container {
 }
 
 class Password {
-  async wrap(keyToWrap, password, salt) {
+  async wrapContainerKey(keyToWrap, password, salt) {
     // Derive key using the password and the salt.
     const keyMaterial = await getKeyMaterial(password);
     const wrappingKey = await getKey(keyMaterial, salt);
@@ -64,7 +64,7 @@ class Password {
     return crypto.subtle.wrapKey('raw', keyToWrap, wrappingKey, 'AES-KW');
   }
 
-  async unwrap(wrappedKey, password, salt) {
+  async unwrapContainerKey(wrappedKey, password, salt) {
     // Derive key using the password and the salt.
     const unwrappingKey = await getUnwrappingKey(password, salt);
 
@@ -98,7 +98,7 @@ class Rsa {
 
   // Wraps an AES-KW (container) key
   // Returns a string version of key
-  async wrap(aesKey, publicKey) {
+  async wrapContainerKey(aesKey, publicKey) {
     const wrappedKey = await crypto.subtle.wrapKey('jwk', aesKey, publicKey, {
       // Wrapping details
       name: 'RSA-OAEP',
@@ -112,7 +112,7 @@ class Rsa {
   }
 
   // Unwraps an AES-KW (container) key
-  async unwrap(wrappedKeyStr, privateKey) {
+  async unwrapContainerKey(wrappedKeyStr, privateKey) {
     const unwrappedKey = await crypto.subtle.unwrapKey(
       'jwk', // The format of the key to be unwrapped
       base64ToArrayBuffer(wrappedKeyStr), // The wrapped key
