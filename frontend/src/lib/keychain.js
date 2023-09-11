@@ -45,14 +45,22 @@ class Container {
 
   // Wrap an AES-GCM (content) key
   async wrapContentKey(key, wrappingKey) {
-    return await crypto.subtle.wrapKey('raw', key, wrappingKey, 'AES-KW');
+    const wrappedKey = await crypto.subtle.wrapKey(
+      'raw',
+      key,
+      wrappingKey,
+      'AES-KW'
+    );
+    // Transferring buffer to string to ease the storage
+    const wrappedKeyStr = arrayBufferToBase64(wrappedKey);
+    return wrappedKeyStr;
   }
 
   // Unwrap an AES-GCM (content) key
-  async unwrapContentKey(wrappedKey, wrappingKey) {
+  async unwrapContentKey(wrappedKeyStr, wrappingKey) {
     return await crypto.subtle.unwrapKey(
       'raw',
-      wrappedKey,
+      base64ToArrayBuffer(wrappedKeyStr),
       wrappingKey,
       'AES-KW',
       'AES-GCM',
@@ -68,16 +76,25 @@ class Password {
     const keyMaterial = await getKeyMaterial(password);
     const wrappingKey = await getKey(keyMaterial, salt);
 
-    return crypto.subtle.wrapKey('raw', keyToWrap, wrappingKey, 'AES-KW');
+    const wrappedKey = await crypto.subtle.wrapKey(
+      'raw',
+      keyToWrap,
+      wrappingKey,
+      'AES-KW'
+    );
+    // Transferring buffer to string to ease the storage
+    const wrappedKeyStr = arrayBufferToBase64(wrappedKey);
+
+    return wrappedKeyStr;
   }
 
-  async unwrapContainerKey(wrappedKey, password, salt) {
+  async unwrapContainerKey(wrappedKeyStr, password, salt) {
     // Derive key using the password and the salt.
     const unwrappingKey = await getUnwrappingKey(password, salt);
 
     return crypto.subtle.unwrapKey(
       'raw', // import format
-      wrappedKey, // ArrayBuffer representing key to unwrap
+      base64ToArrayBuffer(wrappedKeyStr), // ArrayBuffer representing key to unwrap
       unwrappingKey, // CryptoKey representing key encryption key
       'AES-KW', // algorithm identifier for key encryption key
       'AES-KW', // algorithm identifier for key to unwrap
@@ -176,7 +193,6 @@ export class Keychain {
       this.rsa.publicKey
     );
     this._keys[id] = wrappedKeyStr;
-    console.log(this._keys);
   }
 
   async get(id) {
@@ -191,7 +207,16 @@ export class Keychain {
     return unwrappedKey;
   }
 
-  remove(id) {}
+  remove(id) {
+    delete this._keys[id];
+    // const index = `${prefix}${id}`;
+    // this.storage.remove(index);
+  }
+
+  async newKeyForContainer(id) {
+    const key = await this.container.generateContainerKey();
+    await this.add(id, key);
+  }
 }
 
 export class Util {

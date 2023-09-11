@@ -52,6 +52,22 @@ async function sendMessage(isText = true) {
     console.log(`cannot send message - no conversation selected`);
     return;
   }
+
+  // get convo key
+  const wrappingKey = await keychain.get(props.conversationId);
+  if (!wrappingKey) {
+    console.log(`cannot send message - no key for conversation`);
+  }
+
+  // generate new AES key for the uploaded Content
+  const key = await keychain.content.generateKey();
+
+  // wrap the key for inclusion with the Item
+  const wrappedKeyStr = await keychain.container.wrapContentKey(
+    key,
+    wrappingKey
+  );
+
   let filename = `${new Date().getTime()}.txt`;
   let blob;
   if (isText) {
@@ -64,17 +80,14 @@ async function sendMessage(isText = true) {
     filename = blob.name;
   }
 
-  // generate new AES key for this upload
-  // const aesKey = await
-
-  const id = await sendBlob(blob);
+  const id = await sendBlob(blob, key);
   if (!id) {
     console.log(`could not upload`);
     return;
   }
   console.log(`🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀`);
   console.log(blob.type);
-  const uploadResp = await api.createUpload(
+  const uploadResp = await api.createContent(
     id,
     blob.size,
     user.value.id,
@@ -85,11 +98,13 @@ async function sendMessage(isText = true) {
   if (id !== uploadResp.id) {
     debugger;
   }
+
   const itemResp = await api.createItemInContainer(
     id,
     props.conversationId,
     filename,
-    isText ? 'MESSAGE' : 'FILE'
+    isText ? 'MESSAGE' : 'FILE',
+    wrappedKeyStr
   );
   console.log(`🎉 here it is...`);
   console.log(itemResp);

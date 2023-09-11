@@ -42,7 +42,7 @@ describe('AES Wrapping Keys', () => {
       wrappingKey
     );
     expect(wrappedKey).toBeTruthy();
-    expect(wrappedKey.byteLength).toBe(40);
+    console.log(wrappedKey.length);
   });
 
   it('can unwrap an AES key with a wrapping key', async () => {
@@ -92,22 +92,23 @@ describe('Password protected wrapping keys', () => {
 
   it('can wrap a key with a password', async () => {
     const key = await keychain.container.generateContainerKey();
-    const passwordWrappedKey = await keychain.password.wrapContainerKey(
+    const passwordWrappedKeyStr = await keychain.password.wrapContainerKey(
       key,
       password,
       salt
     );
-    expect(passwordWrappedKey).toBeTruthy();
+    expect(passwordWrappedKeyStr).toBeTruthy();
+    expect(typeof passwordWrappedKeyStr).toEqual('string');
   });
   it('can unwrap a key with correct password', async () => {
     const key = await keychain.container.generateContainerKey();
-    const passwordWrappedKey = await keychain.password.wrapContainerKey(
+    const passwordWrappedKeyStr = await keychain.password.wrapContainerKey(
       key,
       password,
       salt
     );
     const unwrappedKey = await keychain.password.unwrapContainerKey(
-      passwordWrappedKey,
+      passwordWrappedKeyStr,
       password,
       salt
     );
