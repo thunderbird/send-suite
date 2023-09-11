@@ -1,7 +1,7 @@
-//
+// Using this instead of `window.crypto` for automated tests.
 import crypto from 'crypto';
 
-class Upload {
+class Content {
   async generateKey() {
     try {
       const key = await crypto.subtle.generateKey(
@@ -36,10 +36,12 @@ class Container {
     }
   }
 
+  // Wrap an AES-GCM (content) key
   async wrap(key, wrappingKey) {
     return await crypto.subtle.wrapKey('raw', key, wrappingKey, 'AES-KW');
   }
 
+  // Unwrap an AES-GCM (content) key
   async unwrap(wrappedKey, wrappingKey) {
     return await crypto.subtle.unwrapKey(
       'raw',
@@ -54,11 +56,8 @@ class Container {
 }
 
 class Password {
-  /*
-Wrap the given key.
-*/
   async wrap(keyToWrap, password, salt) {
-    // get the key encryption key
+    // Derive key using the password and the salt.
     const keyMaterial = await getKeyMaterial(password);
     const wrappingKey = await getKey(keyMaterial, salt);
 
@@ -66,21 +65,17 @@ Wrap the given key.
   }
 
   async unwrap(wrappedKey, password, salt) {
-    // 1. get the unwrapping key
+    // Derive key using the password and the salt.
     const unwrappingKey = await getUnwrappingKey(password, salt);
-    // 2. initialize the wrapped key
-    // const wrappedKeyBuffer = base64ToArrayBuffer(wrappedKey);
-    // const wrappedKeyBuffer = bytesToArrayBuffer(wrappedKey);
 
-    // 3. unwrap the key
     return crypto.subtle.unwrapKey(
       'raw', // import format
       wrappedKey, // ArrayBuffer representing key to unwrap
       unwrappingKey, // CryptoKey representing key encryption key
       'AES-KW', // algorithm identifier for key encryption key
-      'AES-GCM', // algorithm identifier for key to unwrap
+      'AES-KW', // algorithm identifier for key to unwrap
       true, // extractability of key to unwrap
-      ['encrypt', 'decrypt'] // key usages for key to unwrap
+      ['wrapKey', 'unwrapKey'] // key usages for key to unwrap
     );
   }
 }
@@ -101,8 +96,9 @@ class Rsa {
     return keyPair;
   }
 
+  // Wraps an AES-KW (container) key
   // Returns a string version of key
-  async wrapKey(aesKey, publicKey) {
+  async wrap(aesKey, publicKey) {
     const wrappedKey = await crypto.subtle.wrapKey('jwk', aesKey, publicKey, {
       // Wrapping details
       name: 'RSA-OAEP',
@@ -115,7 +111,8 @@ class Rsa {
     return wrappedKeyStr;
   }
 
-  async unwrapKey(wrappedKeyStr, privateKey) {
+  // Unwraps an AES-KW (container) key
+  async unwrap(wrappedKeyStr, privateKey) {
     const unwrappedKey = await crypto.subtle.unwrapKey(
       'jwk', // The format of the key to be unwrapped
       base64ToArrayBuffer(wrappedKeyStr), // The wrapped key
@@ -141,9 +138,8 @@ class Rsa {
 // Should I rename this to KeyManager?
 export class Keychain {
   constructor() {
-    // also, I feel like "Upload" isn't a good name
-    // b/c though it's called an 'upload'...it's a StoredItem or something...
-    this.upload = new Upload();
+    //
+    this.content = new Content();
     this.container = new Container();
     this.password = new Password();
     this.rsa = new Rsa();
