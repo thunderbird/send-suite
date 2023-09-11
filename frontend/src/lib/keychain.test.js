@@ -168,3 +168,40 @@ describe('RSA Keypairs', () => {
     }).rejects.toThrowError();
   });
 });
+
+describe('Keychain methods', async () => {
+  it('can add a key to the keychain', async () => {
+    const keychain = new Keychain();
+    // Keys are stored internally in keychain.rsa.{ publicKey, privateKey }
+    await keychain.rsa.generateKeyPair();
+    const id = 1;
+    const key = await keychain.container.generateContainerKey();
+    await keychain.add(id, key);
+    expect(Object.keys(keychain._keys).length).toEqual(1);
+  });
+  it('can add multiple keys to the keychain', async () => {
+    const keychain = new Keychain();
+    // Keys are stored internally in keychain.rsa.{ publicKey, privateKey }
+    await keychain.rsa.generateKeyPair();
+    const howMany = 10;
+    const range = Array.from(Array(howMany).keys());
+    await Promise.all(
+      range.map(async (_, i) => {
+        let key = await keychain.container.generateContainerKey();
+        return keychain.add(i, key);
+      })
+    );
+
+    expect(Object.keys(keychain._keys).length).toEqual(howMany);
+  });
+  it('can get same key from the keychain', async () => {
+    const keychain = new Keychain();
+    // Keys are stored internally in keychain.rsa.{ publicKey, privateKey }
+    await keychain.rsa.generateKeyPair();
+    const id = 1;
+    const key = await keychain.container.generateContainerKey();
+    await keychain.add(id, key);
+    const sameKey = await keychain.get(id);
+    expect(await Util.compareKeys(key, sameKey)).toBeTruthy();
+  });
+});

@@ -17,6 +17,7 @@ publicKey: ${this.publicKey}
 privateKey: ${this.privateKey}`);
     this.showKeys();
   }
+
   showKeys() {
     const ids = Object.keys(this.keys);
     if (ids.length === 0) {
@@ -223,6 +224,8 @@ export async function generateAESKey() {
     console.error(err);
   }
 }
+
+// Use this for container keys (KEK)
 export async function generateAESWrappingKey() {
   try {
     const key = await window.crypto.subtle.generateKey(
@@ -240,6 +243,7 @@ export async function generateAESWrappingKey() {
   }
 }
 
+// Used for ephemeral chat
 export async function wrapAESKey(aesKey, publicKey) {
   const wrappedKey = await window.crypto.subtle.wrapKey(
     'jwk',
@@ -258,6 +262,7 @@ export async function wrapAESKey(aesKey, publicKey) {
   return wrappedKeyStr;
 }
 
+// Used for ephemeral chat
 export async function unwrapAESKey(wrappedAESKey, privateKey) {
   const unwrappedKey = await window.crypto.subtle.unwrapKey(
     'jwk', // The format of the key to be unwrapped

@@ -1,5 +1,12 @@
-// Using this instead of `window.crypto` for automated tests.
-import crypto from 'crypto';
+// When running automated tests, use crypto module instead of `window.crypto`
+import nodeCrypto from 'crypto';
+
+let crypto = nodeCrypto;
+try {
+  crypto = window.crypto;
+} catch (e) {
+  // console.log(`using node crypto module`);
+}
 
 class Content {
   async generateKey() {
@@ -82,7 +89,7 @@ class Password {
 
 class Rsa {
   async generateKeyPair() {
-    const keyPair = await crypto.subtle.generateKey(
+    const { publicKey, privateKey } = await crypto.subtle.generateKey(
       {
         name: 'RSA-OAEP',
         modulusLength: 2048, //can be 1024, 2048, or 4096
@@ -93,7 +100,18 @@ class Rsa {
       ['wrapKey', 'unwrapKey'] //can be any combination of "encrypt", "decrypt", "wrapKey", or "unwrapKey"
     );
 
-    return keyPair;
+    this.publicKey = publicKey;
+    this.privateKey = privateKey;
+
+    return { publicKey, privateKey };
+  }
+
+  async getPublicKeyJwk() {
+    if (!this.publicKey) {
+      return null;
+    }
+    const publicKeyJwk = await rsaToJwk(this.publicKey);
+    return publicKeyJwk;
   }
 
   // Wraps an AES-KW (container) key
@@ -143,7 +161,37 @@ export class Keychain {
     this.container = new Container();
     this.password = new Password();
     this.rsa = new Rsa();
+
+    this._keys = {};
+    this._onloadArray = [];
   }
+
+  async add(id, key) {
+    if (!this.rsa.publicKey) {
+      throw Error('Missing public key, required for wrapping AES key');
+    }
+
+    const wrappedKeyStr = await this.rsa.wrapContainerKey(
+      key,
+      this.rsa.publicKey
+    );
+    this._keys[id] = wrappedKeyStr;
+    console.log(this._keys);
+  }
+
+  async get(id) {
+    const wrappedKeyStr = this._keys[id];
+    if (!wrappedKeyStr) {
+      throw Error('Key does not exist');
+    }
+    const unwrappedKey = await this.rsa.unwrapContainerKey(
+      wrappedKeyStr,
+      this.rsa.privateKey
+    );
+    return unwrappedKey;
+  }
+
+  remove(id) {}
 }
 
 export class Util {
@@ -244,6 +292,10 @@ export function base64ToArrayBuffer(base64) {
     byteArray[i] = byteString.charCodeAt(i);
   }
   return byteArray.buffer;
+}
+
+async function rsaToJwk(key) {
+  return await crypto.subtle.exportKey('jwk', key);
 }
 
 // Used for Util.compareKeys()

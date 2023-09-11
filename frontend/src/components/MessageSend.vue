@@ -65,6 +65,7 @@ async function sendMessage(isText = true) {
   }
 
   // generate new AES key for this upload
+  // const aesKey = await
 
   const id = await sendBlob(blob);
   if (!id) {

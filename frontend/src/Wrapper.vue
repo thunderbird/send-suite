@@ -12,7 +12,7 @@ import { ref, onMounted, provide, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ApiConnection } from './lib/api';
 import Storage from './lib/storage/localStorage';
-import { Keychain } from './lib/crypt';
+import { Keychain } from './lib/keychain';
 import { createMessageSocket } from './lib/messageSocket';
 const router = useRouter();
 
@@ -66,7 +66,8 @@ provide('user', {
 
 const isInitComplete = ref({});
 
-const keychain = new Keychain(new Storage());
+// const keychain = new Keychain(new Storage());
+const keychain = new Keychain();
 provide('keychain', keychain);
 
 watch(user, async () => {
@@ -104,9 +105,9 @@ watch(user, async () => {
   }
 });
 
-keychain.addOnload(() => {
-  console.log(`confirming keychain.addOnload works`);
-});
+// keychain.addOnload(() => {
+//   console.log(`confirming keychain.addOnload works`);
+// });
 
 onMounted(async () => {
   try {
