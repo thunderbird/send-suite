@@ -1,5 +1,5 @@
 import { expect, describe, it } from 'vitest';
-import { Keychain } from './keychain';
+import { Keychain, Util } from './keychain';
 
 describe('Key Generation', () => {
   const keychain = new Keychain();
@@ -17,7 +17,22 @@ describe('Key Generation', () => {
   });
 });
 
-describe('Wrapping and unwrapping an AES key', () => {
+describe('Utility class', () => {
+  const keychain = new Keychain();
+  it('can determine that keys are the same', async () => {
+    const key = await keychain.upload.generateKey();
+    const result = await Util.compareKeys(key, key);
+    expect(result).toBeTruthy();
+  });
+  it('can determine that keys are different', async () => {
+    const key = await keychain.upload.generateKey();
+    const key2 = await keychain.upload.generateKey();
+    const result = await await Util.compareKeys(key, key2);
+    expect(result).toBeFalsy();
+  });
+});
+
+describe('AES Wrapping Keys', () => {
   const keychain = new Keychain();
   it('can wrap an AES key with a wrapping key', async () => {
     const key = await keychain.upload.generateKey();
@@ -26,6 +41,7 @@ describe('Wrapping and unwrapping an AES key', () => {
     expect(wrappedKey).toBeTruthy();
     expect(wrappedKey.byteLength).toBe(40);
   });
+
   it('can unwrap an AES key with a wrapping key', async () => {
     const key = await keychain.upload.generateKey();
     const wrappingKey = await keychain.container.generateWrappingKey();
@@ -35,6 +51,84 @@ describe('Wrapping and unwrapping an AES key', () => {
       wrappingKey
     );
     expect(unwrappedKey).toBeTruthy();
-    expect(Keychain.compareKeys(key, unwrappedKey)).toBeTruthy();
+    expect(await await Util.compareKeys(key, unwrappedKey)).toBeTruthy();
+  });
+  it('can not unwrap an AES key with wrong wrapping key', async () => {
+    const key = await keychain.upload.generateKey();
+    const wrappingKey = await keychain.container.generateWrappingKey();
+    const differentWrappingKey = await keychain.container.generateWrappingKey();
+    const wrappedKey = await keychain.container.wrap(key, wrappingKey);
+    expect(async () => {
+      await keychain.container.unwrap(wrappedKey, differentWrappingKey);
+      await keychain.password.unwrap(passwordWrappedKey, wrongPassword, salt);
+    }).rejects.toThrowError();
+  });
+});
+
+describe('Password protected wrapping keys', () => {
+  const keychain = new Keychain();
+  const salt = Util.generateSalt();
+  const password = 'abc123';
+  const wrongPassword = 'xyz456';
+
+  it('can wrap a key with a password', async () => {
+    const key = await keychain.container.generateWrappingKey();
+    const passwordWrappedKey = await keychain.password.wrap(
+      key,
+      password,
+      salt
+    );
+    expect(passwordWrappedKey).toBeTruthy();
+  });
+  it('can unwrap a key with correct password', async () => {
+    const key = await keychain.container.generateWrappingKey();
+    const passwordWrappedKey = await keychain.password.wrap(
+      key,
+      password,
+      salt
+    );
+    const unwrappedKey = await keychain.password.unwrap(
+      passwordWrappedKey,
+      password,
+      salt
+    );
+    expect(await Util.compareKeys(key, unwrappedKey)).toBeTruthy();
+  });
+  it('can not unwrap a key with wrong password', async () => {
+    const key = await keychain.container.generateWrappingKey();
+    const passwordWrappedKey = await keychain.password.wrap(
+      key,
+      password,
+      salt
+    );
+    expect(async () => {
+      await keychain.password.unwrap(passwordWrappedKey, wrongPassword, salt);
+    }).rejects.toThrowError();
+  });
+});
+
+describe('RSA Keypairs', () => {
+  const keychain = new Keychain();
+  it('can generate public and private keys', async () => {
+    const { publicKey, privateKey } = await keychain.rsa.generateKeyPair();
+    expect(publicKey).toBeTruthy();
+    expect(privateKey).toBeTruthy();
+  });
+  it('can wrap a wrapping key with a public key', async () => {
+    const { publicKey, privateKey } = await keychain.rsa.generateKeyPair();
+    const key = await keychain.container.generateWrappingKey();
+    const wrappedKeyStr = await keychain.rsa.wrapKey(key, publicKey);
+    expect(wrappedKeyStr).toBeTruthy();
+    expect(typeof wrappedKeyStr).toEqual('string');
+  });
+  it('can unwrap a wrapping key with a private key', async () => {
+    const { publicKey, privateKey } = await keychain.rsa.generateKeyPair();
+    const key = await keychain.container.generateWrappingKey();
+    const wrappedKeyStr = await keychain.rsa.wrapKey(key, publicKey);
+    const unwrappedKey = await keychain.rsa.unwrapKey(
+      wrappedKeyStr,
+      privateKey
+    );
+    expect(await Util.compareKeys(key, unwrappedKey)).toBeTruthy();
   });
 });
