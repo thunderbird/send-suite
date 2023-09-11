@@ -165,6 +165,7 @@ export async function getItemsInContainer(id: number) {
       items: {
         select: {
           name: true,
+          wrappedKey: true,
           uploadId: true,
           createdAt: true,
           type: true,

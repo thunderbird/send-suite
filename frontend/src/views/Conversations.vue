@@ -30,7 +30,7 @@ function setConversationId(id) {
           <!-- <AddPerson :conversationId="conversationId" /> -->
           <!-- consider only allowing NewEphemeral for fresh conversations -->
           <!-- <BurnButton :conversationId="conversationId" /> -->
-          <!-- <MessageList :conversationId="conversationId" /> -->
+          <MessageList :conversationId="conversationId" />
           <MessageSend :conversationId="conversationId" />
         </template>
       </div>

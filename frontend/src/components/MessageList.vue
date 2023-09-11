@@ -19,7 +19,7 @@ const onNewMessage = inject('onNewMessage');
 const messageList = ref();
 const messageContainer = ref(null);
 
-async function downloadContent(id, filename, isMessage = true) {
+async function downloadContent(id, wrappedKey, filename, isMessage = true) {
   if (!id) {
     console.log(`no id`);
     return;
@@ -33,7 +33,17 @@ async function downloadContent(id, filename, isMessage = true) {
     return;
   }
 
-  const aesKey = await keychain.get(props.conversationId);
+  const wrappingKey = await keychain.get(props.conversationId);
+  if (!wrappingKey) {
+    console.log(`cannot send message - no key for conversation`);
+  }
+
+  // const aesKey = await keychain.get(props.conversationId);
+  const aesKey = await keychain.container.unwrapContentKey(
+    wrappedKey,
+    wrappingKey
+  );
+
   if (!aesKey) {
     console.log(`no keyset in keychain`);
     return;
@@ -60,12 +70,15 @@ async function getContainerWithItems(id) {
     return;
   }
 
-  const idAndTypeArray = container.items.map(({ uploadId, type }) => ({
-    id: uploadId,
-    type,
-  }));
+  const contentArray = container.items.map(
+    ({ uploadId, type, wrappedKey }) => ({
+      id: uploadId,
+      type,
+      wrappedKey,
+    })
+  );
 
-  let items = await fillMessageList(idAndTypeArray);
+  let items = await fillMessageList(contentArray);
   const messages = items.map((item, i) => {
     return {
       messageText: item.messageText,
@@ -83,12 +96,12 @@ async function getContainerWithItems(id) {
   // }
 }
 
-async function fillMessageList(idAndTypeArray) {
+async function fillMessageList(contentArray) {
   const messages = await Promise.all(
-    idAndTypeArray.map(async ({ id, type }) => {
+    contentArray.map(async ({ id, type, wrappedKey }) => {
       if (type === 'MESSAGE') {
         return {
-          messageText: await downloadContent(id),
+          messageText: await downloadContent(id, wrappedKey),
           id,
           type,
         };
@@ -222,7 +235,9 @@ watch(
                   <span v-else-if="m.type === 'FILE'">
                     <a
                       href="#"
-                      @click.prevent="downloadContent(m.id, m.name, false)"
+                      @click.prevent="
+                        downloadContent(m.id, 'TODO', m.name, false)
+                      "
                       >⬇️ {{ m.name }}</a
                     >
                   </span>
@@ -251,7 +266,9 @@ watch(
                   <span v-else-if="m.type === 'FILE'">
                     <a
                       href="#"
-                      @click.prevent="downloadContent(m.id, m.name, false)"
+                      @click.prevent="
+                        downloadContent(m.id, 'TODO', m.name, false)
+                      "
                       >⬇️ {{ m.name }}</a
                     >
                   </span>
