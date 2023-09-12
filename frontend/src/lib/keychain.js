@@ -240,6 +240,12 @@ export class Keychain {
     this._onloadArray = [];
   }
 
+  get keys() {
+    return {
+      ...this._keys,
+    };
+  }
+
   async add(id, key) {
     if (!this.rsa.publicKey) {
       throw Error('Missing public key, required for wrapping AES key');

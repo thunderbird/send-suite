@@ -54,6 +54,7 @@ async function requestEphemeralLink() {
       );
 
     const challengePlaintext = keychain.challenge.createChallenge();
+
     const challengeCiphertext = await keychain.challenge.encryptChallenge(
       challengePlaintext,
       challengeKey,
@@ -63,34 +64,34 @@ async function requestEphemeralLink() {
     // convert salts to base64 strings
     const saltStr = Util.arrayBufferToBase64(salt);
     const challengeSaltStr = Util.arrayBufferToBase64(challengeSalt);
-    // Confirming the steps for accepting a challenge
-    // 0. convert the salt to an array buffer
-    const challengeSaltBuffer = Util.base64ToArrayBuffer(challengeSaltStr);
-    // 1. unwrap the challenge key by providing the password
-    const unwrappedChallengeKey = await keychain.password.unwrapContentKey(
-      passwordWrappedChallengeKeyStr,
-      password.value,
-      challengeSalt
-    );
+    // // Confirming the steps for accepting a challenge
+    // // 0. convert the salt to an array buffer
+    // const challengeSaltBuffer = Util.base64ToArrayBuffer(challengeSaltStr);
+    // // 1. unwrap the challenge key by providing the password
+    // const unwrappedChallengeKey = await keychain.password.unwrapContentKey(
+    //   passwordWrappedChallengeKeyStr,
+    //   password.value,
+    //   challengeSalt
+    // );
 
-    console.log(
-      `is my unwrappedChallenge key equivalent to my original challengeKey?`
-    );
-    console.log(await Util.compareKeys(challengeKey, unwrappedChallengeKey));
+    // console.log(
+    //   `is my unwrappedChallenge key equivalent to my original challengeKey?`
+    // );
+    // console.log(await Util.compareKeys(challengeKey, unwrappedChallengeKey));
 
-    // 2. decrypt the challenge text
-    const decryptedChallenge = await keychain.challenge.decryptChallenge(
-      challengeCiphertext,
-      unwrappedChallengeKey,
-      // this unwrapped key cannot be used to decrypt....
-      challengeSalt
-    );
+    // // 2. decrypt the challenge text
+    // const decryptedChallenge = await keychain.challenge.decryptChallenge(
+    //   challengeCiphertext,
+    //   unwrappedChallengeKey,
+    //   // this unwrapped key cannot be used to decrypt....
+    //   challengeSaltBuffer
+    // );
 
-    console.log(
-      `Can I decrypt the challenge? ${
-        challengePlaintext === decryptedChallenge
-      }`
-    );
+    // console.log(
+    //   `Can I decrypt the challenge? ${
+    //     challengePlaintext === decryptedChallenge
+    //   }`
+    // );
     // with the password protected key and the salt, create an ephemeral link
     const resp = await api.createEphemeralLink(
       id,
