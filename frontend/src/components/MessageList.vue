@@ -19,33 +19,17 @@ const onNewMessage = inject('onNewMessage');
 const messageList = ref();
 const messageContainer = ref(null);
 
-async function downloadContent(id, wrappedKey, filename, isMessage = true) {
+const downloadKeyMap = {};
+
+async function downloadContent(id, aesKey, filename, isMessage = true) {
   if (!id) {
     console.log(`no id`);
     return;
   }
   const { size, type } = await api.getUploadMetadata(id);
-  // const size = await api.getUploadSize(id);
-  // const type = await api.getUploadType(id);
 
   if (!size) {
     console.log(`no size`);
-    return;
-  }
-
-  const wrappingKey = await keychain.get(props.conversationId);
-  if (!wrappingKey) {
-    console.log(`cannot send message - no key for conversation`);
-  }
-
-  // const aesKey = await keychain.get(props.conversationId);
-  const aesKey = await keychain.container.unwrapContentKey(
-    wrappedKey,
-    wrappingKey
-  );
-
-  if (!aesKey) {
-    console.log(`no keyset in keychain`);
     return;
   }
 
@@ -70,12 +54,23 @@ async function getContainerWithItems(id) {
     return;
   }
 
-  const contentArray = container.items.map(
-    ({ uploadId, type, wrappedKey }) => ({
+  let wrappingKey;
+  try {
+    wrappingKey = await keychain.get(props.conversationId);
+  } catch (e) {
+    console.log(`cannot send message - no key for conversation`);
+    return;
+  }
+
+  const contentArray = await Promise.all(
+    container.items.map(async ({ uploadId, type, wrappedKey }) => ({
       id: uploadId,
       type,
-      wrappedKey,
-    })
+      aesKey: await keychain.container.unwrapContentKey(
+        wrappedKey,
+        wrappingKey
+      ),
+    }))
   );
 
   let items = await fillMessageList(contentArray);
@@ -98,14 +93,18 @@ async function getContainerWithItems(id) {
 
 async function fillMessageList(contentArray) {
   const messages = await Promise.all(
-    contentArray.map(async ({ id, type, wrappedKey }) => {
+    contentArray.map(async ({ id, type, aesKey }) => {
       if (type === 'MESSAGE') {
         return {
-          messageText: await downloadContent(id, wrappedKey),
+          messageText: await downloadContent(id, aesKey),
           id,
           type,
         };
       } else if (type === 'FILE') {
+        console.log(
+          `not putting file in messages array, but adding download key in map`
+        );
+        downloadKeyMap[id] = aesKey;
         return {
           messageText: `bad mime type ${id}`,
           id,
@@ -236,7 +235,12 @@ watch(
                     <a
                       href="#"
                       @click.prevent="
-                        downloadContent(m.id, 'TODO', m.name, false)
+                        downloadContent(
+                          m.id,
+                          downloadKeyMap[m.id],
+                          m.name,
+                          false
+                        )
                       "
                       >⬇️ {{ m.name }}</a
                     >
@@ -267,7 +271,12 @@ watch(
                     <a
                       href="#"
                       @click.prevent="
-                        downloadContent(m.id, 'TODO', m.name, false)
+                        downloadContent(
+                          m.id,
+                          downloadKeyMap[m.id],
+                          m.name,
+                          false
+                        )
                       "
                       >⬇️ {{ m.name }}</a
                     >
