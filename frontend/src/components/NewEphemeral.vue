@@ -1,17 +1,13 @@
 <script setup>
 import { ref, inject } from 'vue';
-import {
-  passwordWrapAESKey,
-  generateSalt,
-  aesEncryptChallenge,
-} from '../lib/crypt';
+import { Util } from '../lib/keychain';
 
 const api = inject('api');
 const { user } = inject('user');
 const keychain = inject('keychain');
 const messageSocket = inject('messageSocket');
 
-const password = ref('');
+const password = ref('abc');
 const ephemeralHash = ref('');
 const message = ref('');
 
@@ -32,37 +28,77 @@ async function requestEphemeralLink() {
   const response = await api.createConversation(user.value.id);
   if (response && response.id) {
     const { id } = response;
-    await keychain.createAndAddContainerKey(id);
-    await keychain.store();
+    // await keychain.createAndAddContainerKey(id);
+    await keychain.newKeyForContainer(id);
+    // await keychain.store();
 
     // get the key (which unwraps it),
     const unwrappedKey = await keychain.get(id);
 
     // and password protect it
-    const salt = generateSalt();
-    const passwordWrappedKey = await passwordWrapAESKey(
+    const salt = Util.generateSalt();
+    const passwordWrappedKeyStr = await keychain.password.wrapContainerKey(
       unwrappedKey,
       password.value,
       salt
     );
 
-    // convert it and the salt to base64 strings
-    const strPasswordWrappedKey = arrayBufferToBase64(passwordWrappedKey);
-    const strSalt = arrayBufferToBase64(salt);
+    const challengeKey = await keychain.challenge.generateKey();
+    const challengeSalt = Util.generateSalt();
 
-    // const challengePlaintext = 'abc123';
+    const passwordWrappedChallengeKeyStr =
+      await keychain.password.wrapContentKey(
+        challengeKey,
+        password.value,
+        challengeSalt
+      );
 
-    const challengePlaintext = arrayBufferToBase64(generateSalt(128));
-    const challengeCiphertext = arrayBufferToBase64(
-      await aesEncryptChallenge(challengePlaintext, unwrappedKey, salt)
+    const challengePlaintext = keychain.challenge.createChallenge();
+    const challengeCiphertext = await keychain.challenge.encryptChallenge(
+      challengePlaintext,
+      challengeKey,
+      challengeSalt
     );
 
+    // convert salts to base64 strings
+    const saltStr = Util.arrayBufferToBase64(salt);
+    const challengeSaltStr = Util.arrayBufferToBase64(challengeSalt);
+    // Confirming the steps for accepting a challenge
+    // 0. convert the salt to an array buffer
+    const challengeSaltBuffer = Util.base64ToArrayBuffer(challengeSaltStr);
+    // 1. unwrap the challenge key by providing the password
+    const unwrappedChallengeKey = await keychain.password.unwrapContentKey(
+      passwordWrappedChallengeKeyStr,
+      password.value,
+      challengeSalt
+    );
+
+    console.log(
+      `is my unwrappedChallenge key equivalent to my original challengeKey?`
+    );
+    console.log(await Util.compareKeys(challengeKey, unwrappedChallengeKey));
+
+    // 2. decrypt the challenge text
+    const decryptedChallenge = await keychain.challenge.decryptChallenge(
+      challengeCiphertext,
+      unwrappedChallengeKey,
+      // this unwrapped key cannot be used to decrypt....
+      challengeSalt
+    );
+
+    console.log(
+      `Can I decrypt the challenge? ${
+        challengePlaintext === decryptedChallenge
+      }`
+    );
     // with the password protected key and the salt, create an ephemeral link
     const resp = await api.createEphemeralLink(
       id,
-      strPasswordWrappedKey,
+      passwordWrappedKeyStr,
+      saltStr,
+      passwordWrappedChallengeKeyStr,
+      challengeSaltStr,
       user.value.id,
-      strSalt,
       challengePlaintext,
       challengeCiphertext
     );

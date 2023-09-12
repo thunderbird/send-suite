@@ -280,8 +280,10 @@ export class ApiConnection {
   async createEphemeralLink(
     containerId,
     wrappedKey,
-    senderId,
     salt,
+    challengeKey,
+    challengeSalt,
+    senderId,
     challengePlaintext,
     challengeCiphertext
   ) {
@@ -290,8 +292,10 @@ export class ApiConnection {
       {
         containerId,
         wrappedKey,
-        senderId,
         salt,
+        challengeKey,
+        challengeSalt,
+        senderId,
         challengePlaintext,
         challengeCiphertext,
       },

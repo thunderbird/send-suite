@@ -1,12 +1,12 @@
 <script setup>
 import { ref, watch, inject } from 'vue';
 import { useRouter } from 'vue-router';
-
-import {
-  base64ToArrayBuffer,
-  aesDecryptChallenge,
-  passwordUnwrapAESKey,
-} from '../lib/crypt';
+import { Util } from '../lib/keychain';
+// import {
+//   base64ToArrayBuffer,
+//   aesDecryptChallenge,
+//   passwordUnwrapAESKey,
+// } from '../lib/crypt';
 
 const router = useRouter();
 
@@ -31,36 +31,43 @@ async function acceptEphemeralLink() {
     console.log('uh oh');
     return;
   }
-  // receive the wrapped key, salt, and challengeCiphertext
-  const { salt, challengeCiphertext, wrappedKey } = resp;
-  let keyBuffer;
-  let saltBuffer;
+
+  // Step 1: receive the challenge
+
+  const { challengeKey, challengeSalt, challengeCiphertext } = resp;
+  // These are all strings
+  let challengeSaltBuffer;
   try {
-    keyBuffer = base64ToArrayBuffer(wrappedKey);
-    saltBuffer = base64ToArrayBuffer(salt);
+    challengeSaltBuffer = Util.base64ToArrayBuffer(challengeSalt);
   } catch (e) {
     message.value = 'Link is not valid';
     return;
   }
   try {
     // unwrap the key with the password
-    let unwrappedKey = await passwordUnwrapAESKey(
-      keyBuffer,
+    let unwrappedKey = await keychain.password.unwrapContentKey(
+      challengeKey,
       password.value,
-      saltBuffer
+      challengeSaltBuffer
     );
     console.log(`unwrapping worked!`);
 
     // decrypt the challenge ciphertext and send it back
-    let challengePlaintext = await aesDecryptChallenge(
-      base64ToArrayBuffer(challengeCiphertext),
+    let challengePlaintext = await keychain.challenge.decryptChallenge(
+      challengeCiphertext,
       unwrappedKey,
-      saltBuffer
+      challengeSaltBuffer
     );
 
     console.log(`drum roll`);
     console.log(challengePlaintext);
 
+    return;
+
+    // This is the second call
+    // If I send the right challengePlaintext, I should receive:
+    // - the containerId
+    // - the container key
     const challengeResp = await api.acceptEphemeralLink(
       props.hash,
       challengePlaintext

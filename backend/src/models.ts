@@ -368,8 +368,10 @@ export async function removeGroupMember(groupId: number, userId: number) {
 export async function createEphemeralLink(
   containerId: number,
   wrappedKey: string,
-  senderId: number,
   salt: string,
+  challengeKey: string,
+  challengeSalt: string,
+  senderId: number,
   challengeCiphertext: string,
   challengePlaintext: string
 ) {
@@ -379,12 +381,14 @@ export async function createEphemeralLink(
       id,
       containerId,
       wrappedKey,
+      salt,
+      challengeKey,
+      challengeSalt,
       sender: {
         connect: {
           id: senderId,
         },
       },
-      salt,
       challengeCiphertext,
       challengePlaintext,
     },
@@ -397,9 +401,9 @@ export async function getEphemeralLinkChallenge(hash: string) {
       id: hash,
     },
     select: {
-      salt: true,
+      challengeKey: true,
+      challengeSalt: true,
       challengeCiphertext: true,
-      wrappedKey: true,
     },
   });
 }
