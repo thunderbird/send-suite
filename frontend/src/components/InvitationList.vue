@@ -1,6 +1,5 @@
 <script setup>
 import { ref, inject, onMounted } from 'vue';
-import { unwrapAESKey, base64ToArrayBuffer } from '../lib/crypt';
 
 const { user } = inject('user');
 const api = inject('api');

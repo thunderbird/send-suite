@@ -1,3 +1,9 @@
+<!--
+
+Confirm that I'm not using this anywhere?
+
+
+ -->
 <script setup>
 import { ref, onMounted } from 'vue';
 import { upload } from '../lib/filesync';

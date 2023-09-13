@@ -129,12 +129,14 @@ export async function createItem(
   name: string,
   containerId: number,
   uploadId: string,
-  type: ItemType
+  type: ItemType,
+  wrappedKey: string
 ) {
   return prisma.item.create({
     data: {
       createdAt: new Date(),
       name,
+      wrappedKey,
       // containerId,
       // uploadId,
       type,
@@ -163,6 +165,7 @@ export async function getItemsInContainer(id: number) {
       items: {
         select: {
           name: true,
+          wrappedKey: true,
           uploadId: true,
           createdAt: true,
           type: true,
@@ -365,8 +368,10 @@ export async function removeGroupMember(groupId: number, userId: number) {
 export async function createEphemeralLink(
   containerId: number,
   wrappedKey: string,
-  senderId: number,
   salt: string,
+  challengeKey: string,
+  challengeSalt: string,
+  senderId: number,
   challengeCiphertext: string,
   challengePlaintext: string
 ) {
@@ -376,12 +381,14 @@ export async function createEphemeralLink(
       id,
       containerId,
       wrappedKey,
+      salt,
+      challengeKey,
+      challengeSalt,
       sender: {
         connect: {
           id: senderId,
         },
       },
-      salt,
       challengeCiphertext,
       challengePlaintext,
     },
@@ -394,9 +401,9 @@ export async function getEphemeralLinkChallenge(hash: string) {
       id: hash,
     },
     select: {
-      salt: true,
+      challengeKey: true,
+      challengeSalt: true,
       challengeCiphertext: true,
-      wrappedKey: true,
     },
   });
 }

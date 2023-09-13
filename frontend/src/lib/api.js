@@ -34,7 +34,7 @@ export class ApiConnection {
     return resp.json();
   }
 
-  async createUpload(id, size, ownerId, type) {
+  async createContent(id, size, ownerId, type) {
     // TODO: remove ownerId as arg
     // the backend should get this from session
     const resp = await this.callApi(
@@ -75,13 +75,14 @@ export class ApiConnection {
     }
   }
 
-  async createItemInContainer(uploadId, containerId, name, type) {
+  async createItemInContainer(contentId, containerId, name, type, wrappedKey) {
     const resp = await this.callApi(
       `containers/${containerId}`,
       {
-        uploadId,
+        uploadId: contentId,
         name,
         type, // this is 'FILE' or 'MESSAGE'
+        wrappedKey,
       },
       'POST'
     );
@@ -279,8 +280,10 @@ export class ApiConnection {
   async createEphemeralLink(
     containerId,
     wrappedKey,
-    senderId,
     salt,
+    challengeKey,
+    challengeSalt,
+    senderId,
     challengePlaintext,
     challengeCiphertext
   ) {
@@ -289,8 +292,10 @@ export class ApiConnection {
       {
         containerId,
         wrappedKey,
-        senderId,
         salt,
+        challengeKey,
+        challengeSalt,
+        senderId,
         challengePlaintext,
         challengeCiphertext,
       },

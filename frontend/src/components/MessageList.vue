@@ -19,23 +19,17 @@ const onNewMessage = inject('onNewMessage');
 const messageList = ref();
 const messageContainer = ref(null);
 
-async function downloadContent(id, filename, isMessage = true) {
+const downloadKeyMap = {};
+
+async function downloadContent(id, aesKey, filename, isMessage = true) {
   if (!id) {
     console.log(`no id`);
     return;
   }
   const { size, type } = await api.getUploadMetadata(id);
-  // const size = await api.getUploadSize(id);
-  // const type = await api.getUploadType(id);
 
   if (!size) {
     console.log(`no size`);
-    return;
-  }
-
-  const aesKey = await keychain.get(props.conversationId);
-  if (!aesKey) {
-    console.log(`no keyset in keychain`);
     return;
   }
 
@@ -60,12 +54,26 @@ async function getContainerWithItems(id) {
     return;
   }
 
-  const idAndTypeArray = container.items.map(({ uploadId, type }) => ({
-    id: uploadId,
-    type,
-  }));
+  let wrappingKey;
+  try {
+    wrappingKey = await keychain.get(props.conversationId);
+  } catch (e) {
+    console.log(`cannot send message - no key for conversation`);
+    return;
+  }
 
-  let items = await fillMessageList(idAndTypeArray);
+  const contentArray = await Promise.all(
+    container.items.map(async ({ uploadId, type, wrappedKey }) => ({
+      id: uploadId,
+      type,
+      aesKey: await keychain.container.unwrapContentKey(
+        wrappedKey,
+        wrappingKey
+      ),
+    }))
+  );
+
+  let items = await fillMessageList(contentArray);
   const messages = items.map((item, i) => {
     return {
       messageText: item.messageText,
@@ -75,7 +83,7 @@ async function getContainerWithItems(id) {
       name: container.items[i].name,
     };
   });
-
+  console.log(messages);
   messageList.value = messages;
 
   // if (messageList.value) {
@@ -83,16 +91,20 @@ async function getContainerWithItems(id) {
   // }
 }
 
-async function fillMessageList(idAndTypeArray) {
+async function fillMessageList(contentArray) {
   const messages = await Promise.all(
-    idAndTypeArray.map(async ({ id, type }) => {
+    contentArray.map(async ({ id, type, aesKey }) => {
       if (type === 'MESSAGE') {
         return {
-          messageText: await downloadContent(id),
+          messageText: await downloadContent(id, aesKey),
           id,
           type,
         };
       } else if (type === 'FILE') {
+        console.log(
+          `not putting file in messages array, but adding download key in map`
+        );
+        downloadKeyMap[id] = aesKey;
         return {
           messageText: `bad mime type ${id}`,
           id,
@@ -222,7 +234,14 @@ watch(
                   <span v-else-if="m.type === 'FILE'">
                     <a
                       href="#"
-                      @click.prevent="downloadContent(m.id, m.name, false)"
+                      @click.prevent="
+                        downloadContent(
+                          m.id,
+                          downloadKeyMap[m.id],
+                          m.name,
+                          false
+                        )
+                      "
                       >⬇️ {{ m.name }}</a
                     >
                   </span>
@@ -251,7 +270,14 @@ watch(
                   <span v-else-if="m.type === 'FILE'">
                     <a
                       href="#"
-                      @click.prevent="downloadContent(m.id, m.name, false)"
+                      @click.prevent="
+                        downloadContent(
+                          m.id,
+                          downloadKeyMap[m.id],
+                          m.name,
+                          false
+                        )
+                      "
                       >⬇️ {{ m.name }}</a
                     >
                   </span>

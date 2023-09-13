@@ -14,15 +14,19 @@ router.post('/', async (req, res) => {
   const {
     containerId,
     wrappedKey,
-    senderId,
     salt,
+    challengeKey,
+    challengeSalt,
+    senderId,
     challengeCiphertext,
     challengePlaintext,
   }: {
     containerId: number;
     wrappedKey: string;
-    senderId: number;
     salt: string;
+    challengeKey: string;
+    challengeSalt: string;
+    senderId: number;
     challengeCiphertext: string;
     challengePlaintext: string;
   } = req.body;
@@ -30,8 +34,10 @@ router.post('/', async (req, res) => {
     const ephemeralLink = await createEphemeralLink(
       containerId,
       wrappedKey,
-      senderId,
       salt,
+      challengeKey,
+      challengeSalt,
+      senderId,
       challengeCiphertext,
       challengePlaintext
     );
@@ -55,9 +61,12 @@ router.get('/:hash/challenge', async (req, res) => {
     });
   }
   try {
-    const data = await getEphemeralLinkChallenge(hash);
+    const { challengeKey, challengeSalt, challengeCiphertext } =
+      await getEphemeralLinkChallenge(hash);
     res.status(200).json({
-      ...data,
+      challengeKey,
+      challengeSalt,
+      challengeCiphertext,
     });
   } catch (e) {
     res.status(500).json({
@@ -80,9 +89,12 @@ router.post('/:hash/challenge', async (req, res) => {
     const link = await acceptEphemeralLink(hash, challengePlaintext);
     if (link) {
       console.log(link);
+      const { containerId, wrappedKey, salt } = link;
       res.status(200).json({
         status: 'success',
-        containerId: link.containerId,
+        containerId,
+        wrappedKey,
+        salt,
       });
     } else {
       res.status(400).json({});

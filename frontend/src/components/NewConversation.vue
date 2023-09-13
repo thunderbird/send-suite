@@ -11,8 +11,8 @@ async function createConversation() {
   const response = await api.createConversation(user.value.id);
   console.log(response);
   // await keychain.createAndAddContainerKey(1);
-  await keychain.createAndAddContainerKey(response.id);
-  await keychain.store();
+  await keychain.newKeyForContainer(response.id);
+  // await keychain.store();
   // loadAllConversations();
   messageSocket.value.send(
     JSON.stringify({

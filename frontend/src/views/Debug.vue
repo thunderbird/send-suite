@@ -1,19 +1,5 @@
 <script setup>
 import { ref, watch, watchEffect, inject, onMounted } from 'vue';
-import {
-  generateAESKey,
-  compareKeys,
-  exportKeyToBase64,
-  unwrapAESKey,
-  wrapAESKey,
-  arrayBufferToBase64,
-  base64ToArrayBuffer,
-  passwordWrapAESKey,
-  passwordUnwrapAESKey,
-  aesEncryptChallenge,
-  aesDecryptChallenge,
-  generateSalt,
-} from '../lib/crypt';
 
 const api = inject('api');
 const keychain = inject('keychain');
@@ -21,70 +7,18 @@ const { user, setUser, storeUser, loadUser } = inject('user');
 // const eventSource = inject('eventSource');
 const messageSocket = inject('messageSocket');
 
-const showDebug = ref(false);
+const showDebug = ref(true);
 
 onMounted(async () => {
-  // loadKeychain();
-  // loadUser();
-  // setUser({
-  //   id: 1,
-  // });
-
   window.keychain = keychain;
-  window.generateAESKey = generateAESKey;
-  if (keychain.status) {
-    keychain.status();
-  }
-
-  // establish eventSource connection
-  // const interval = setInterval(() => {
-  //   if (eventSource.value) {
-  //     console.log(`establishing eventSource connection`);
-  //     eventSource.value.onmessage = (event) => {
-  //       console.log(event.data);
-  //       try {
-  //         const newMessage = JSON.parse(event.data);
-  //         console.log(`parsed eventSource data`);
-  //         console.log(newMessage);
-  //       } catch (e) {
-  //         console.error('Error with message stream', e);
-  //       }
-  //     };
-  //     clearInterval(interval);
-  //   }
-  // }, 1000);
-  // await keychain.generateUserKeyPair();
-  // window.aes = await generateAESKey();
-  // keychain.add('a', aes);
-
-  // window.generateRSAKeyPair = generateRSAKeyPair;
-  // window.wrapAESKey = wrapAESKey;
-  // window.Storage = Storage;
-  window.compareKeys = compareKeys;
-  window.exportKeyToBase64 = exportKeyToBase64;
-  window.unwrapAESKey = unwrapAESKey;
-  window.wrapAESKey = wrapAESKey;
-  window.arrayBufferToBase64 = arrayBufferToBase64;
-  window.base64ToArrayBuffer = base64ToArrayBuffer;
-  window.passwordWrapAESKey = passwordWrapAESKey;
-  window.passwordUnwrapAESKey = passwordUnwrapAESKey;
-  window.aesEncryptChallenge = aesEncryptChallenge;
-  window.generateSalt = generateSalt;
-  window.aesDecryptChallenge = aesDecryptChallenge;
-  // const aes = await generateAESKey();
-  // await window.keychain.generateKeyPair();
-  // await window.keychain.add('1', aes);
-  // const unwrapped = await window.keychain.get('1');
-  // const didMatch = await compareKeys(aes, unwrapped);
-  // console.log(`Did the original and the unwrapped match? ${didMatch}`);
 });
 
 const jwkPublicKey = ref('');
 
 async function generateKeys() {
-  if (keychain.generateUserKeyPair) {
-    await keychain.generateUserKeyPair();
-    jwkPublicKey.value = JSON.stringify(await keychain.getUserPublicKeyJwk());
+  if (keychain?.rsa?.generateKeyPair) {
+    await keychain.rsa.generateKeyPair();
+    jwkPublicKey.value = JSON.stringify(await keychain.rsa.getPublicKeyJwk());
   }
 }
 
@@ -100,13 +34,13 @@ async function loadKeys() {
   }
 }
 
-keychain.addOnload(async () => {
-  jwkPublicKey.value = JSON.stringify(await keychain.getUserPublicKeyJwk());
-});
+// keychain.addOnload(async () => {
+//   jwkPublicKey.value = JSON.stringify(await keychain.rsa.getPublicKeyJwk());
+// });
 
 async function createApiUser() {
   const email = user.value.email;
-  jwkPublicKey.value = await keychain.getUserPublicKeyJwk();
+  jwkPublicKey.value = await keychain.rsa.getPublicKeyJwk();
 
   const resp = await api.createUser(email, jwkPublicKey.value);
   if (resp) {
@@ -120,6 +54,8 @@ async function createApiUser() {
     storeUser(id, email, tier);
   }
 }
+
+function resetStorage() {}
 
 async function sendHeartbeat() {
   console.log(`sending heartbeat`);

@@ -32,10 +32,10 @@ watch(user, () => {
 });
 
 const keychain = inject('keychain');
-keychain.addOnload(async () => {
-  console.log(`🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉`);
-  // get the keys
-});
+// keychain.addOnload(async () => {
+//   console.log(`🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉`);
+//   // get the keys
+// });
 
 onMounted(() => {});
 </script>
