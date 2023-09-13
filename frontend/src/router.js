@@ -1,9 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Home from '@/chat/views/Home.vue';
+import Chat from '@/chat/views/Home.vue';
+import Lockbox from '@/lockbox/views/Home.vue';
 import EphemeralChat from '@/chat/views/EphemeralChat.vue';
 
 const routes = [
-  { path: '/', component: Home },
+  { path: '/chat', component: Chat },
+  { path: '/lockbox', component: Lockbox },
   { path: '/ephemeral', component: EphemeralChat },
   { path: '/ephemeral/:hash', component: EphemeralChat },
 ];

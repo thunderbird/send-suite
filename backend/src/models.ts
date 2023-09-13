@@ -231,6 +231,7 @@ export async function getAllUserGroupContainers(
     // },
     select: {
       id: true,
+      name: true,
       items: {
         select: {
           name: true,

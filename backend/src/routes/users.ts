@@ -105,6 +105,8 @@ router.get('/:userId/folders', async (req, res) => {
     );
     res.status(200).json(containers);
   } catch (error) {
+    console.log(`🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡`);
+    console.log(error);
     res.status(500).json({
       message: 'Server error.',
     });
