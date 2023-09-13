@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Home from './views/Home.vue';
-import EphemeralChat from './views/EphemeralChat.vue';
+import Home from '@/chat/views/Home.vue';
+import EphemeralChat from '@/chat/views/EphemeralChat.vue';
 
 const routes = [
   { path: '/', component: Home },

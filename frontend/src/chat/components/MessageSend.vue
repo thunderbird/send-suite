@@ -1,7 +1,7 @@
 <script setup>
 import { ref, inject } from 'vue';
-import { upload } from '../lib/filesync';
-import { blobStream } from '../lib/streams';
+import { upload } from '@/lib/filesync';
+import { blobStream } from '@/lib/streams';
 
 const props = defineProps({
   conversationId: Number,

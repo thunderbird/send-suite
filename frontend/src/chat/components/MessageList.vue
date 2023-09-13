@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, onMounted, inject } from 'vue';
-import { download } from '../lib/filesync';
+import { download } from '@/lib/filesync';
 import BurnButton from './BurnButton.vue';
 
 // onmounted, get all items for this convo/container

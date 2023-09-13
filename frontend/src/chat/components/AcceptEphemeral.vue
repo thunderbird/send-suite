@@ -1,12 +1,7 @@
 <script setup>
 import { ref, watch, inject } from 'vue';
 import { useRouter } from 'vue-router';
-import { Util } from '../lib/keychain';
-// import {
-//   base64ToArrayBuffer,
-//   aesDecryptChallenge,
-//   passwordUnwrapAESKey,
-// } from '../lib/crypt';
+import { Util } from '@/lib/keychain';
 
 const router = useRouter();
 

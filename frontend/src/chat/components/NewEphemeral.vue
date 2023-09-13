@@ -1,6 +1,6 @@
 <script setup>
 import { ref, inject } from 'vue';
-import { Util } from '../lib/keychain';
+import { Util } from '@/lib/keychain';
 
 const api = inject('api');
 const { user } = inject('user');
