@@ -24,7 +24,7 @@ const props = defineProps({
 const emit = defineEmits(['setConversationId']);
 
 async function acceptEphemeralLink() {
-  const { unwrappedKey, containerId } = getContainerKeyFromChallenge();
+  const { unwrappedKey, containerId } = await getContainerKeyFromChallenge();
 
   // this allows me to create a user?
   // next:

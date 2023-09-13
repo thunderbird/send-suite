@@ -83,7 +83,7 @@ async function getContainerWithItems(id) {
       name: container.items[i].name,
     };
   });
-
+  console.log(messages);
   messageList.value = messages;
 
   // if (messageList.value) {
