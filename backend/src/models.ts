@@ -235,6 +235,8 @@ export async function getAllUserGroupContainers(
       items: {
         select: {
           name: true,
+          wrappedKey: true,
+          uploadId: true,
           // uploadId: true,
           // createdAt: true,
           // type: true,

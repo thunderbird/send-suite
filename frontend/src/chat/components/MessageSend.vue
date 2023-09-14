@@ -1,7 +1,6 @@
 <script setup>
 import { ref, inject } from 'vue';
-import { upload } from '@/lib/filesync';
-import { blobStream } from '@/lib/streams';
+import { sendBlob } from '@/lib/filesync';
 
 const props = defineProps({
   conversationId: Number,
@@ -31,20 +30,6 @@ async function handleFile(event) {
   reader.readAsArrayBuffer(file);
   message.value = file.name;
   msgInput.value.disabled = true;
-}
-
-async function sendBlob(blob, aesKey) {
-  console.log(`want to send blob of size ${blob.size}`);
-  console.log(blob);
-
-  // const aesKey = await keychain.get(props.conversationId);
-  // if (!aesKey) {
-  //   return;
-  // }
-  const stream = blobStream(blob);
-  const result = await upload(stream, aesKey);
-  console.log(result);
-  return result.id;
 }
 
 async function sendMessage(isText = true) {

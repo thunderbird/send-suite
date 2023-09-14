@@ -278,6 +278,7 @@ export class Keychain {
 
   async newKeyForContainer(id) {
     const key = await this.container.generateContainerKey();
+    console.log(`adding key for container id ${id}`);
     await this.add(id, key);
   }
 }
