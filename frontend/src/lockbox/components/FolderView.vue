@@ -77,12 +77,7 @@ watch(user, async () => {
 </script>
 <template>
   <h2>Folders</h2>
-  <button
-    class="inline-flex items-center justify-center rounded-lg border h-10 w-10 transition duration-500 ease-in-out text-gray-500 hover:bg-gray-300 focus:outline-none"
-    @click="loadFolderList"
-  >
-    🔃
-  </button>
+  <button class="btn-primary" @click="loadFolderList">🔃</button>
   <ul>
     <li v-for="folder of folders">
       <a href="#" @click.prevent="loadFolder(folder.id)">

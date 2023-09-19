@@ -82,24 +82,9 @@ async function sendHeartbeat() {
       <textarea v-model="jwkPublicKey">{{ jwkPublicKey }}</textarea>
     </label>
     <br />
-    <button
-      class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-      @click="generateKeys"
-    >
-      Gen Keypair
-    </button>
-    <button
-      class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-      @click="saveKeys"
-    >
-      Store Keys
-    </button>
-    <button
-      class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-      @click="loadKeys"
-    >
-      Load Keys
-    </button>
+    <button class="btn-primary" @click="generateKeys">Gen Keypair</button>
+    <button class="btn-primary" @click="saveKeys">Store Keys</button>
+    <button class="btn-primary" @click="loadKeys">Load Keys</button>
     <br />
     <label>
       User id:
@@ -111,25 +96,10 @@ async function sendHeartbeat() {
       <input type="email" v-model="user.email" />
     </label>
     <br />
-    <button
-      class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-      @click="storeUser"
-    >
-      Save User
-    </button>
-    <button
-      class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-      @click="loadUser"
-    >
-      Load User
-    </button>
+    <button class="btn-primary" @click="storeUser">Save User</button>
+    <button class="btn-primary" @click="loadUser">Load User</button>
     <br />
-    <button
-      class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-      @click="createApiUser"
-    >
-      Create Api User
-    </button>
+    <button class="btn-primary" @click="createApiUser">Create Api User</button>
     <!-- <br />
   <label>
     <input type="checkbox" disabled :checked="keychain.privateKey" />
@@ -143,12 +113,7 @@ async function sendHeartbeat() {
   <br />
   <button @click.prevent="loadKeychain()">Load Keys</button> -->
     <br />
-    <button
-      class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-      @click="sendHeartbeat"
-    >
-      Send heartbeat
-    </button>
+    <button class="btn-primary" @click="sendHeartbeat">Send heartbeat</button>
     <hr />
   </div>
 </template>

@@ -2,14 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-/* html,
-body,
-#app {
-  height: 100%;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-} */
+@layer base {
+  html {
+    /* @apply text-gray-500; */
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800;
+
+    /* outline: 1px solid red; */
+  }
+}
 
 input {
   outline: 1px solid grey;
