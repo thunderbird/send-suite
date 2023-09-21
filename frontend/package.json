@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "./build.sh",
     "preview": "vite preview",
     "test": "vitest"
   },
@@ -23,6 +23,8 @@
     "postcss": "^8.4.28",
     "prettier": "^2.5.1",
     "tailwindcss": "^3.3.3",
+    "typescript": "^5.2.2",
+    "typescript-language-server": "^3.3.2",
     "vite": "^4.4.5",
     "vue-eslint-parser": "^8.0.0"
   }
