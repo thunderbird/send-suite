@@ -11,7 +11,7 @@ Does vue already have the notion of a store?
 import { ref, onMounted, provide, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ApiConnection } from './lib/api';
-import Storage from './lib/storage/localStorage';
+
 import { Keychain } from './lib/keychain';
 import { createMessageSocket } from './lib/messageSocket';
 const router = useRouter();
@@ -42,6 +42,7 @@ function setUser(obj) {
   console.log(obj);
 }
 
+// Move storeUser and loadUser to a storage class
 function storeUser(id, email, tier) {
   const jsonUser = JSON.stringify({
     id,
