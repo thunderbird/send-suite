@@ -3,7 +3,7 @@ import nodeCrypto from 'crypto';
 
 let crypto = nodeCrypto;
 try {
-  crypto = window.crypto;
+  crypto = browser.crypto;
 } catch (e) {
   // console.log(`using node crypto module`);
 }
@@ -62,9 +62,12 @@ class Container {
 
   // Unwrap an AES-GCM (content) key
   async unwrapContentKey(wrappedKeyStr, wrappingKey) {
+    const buf = Util.base64ToArrayBuffer(wrappedKeyStr);
+    console.log('================================');
+    console.log(typeof buf);
     return await crypto.subtle.unwrapKey(
       'raw',
-      Util.base64ToArrayBuffer(wrappedKeyStr),
+      buf,
       wrappingKey,
       'AES-KW',
       'AES-GCM',

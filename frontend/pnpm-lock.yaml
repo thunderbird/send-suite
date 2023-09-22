@@ -48,6 +48,9 @@ devDependencies:
   vitest:
     specifier: ^0.34.5
     version: 0.34.5
+  vitest-localstorage-mock:
+    specifier: ^0.0.1
+    version: 0.0.1(vitest@0.34.5)
   vue-eslint-parser:
     specifier: ^8.0.0
     version: 8.3.0(eslint@8.46.0)
@@ -1858,6 +1861,14 @@ packages:
       rollup: 3.27.2
     optionalDependencies:
       fsevents: 2.3.2
+    dev: true
+
+  /vitest-localstorage-mock@0.0.1(vitest@0.34.5):
+    resolution: {integrity: sha512-jt8/URLM+aJWObVPWxDZwt/ZSl/JOKafYuITozDVoFHlgl99jjZ7Wdvsu8ryalFChlgsg1lOBicTQsHXJCpXuw==}
+    peerDependencies:
+      vitest: '*'
+    dependencies:
+      vitest: 0.34.5
     dev: true
 
   /vitest@0.34.5:

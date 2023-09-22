@@ -8,9 +8,12 @@ export default defineConfig({
 
   test: {
     include: ['**/*.test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    // don't use jsdom - it doesn't implement webcrypto
     // environment: 'jsdom',
+    // setupFiles: ['./testSetup.js'],
     globals: true,
-    // setupFiles: 'src/setupTests.ts'
+    setupFiles: ['vitest-localstorage-mock'],
+    mockReset: false,
   },
   resolve: {
     alias: {
