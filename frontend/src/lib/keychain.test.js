@@ -48,7 +48,6 @@ describe('AES Wrapping Keys', () => {
       wrappingKey
     );
     expect(wrappedKey).toBeTruthy();
-    console.log(wrappedKey.length);
   });
 
   it('can unwrap an AES key with a wrapping key', async () => {

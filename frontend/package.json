@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "./build.sh",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "test-debug": "vitest --inspect-brk --single-thread"
   },
   "dependencies": {
     "install": "^0.13.0",

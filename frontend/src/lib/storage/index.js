@@ -2,7 +2,9 @@ import LocalStorageAdapter from './LocalStorage';
 
 export class Storage {
   USER_KEY = 'lb/user';
-  KEYS_KEY = 'lb/keys';
+  OTHER_KEYS_KEY = 'lb/keys';
+  RSA_KEYS_KEY = 'lb/rsa';
+
   constructor(StorageAdapter = LocalStorageAdapter) {
     this.adapter = new StorageAdapter();
     /*
@@ -33,10 +35,18 @@ export class Storage {
   }
 
   async storeKeys(keysObj) {
-    this._store(this.KEYS_KEY, { ...keysObj });
+    this._store(this.OTHER_KEYS_KEY, { ...keysObj });
   }
 
   async loadKeys() {
-    return this._load(this.KEYS_KEY);
+    return this._load(this.OTHER_KEYS_KEY);
+  }
+
+  async storeKeypair(keysObj) {
+    this._store(this.RSA_KEYS_KEY, { ...keysObj });
+  }
+
+  async loadKeypair() {
+    return this._load(this.RSA_KEYS_KEY);
   }
 }

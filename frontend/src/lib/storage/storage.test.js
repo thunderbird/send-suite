@@ -39,3 +39,25 @@ describe('Key storage', () => {
     expect(keys).toEqual(storedKeys);
   });
 });
+describe('Keypair storage', () => {
+  it('can store keypairs', async () => {
+    const storage = new Storage();
+    const keys = {
+      publicKey: 'abc123',
+      privateKey: 'xyz789',
+    };
+    expect(async () => {
+      await storage.storeKeypair(keys);
+    }).not.toThrowError();
+  });
+  it('can retrieve keypairs', async () => {
+    const storage = new Storage();
+    const keys = {
+      publicKey: 'abc123',
+      privateKey: 'xyz789',
+    };
+    await storage.storeKeys(keys);
+    const storedKeys = await storage.loadKeypair();
+    expect(keys).toEqual(storedKeys);
+  });
+});
