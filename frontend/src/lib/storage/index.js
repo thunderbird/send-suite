@@ -1,12 +1,26 @@
 export class Storage {
-  USER_KEY = '_user';
   constructor() {
-    this.db = {};
+    this.user = {};
+    this.keys = {};
   }
+
   async storeUser(userObj) {
-    this.db[this.USER_KEY] = userObj;
+    this.user = { ...userObj };
   }
+
   async loadUser() {
-    return this.db[this.USER_KEY];
+    return { ...this.user };
+  }
+
+  async storeKeys(keysObj) {
+    this.keys = {
+      ...keysObj,
+    };
+  }
+
+  async loadKeys() {
+    return {
+      ...this.keys,
+    };
   }
 }
