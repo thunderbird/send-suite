@@ -265,6 +265,14 @@ export class Keychain {
     };
   }
 
+  set keys(keyObj) {
+    this._keys = keyObj;
+  }
+
+  count() {
+    return Object.keys(this._keys).length;
+  }
+
   async add(id, key) {
     if (!this.rsa.publicKey) {
       throw Error('Missing public key, required for wrapping AES key');
@@ -310,7 +318,9 @@ export class Keychain {
     };
 
     await this._storage.storeKeypair(keysObj);
+
     // store other keys
+    await this._storage.storeKeys(this.keys);
   }
 
   async load() {
@@ -320,7 +330,9 @@ export class Keychain {
     // these need conversion from jwk
     await this.rsa.setPrivateKeyFromJwk(privateKey);
     await this.rsa.setPublicKeyFromJwk(publicKey);
+
     // load other keys
+    this.keys = await this._storage.loadKeys();
   }
 }
 
