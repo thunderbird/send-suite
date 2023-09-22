@@ -3,7 +3,7 @@ import nodeCrypto from 'crypto';
 
 let crypto = nodeCrypto;
 try {
-  crypto = browser.crypto;
+  crypto = window.crypto;
 } catch (e) {
   // console.log(`using node crypto module`);
 }
