@@ -7,7 +7,7 @@ const props = defineProps({
 });
 
 const api = inject('api');
-const { user } = inject('user');
+const user = inject('user');
 const keychain = inject('keychain');
 
 const message = ref('');
@@ -67,12 +67,7 @@ async function sendMessage(isText = true) {
   }
   console.log(`🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀`);
   console.log(blob.type);
-  const uploadResp = await api.createContent(
-    id,
-    blob.size,
-    user.value.id,
-    blob.type
-  );
+  const uploadResp = await api.createContent(id, blob.size, user.id, blob.type);
   console.log(uploadResp);
 
   if (id !== uploadResp.id) {

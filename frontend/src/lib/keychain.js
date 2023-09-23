@@ -1,7 +1,7 @@
-// When running automated tests, use crypto module instead of `window.crypto`
 import { Storage } from './storage';
-import nodeCrypto from 'crypto';
 
+// When running automated tests, use crypto module instead of `window.crypto`
+import nodeCrypto from 'crypto';
 let crypto = nodeCrypto;
 try {
   crypto = window.crypto;
@@ -255,8 +255,9 @@ export class Keychain {
     this.challenge = new Challenge();
 
     this._keys = {};
-    this._onloadArray = [];
     this._storage = storage ?? new Storage();
+
+    this._onLoadCallbacks = [];
   }
 
   get keys() {
@@ -333,6 +334,11 @@ export class Keychain {
 
     // load other keys
     this.keys = await this._storage.loadKeys();
+    this._onLoadCallbacks.forEach(async (cb) => await cb());
+  }
+
+  _addOnLoad(cb) {
+    this._onLoadCallbacks.push(cb);
   }
 }
 

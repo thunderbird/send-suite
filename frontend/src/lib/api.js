@@ -277,6 +277,16 @@ export class ApiConnection {
     }
   }
 
+  async login(email) {
+    const resp = await this.callApi(`users/login`, { email }, 'POST');
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not log user in`);
+      return null;
+    }
+  }
+
   async createEphemeralLink(
     containerId,
     wrappedKey,

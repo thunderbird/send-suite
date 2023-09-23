@@ -8,22 +8,23 @@ Should:
 Does vue already have the notion of a store?
 (Or is this why Pinia exists?)
 */
-import { ref, onMounted, provide, watch, computed } from 'vue';
+import { ref, reactive, onMounted, provide, watch, watchEffect, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { ApiConnection } from './lib/api';
+import { ApiConnection } from '@/lib/api';
 
-import { Keychain } from './lib/keychain';
-import { createMessageSocket } from './lib/messageSocket';
+import { Keychain } from '@/lib/keychain';
+import { Storage } from '@/lib/storage';
+import { User } from './lib/user';
+import { createMessageSocket } from '@/lib/messageSocket';
 const router = useRouter();
 
 const api = new ApiConnection('https://localhost:8088');
-
 provide('api', api);
 
-const user = ref({
-  id: 0,
-  email: '',
-});
+// const user = ref({
+//   id: 0,
+//   email: '',
+// });
 
 // const eventSource = ref(null);
 // provide('eventSource', eventSource);
@@ -33,78 +34,83 @@ provide('messageSocket', messageSocket);
 const messageBus = ref(null);
 provide('messageBus', messageBus);
 
-function setUser(obj) {
-  user.value = {
-    ...user.value,
-    ...obj,
-  };
-  console.log(`set user object as ref`);
-  console.log(obj);
-}
+// function setUser(obj) {
+//   user.value = {
+//     ...user.value,
+//     ...obj,
+//   };
+//   console.log(`set user object as ref`);
+//   console.log(obj);
+// }
 
-// Move storeUser and loadUser to a storage class
-function storeUser(id, email, tier) {
-  const jsonUser = JSON.stringify({
-    id,
-    email,
-    tier,
-  });
-  localStorage.setItem('send-user', jsonUser);
-}
-function loadUser() {
-  const jsonUser = localStorage.getItem('send-user');
-  if (jsonUser) {
-    setUser(JSON.parse(jsonUser));
-  }
-}
+// // Move storeUser and loadUser to a storage class
+// function storeUser(id, email, tier) {
+//   const jsonUser = JSON.stringify({
+//     id,
+//     email,
+//     tier,
+//   });
+//   localStorage.setItem('send-user', jsonUser);
+// }
+// function loadUser() {
+//   const jsonUser = localStorage.getItem('send-user');
+//   if (jsonUser) {
+//     setUser(JSON.parse(jsonUser));
+//   }
+// }
 
-provide('user', {
-  user: computed(() => user.value),
-  setUser,
-  storeUser,
-  loadUser,
-});
+// provide('user', {
+//   user: computed(() => user.value),
+//   setUser,
+//   storeUser,
+//   loadUser,
+// });
 
 const isInitComplete = ref({});
 
-// const keychain = new Keychain(new Storage());
-const keychain = new Keychain();
+const storage = new Storage();
+window.storage = storage;
+
+const keychain = new Keychain(storage);
 provide('keychain', keychain);
 
-watch(user, async () => {
-  if (user.value.id !== 0) {
-    messageSocket.value = await createMessageSocket(user.value.id);
-    if (messageSocket.value) {
-      console.log(`created messageSocket`);
-      messageSocket.value.onmessage = (event) => {
-        console.log(`heard from the messageSocket`);
-        console.log(event.data);
-        const data = JSON.parse(event.data);
-        switch (data?.type) {
-          case 'burn':
-            if (data?.conversationId) {
-              cleanAfterBurning(data.conversationId);
-            }
-            break;
-          case 'newMessage':
-            if (data?.conversationId) {
-              newMessageCallbacks.forEach((cb) => {
-                cb(data.conversationId);
-              });
-            }
-            break;
-          case 'newChat':
-            newChatCallbacks.forEach((cb) => {
-              cb();
-            });
-          default:
-            break;
-        }
-      };
-    }
-    isInitComplete.value = true;
-  }
-});
+const user = new User(api, storage);
+provide('user', user);
+
+// watch(user, async () => {
+//   if (user.value.id !== 0) {
+//     messageSocket.value = await createMessageSocket(user.value.id);
+//     if (messageSocket.value) {
+//       console.log(`created messageSocket`);
+//       messageSocket.value.onmessage = (event) => {
+//         console.log(`heard from the messageSocket`);
+//         console.log(event.data);
+//         const data = JSON.parse(event.data);
+//         switch (data?.type) {
+//           case 'burn':
+//             if (data?.conversationId) {
+//               cleanAfterBurning(data.conversationId);
+//             }
+//             break;
+//           case 'newMessage':
+//             if (data?.conversationId) {
+//               newMessageCallbacks.forEach((cb) => {
+//                 cb(data.conversationId);
+//               });
+//             }
+//             break;
+//           case 'newChat':
+//             newChatCallbacks.forEach((cb) => {
+//               cb();
+//             });
+//           default:
+//             break;
+//         }
+//       };
+//     }
+//     isInitComplete.value = true;
+//   }
+// });
 
 // keychain.addOnload(() => {
 //   console.log(`confirming keychain.addOnload works`);
@@ -118,9 +124,9 @@ onMounted(async () => {
     return;
   }
   console.log(`keychain loaded`);
-  if (keychain.keys) {
-    console.log(`we have keys`);
-    loadUser();
+  if (keychain.rsa.privateKey) {
+    console.log(`we have keys, attempting to load user`);
+    user.load();
   }
   // console.log('TODO: get/set auth0 user');
   // console.log(`api should have a value now`);

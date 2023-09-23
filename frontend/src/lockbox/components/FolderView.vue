@@ -14,18 +14,18 @@ function loadFolder(id) {
 }
 
 const api = inject('api');
-const { user } = inject('user');
+const user = inject('user');
 
 const folders = ref([]);
 
 const downloadKeyMap = {};
 
 async function loadFolderList(root = null) {
-  if (!user.value.id) {
+  if (!user.id) {
     console.log(`no valid user id`);
     return;
   }
-  const dirItems = await api.getAllFolders(user.value.id);
+  const dirItems = await api.getAllFolders(user.id);
   console.log(dirItems);
   if (!dirItems) {
     return;
@@ -71,9 +71,9 @@ onMounted(async () => {
   loadFolderList();
 });
 
-watch(user, async () => {
-  loadFolderList();
-});
+// watch(user, async () => {
+//   loadFolderList();
+// });
 </script>
 <template>
   <h2>Folders</h2>

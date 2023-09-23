@@ -5,6 +5,7 @@ import {
   getAllUserGroupContainers,
   getUserPublicKey,
   getAllInvitations,
+  getUserByEmail,
 } from '../models';
 
 const router: Router = Router();
@@ -21,6 +22,26 @@ router.get('/:id', async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: 'Server error.',
+    });
+  }
+});
+
+router.post('/login', async (req, res) => {
+  const { email } = req.body;
+  console.log(`looking for user ${email}`);
+  try {
+    const user = await getUserByEmail(email);
+    if (user) {
+      res.status(200).json(user);
+    } else {
+      res.status(404).send();
+    }
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: 'Server error.',
+      error: error.message,
     });
   }
 });

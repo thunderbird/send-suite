@@ -22,6 +22,13 @@ export async function createUser(
   });
 }
 
+export async function getUserByEmail(email: string) {
+  return prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+}
 export async function getUserPublicKey(id: number) {
   return prisma.user.findUnique({
     where: {

@@ -1,24 +1,33 @@
 <script setup>
-import { ref, watch, watchEffect, inject, onMounted } from 'vue';
+import { ref, reactive, computed, watch, watchEffect, inject, onMounted } from 'vue';
 
-const api = inject('api');
+const email = ref('');
+const id = ref(null);
+const jwkPublicKey = ref('');
+const showDebug = ref(true);
+
+// const api = inject('api');
 const keychain = inject('keychain');
-const { user, setUser, storeUser, loadUser } = inject('user');
+const user = inject('user');
 // const eventSource = inject('eventSource');
 const messageSocket = inject('messageSocket');
 
-const showDebug = ref(true);
+user._addOnLoad(async () => {
+  email.value = user.email;
+  id.value = user.id;
+})
+keychain._addOnLoad(async () => {
+  jwkPublicKey.value = await keychain.rsa.getPublicKeyJwk();
+})
 
 onMounted(async () => {
   window.keychain = keychain;
 });
 
-const jwkPublicKey = ref('');
-
 async function generateKeys() {
   if (keychain?.rsa?.generateKeyPair) {
     await keychain.rsa.generateKeyPair();
-    jwkPublicKey.value = JSON.stringify(await keychain.rsa.getPublicKeyJwk());
+    jwkPublicKey.value = await keychain.rsa.getPublicKeyJwk();
   }
 }
 
@@ -38,24 +47,37 @@ async function loadKeys() {
 //   jwkPublicKey.value = JSON.stringify(await keychain.rsa.getPublicKeyJwk());
 // });
 
-async function createApiUser() {
-  const email = user.value.email;
-  jwkPublicKey.value = await keychain.rsa.getPublicKeyJwk();
-
-  const resp = await api.createUser(email, jwkPublicKey.value);
-  if (resp) {
-    const { id, tier } = resp.user;
-    setUser({
-      id,
-      email,
-      tier,
-    });
-
-    storeUser(id, email, tier);
+async function storeUser() {
+  if (!user.id) {
+    console.log(`no user to store`)
+    return;
   }
+  console.log(`storing user with id ${user.id}`)
+  await user.store();
 }
 
-function resetStorage() {}
+async function loadUser() {
+  await user.load();
+
+}
+
+async function login() {
+  if (!keychain.rsa.publicKey) {
+    console.log(`no public key, either call keychain.load() or generate a new one `);
+    return;
+  }
+
+  const loginResp = await user.createUser(email.value, jwkPublicKey.value);
+  if (!loginResp) {
+    console.log(`could not create user, trying to log in`)
+    const loginResp = await user.login(email.value);
+    if (!loginResp) {
+      console.log(`could not log in either 🤷`)
+      return;
+    }
+    console.log(`logged in, user id is ${user.id}`)
+  }
+}
 
 async function sendHeartbeat() {
   console.log(`sending heartbeat`);
@@ -87,19 +109,19 @@ async function sendHeartbeat() {
     <button class="btn-primary" @click="loadKeys">Load Keys</button>
     <br />
     <label>
-      User id:
-      <input type="number" v-model="user.id" />
+      ID:
+      <input type="email" v-model="id" />
     </label>
     <br />
     <label>
       Email:
-      <input type="email" v-model="user.email" />
+      <input type="email" v-model="email" />
     </label>
     <br />
-    <button class="btn-primary" @click="storeUser">Save User</button>
+    <button class="btn-primary" @click="storeUser">Store User</button>
     <button class="btn-primary" @click="loadUser">Load User</button>
     <br />
-    <button class="btn-primary" @click="createApiUser">Create Api User</button>
+    <button class="btn-primary" @click="login">Log in</button>
     <!-- <br />
   <label>
     <input type="checkbox" disabled :checked="keychain.privateKey" />
@@ -124,6 +146,7 @@ textarea {
   height: 8em;
   font-size: 10px;
 }
+
 hr {
   margin-top: 1em;
   padding-top: 1em;

@@ -2,12 +2,12 @@
 import { inject } from 'vue';
 
 const api = inject('api');
-const { user } = inject('user');
+const user = inject('user');
 const keychain = inject('keychain');
 
 async function createFolder() {
   console.log(`you want to create a folder`);
-  const response = await api.createFolder(user.value.id, 'Untitled');
+  const response = await api.createFolder(user.id, 'Untitled');
   console.log(response);
   // await keychain.createAndAddContainerKey(1);
   await keychain.newKeyForContainer(response.id);
