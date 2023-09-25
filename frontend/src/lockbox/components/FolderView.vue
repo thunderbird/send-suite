@@ -3,7 +3,7 @@ import { ref, onMounted, inject, watch } from 'vue';
 import { download } from '@/lib/filesync';
 import FileUpload from './FileUpload.vue';
 
-const emit = defineEmits(['setFolderId']);
+const emit = defineEmits(['setFolderId', 'setFileInfoObj']);
 const props = defineProps({
   // folders: Array,
   folderId: Number,
@@ -36,38 +36,6 @@ async function loadFolderList(root = null) {
   folders.value = dirItems;
 }
 
-async function downloadContent(id, folderId, wrappedKey, filename) {
-  if (!id) {
-    console.log(`no id`);
-    return;
-  }
-  if (!folderId) {
-    console.log(`no id`);
-    return;
-  }
-
-  let wrappingKey;
-  try {
-    wrappingKey = await keychain.get(folderId);
-  } catch (e) {
-    console.log(`cannot unwrap content key - no key for folder`);
-    return;
-  }
-
-  const { size, type } = await api.getUploadMetadata(id);
-  if (!size) {
-    console.log(`no size`);
-    return;
-  }
-
-  const contentKey = await keychain.container.unwrapContentKey(
-    wrappedKey,
-    wrappingKey
-  );
-
-  await download(id, size, contentKey, false, filename, type);
-}
-
 onMounted(async () => {
   loadFolderList();
 });
@@ -75,6 +43,23 @@ onMounted(async () => {
 user._addOnLoad(() => {
   loadFolderList();
 })
+
+function uploadComplete() {
+  console.log(`finished uploading, reloading folder list`);
+  console.log(`TODO: only reload the one folder`);
+  loadFolderList();
+}
+
+function showFileInfo(id, folderId, wrappedKey, filename) {
+  console.log(`ok... where exactly do I send this?
+  The FileInfo component is up a level`)
+  emit('setFileInfoObj', {
+    id,
+    folderId,
+    wrappedKey,
+    filename,
+  })
+}
 // watch(user, async () => {
 //   loadFolderList();
 // });
@@ -104,21 +89,23 @@ user._addOnLoad(() => {
           {{ folder.name }}
         </a>
       </div>
-      <FileUpload v-if="folder.id === folderId" :folderId="folderId" />
-      <ul class="file-list">
-        <li v-for="file of folder.items">
-          <a href="#" @click.prevent="
-            downloadContent(
-              file.uploadId,
-              folder.id,
-              file.wrappedKey,
-              file.name
-            )
-            ">
-            {{ file.name }}
-          </a>
-        </li>
-      </ul>
+      <template v-if="folder.id === folderId">
+        <FileUpload v-if="folder.id === folderId" :folderId="folderId" @uploadComplete="uploadComplete" />
+        <ul class="file-list">
+          <li v-for="file of folder.items">
+            <a href="#" @click.prevent="
+              showFileInfo(
+                file.uploadId,
+                folder.id,
+                file.wrappedKey,
+                file.name
+              )
+              ">
+              {{ file.name }}
+            </a>
+          </li>
+        </ul>
+      </template>
     </li>
   </ul>
 </template>
