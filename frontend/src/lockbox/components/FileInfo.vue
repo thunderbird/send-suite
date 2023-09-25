@@ -49,7 +49,7 @@ async function downloadContent(id, folderId, wrappedKey, fname) {
 <template>
 	<h1>{{ fileInfoObj.filename }}</h1>
 	<a href="#" @click.prevent="
-		download(
+		downloadContent(
 			fileInfoObj.id,
 			fileInfoObj.folderId,
 			fileInfoObj.wrappedKey,

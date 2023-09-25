@@ -11,6 +11,7 @@ async function createFolder() {
   console.log(response);
   // await keychain.createAndAddContainerKey(1);
   await keychain.newKeyForContainer(response.id);
+  await keychain.store();
 }
 </script>
 <template>
