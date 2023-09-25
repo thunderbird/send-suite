@@ -1,10 +1,10 @@
 <script setup>
-import { ref, reactive, computed, watch, watchEffect, inject, onMounted } from 'vue';
+import { ref, inject, onMounted } from 'vue';
 
 const email = ref('');
 const id = ref(null);
 const jwkPublicKey = ref('');
-const showDebug = ref(true);
+const showDebug = ref(false);
 
 // const api = inject('api');
 const keychain = inject('keychain');

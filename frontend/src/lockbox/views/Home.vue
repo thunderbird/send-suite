@@ -2,7 +2,6 @@
 import { ref } from 'vue';
 import NewFolder from '../components/NewFolder.vue';
 import FolderView from '../components/FolderView.vue';
-import FileUpload from '../components/FileUpload.vue';
 import Breadcrumbs from '../components/Breadcrumbs.vue';
 
 const fileId = ref(null);
@@ -35,6 +34,5 @@ function gotoFolder(id) {
   <h2>Folder {{ folderId }} selected</h2>
   <NewFolder />
   <Breadcrumbs @setFolderId="setFolderId" :folderPath="folderPath" />
-  <FileUpload :folderId="folderId" />
   <FolderView @setFolderId="setFolderId" :folderId="folderId" />
 </template>
