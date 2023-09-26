@@ -11,6 +11,7 @@ const user = inject('user');
 const folders = ref([]);
 const fileInfoObj = ref(null);
 
+// TODO: actually limit this to a specific folder
 async function loadFolderList(root = null) {
   if (!user.id) {
     console.log(`no valid user id`);
@@ -40,6 +41,13 @@ function uploadComplete() {
   loadFolderList();
 }
 
+function deleteComplete() {
+  console.log(`deleted a file, reloading folder list`);
+  console.log(`TODO: only reload the one folder`);
+  loadFolderList();
+  setFileInfoObj(null);
+}
+
 function updateFolder(folderId) {
   // TODO: limit this to a single folder
   loadFolderList();
@@ -53,7 +61,7 @@ async function setFileInfoObj(obj) {
     fileInfoObj.value = null;
     return;
   }
-  const { size, type } = await api.getUploadMetadata(obj.id);
+  const { size, type } = await api.getUploadMetadata(obj.uploadId);
   fileInfoObj.value = { ...obj, size, type };
 }
 
@@ -87,5 +95,5 @@ function reloadFolder(id) {
   <Breadcrumbs @setFolderId="setFolderId" :folderPath="folderPath" />
   <FolderView @setFolderId="setFolderId" @setFileInfoObj="setFileInfoObj" @uploadComplete="uploadComplete"
     :folders="folders" :folderId="folderId" />
-  <FileInfo v-if="fileInfoObj" :fileInfoObj="fileInfoObj" />
+  <FileInfo v-if="fileInfoObj" :fileInfoObj="fileInfoObj" @deleteComplete="deleteComplete" />
 </template>

@@ -14,11 +14,10 @@ function loadFolder(id) {
   emit(`setFolderId`, id);
 }
 
-function showFileInfo(id, folderId, wrappedKey, filename) {
-  console.log(`ok... where exactly do I send this?
-  The FileInfo component is up a level`)
+function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename) {
   emit('setFileInfoObj', {
-    id,
+    itemId,
+    uploadId,
     folderId,
     wrappedKey,
     filename,
@@ -64,6 +63,7 @@ function uploadComplete() {
           <li v-for="file of folder.items">
             <a href="#" @click.prevent="
               showFileInfo(
+                file.id,
                 file.uploadId,
                 folder.id,
                 file.wrappedKey,

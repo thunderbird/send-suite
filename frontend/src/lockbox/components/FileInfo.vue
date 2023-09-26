@@ -5,16 +5,17 @@ import { download } from '@/lib/filesync';
 const api = inject('api');
 const user = inject('user');
 
-// const emit = defineEmits(['']);
+const emit = defineEmits(['deleteComplete']);
 const props = defineProps({
 	fileInfoObj: Object,
 });
 
-
 // TODO: move these functions to filesync.js?
 async function deleteItemAndContent(itemId, containerId) {
 	const response = await api.deleteItem(itemId, containerId, true);
-	debugger;
+	if (response) {
+		emit('deleteComplete');
+	}
 
 }
 async function downloadContent(id, folderId, wrappedKey, fname) {
@@ -57,7 +58,7 @@ async function downloadContent(id, folderId, wrappedKey, fname) {
 	<h1>{{ fileInfoObj.filename }}</h1>
 	<a href="#" @click.prevent="
 		downloadContent(
-			fileInfoObj.id,
+			fileInfoObj.uploadId,
 			fileInfoObj.folderId,
 			fileInfoObj.wrappedKey,
 			fileInfoObj.filename,
@@ -65,7 +66,7 @@ async function downloadContent(id, folderId, wrappedKey, fname) {
 		">
 		download
 	</a>
-	<a href="#" @click.prevent="deleteItemAndContent(fileInfoObj.id, fileInfoObj.folderId)">
+	<a href="#" @click.prevent="deleteItemAndContent(fileInfoObj.itemId, fileInfoObj.folderId)">
 		delete
 	</a>
 	<ul>
