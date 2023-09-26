@@ -4,6 +4,7 @@ import {
   createContainer,
   getOwnedContainers,
   createItem,
+  deleteItem,
   getItemsInContainer,
   addGroupMember,
   removeGroupMember,
@@ -92,6 +93,22 @@ router.post('/:containerId', async (req, res) => {
   } catch (error) {
     console.log(error);
     console.log(`🤡 why did it not create the item?`);
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+router.delete('/:containerId/item/:itemId', async (req, res) => {
+  const { containerId, itemId } = req.params;
+  // Force req.body.shouldDeleteUpload to a boolean
+  const shouldDeleteUpload = !!req.body.shouldDeleteUpload;
+  try {
+    const result = await deleteItem(parseInt(itemId), shouldDeleteUpload);
+    res.status(200).json(result);
+  } catch (error) {
+    console.log(`error deleting item ${itemId} in container ${containerId}`);
+    console.log(error);
     res.status(500).json({
       message: 'Server error.',
     });

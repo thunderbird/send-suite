@@ -94,6 +94,22 @@ export class ApiConnection {
     }
   }
 
+  async deleteItem(itemId, containerId, shouldDeleteContent) {
+    const resp = await this.callApi(
+      `containers/${containerId}/item/${itemId}`,
+      {
+        shouldDeleteContent,
+      },
+      'DELETE'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: Unable to delete Item.`);
+      return null;
+    }
+  }
+
   async getContainerWithItems(containerId) {
     const resp = await this.callApi(`containers/${containerId}`);
     if (resp) {

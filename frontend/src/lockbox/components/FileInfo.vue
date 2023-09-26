@@ -10,6 +10,13 @@ const props = defineProps({
 	fileInfoObj: Object,
 });
 
+
+// TODO: move these functions to filesync.js?
+async function deleteItemAndContent(itemId, containerId) {
+	const response = await api.deleteItem(itemId, containerId, true);
+	debugger;
+
+}
 async function downloadContent(id, folderId, wrappedKey, fname) {
 	if (!id) {
 		console.log(`no id`);
@@ -57,6 +64,9 @@ async function downloadContent(id, folderId, wrappedKey, fname) {
 		)
 		">
 		download
+	</a>
+	<a href="#" @click.prevent="deleteItemAndContent(fileInfoObj.id, fileInfoObj.folderId)">
+		delete
 	</a>
 	<ul>
 		<li>{{ fileInfoObj.id }}</li>

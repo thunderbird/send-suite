@@ -3,51 +3,15 @@ import { ref, onMounted, inject, watch } from 'vue';
 import { download } from '@/lib/filesync';
 import FileUpload from './FileUpload.vue';
 
-const emit = defineEmits(['setFolderId', 'setFileInfoObj']);
+const emit = defineEmits(['setFolderId', 'setFileInfoObj', 'uploadComplete']);
 const props = defineProps({
-  // folders: Array,
+  folders: Array,
   folderId: Number,
 });
 
 function loadFolder(id) {
-  console.log(`you want to go to folder ${id}`);
+  console.log(`FolderView wants to go to folder ${id}`);
   emit(`setFolderId`, id);
-}
-
-const api = inject('api');
-const user = inject('user');
-
-const folders = ref([]);
-
-const downloadKeyMap = {};
-
-async function loadFolderList(root = null) {
-  if (!user.id) {
-    console.log(`no valid user id`);
-    return;
-  }
-  const dirItems = await api.getAllFolders(user.id);
-  console.log(dirItems);
-  if (!dirItems) {
-    return;
-  }
-
-  console.log(dirItems);
-  folders.value = dirItems;
-}
-
-onMounted(async () => {
-  loadFolderList();
-});
-
-user._addOnLoad(() => {
-  loadFolderList();
-})
-
-function uploadComplete() {
-  console.log(`finished uploading, reloading folder list`);
-  console.log(`TODO: only reload the one folder`);
-  loadFolderList();
 }
 
 function showFileInfo(id, folderId, wrappedKey, filename) {
@@ -60,6 +24,11 @@ function showFileInfo(id, folderId, wrappedKey, filename) {
     filename,
   })
 }
+
+function uploadComplete() {
+  emit(`uploadComplete`);
+}
+
 // watch(user, async () => {
 //   loadFolderList();
 // });
@@ -68,7 +37,7 @@ function showFileInfo(id, folderId, wrappedKey, filename) {
   <h2>Folders</h2>
   <button class="btn-primary" @click="loadFolderList">🔃</button>
   <ul>
-    <li v-for="folder of folders">
+    <li v-for="folder of props.folders">
       <div class="lockbox-folder" :class="{ active: folder.id === folderId }">
         <a href="#" @click.prevent="loadFolder(folder.id)">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">

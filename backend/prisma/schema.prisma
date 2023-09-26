@@ -115,7 +115,9 @@ model Item {
   containerId   Int
   container     Container     @relation(fields: [containerId], references: [id], onDelete: Cascade)
   uploadId      String
-  upload        Upload          @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+  // Do not cascade, since uploads can exist in different Containers as 
+  // different Items
+  upload        Upload          @relation(fields: [uploadId], references: [id] )
   type          ItemType
   createdAt     DateTime?
   // unique "file names" in a container

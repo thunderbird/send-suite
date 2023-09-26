@@ -161,6 +161,59 @@ export async function createItem(
   });
 }
 
+export async function deleteItem(id: number, shouldDeleteUpload = false) {
+  // TODO: manage user sessions on the server
+  // requiring logged-in user to be owner
+  if (shouldDeleteUpload) {
+    const item = await prisma.item.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        uploadId: true,
+      },
+    });
+    const uploadDeleteResult = await prisma.upload.delete({
+      where: {
+        id: item.uploadId,
+      },
+    });
+    if (!uploadDeleteResult) {
+      console.log(`We should delete the upload, but could not`);
+      return null;
+    }
+    console.log(`deleted upload ${item.uploadId}`);
+  }
+
+  const result = await prisma.item.delete({
+    where: {
+      id,
+    },
+  });
+
+  console.log(`deleted item ${id}`);
+  return result;
+}
+
+export async function copyItemToContainer(
+  id: number,
+  containerId: number,
+  wrappedKey: string
+) {
+  // - copies existing item, creating it in another container
+  // get the existing item (so we can use its name and get its upload id)
+  // get the container (to confirm it exists)
+  // call createItem, with the new containerId and wrappedKey
+  // return the new item
+}
+
+export async function moveItem() {}
+export async function updateItem() {
+  // why update?
+  // - rename
+  // - new uploadId
+}
+
 // required: containerId
 export async function getItemsInContainer(id: number) {
   return prisma.container.findUnique({
@@ -241,6 +294,7 @@ export async function getAllUserGroupContainers(
       name: true,
       items: {
         select: {
+          id: true,
           name: true,
           wrappedKey: true,
           uploadId: true,
