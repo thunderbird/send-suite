@@ -1,7 +1,7 @@
 <script setup>
 import FileUpload from './FileUpload.vue';
 
-const emit = defineEmits(['setFolderId', 'setFileInfoObj', 'uploadComplete']);
+const emit = defineEmits(['setFolderId', 'setFileInfoObj', 'uploadComplete', 'deleteFolder']);
 const props = defineProps({
   folders: Array,
   folderId: Number,
@@ -25,6 +25,11 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
 
 function uploadComplete() {
   emit(`uploadComplete`);
+}
+
+function deleteFolder(id) {
+  console.log(`deleting folder ${id}`)
+  emit(`deleteFolder`, id);
 }
 
 // watch(user, async () => {
@@ -53,7 +58,10 @@ function uploadComplete() {
                 stroke-width="5.376" rx="9.63" />
             </g>
           </svg>
-          {{ folder.name }}
+          {{ folder.name }} ({{ folder.id }})
+        </a>
+        <a v-if="folder.id === folderId" href="#" @click.prevent="deleteFolder(folder.id)">
+          Delete folder
         </a>
       </div>
       <template v-if="folder.id === folderId">

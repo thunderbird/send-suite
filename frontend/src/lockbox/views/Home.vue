@@ -35,6 +35,12 @@ user._addOnLoad(() => {
   loadFolderList();
 })
 
+function createComplete() {
+  console.log(`finished uploading, reloading folder list`);
+  console.log(`TODO: only reload the one folder`);
+  loadFolderList();
+}
+
 function uploadComplete() {
   console.log(`finished uploading, reloading folder list`);
   console.log(`TODO: only reload the one folder`);
@@ -51,6 +57,15 @@ function deleteComplete() {
 function updateFolder(folderId) {
   // TODO: limit this to a single folder
   loadFolderList();
+}
+
+async function deleteFolder(id) {
+  const resp = await api.deleteContainer(id);
+  if (resp) {
+    console.log(`delete successful, updating folder list`);
+    loadFolderList();
+    setFileInfoObj(null);
+  }
 }
 
 async function setFileInfoObj(obj) {
@@ -96,9 +111,9 @@ function reloadFolder(id) {
 
 <template>
   <h1>{{ user.email }}'s Lockbox</h1>
-  <NewFolder />
+  <NewFolder @createComplete="createComplete" />
   <Breadcrumbs @setFolderId="setFolderId" :folderPath="folderPath" />
   <FolderView @setFolderId="setFolderId" @setFileInfoObj="setFileInfoObj" @uploadComplete="uploadComplete"
-    :folders="folders" :folderId="folderId" />
+    @deleteFolder="deleteFolder" :folders="folders" :folderId="folderId" />
   <FileInfo v-if="fileInfoObj" :fileInfoObj="fileInfoObj" @deleteComplete="deleteComplete" />
 </template>

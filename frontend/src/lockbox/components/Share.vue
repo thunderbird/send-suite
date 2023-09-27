@@ -190,7 +190,7 @@ async function requestShareLink(containerId, password) {
 		console.log(`created ephemeral link for convo ${containerId}`);
 		const hash = resp.id;
 		const { origin } = new URL(window.location.href);
-		const url = `${origin}/ephemeral/${hash}`;
+		const url = `${origin}/share/${hash}`;
 		// const url = hash;
 		ephemeralHash.value = url;
 		message.value = '';

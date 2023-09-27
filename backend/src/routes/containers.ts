@@ -11,6 +11,7 @@ import {
   createInvitation,
   acceptInvitation,
   getContainerInfo,
+  burnFolder,
 } from '../models';
 
 const router: Router = Router();
@@ -219,6 +220,22 @@ router.get('/:containerId/info', async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: 'Server error.',
+    });
+  }
+});
+
+router.delete('/:containerId', async (req, res) => {
+  const { containerId } = req.params;
+  console.log(`👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿`);
+  try {
+    const result = await burnFolder(parseInt(containerId));
+    res.status(200).json({
+      result,
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({
+      message: 'Server error',
     });
   }
 });

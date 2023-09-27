@@ -1,6 +1,7 @@
 <script setup>
 import { inject } from 'vue';
 
+const emit = defineEmits(['createComplete']);
 const api = inject('api');
 const user = inject('user');
 const keychain = inject('keychain');
@@ -12,6 +13,8 @@ async function createFolder() {
   // await keychain.createAndAddContainerKey(1);
   await keychain.newKeyForContainer(response.id);
   await keychain.store();
+  console.log(`finished creating folder`)
+  emit('createComplete');
 }
 </script>
 <template>

@@ -387,6 +387,16 @@ export class ApiConnection {
     }
   }
 
+  async deleteContainer(containerId) {
+    const resp = await this.callApi(`containers/${containerId}`, {}, 'DELETE');
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not delete container`);
+      return null;
+    }
+  }
+
   // getEventSource(id) {
   //   // Future improvement: use "@microsoft/fetch-event-source"
   //   // which lets you POST.

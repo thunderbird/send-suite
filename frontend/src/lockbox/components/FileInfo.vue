@@ -73,7 +73,10 @@ async function downloadContent(id, folderId, wrappedKey, fname) {
 	<ul>
 		<li>{{ fileInfoObj.id }}</li>
 		<li>
-			{{ fileInfoObj.size }} bytes
+			{{ fileInfoObj.upload.size }} bytes
+		</li>
+		<li>
+			{{ fileInfoObj.upload.type }} (mime type)
 		</li>
 	</ul>
 	<Share :items="[fileInfoObj]" />

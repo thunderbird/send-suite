@@ -504,6 +504,13 @@ export async function acceptEphemeralLink(
 }
 
 export async function burnEphemeralConversation(containerId: number) {
+  return await burnFolder(containerId);
+}
+
+export async function burnFolder(
+  containerId: number,
+  shouldDeleteUpload?: boolean
+) {
   // delete the ephemeral link
   console.log(`🤡 burning container id: ${containerId}`);
   const links = await prisma.ephemeralLink.deleteMany({
@@ -567,16 +574,18 @@ export async function burnEphemeralConversation(containerId: number) {
     })
   );
 
-  await Promise.all(
-    uploadIds.map(async (id) => {
-      console.log(`✅ deleting upload ${id}`);
-      return prisma.upload.delete({
-        where: {
-          id,
-        },
-      });
-    })
-  );
+  if (shouldDeleteUpload) {
+    await Promise.all(
+      uploadIds.map(async (id) => {
+        console.log(`✅ deleting upload ${id}`);
+        return prisma.upload.delete({
+          where: {
+            id,
+          },
+        });
+      })
+    );
+  }
 
   const deleteResp = await prisma.container.delete({
     where: {
