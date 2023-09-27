@@ -1,6 +1,7 @@
 <script setup>
 import { ref, inject } from 'vue';
 import { download } from '@/lib/filesync';
+import Share from './Share.vue';
 
 const api = inject('api');
 const user = inject('user');
@@ -75,5 +76,6 @@ async function downloadContent(id, folderId, wrappedKey, fname) {
 			{{ fileInfoObj.size }} bytes
 		</li>
 	</ul>
+	<Share :items="[fileInfoObj]" />
 </template>
 

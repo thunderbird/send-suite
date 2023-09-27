@@ -120,6 +120,16 @@ export class ApiConnection {
     }
   }
 
+  async getContainerInfo(containerId) {
+    const resp = await this.callApi(`containers/${containerId}/info`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get container ${containerId}`);
+      return null;
+    }
+  }
+
   async createConversation(ownerId, name) {
     // TODO: shift the userId from frontend argument to backend session
     const resp = await this.callApi(

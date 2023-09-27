@@ -214,7 +214,14 @@ export async function updateItem() {
   // - new uploadId
 }
 
-// required: containerId
+export async function getContainerInfo(id: number) {
+  return prisma.container.findUnique({
+    where: {
+      id,
+    },
+  });
+}
+
 export async function getItemsInContainer(id: number) {
   return prisma.container.findUnique({
     where: {
@@ -300,7 +307,7 @@ export async function getAllUserGroupContainers(
           uploadId: true,
           // uploadId: true,
           // createdAt: true,
-          // type: true,
+          type: true,
           upload: {
             select: {
               // type: true,

@@ -10,6 +10,7 @@ import {
   removeGroupMember,
   createInvitation,
   acceptInvitation,
+  getContainerInfo,
 } from '../models';
 
 const router: Router = Router();
@@ -202,6 +203,19 @@ router.get('/:containerId', async (req, res) => {
   try {
     const containerWithItems = await getItemsInContainer(parseInt(containerId));
     res.status(200).json(containerWithItems);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+// Get container info
+router.get('/:containerId/info', async (req, res) => {
+  const { containerId } = req.params;
+  try {
+    const container = await getContainerInfo(parseInt(containerId));
+    res.status(200).json(container);
   } catch (error) {
     res.status(500).json({
       message: 'Server error.',

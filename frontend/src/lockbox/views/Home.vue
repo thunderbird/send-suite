@@ -62,7 +62,12 @@ async function setFileInfoObj(obj) {
     return;
   }
   const { size, type } = await api.getUploadMetadata(obj.uploadId);
-  fileInfoObj.value = { ...obj, size, type };
+  fileInfoObj.value = {
+    ...obj,
+    upload: {
+      size, type
+    }
+  };
 }
 
 const folderId = ref(null);
@@ -90,7 +95,7 @@ function reloadFolder(id) {
 </script>
 
 <template>
-  <h1>This is lockbox</h1>
+  <h1>{{ user.email }}'s Lockbox</h1>
   <NewFolder />
   <Breadcrumbs @setFolderId="setFolderId" :folderPath="folderPath" />
   <FolderView @setFolderId="setFolderId" @setFileInfoObj="setFileInfoObj" @uploadComplete="uploadComplete"

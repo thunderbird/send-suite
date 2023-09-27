@@ -1,6 +1,4 @@
 <script setup>
-import { ref, onMounted, inject, watch } from 'vue';
-import { download } from '@/lib/filesync';
 import FileUpload from './FileUpload.vue';
 
 const emit = defineEmits(['setFolderId', 'setFileInfoObj', 'uploadComplete']);
@@ -14,13 +12,14 @@ function loadFolder(id) {
   emit(`setFolderId`, id);
 }
 
-function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename) {
+function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
   emit('setFileInfoObj', {
     itemId,
     uploadId,
     folderId,
     wrappedKey,
     filename,
+    type,
   })
 }
 
@@ -67,7 +66,8 @@ function uploadComplete() {
                 file.uploadId,
                 folder.id,
                 file.wrappedKey,
-                file.name
+                file.name,
+                file.type
               )
               ">
               {{ file.name }}
