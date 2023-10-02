@@ -8,12 +8,12 @@ const keychain = inject('keychain');
 
 async function createFolder() {
   console.log(`you want to create a folder`);
-  const response = await api.createFolder(user.id, 'Untitled');
+  const response = await api.createFolder(user.value.id, 'Untitled');
   console.log(response);
   // await keychain.createAndAddContainerKey(1);
-  await keychain.newKeyForContainer(response.id);
-  await keychain.store();
-  console.log(`finished creating folder`)
+  await keychain.value.newKeyForContainer(response.id);
+  await keychain.value.store();
+  console.log(`finished creating folder`);
   emit('createComplete');
 }
 </script>

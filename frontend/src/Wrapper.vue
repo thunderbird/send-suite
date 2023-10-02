@@ -8,7 +8,15 @@ Should:
 Does vue already have the notion of a store?
 (Or is this why Pinia exists?)
 */
-import { ref, reactive, onMounted, provide, watch, watchEffect, computed } from 'vue';
+import {
+  ref,
+  reactive,
+  onMounted,
+  provide,
+  watch,
+  watchEffect,
+  computed,
+} from 'vue';
 import { useRouter } from 'vue-router';
 import { ApiConnection } from '@/lib/api';
 
@@ -34,48 +42,18 @@ provide('messageSocket', messageSocket);
 const messageBus = ref(null);
 provide('messageBus', messageBus);
 
-// function setUser(obj) {
-//   user.value = {
-//     ...user.value,
-//     ...obj,
-//   };
-//   console.log(`set user object as ref`);
-//   console.log(obj);
-// }
-
-// // Move storeUser and loadUser to a storage class
-// function storeUser(id, email, tier) {
-//   const jsonUser = JSON.stringify({
-//     id,
-//     email,
-//     tier,
-//   });
-//   localStorage.setItem('send-user', jsonUser);
-// }
-// function loadUser() {
-//   const jsonUser = localStorage.getItem('send-user');
-//   if (jsonUser) {
-//     setUser(JSON.parse(jsonUser));
-//   }
-// }
-
-// provide('user', {
-//   user: computed(() => user.value),
-//   setUser,
-//   storeUser,
-//   loadUser,
-// });
-
 const isInitComplete = ref({});
 
 const storage = new Storage();
 window.storage = storage;
 
-const keychain = new Keychain(storage);
-provide('keychain', keychain);
+const _keychain = new Keychain(storage);
+const reactiveKeychain = ref(_keychain);
+provide('keychain', reactiveKeychain);
 
-const user = new User(api, storage);
-provide('user', user);
+const _user = new User(api, storage);
+const reactiveUser = ref(_user);
+provide('user', reactiveUser);
 
 // watch(user, async () => {
 //   if (user.value.id !== 0) {
@@ -112,21 +90,18 @@ provide('user', user);
 //   }
 // });
 
-// keychain.addOnload(() => {
-//   console.log(`confirming keychain.addOnload works`);
-// });
-
 onMounted(async () => {
   try {
-    await keychain.load();
+    await reactiveKeychain.value.load();
   } catch (e) {
     console.log(`no keys`);
     return;
   }
   console.log(`keychain loaded`);
-  if (keychain.rsa.privateKey) {
+  if (reactiveKeychain.value.rsa.privateKey) {
     console.log(`we have keys, attempting to load user`);
-    user.load();
+    // user.load();
+    reactiveUser.value.load();
   }
   // console.log('TODO: get/set auth0 user');
   // console.log(`api should have a value now`);
@@ -155,12 +130,12 @@ async function burnAfterReading(conversationId) {
 provide('clean', cleanAfterBurning);
 function cleanAfterBurning(conversationId) {
   try {
-    keychain.get(conversationId);
+    reactiveKeychain.value.get(conversationId);
     console.log(`CLEANING ${conversationId}`);
-    keychain.remove(conversationId);
+    reactiveKeychain.value.remove(conversationId);
 
-    if (user.value.tier !== 'PRO') {
-      keychain.clear();
+    if (reactiveUser.value.tier !== 'PRO') {
+      reactiveKeychain.value.clear();
       localStorage.removeItem('send-user');
       router.push('/');
     }

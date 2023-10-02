@@ -1,5 +1,5 @@
 <script setup>
-import { ref, inject, onMounted } from 'vue';
+import { ref, inject, onMounted, watch } from 'vue';
 import NewFolder from '../components/NewFolder.vue';
 import FolderView from '../components/FolderView.vue';
 import Breadcrumbs from '../components/Breadcrumbs.vue';
@@ -13,11 +13,11 @@ const fileInfoObj = ref(null);
 
 // TODO: actually limit this to a specific folder
 async function loadFolderList(root = null) {
-  if (!user.id) {
+  if (!user.value.id) {
     console.log(`no valid user id`);
     return;
   }
-  const dirItems = await api.getAllFolders(user.id);
+  const dirItems = await api.getAllFolders(user.value.id);
   console.log(dirItems);
   if (!dirItems) {
     return;
@@ -31,9 +31,12 @@ onMounted(async () => {
   loadFolderList();
 });
 
-user._addOnLoad(() => {
-  loadFolderList();
-})
+watch(
+  () => user.value.id,
+  () => {
+    loadFolderList();
+  }
+);
 
 function createComplete() {
   console.log(`finished uploading, reloading folder list`);
@@ -80,8 +83,9 @@ async function setFileInfoObj(obj) {
   fileInfoObj.value = {
     ...obj,
     upload: {
-      size, type
-    }
+      size,
+      type,
+    },
   };
 }
 
@@ -113,7 +117,17 @@ function reloadFolder(id) {
   <h1>{{ user.email }}'s Lockbox</h1>
   <NewFolder @createComplete="createComplete" />
   <Breadcrumbs @setFolderId="setFolderId" :folderPath="folderPath" />
-  <FolderView @setFolderId="setFolderId" @setFileInfoObj="setFileInfoObj" @uploadComplete="uploadComplete"
-    @deleteFolder="deleteFolder" :folders="folders" :folderId="folderId" />
-  <FileInfo v-if="fileInfoObj" :fileInfoObj="fileInfoObj" @deleteComplete="deleteComplete" />
+  <FolderView
+    @setFolderId="setFolderId"
+    @setFileInfoObj="setFileInfoObj"
+    @uploadComplete="uploadComplete"
+    @deleteFolder="deleteFolder"
+    :folders="folders"
+    :folderId="folderId"
+  />
+  <FileInfo
+    v-if="fileInfoObj"
+    :fileInfoObj="fileInfoObj"
+    @deleteComplete="deleteComplete"
+  />
 </template>

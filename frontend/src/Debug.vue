@@ -1,5 +1,5 @@
 <script setup>
-import { ref, inject, onMounted } from 'vue';
+import { ref, inject, onMounted, watch, watchEffect } from 'vue';
 
 const email = ref('');
 const id = ref(null);
@@ -12,34 +12,37 @@ const user = inject('user');
 // const eventSource = inject('eventSource');
 const messageSocket = inject('messageSocket');
 
-user._addOnLoad(async () => {
-  email.value = user.email;
-  id.value = user.id;
-})
-keychain._addOnLoad(async () => {
-  jwkPublicKey.value = await keychain.rsa.getPublicKeyJwk();
-})
+watchEffect(() => {
+  email.value = user.value.email;
+  id.value = user.value.id;
+  console.log(`Debug.vue using stored user id and email`);
+});
+
+watchEffect(async () => {
+  jwkPublicKey.value = await keychain.value.rsa.getPublicKeyJwk();
+  console.log(`Debug.vue setting jwk version of stored public key`);
+});
 
 onMounted(async () => {
   window.keychain = keychain;
 });
 
 async function generateKeys() {
-  if (keychain?.rsa?.generateKeyPair) {
+  if (keychain.value?.rsa?.generateKeyPair) {
     await keychain.rsa.generateKeyPair();
-    jwkPublicKey.value = await keychain.rsa.getPublicKeyJwk();
+    jwkPublicKey.value = await keychain.value.rsa.getPublicKeyJwk();
   }
 }
 
 async function saveKeys() {
-  if (keychain.store) {
-    await keychain.store();
+  if (keychain.value.store) {
+    await keychain.value.store();
   }
 }
 
 async function loadKeys() {
-  if (keychain.load) {
-    await keychain.load();
+  if (keychain.value.load) {
+    await keychain.value.load();
   }
 }
 
@@ -48,34 +51,38 @@ async function loadKeys() {
 // });
 
 async function storeUser() {
-  if (!user.id) {
-    console.log(`no user to store`)
+  if (!user.value.id) {
+    console.log(`no user to store`);
     return;
   }
-  console.log(`storing user with id ${user.id}`)
-  await user.store();
+  console.log(`storing user with id ${user.value.id}`);
+  await user.value.store();
 }
 
 async function loadUser() {
-  await user.load();
-
+  await user.value.load();
 }
 
 async function login() {
-  if (!keychain.rsa.publicKey) {
-    console.log(`no public key, either call keychain.load() or generate a new one `);
+  if (!keychain.value.rsa.publicKey) {
+    console.log(
+      `no public key, either call keychain.value.load() or generate a new one `
+    );
     return;
   }
 
-  const loginResp = await user.createUser(email.value, jwkPublicKey.value);
+  const loginResp = await user.value.createUser(
+    email.value,
+    jwkPublicKey.value
+  );
   if (!loginResp) {
-    console.log(`could not create user, trying to log in`)
-    const loginResp = await user.login(email.value);
+    console.log(`could not create user, trying to log in`);
+    const loginResp = await user.value.login(email.value);
     if (!loginResp) {
-      console.log(`could not log in either 🤷`)
+      console.log(`could not log in either 🤷`);
       return;
     }
-    console.log(`logged in, user id is ${user.id}`)
+    console.log(`logged in, user id is ${user.value.id}`);
   }
 }
 
@@ -122,18 +129,7 @@ async function sendHeartbeat() {
     <button class="btn-primary" @click="loadUser">Load User</button>
     <br />
     <button class="btn-primary" @click="login">Log in</button>
-    <!-- <br />
-  <label>
-    <input type="checkbox" disabled :checked="keychain.privateKey" />
-    privateKey: {{ keychain.privateKey }}
-  </label>
-  <br />
-  <label>
-    <input type="checkbox" disabled :checked="keychain.publicKey" />
-    publicKey: {{ keychain.publicKey }}
-  </label>
-  <br />
-  <button @click.prevent="loadKeychain()">Load Keys</button> -->
+
     <br />
     <button class="btn-primary" @click="sendHeartbeat">Send heartbeat</button>
     <hr />
