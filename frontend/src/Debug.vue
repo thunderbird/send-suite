@@ -11,6 +11,7 @@ const keychain = inject('keychain');
 const user = inject('user');
 // const eventSource = inject('eventSource');
 const messageSocket = inject('messageSocket');
+const storage = inject('storage');
 
 watchEffect(() => {
   email.value = user.value.email;
@@ -99,6 +100,11 @@ async function sendHeartbeat() {
   //   console.log(resp);
   // }
 }
+
+function clearStorage() {
+  storage.clear();
+  window.location.reload();
+}
 </script>
 <template>
   <a href="#" @click.prevent="showDebug = !showDebug">
@@ -132,6 +138,9 @@ async function sendHeartbeat() {
 
     <br />
     <button class="btn-primary" @click="sendHeartbeat">Send heartbeat</button>
+    <hr />
+    <button class="btn-primary" @click="clearStorage">Clear Stored User and Keys</button>
+    <br />
     <hr />
   </div>
 </template>

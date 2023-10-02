@@ -49,4 +49,8 @@ export class Storage {
   async loadKeypair() {
     return this._load(this.RSA_KEYS_KEY);
   }
+
+  async clear() {
+    return this.adapter.clear();
+  }
 }

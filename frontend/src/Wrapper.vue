@@ -29,6 +29,7 @@ provide('messageBus', messageBus);
 const isInitComplete = ref({});
 
 const storage = new Storage();
+provide('storage', storage);
 window.storage = storage;
 
 const _keychain = new Keychain(storage);

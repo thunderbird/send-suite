@@ -86,6 +86,24 @@ async function accept() {
   if (user.value.id) {
     console.log(`Using existing user id`);
     id = user.value.id;
+  } else {
+    // create an "anonymous" user and keys
+
+    await keychain.value.rsa.generateKeyPair();
+    const jwkPublicKey = await keychain.value.rsa.getPublicKeyJwk();
+    let email = new Date().getTime() + '@example.com';
+    email = email.substring(6);
+    // const resp = await api.createUser(email, jwkPublicKey, true);
+    const resp = await user.value.createUser(
+      email,
+      jwkPublicKey
+    );
+    if (!resp) {
+      console.log(`could not creat user`)
+      return;
+    }
+    id = resp.user.id;
+    await user.value.store();
   }
 
   const addMemberResp = await api.addMemberToContainer(id, containerId);
@@ -95,9 +113,8 @@ async function accept() {
     return;
   }
 
-  // - [X] store the unwrappedKey under challengeResp.containerId
   await keychain.value.add(containerId, unwrappedKey);
-  // await keychain.store();
+  await keychain.value.store();
   router.push('/lockbox');
 
 }
