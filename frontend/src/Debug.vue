@@ -24,12 +24,12 @@ watchEffect(async () => {
 });
 
 onMounted(async () => {
-  window.keychain = keychain;
+  window.keychain = keychain.value;
 });
 
 async function generateKeys() {
   if (keychain.value?.rsa?.generateKeyPair) {
-    await keychain.rsa.generateKeyPair();
+    await keychain.value.rsa.generateKeyPair();
     jwkPublicKey.value = await keychain.value.rsa.getPublicKeyJwk();
   }
 }

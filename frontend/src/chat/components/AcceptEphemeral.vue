@@ -149,17 +149,17 @@ async function getContainerKeyFromChallenge() {
   }
 }
 
-watch(user, () => {
-  console.log(`accept ephemeral sees user 🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉 with id:`);
-  console.log(user.value.id);
-  // for now, sort the keys alphabetically to get the latest one
-  // const conversationIds = Object.keys(keychain.keys).sort();
-  // const mostRecentId = conversationIds[conversationIds.length - 1];
-  // if (mostRecentId) {
-  //   // setConversationId(mostRecentId);
-  //   emit(`setConversationId`, mostRecentId);
-  // }
-});
+// watch(user, () => {
+//   console.log(`accept ephemeral sees user 🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉 with id:`);
+//   console.log(user.value.id);
+//   // for now, sort the keys alphabetically to get the latest one
+//   // const conversationIds = Object.keys(keychain.keys).sort();
+//   // const mostRecentId = conversationIds[conversationIds.length - 1];
+//   // if (mostRecentId) {
+//   //   // setConversationId(mostRecentId);
+//   //   emit(`setConversationId`, mostRecentId);
+//   // }
+// });
 </script>
 <template>
   <!-- <label>

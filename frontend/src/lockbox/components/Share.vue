@@ -59,7 +59,7 @@ The items[] arg should have objects with
 }
 */
 async function createNewShare(items = [], containerId = null, userId = null) {
-  if (!password) {
+  if (!password.value) {
     console.log(`Password is required`);
     return;
   }
@@ -141,13 +141,14 @@ async function createNewShare(items = [], containerId = null, userId = null) {
 
 async function requestShareLink(containerId, password) {
   // get the key (which unwraps it),
+  console.log(`using password: ${password}`);
   const unwrappedKey = await keychain.value.get(containerId);
 
   // and password protect it
   const salt = Util.generateSalt();
   const passwordWrappedKeyStr = await keychain.value.password.wrapContainerKey(
     unwrappedKey,
-    password.value,
+    password,
     salt
   );
 
@@ -157,7 +158,7 @@ async function requestShareLink(containerId, password) {
   const passwordWrappedChallengeKeyStr =
     await keychain.value.password.wrapContentKey(
       challengeKey,
-      password.value,
+      password,
       challengeSalt
     );
 

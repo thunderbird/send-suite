@@ -493,8 +493,6 @@ export async function acceptEphemeralLink(
         challengePlaintext,
       },
     });
-    console.log(`challenge text matches, continuing 🚀🚀`);
-    console.log(`here is where we should create the user, etc.`);
     return ephemeralLink;
   } catch (e) {
     console.log(`👿😿`);

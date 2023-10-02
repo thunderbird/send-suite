@@ -258,7 +258,6 @@ export class Keychain {
     this._storage = storage ?? new Storage();
 
     // this._onLoadCallbacks = [];
-    this.isLoaded = false;
   }
 
   get keys() {
@@ -271,7 +270,7 @@ export class Keychain {
     this._keys = keyObj;
   }
 
-  get count() {
+  count() {
     return Object.keys(this._keys).length;
   }
 
@@ -336,7 +335,6 @@ export class Keychain {
     // load other keys
     this.keys = await this._storage.loadKeys();
     // this._onLoadCallbacks.forEach(async (cb) => await cb());
-    this.isLoaded = true;
   }
 
   // _addOnLoad(cb) {

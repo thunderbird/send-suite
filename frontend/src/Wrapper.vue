@@ -1,13 +1,4 @@
 <script setup>
-/*
-Should:
-- provide userId globally
-- provide keychain globally
-
-
-Does vue already have the notion of a store?
-(Or is this why Pinia exists?)
-*/
 import {
   ref,
   reactive,
@@ -29,13 +20,6 @@ const router = useRouter();
 const api = new ApiConnection('https://localhost:8088');
 provide('api', api);
 
-// const user = ref({
-//   id: 0,
-//   email: '',
-// });
-
-// const eventSource = ref(null);
-// provide('eventSource', eventSource);
 const messageSocket = ref(null);
 provide('messageSocket', messageSocket);
 

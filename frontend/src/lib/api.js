@@ -180,7 +180,7 @@ export class ApiConnection {
       return resp;
     } else {
       console.log(
-        `Error: could not add user ${ownerId} to container ${containerId}`
+        `Error: could not add user ${userId} to container ${containerId}`
       );
       return null;
     }

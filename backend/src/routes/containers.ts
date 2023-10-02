@@ -175,6 +175,7 @@ router.post('/:containerId/member', async (req, res) => {
     );
     res.status(200).json(container);
   } catch (error) {
+    console.log(error);
     res.status(500).json({
       message: 'Server error.',
     });
