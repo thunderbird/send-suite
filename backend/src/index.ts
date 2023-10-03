@@ -10,7 +10,7 @@ import download from './routes/download';
 import ephemeral from './routes/ephemeral';
 import createStreamingRouter from './routes/streamingRouter';
 
-import wsHandler from './wsHandler';
+import wsUploadHandler from './wsUploadHandler';
 import wsMsgHandler from './wsMsgHandler';
 import { uuidv4 } from './utils';
 
@@ -69,7 +69,7 @@ server.on('upgrade', (req, socket, head) => {
     wsUploadServer.handleUpgrade(req, socket, head, (ws) => {
       console.log('handling upgrade for upload');
       wsUploadServer.emit('connection', ws, req);
-      wsHandler(ws, req);
+      wsUploadHandler(ws, req);
     });
   } else if (req.url.startsWith(WS_MESSAGE_PATH)) {
     console.log(`upgrading ${WS_MESSAGE_PATH}`);
