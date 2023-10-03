@@ -114,20 +114,31 @@ function reloadFolder(id) {
 </script>
 
 <template>
-  <h1>{{ user.email }}'s Lockbox</h1>
-  <NewFolder @createComplete="createComplete" />
-  <Breadcrumbs @setFolderId="setFolderId" :folderPath="folderPath" />
-  <FolderView
-    @setFolderId="setFolderId"
-    @setFileInfoObj="setFileInfoObj"
-    @uploadComplete="uploadComplete"
-    @deleteFolder="deleteFolder"
-    :folders="folders"
-    :folderId="folderId"
-  />
-  <FileInfo
-    v-if="fileInfoObj"
-    :fileInfoObj="fileInfoObj"
-    @deleteComplete="deleteComplete"
-  />
+  <div class="lockbox-container">
+    <h1>{{ user.email }}'s Lockbox</h1>
+    <NewFolder @createComplete="createComplete" />
+    <Breadcrumbs @setFolderId="setFolderId" :folderPath="folderPath" />
+    <div class="lockbox-main">
+      <div>
+        <FolderView @setFolderId="setFolderId" @setFileInfoObj="setFileInfoObj" @uploadComplete="uploadComplete"
+          @deleteFolder="deleteFolder" :folders="folders" :folderId="folderId" />
+      </div>
+      <div>
+        <FileInfo v-if="fileInfoObj" :fileInfoObj="fileInfoObj" @deleteComplete="deleteComplete" />
+      </div>
+    </div>
+  </div>
 </template>
+
+<style scoped>
+.lockbox-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.lockbox-main {
+  display: flex;
+  flex-direction: row;
+}
+</style>
