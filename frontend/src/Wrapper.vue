@@ -1,32 +1,29 @@
 <script setup>
 import {
   ref,
-  reactive,
   onMounted,
   provide,
   watch,
-  watchEffect,
-  computed,
 } from 'vue';
 import { useRouter } from 'vue-router';
 import { ApiConnection } from '@/lib/api';
 
 import { Keychain } from '@/lib/keychain';
 import { Storage } from '@/lib/storage';
-import { User } from './lib/user';
-import { createMessageSocket } from '@/lib/messageSocket';
+import { User } from '@/lib/user';
+import { MessageBus } from '@/lib/messageBus';
 const router = useRouter();
 
-const api = new ApiConnection('https://localhost:8088');
+const TEMP_SERVER_URL = 'https://localhost:8088';
+
+const api = new ApiConnection(TEMP_SERVER_URL);
 provide('api', api);
 
-const messageSocket = ref(null);
-provide('messageSocket', messageSocket);
-
-const messageBus = ref(null);
+const messageBus = new MessageBus(TEMP_SERVER_URL);
 provide('messageBus', messageBus);
 
-const isInitComplete = ref({});
+// TODO: consider getting rid of this.
+const isInitComplete = ref(true);
 
 const storage = new Storage();
 provide('storage', storage);
@@ -40,40 +37,25 @@ const _user = new User(api, storage);
 const reactiveUser = ref(_user);
 provide('user', reactiveUser);
 
-// watch(user, async () => {
-//   if (user.value.id !== 0) {
-//     messageSocket.value = await createMessageSocket(user.value.id);
-//     if (messageSocket.value) {
-//       console.log(`created messageSocket`);
-//       messageSocket.value.onmessage = (event) => {
-//         console.log(`heard from the messageSocket`);
-//         console.log(event.data);
-//         const data = JSON.parse(event.data);
-//         switch (data?.type) {
-//           case 'burn':
-//             if (data?.conversationId) {
-//               cleanAfterBurning(data.conversationId);
-//             }
-//             break;
-//           case 'newMessage':
-//             if (data?.conversationId) {
-//               newMessageCallbacks.forEach((cb) => {
-//                 cb(data.conversationId);
-//               });
-//             }
-//             break;
-//           case 'newChat':
-//             newChatCallbacks.forEach((cb) => {
-//               cb();
-//             });
-//           default:
-//             break;
-//         }
-//       };
-//     }
-//     isInitComplete.value = true;
-//   }
-// });
+
+// Init the messageBus for this user
+watch(
+  () => reactiveUser.value.id,
+  async () => {
+    const success = await messageBus.initConnection(reactiveUser.value.id);
+    if (success) {
+      messageBus.addCallback('burn', data => {
+        if (data?.conversationId) {
+          cleanAfterBurning(data.conversationId);
+        }
+      });
+      // other callback types:
+      // newChat
+      // newMessage
+      // isInitComplete.value = true;
+    }
+  }
+);
 
 onMounted(async () => {
   try {
@@ -92,17 +74,17 @@ onMounted(async () => {
   // console.log(`api should have a value now`);
 });
 
-provide('onNewMessage', onNewMessage);
-const newMessageCallbacks = [];
-async function onNewMessage(cb) {
-  newMessageCallbacks.push(cb);
-}
+// provide('onNewMessage', onNewMessage);
+// const newMessageCallbacks = [];
+// async function onNewMessage(cb) {
+//   newMessageCallbacks.push(cb);
+// }
 
-provide('onNewChat', onNewChat);
-const newChatCallbacks = [];
-async function onNewChat(cb) {
-  newChatCallbacks.push(cb);
-}
+// provide('onNewChat', onNewChat);
+// const newChatCallbacks = [];
+// async function onNewChat(cb) {
+//   newChatCallbacks.push(cb);
+// }
 
 provide('burn', burnAfterReading);
 async function burnAfterReading(conversationId) {

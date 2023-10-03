@@ -1,4 +1,3 @@
-import { ref, inject, watch, watchEffect } from 'vue';
 import { Util } from '@/lib/keychain';
 
 export async function getContainerKeyFromChallenge(
@@ -61,7 +60,6 @@ export async function getContainerKeyFromChallenge(
 
     if (!challengeResp.containerId) {
       throw Error('Challenge unsuccessful');
-      return;
     }
     const {
       containerId,

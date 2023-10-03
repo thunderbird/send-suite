@@ -10,7 +10,7 @@ const showDebug = ref(false);
 const keychain = inject('keychain');
 const user = inject('user');
 // const eventSource = inject('eventSource');
-const messageSocket = inject('messageSocket');
+const messageBus = inject('messageBus');
 const storage = inject('storage');
 
 watchEffect(() => {
@@ -72,11 +72,11 @@ async function login() {
     return;
   }
 
-  const loginResp = await user.value.createUser(
+  const createResp = await user.value.createUser(
     email.value,
     jwkPublicKey.value
   );
-  if (!loginResp) {
+  if (!createResp) {
     console.log(`could not create user, trying to log in`);
     const loginResp = await user.value.login(email.value);
     if (!loginResp) {
@@ -89,17 +89,18 @@ async function login() {
 
 async function sendHeartbeat() {
   console.log(`sending heartbeat`);
-  messageSocket.value.send(
+  messageBus.send(
     JSON.stringify({
+      type: 'heartbeat',
       id: user.value.id,
       ts: new Date().getTime(),
     })
   );
-  // const resp = await api.sendHeartbeat(user.value.id);
-  // if (resp) {
-  //   console.log(resp);
-  // }
 }
+
+messageBus.addCallback('heartbeat', ({ id, ts }) => {
+  console.log(`Received heartbeat from user ${id} at ${ts}`);
+})
 
 function clearStorage() {
   storage.clear();

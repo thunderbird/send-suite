@@ -1,7 +1,6 @@
 <script setup>
-import { ref, inject, watch, watchEffect } from 'vue';
+import { ref, inject, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-// import { Util } from '@/lib/keychain';
 import { getContainerKeyFromChallenge } from '@/common/challenge.js';
 
 const password = ref('');
@@ -25,49 +24,9 @@ watch(
 );
 
 /*
-ok, what's my goal here?
-I need to:
-- read the hash
-- let them put in a password
-- get and respond to the challenge
-- get the container key
-
-scenario 1: one-off download
-  this is good for email recipients
-  and I should start here
-
-  do I redirect them to a folder view?
-  do I just request the folder contents right here?
-  seems like it's better to go to a folder view for this share
-
-  however, the folder view doesn't show the download link (yet)
-
-  question: do I want to add that now?
-  but the code for downloading would need to be moved to the `@/common` folder...
-
-
-  so I need to:
-  - [x] abstract out the download function
-    - done, it's already part of filesync.js
-
-  other functions that might be useful:
-  - list files in a single folder
-  - get file info for a single file
-
-
-  Things to figure out:
-  -
-
-
-
-scenario 2:
 - if there's a user logged in, add them to the group
-  - NOTE: this should be done entirely on the server
+  - NOTE: this should be moved to the server code
   - possibly when sending the correct challenge response
-- then redirect them to the folder view, focused on this folder
-
-I think scenario 2 is going to be easier...
-
 */
 
 async function accept() {
@@ -121,7 +80,7 @@ async function accept() {
 </script>
 
 <template>
-  <h1>This This is where the cookies go</h1>
+  <h1>Lockbox share</h1>
   <template v-if="user.email">
     <p>
       Hello,
