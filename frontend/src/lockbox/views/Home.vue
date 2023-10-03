@@ -124,7 +124,9 @@ function reloadFolder(id) {
           @deleteFolder="deleteFolder" :folders="folders" :folderId="folderId" />
       </div>
       <div>
-        <FileInfo v-if="fileInfoObj" :fileInfoObj="fileInfoObj" @deleteComplete="deleteComplete" />
+        <div class="lockbox-fileinfo">
+          <FileInfo v-if="fileInfoObj" :fileInfoObj="fileInfoObj" @deleteComplete="deleteComplete" />
+        </div>
       </div>
     </div>
   </div>
@@ -140,5 +142,10 @@ function reloadFolder(id) {
 .lockbox-main {
   display: flex;
   flex-direction: row;
+}
+
+.lockbox-fileinfo {
+  position: sticky;
+  top: 2rem;
 }
 </style>
