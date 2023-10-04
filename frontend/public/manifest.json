@@ -21,6 +21,12 @@
     "open_in_tab": true,
     "browser_style": true
   },
+  "cloud_file": {
+    "name": "Lockbox Send",
+    "management_url": "index.management.html",
+    "browser_style": true,
+    "reuse_uploads": false
+  },
   "permissions": [
     "storage",
     "compose",

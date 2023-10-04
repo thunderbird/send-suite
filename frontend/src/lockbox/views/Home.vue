@@ -29,6 +29,35 @@ async function loadFolderList(root = null) {
 
 onMounted(async () => {
   loadFolderList();
+
+  // detect if we're loaded as tb extension
+  try {
+    messenger.cloudFile.onFileUpload.addListener(() => { });
+    console.log(`didn't die trying to onFileUpload.addListener`);
+    messenger.cloudFile.onFileUploadAbort.addListener(() => { })
+    messenger.cloudFile.onFileDeleted.addListener(() => { })
+    messenger.cloudFile.onAccountDeleted.addListener(accountId => { })
+  } catch (e) {
+    console.log(`pooped out when trying to onFileUpload.addListener`);
+  }
+
+  /*
+  
+  I need to know which one has been "selected"
+  But also, selection should only be enabled when run as an extension.
+  
+  This is what I need to return from .onFileUpload.addListener callback:
+  return { url, aborted: false, };
+  
+  But...I need to figure out:
+  - if I use the built-in "convert to...", what folder does it get uploaded to?
+  - how do I select a file from lockbox to attach?
+    - am I now bypassing the cloudfile functionality and inserting my own link?
+  
+  */
+
+
+
 });
 
 watch(
