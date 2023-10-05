@@ -9,7 +9,7 @@ export async function createMessageSocket(endpoint) {
       e.reason
     );
     setTimeout(function () {
-      createMessageSocket();
+      createMessageSocket(endpoint);
     }, 1000);
   };
 

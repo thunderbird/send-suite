@@ -7,3 +7,6 @@ export const ITEM_TYPE = {
   MESSAGE: 'MESSAGE',
   FILE: 'FILE',
 };
+
+export const EXTENSION_READY = 'EXTENSION_READY';
+export const UPLOAD_COMPLETE = 'UPLOAD_COMPLETE';

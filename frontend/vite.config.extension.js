@@ -10,6 +10,7 @@ export default defineConfig({
     },
   },
   build: {
+    minify: false,
     outDir: 'dist/extension',
     rollupOptions: {
       // external: ["vue"],

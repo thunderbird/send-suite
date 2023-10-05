@@ -2,7 +2,7 @@
 import { onMounted, inject } from 'vue';
 import { sendBlob } from '@/lib/filesync';
 
-const emit = defineEmits(['uploadComplete']);
+const emit = defineEmits(['uploadComplete', 'uploadAborted']);
 const props = defineProps({
   containerId: Number,
   fileBlob: Object,
@@ -14,11 +14,13 @@ const keychain = inject('keychain');
 async function doUpload(isText = true) {
   if (!props.containerId) {
     console.log(`cannot upload - no folder selected`);
+    emit('uploadAborted');
     return;
   }
 
   if (!props.fileBlob) {
     console.log(`cannot upload - no file blob provided`);
+    emit('uploadAborted');
     return;
   }
 
@@ -76,6 +78,5 @@ onMounted(() => {
 });
 </script>
 <template>
-  <h1>This should be a spinner</h1>
-  <h2>Or a progress bar</h2>
+  <h1>*imagine a spinnner or a progress bar*</h1>
 </template>

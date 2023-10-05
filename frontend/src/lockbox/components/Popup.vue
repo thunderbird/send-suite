@@ -3,6 +3,7 @@ import { ref, inject, onMounted, watch } from 'vue';
 import Upload from '@/common/Upload.vue';
 import {
 	EXTENSION_READY,
+	UPLOAD_COMPLETE,
 } from '@/lib/const';
 
 const api = inject('api');
@@ -23,6 +24,11 @@ function uploadComplete() {
 	isUploadReady.value = false;
 	fileBlob.value = null;
 	console.log(`you should tell the user that it's done`)
+	browser.runtime.sendMessage({
+		type: UPLOAD_COMPLETE,
+	});
+	window.close();
+
 }
 
 function uploadAborted() {
