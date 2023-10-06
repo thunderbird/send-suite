@@ -9,4 +9,5 @@ export const ITEM_TYPE = {
 };
 
 export const EXTENSION_READY = 'EXTENSION_READY';
-export const UPLOAD_COMPLETE = 'UPLOAD_COMPLETE';
+export const SHARE_COMPLETE = 'SHARE_COMPLETE';
+export const SHARE_ABORTED = 'SHARE_ABORTED';

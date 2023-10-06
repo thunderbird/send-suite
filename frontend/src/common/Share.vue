@@ -105,8 +105,12 @@ async function createNewShare(items = [], containerId = null, userId = null) {
 		itemsToShare.map(async (item) => {
 			// TODO: locate source of "folderId" property
 			// rename to more generic "containerId"
-			const currentWrappingKey = await keychain.value.get(item.folderId);
-			const { filename, uploadId, wrappedKey, type } = item;
+			const containerId = item.containerId ?? item.folderId;
+			// TODO: locate source of "filename" property
+			// rename to more generic "name"
+			const filename = item.name ?? item.filename;
+			const currentWrappingKey = await keychain.value.get(containerId);
+			const { uploadId, wrappedKey, type } = item;
 			const contentKey = await keychain.value.container.unwrapContentKey(
 				wrappedKey,
 				currentWrappingKey
@@ -189,8 +193,9 @@ async function requestShareLink(containerId, password) {
 		console.log(`created share link for container ${containerId}`);
 		const hash = resp.id;
 		const { origin } = new URL(window.location.href);
-		const url = `${origin}/share/${hash}`;
-
+		// const url = `${origin}/share/${hash}`;
+		// need the server url from...elsewhere
+		const url = `https://localhost:5173/share/${hash}`;
 		emit('shareComplete', url);
 	}
 }

@@ -1,57 +1,38 @@
 <script setup>
 import { ref, inject } from 'vue';
-import { download } from '@/lib/filesync';
 import CreateShare from './CreateShare.vue';
-
-const api = inject('api');
-const keychain = inject('keychain');
-const user = inject('user');
+import Download from '@/common/Download.vue';
 
 const emit = defineEmits(['deleteComplete']);
 const props = defineProps({
   fileInfoObj: Object,
 });
 
-// TODO: move these functions to filesync.js?
-async function deleteItemAndContent(itemId, containerId) {
-  const response = await api.deleteItem(itemId, containerId, true);
-  if (response) {
+const api = inject('api');
+const isDownloadReady = ref(false);
+
+async function deleteItemAndContent(itemId, folderId) {
+  // `true` as the third arg means delete the Content, not just the Item
+  const result = await api.deleteItem(itemId, folderId, true);
+  if (result) {
     emit('deleteComplete');
   }
 }
-async function downloadContent(id, folderId, wrappedKey, fname) {
-  if (!id) {
-    console.log(`no id`);
-    return;
-  }
-  if (!folderId) {
-    console.log(`no id`);
-    return;
-  }
 
-  let wrappingKey;
-  try {
-    wrappingKey = await keychain.value.get(folderId);
-  } catch (e) {
-    console.log(`cannot unwrap content key - no key for folder`);
-    return;
-  }
-
-  // could use this so I can display the file size...
-  // I'd need to move it
-  const { size, type } = await api.getUploadMetadata(id);
-  if (!size) {
-    console.log(`no size`);
-    return;
-  }
-
-  const contentKey = await keychain.value.container.unwrapContentKey(
-    wrappedKey,
-    wrappingKey
-  );
-
-  await download(id, size, contentKey, false, fname, type);
+function downloadContent() {
+  console.log(`Starting download`);
+  isDownloadReady.value = true;
 }
+
+function downloadComplete() {
+  console.log('Finished downloading');
+  isDownloadReady.value = false;
+}
+function downloadAborted() {
+  console.log(`Download aborted`);
+  isDownloadReady.value = false;
+}
+
 </script>
 
 <template>
@@ -77,4 +58,8 @@ async function downloadContent(id, folderId, wrappedKey, fname) {
     <li>{{ fileInfoObj.upload.type }} (mime type)</li>
   </ul>
   <CreateShare :items="[fileInfoObj]" />
+  <template v-if="isDownloadReady">
+    <Download :id="fileInfoObj.uploadId" :folderId="fileInfoObj.folderId" :wrappedKey="fileInfoObj.wrappedKey"
+      :filename="fileInfoObj.filename" @downloadComplete="downloadComplete" @downloadAborted="downloadAborted" />
+  </template>
 </template>

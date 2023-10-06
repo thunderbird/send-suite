@@ -28,7 +28,7 @@ browser.cloudFile.onFileUpload.addListener(
       // Listen for initial message
       browser.runtime.onMessage.addListener(async (message, sender) => {
         console.log(`sending message from background.js to Popup`);
-        const { type } = message;
+        const { type, url, aborted } = message;
         console.log(`background.js saw message of type ${type}`);
         switch (type) {
           case 'EXTENSION_READY':
@@ -39,11 +39,17 @@ browser.cloudFile.onFileUpload.addListener(
               data,
             });
             break;
-          case 'UPLOAD_COMPLETE':
+          case 'SHARE_COMPLETE':
             console.log(`need to resolve a promise here...`);
             resolve({
-              url: 'https://fake.com',
-              aborted: false,
+              url,
+              aborted,
+            });
+            break;
+          case 'SHARE_ABORTED':
+            resolve({
+              url,
+              aborted,
             });
             break;
           default:

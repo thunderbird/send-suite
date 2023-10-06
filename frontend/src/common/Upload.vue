@@ -61,7 +61,7 @@ async function doUpload(isText = true) {
     debugger;
   }
 
-  const itemResp = await api.createItemInContainer(
+  const itemObj = await api.createItemInContainer(
     id,
     props.containerId,
     filename,
@@ -69,8 +69,8 @@ async function doUpload(isText = true) {
     wrappedKeyStr
   );
   console.log(`🎉 here it is...`);
-  console.log(itemResp);
-  emit('uploadComplete');
+  console.log(itemObj);
+  emit('uploadComplete', itemObj);
 }
 
 onMounted(() => {
