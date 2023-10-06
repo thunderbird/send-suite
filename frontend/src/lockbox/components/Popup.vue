@@ -1,5 +1,5 @@
 <script setup>
-import { ref, inject, onMounted, watch } from 'vue';
+import { ref, inject, watch } from 'vue';
 import Upload from '@/common/Upload.vue';
 import {
 	EXTENSION_READY,
@@ -16,7 +16,6 @@ const isUploadReady = ref(false);
 const folderId = ref(null);
 
 async function uploadAndShare() {
-	console.log(`hey. I don't do anything yet.`);
 	isUploadReady.value = true;
 }
 
@@ -49,6 +48,9 @@ async function loadFolderList() {
 	}
 
 	folders.value = dirItems;
+
+	// TODO: use a folder designated for uploads,
+	// this is just using the first one
 	if (folders.value.length > 0) {
 		folderId.value = folders.value[0].id
 	}

@@ -74,6 +74,7 @@ async function doUpload(isText = true) {
 }
 
 onMounted(() => {
+  console.log(`Uploading and creating Item in Container`);
   doUpload();
 });
 </script>

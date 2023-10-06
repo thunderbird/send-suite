@@ -1,7 +1,7 @@
 <script setup>
 import { ref, inject } from 'vue';
 import { download } from '@/lib/filesync';
-import Share from './Share.vue';
+import CreateShare from './CreateShare.vue';
 
 const api = inject('api');
 const keychain = inject('keychain');
@@ -56,25 +56,19 @@ async function downloadContent(id, folderId, wrappedKey, fname) {
 
 <template>
   <h1>{{ fileInfoObj.filename }}</h1>
-  <a
-    href="#"
-    @click.prevent="
-      downloadContent(
-        fileInfoObj.uploadId,
-        fileInfoObj.folderId,
-        fileInfoObj.wrappedKey,
-        fileInfoObj.filename
-      )
-    "
-  >
+  <a href="#" @click.prevent="
+    downloadContent(
+      fileInfoObj.uploadId,
+      fileInfoObj.folderId,
+      fileInfoObj.wrappedKey,
+      fileInfoObj.filename
+    )
+    ">
     download
   </a>
-  <a
-    href="#"
-    @click.prevent="
-      deleteItemAndContent(fileInfoObj.itemId, fileInfoObj.folderId)
-    "
-  >
+  <a href="#" @click.prevent="
+    deleteItemAndContent(fileInfoObj.itemId, fileInfoObj.folderId)
+    ">
     delete
   </a>
   <ul>
@@ -82,5 +76,5 @@ async function downloadContent(id, folderId, wrappedKey, fname) {
     <li>{{ fileInfoObj.upload.size }} bytes</li>
     <li>{{ fileInfoObj.upload.type }} (mime type)</li>
   </ul>
-  <Share :items="[fileInfoObj]" />
+  <CreateShare :items="[fileInfoObj]" />
 </template>
