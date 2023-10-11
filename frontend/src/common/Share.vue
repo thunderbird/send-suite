@@ -194,8 +194,8 @@ async function requestShareLink(containerId, password) {
 		const hash = resp.id;
 		const { origin } = new URL(window.location.href);
 		// const url = `${origin}/share/${hash}`;
-		// need the server url from...elsewhere
-		const url = `https://localhost:5173/share/${hash}`;
+		// TODO: need the server url from...elsewhere
+		const url = `http://localhost:5173/share/${hash}`;
 		emit('shareComplete', url);
 	}
 }

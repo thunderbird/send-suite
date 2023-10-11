@@ -16,6 +16,9 @@
   "background": {
     "scripts": ["background.js"]
   },
+  "compose_action": {
+    "default_title": "attach from lockbox"
+  },
   "options_ui": {
     "page": "index.management.html",
     "open_in_tab": true,
@@ -33,7 +36,9 @@
     "notifications",
     "activeTab",
     "tabs",
-    "tabHide"
+    "tabHide",
+    "messagesRead",
+    "messagesModify"
   ],
   "experiment_apis": {
     "FileSystem": {

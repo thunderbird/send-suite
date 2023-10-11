@@ -1,8 +1,7 @@
 <script setup>
 import Debug from '@/Debug.vue';
 import Wrapper from '@/Wrapper.vue';
-// import Home from './Home.vue';
-import Popup from '../components/Popup.vue';
+import Popup from './Popup.vue';
 
 </script>
 

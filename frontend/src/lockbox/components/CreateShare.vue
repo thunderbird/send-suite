@@ -1,33 +1,44 @@
 <script setup>
-import { ref } from 'vue';
-import Share from '@/common/Share.vue';
+import { ref, inject } from 'vue';
+// import Share from '@/common/Share.vue';
+import Sharer from '@/common/share';
 
 const props = defineProps({
   items: Array,
   // containerId: number,
 });
 
+const api = inject('api');
+const user = inject('user');
+const keychain = inject('keychain');
+
+const sharer = new Sharer(user, keychain, api);
+
 const password = ref('abc');
 const ephemeralHash = ref('');
 const message = ref('');
-const isShareReady = ref(false);
+// const isShareReady = ref(false);
 
-function shareItems() {
-  isShareReady.value = true;
+async function shareItems() {
+  // isShareReady.value = true;
+  const url = await sharer.doShare(props.items, password.value);
+  if (!url) {
+    shareAborted();
+  }
+  shareComplete(url);
 }
 
 function shareComplete(url) {
   ephemeralHash.value = url;
-  isShareReady.value = false;
+  // isShareReady.value = false;
   message.value = 'Share link created successfully';
 }
 
 function shareAborted() {
-  isShareReady.value = false;
+  // isShareReady.value = false;
   message.value = 'Could not create share';
   console.log('share aborted for reasons');
 }
-
 </script>
 
 <template>
@@ -48,11 +59,11 @@ function shareAborted() {
   <div v-if="ephemeralHash">
     <a :href="ephemeralHash" @click.prevent>{{ ephemeralHash }}</a>
   </div>
-  <hr />
-  <br />
-  <template v-if="isShareReady">
+  <!-- <hr />
+  <br /> -->
+  <!-- <template v-if="isShareReady">
     <Share :items="props.items" :password="password" @shareComplete="shareComplete" @shareAborted="shareAborted" />
-  </template>
+  </template> -->
 </template>
 
 <style scoped>
