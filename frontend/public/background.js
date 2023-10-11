@@ -131,11 +131,11 @@ browser.composeAction.onClicked.addListener(async (tab) => {
   // onFileUpload needs a promise.
   // would I benefit from one here?
   browser.runtime.onMessage.addListener(async (message, sender) => {
-    const { type, fileId } = message;
+    const { type, url } = message;
     switch (type) {
-      case 'FILE_SELECTED':
+      case 'SELECTION_COMPLETE':
         console.log(type);
-        console.log(fileId);
+        console.log(url);
 
         // might need to do all my encryption and whatnot from...
         // another component.
@@ -144,7 +144,7 @@ browser.composeAction.onClicked.addListener(async (tab) => {
         // theoretically, it can share multiple
         // but also, it's made for rendering
 
-        insertLink(tab, null, 'shared file with id ' + fileId);
+        insertLink(tab, url, 'download from lockbox');
         break;
       default:
         break;

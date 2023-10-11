@@ -1,6 +1,7 @@
 <script setup>
 import { ref, inject, watch } from 'vue';
-import LockboxUI from './Home.vue';
+// import LockboxUI from './Home.vue';
+import FolderView from '../components/FolderView.vue';
 // import Upload from '@/common/Upload.vue';
 import Uploader from '@/common/upload';
 // import Share from '@/common/Share.vue';
@@ -20,27 +21,105 @@ const sharer = new Sharer(user, keychain, api);
 const uploader = new Uploader(user, keychain, api);
 
 const folders = ref([]);
+const itemMap = ref(null);
 
 const password = ref('');
 const fileBlob = ref(null);
 const folderId = ref(null);
+const fileInfoObj = ref(null);
 // const itemObj = ref(null);
 const isUploadReady = ref(false);
 // const isShareReady = ref(false);
 
-async function uploadAndShare() {
-  // isUploadReady.value = true;
-  const itemObj = await uploader.doUpload(fileBlob.value, folderId.value);
-  if (!itemObj) {
-    uploadAborted();
+const selectedItems = ref([]);
+
+function setFolderId(id) {
+  console.log(`Lockbox sees choice of ${id}`);
+  folderId.value = id;
+  setFileInfoObj(null);
+}
+
+async function setFileInfoObj(obj) {
+  console.log(`you called setFileInfoObj with:`);
+  console.log(obj);
+  if (!obj) {
+    // reset
+    fileInfoObj.value = null;
     return;
   }
-  fileBlob.value = null;
-  const url = await sharer.doShare([itemObj], password.value);
-  if (!url) {
-    shareAborted();
+  const { size, type } = await api.getUploadMetadata(obj.uploadId);
+  fileInfoObj.value = {
+    ...obj,
+    upload: {
+      size,
+      type,
+    },
+  };
+}
+
+function toggleSelection(itemId) {
+  console.log(`here is the itemId to toggle: ${itemId}`);
+  if (selectedItems.value.includes(itemId)) {
+    // remove
+    selectedItems.value = selectedItems.value.filter((id) => id !== itemId);
+  } else {
+    // add
+    selectedItems.value = [...selectedItems.value, itemId];
   }
-  shareComplete(url);
+}
+
+function createItemMap(folders) {
+  const map = {};
+  // TODO: optimize this
+  for (let folder of folders) {
+    for (let item of folder.items) {
+      const { name, uploadId, wrappedKey, type } = item;
+      map[item.id] = {
+        containerId: folder.id,
+        name,
+        uploadId,
+        wrappedKey,
+        type,
+      };
+    }
+  }
+  itemMap.value = map;
+  console.log(map);
+}
+
+async function uploadAndShare() {
+  // isUploadReady.value = true;
+  if (selectedItems.value.length > 0) {
+    // get the necessary info for each itemId
+    const itemsToShare = selectedItems.value.map((id) => itemMap.value[id]);
+
+    const url = await sharer.doShare(itemsToShare, password.value);
+    if (!url) {
+      console.log(`cannot doShare`);
+      return;
+    }
+    browser.runtime.sendMessage({
+      type: SELECTION_COMPLETE,
+      url,
+      aborted: false,
+    });
+    window.close();
+    // console.log(`will share the following:`);
+    // console.log(itemsToShare);
+  } else {
+    const itemObj = await uploader.doUpload(fileBlob.value, folderId.value);
+    if (!itemObj) {
+      uploadAborted();
+      return;
+    }
+    fileBlob.value = null;
+    const url = await sharer.doShare([itemObj], password.value);
+    if (!url) {
+      shareAborted();
+      return;
+    }
+    shareComplete(url);
+  }
 }
 
 // async function uploadComplete(item) {
@@ -100,6 +179,7 @@ async function loadFolderList() {
   }
 
   folders.value = dirItems;
+  createItemMap(dirItems);
 
   // TODO: use a folder designated for uploads,
   // this is just using the first one
@@ -136,6 +216,19 @@ watch(
 
 <template>
   <h1>Lockbox attachment</h1>
+  <div>
+    <h2>selected items</h2>
+    <p>{{ selectedItems }}</p>
+  </div>
+  <FolderView
+    @setFolderId="setFolderId"
+    @setFileInfoObj="setFileInfoObj"
+    @uploadComplete="uploadComplete"
+    @deleteFolder="deleteFolder"
+    :folders="folders"
+    :folderId="folderId"
+    @toggleSelection="toggleSelection"
+  />
   <form @submit.prevent="uploadAndShare">
     <br />
     <label>
@@ -161,5 +254,5 @@ watch(
       @shareAborted="shareAborted"
     />
   </template> -->
-  <LockboxUI />
+  <!-- <LockboxUI /> -->
 </template>

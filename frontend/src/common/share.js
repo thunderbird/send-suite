@@ -12,6 +12,17 @@ export default class Sharer {
     return await this.requestShareLink(containerId, password);
   }
 
+  /*
+  Each item in items[] should have:
+  {
+    containerId | folderId,
+    name | filename
+    uploadId,
+    wrappedKey,
+    type
+  }
+
+  */
   async createNewShare(items = [], containerId = null, userId = null) {
     if (!userId) {
       console.log(`User ID is required`);
