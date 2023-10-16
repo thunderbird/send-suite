@@ -146,7 +146,7 @@ watch(
     <h2>selected items</h2>
     <p>{{ selectedItemsForSharing }}</p>
   </div>
-  <FolderView />
+  <FolderView v-if="!fileBlob" />
   <form @submit.prevent="uploadAndShare">
     <br />
     <label>
