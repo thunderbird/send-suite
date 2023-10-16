@@ -1,17 +1,19 @@
 import { createRouter, createWebHistory } from 'vue-router';
+
 import Chat from '@/chat/views/Home.vue';
 import EphemeralChat from '@/chat/views/EphemeralChat.vue';
+
 import Lockbox from '@/lockbox/Web.vue';
-import AcceptShare from '@/lockbox/views/AcceptShare.vue';
-import Extension from '@/lockbox/views/Extension.vue';
+import Share from '@/lockbox/Share.vue';
 
 const routes = [
+  // Chat
   { path: '/chat', component: Chat },
-  { path: '/lockbox', component: Lockbox },
   { path: '/ephemeral', component: EphemeralChat },
   { path: '/ephemeral/:hash', component: EphemeralChat },
-  { path: '/share/:hash', component: AcceptShare },
-  { path: '/extension', component: Extension },
+  // Lockbox
+  { path: '/lockbox', component: Lockbox },
+  { path: '/share/:hash', component: Share },
 ];
 
 const router = createRouter({

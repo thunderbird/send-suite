@@ -1,6 +1,7 @@
 <script setup>
 import { ref, inject, provide, watch } from 'vue';
 import Uploader from '@/common/upload';
+import { getContainerKeyFromChallenge } from '@/common/challenge.js';
 /*
 I need to know which one has been "selected"
 But also, selection should only be enabled when run as an extension.
@@ -18,7 +19,8 @@ But...I need to figure out:
 const api = inject('api');
 const userRef = inject('userRef');
 const keychainRef = inject('keychainRef');
-// ================================================
+
+// ============================================================================
 // File/Folder Manager
 //
 const uploader = new Uploader(userRef, keychainRef, api);
@@ -165,7 +167,7 @@ provide('folderManager', {
   deleteItemAndContent,
 });
 
-// ================================================
+// ============================================================================
 // Sharing Manager
 
 // and functions for toggling selections, sharing selections, etc.
@@ -205,11 +207,57 @@ function createItemMap(folders) {
   console.log(`itemMap created`);
   console.log(map);
 }
+
+// TODO: consider moving this to the server-side
+async function acceptShare(hash, password) {
+  const { unwrappedKey, containerId } = await getContainerKeyFromChallenge(
+    hash,
+    password,
+    api,
+    keychainRef
+  );
+  console.log(`unwrappedKey: ${unwrappedKey}`);
+  console.log(`containerId: ${containerId}`);
+
+  let id;
+
+  if (userRef.value.id) {
+    console.log(`Using existing user id`);
+    id = userRef.value.id;
+  } else {
+    // create an "anonymous" user and keys
+    await keychainRef.value.rsa.generateKeyPair();
+    const jwkPublicKey = await keychainRef.value.rsa.getPublicKeyJwk();
+    let email = new Date().getTime() + '@example.com';
+    email = email.substring(6);
+
+    const resp = await userRef.value.createUser(email, jwkPublicKey);
+    if (!resp) {
+      console.log(`could not creat user`);
+      return false;
+    }
+    id = resp.user.id;
+    await userRef.value.store();
+  }
+
+  const addMemberResp = await api.addMemberToContainer(id, containerId);
+  console.log(`adding user to convo`);
+  console.log(addMemberResp);
+  if (!addMemberResp) {
+    return false;
+  }
+
+  await keychainRef.value.add(containerId, unwrappedKey);
+  await keychainRef.value.store();
+  return true;
+}
+
 provide('sharingManager', {
   toggleItemForSharing,
   createItemMap,
   itemMap,
   selectedItemsForSharing,
+  acceptShare,
 });
 </script>
 

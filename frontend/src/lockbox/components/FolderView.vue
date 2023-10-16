@@ -1,5 +1,5 @@
 <script setup>
-import { inject } from 'vue';
+import { inject, onMounted } from 'vue';
 import FileUpload from './FileUpload.vue';
 
 const {
@@ -8,9 +8,12 @@ const {
   currentFolderId,
   setCurrentFolderId,
   folders,
+  getFolders,
 } = inject('folderManager');
 
 const { toggleItemForSharing } = inject('sharingManager');
+
+onMounted(getFolders);
 
 function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
   console.log(`user chose to show info for file ${itemId}`);
