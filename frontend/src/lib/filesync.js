@@ -112,6 +112,7 @@ async function _doDownload(id, canceller = {}) {
   });
 }
 
+// TODO: see download() fn from appointment (src/utils.js)
 async function _saveFile(file) {
   return new Promise(function (resolve, reject) {
     const dataView = new DataView(file.plaintext);

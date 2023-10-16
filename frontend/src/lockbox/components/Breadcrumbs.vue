@@ -1,13 +1,13 @@
 <script setup>
 import { ref, onMounted, inject, watch } from 'vue';
-const emit = defineEmits(['setFolderId']);
+const emit = defineEmits(['setCurrentFolderId']);
 const props = defineProps({
   folderPath: Array,
 });
 
 function loadFolder(id) {
   console.log(`you want to go to folder ${id}`);
-  emit(`setFolderId`, id);
+  emit(`setCurrentFolderId`, id);
 }
 </script>
 <template>

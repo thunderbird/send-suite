@@ -87,6 +87,11 @@ function createItemMap(folders) {
   console.log(map);
 }
 
+// TODO: Make it so you can mix-and-match.
+// i.e., you can convert attachment to lockbox
+// *and* you can choose existing files.
+// Need to decide if you should be able to designate
+// the location of the file from the lockbox popup.
 async function uploadAndShare() {
   // isUploadReady.value = true;
   if (selectedItems.value.length > 0) {
@@ -238,21 +243,4 @@ watch(
     <br />
     <input type="submit" value="Encrypt and Upload" />
   </form>
-  <!-- <template v-if="isUploadReady">
-    <Upload
-      :containerId="folderId"
-      :fileBlob="fileBlob"
-      @uploadComplete="uploadComplete"
-      @uploadAborted="uploadAborted"
-    />
-  </template> -->
-  <!-- <template v-if="isShareReady">
-    <Share
-      :items="itemObj"
-      :password="password"
-      @shareComplete="shareComplete"
-      @shareAborted="shareAborted"
-    />
-  </template> -->
-  <!-- <LockboxUI /> -->
 </template>

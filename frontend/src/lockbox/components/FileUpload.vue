@@ -1,23 +1,10 @@
 <script setup>
 import { ref, inject } from 'vue';
-// import Upload from '@/common/Upload.vue';
-import Uploader from '@/common/upload';
-
-const emit = defineEmits(['uploadComplete']);
-const props = defineProps({
-  folderId: Number,
-});
-
-const api = inject('api');
-const user = inject('user');
-const keychain = inject('keychain');
-
-const uploader = new Uploader(user, keychain, api);
+const { currentFolderId, uploadItem } = inject('folderManager');
 
 const message = ref('');
 const fileBlob = ref(null);
 const fileInput = ref(null);
-// const isUploadReady = ref(false);
 
 async function handleFile(event) {
   const file = event.target.files[0];
@@ -31,27 +18,11 @@ async function handleFile(event) {
   reader.readAsArrayBuffer(file);
   message.value = file.name;
 }
-
-async function doUpload(isText = true) {
-  console.log(`Rendering Upload component with containerId and fileBlob`);
-  const itemObj = await uploader.doUpload(fileBlob.value, props.folderId);
-  if (itemObj) {
-    message.value = '';
-    fileBlob.value = null;
-    emit('uploadComplete');
-  }
-}
-
-// function uploadComplete() {
-//   isUploadReady.value = false;
-//   message.value = '';
-//   fileBlob.value = null;
-// }
 </script>
 <template>
   <form @submit.prevent>
     <input type="file" @change="handleFile" class="hidden" ref="fileInput" />
-    <div v-if="props.folderId" class="sticky bottom-0">
+    <div v-if="currentFolderId" class="sticky bottom-0">
       <button
         type="button"
         class="inline-flex items-center justify-center rounded-full h-10 w-10 transition duration-500 ease-in-out text-gray-500 hover:bg-gray-300 focus:outline-none"
@@ -76,7 +47,7 @@ async function doUpload(isText = true) {
         v-if="fileBlob"
         type="submit"
         class="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none"
-        @click="doUpload()"
+        @click="uploadItem(fileBlob, currentFolderId)"
       >
         <span class="font-bold">Upload</span>
         <svg
@@ -92,11 +63,4 @@ async function doUpload(isText = true) {
       </button>
     </div>
   </form>
-  <!-- <template v-if="isUploadReady">
-    <Upload
-      :containerId="props.folderId"
-      :fileBlob="fileBlob"
-      @uploadComplete="uploadComplete"
-    />
-  </template> -->
 </template>

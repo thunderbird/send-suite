@@ -11,7 +11,7 @@ export class User {
     this.tier = '';
     this.email = '';
 
-    this._onLoadCallbacks = [];
+    // this._onLoadCallbacks = [];
   }
 
   get userObj() {
@@ -63,7 +63,7 @@ export class User {
     this.tier = tier;
     this.email = email;
 
-    this._onLoadCallbacks.forEach(async (cb) => await cb());
+    // this._onLoadCallbacks.forEach(async (cb) => await cb());
   }
 
   async store() {
@@ -77,7 +77,7 @@ export class User {
     await this._storage.storeUser({ id, tier, email });
   }
 
-  _addOnLoad(cb) {
-    this._onLoadCallbacks.push(cb);
-  }
+  // _addOnLoad(cb) {
+  //   this._onLoadCallbacks.push(cb);
+  // }
 }

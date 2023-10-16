@@ -1,25 +1,20 @@
 <script setup>
+import { inject } from 'vue';
 import FileUpload from './FileUpload.vue';
 
-const emit = defineEmits([
-  'setFolderId',
-  'setFileInfoObj',
-  'uploadComplete',
-  'deleteFolder',
-  'toggleSelection',
-]);
-const props = defineProps({
-  folders: Array,
-  folderId: Number,
-});
+const {
+  deleteFolder,
+  setCurrentFile,
+  currentFolderId,
+  setCurrentFolderId,
+  folders,
+} = inject('folderManager');
 
-function loadFolder(id) {
-  console.log(`FolderView wants to go to folder ${id}`);
-  emit(`setFolderId`, id);
-}
+const emit = defineEmits(['toggleSelection']);
 
 function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
-  emit('setFileInfoObj', {
+  console.log(`user chose to show info for file ${itemId}`);
+  setCurrentFile({
     itemId,
     uploadId,
     folderId,
@@ -27,15 +22,6 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
     filename,
     type,
   });
-}
-
-function uploadComplete() {
-  emit(`uploadComplete`);
-}
-
-function deleteFolder(id) {
-  console.log(`deleting folder ${id}`);
-  emit(`deleteFolder`, id);
 }
 
 function selectFile(fileId) {
@@ -55,18 +41,17 @@ function selectFile(fileId) {
   //   console.log(`We must not be in the extension`);
   // }
 }
-
-// watch(user, async () => {
-//   loadFolderList();
-// });
 </script>
 <template>
   <h2>Folders</h2>
   <button class="btn-primary" @click="loadFolderList">🔃</button>
   <ul>
-    <li v-for="folder of props.folders">
-      <div class="lockbox-folder" :class="{ active: folder.id === folderId }">
-        <a href="#" @click.prevent="loadFolder(folder.id)">
+    <li v-for="folder of folders">
+      <div
+        class="lockbox-folder"
+        :class="{ active: folder.id === currentFolderId }"
+      >
+        <a href="#" @click.prevent="setCurrentFolderId(folder.id)">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
             <g
               transform="matrix(.04235 0 0 .04193 12.359-25.862)"
@@ -105,18 +90,17 @@ function selectFile(fileId) {
           {{ folder.name }} (ID {{ folder.id }})
         </a>
         <a
-          v-if="folder.id === folderId"
+          v-if="folder.id === currentFolderId"
           href="#"
           @click.prevent="deleteFolder(folder.id)"
         >
           Delete folder
         </a>
       </div>
-      <template v-if="folder.id === folderId">
+      <template v-if="folder.id === currentFolderId">
         <FileUpload
-          v-if="folder.id === folderId"
-          :folderId="folderId"
-          @uploadComplete="uploadComplete"
+          v-if="folder.id === currentFolderId"
+          :folderId="currentFolderId"
         />
         <ul class="file-list">
           <li v-for="file of folder.items">

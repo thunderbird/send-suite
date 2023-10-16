@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Chat from '@/chat/views/Home.vue';
 import EphemeralChat from '@/chat/views/EphemeralChat.vue';
-import Lockbox from '@/lockbox/views/Home.vue';
+import Lockbox from '@/lockbox/Web.vue';
 import AcceptShare from '@/lockbox/views/AcceptShare.vue';
 import Extension from '@/lockbox/views/Extension.vue';
 
