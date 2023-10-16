@@ -8,8 +8,8 @@ const props = defineProps({
   fileBlob: Object,
 });
 const api = inject('api');
-const user = inject('user');
-const keychain = inject('keychain');
+const userRef = inject('userRef');
+const keychainRef = inject('keychainRef');
 
 async function doUpload(isText = true) {
   if (!props.containerId) {
@@ -25,16 +25,16 @@ async function doUpload(isText = true) {
   }
 
   // get folder key
-  const wrappingKey = await keychain.value.get(props.containerId);
+  const wrappingKey = await keychainRef.value.get(props.containerId);
   if (!wrappingKey) {
     console.log(`cannot upload - no key for conversation`);
   }
 
   // generate new AES key for the uploaded Content
-  const key = await keychain.value.content.generateKey();
+  const key = await keychainRef.value.content.generateKey();
 
   // wrap the key for inclusion with the Item
-  const wrappedKeyStr = await keychain.value.container.wrapContentKey(
+  const wrappedKeyStr = await keychainRef.value.container.wrapContentKey(
     key,
     wrappingKey
   );
@@ -52,7 +52,7 @@ async function doUpload(isText = true) {
   const uploadResp = await api.createContent(
     id,
     blob.size,
-    user.value.id,
+    userRef.value.id,
     blob.type
   );
   console.log(uploadResp);

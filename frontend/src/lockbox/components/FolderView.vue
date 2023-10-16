@@ -10,7 +10,7 @@ const {
   folders,
 } = inject('folderManager');
 
-const emit = defineEmits(['toggleSelection']);
+const { toggleItemForSharing } = inject('sharingManager');
 
 function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
   console.log(`user chose to show info for file ${itemId}`);
@@ -22,24 +22,6 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
     filename,
     type,
   });
-}
-
-function selectFile(fileId) {
-  emit('toggleSelection', fileId);
-  // TODO: craete an inject()-able that handles all the try/catch
-  // try {
-  // console.log(`this should only be available in the extension`);
-
-  //   // first version: send a message, indicating that this single
-  //   // should be shared.
-  //   browser.runtime.sendMessage({
-  //     type: FILE_SELECTED,
-  //     fileId,
-  //   });
-
-  // } catch (e) {
-  //   console.log(`We must not be in the extension`);
-  // }
 }
 </script>
 <template>
@@ -119,7 +101,9 @@ function selectFile(fileId) {
             >
               {{ file.name }}
             </a>
-            <a href="#" @click.prevent="selectFile(file.id)"> [Share] </a>
+            <a href="#" @click.prevent="toggleItemForSharing(file.id)">
+              [Share]
+            </a>
           </li>
         </ul>
       </template>

@@ -5,12 +5,12 @@ import FolderView from '../components/FolderView.vue';
 import Breadcrumbs from '../components/Breadcrumbs.vue';
 import FileInfo from '../components/FileInfo.vue';
 
-const user = inject('user');
+const userRef = inject('userRef');
 </script>
 
 <template>
   <div class="lockbox-container">
-    <h1>{{ user.email }}'s Lockbox</h1>
+    <h1>{{ userRef.email }}'s Lockbox</h1>
     <NewFolder />
     <!-- <Breadcrumbs
       @setCurrentFolderId="setCurrentFolderId"

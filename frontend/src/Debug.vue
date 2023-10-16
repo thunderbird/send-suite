@@ -7,43 +7,43 @@ const jwkPublicKey = ref('');
 const showDebug = ref(false);
 
 // const api = inject('api');
-const keychain = inject('keychain');
-const user = inject('user');
+const keychainRef = inject('keychainRef');
+const userRef = inject('userRef');
 // const eventSource = inject('eventSource');
 const messageBus = inject('messageBus');
 const storage = inject('storage');
 
 watchEffect(() => {
-  email.value = user.value.email;
-  id.value = user.value.id;
+  email.value = userRef.value.email;
+  id.value = userRef.value.id;
   console.log(`Debug.vue using stored user id and email`);
 });
 
 watchEffect(async () => {
-  jwkPublicKey.value = await keychain.value.rsa.getPublicKeyJwk();
+  jwkPublicKey.value = await keychainRef.value.rsa.getPublicKeyJwk();
   console.log(`Debug.vue setting jwk version of stored public key`);
 });
 
 onMounted(async () => {
-  window.keychain = keychain.value;
+  window.keychain = keychainRef.value;
 });
 
 async function generateKeys() {
-  if (keychain.value?.rsa?.generateKeyPair) {
-    await keychain.value.rsa.generateKeyPair();
-    jwkPublicKey.value = await keychain.value.rsa.getPublicKeyJwk();
+  if (keychainRef.value?.rsa?.generateKeyPair) {
+    await keychainRef.value.rsa.generateKeyPair();
+    jwkPublicKey.value = await keychainRef.value.rsa.getPublicKeyJwk();
   }
 }
 
 async function saveKeys() {
-  if (keychain.value.store) {
-    await keychain.value.store();
+  if (keychainRef.value.store) {
+    await keychainRef.value.store();
   }
 }
 
 async function loadKeys() {
-  if (keychain.value.load) {
-    await keychain.value.load();
+  if (keychainRef.value.load) {
+    await keychainRef.value.load();
   }
 }
 
@@ -52,38 +52,38 @@ async function loadKeys() {
 // });
 
 async function storeUser() {
-  if (!user.value.id) {
+  if (!userRef.value.id) {
     console.log(`no user to store`);
     return;
   }
-  console.log(`storing user with id ${user.value.id}`);
-  await user.value.store();
+  console.log(`storing user with id ${userRef.value.id}`);
+  await userRef.value.store();
 }
 
 async function loadUser() {
-  await user.value.load();
+  await userRef.value.load();
 }
 
 async function login() {
-  if (!keychain.value.rsa.publicKey) {
+  if (!keychainRef.value.rsa.publicKey) {
     console.log(
       `no public key, either call keychain.value.load() or generate a new one `
     );
     return;
   }
 
-  const createResp = await user.value.createUser(
+  const createResp = await userRef.value.createUser(
     email.value,
     jwkPublicKey.value
   );
   if (!createResp) {
     console.log(`could not create user, trying to log in`);
-    const loginResp = await user.value.login(email.value);
+    const loginResp = await userRef.value.login(email.value);
     if (!loginResp) {
       console.log(`could not log in either 🤷`);
       return;
     }
-    console.log(`logged in, user id is ${user.value.id}`);
+    console.log(`logged in, user id is ${userRef.value.id}`);
   }
 }
 
@@ -92,7 +92,7 @@ async function sendHeartbeat() {
   messageBus.send(
     JSON.stringify({
       type: 'heartbeat',
-      id: user.value.id,
+      id: userRef.value.id,
       ts: new Date().getTime(),
     })
   );
@@ -100,7 +100,7 @@ async function sendHeartbeat() {
 
 messageBus.addCallback('heartbeat', ({ id, ts }) => {
   console.log(`Received heartbeat from user ${id} at ${ts}`);
-})
+});
 
 function clearStorage() {
   storage.clear();
@@ -140,7 +140,9 @@ function clearStorage() {
     <br />
     <button class="btn-primary" @click="sendHeartbeat">Send heartbeat</button>
     <hr />
-    <button class="btn-primary" @click="clearStorage">Clear Stored User and Keys</button>
+    <button class="btn-primary" @click="clearStorage">
+      Clear Stored User and Keys
+    </button>
     <br />
     <hr />
   </div>

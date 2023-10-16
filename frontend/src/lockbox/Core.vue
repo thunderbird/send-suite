@@ -16,14 +16,17 @@ But...I need to figure out:
 */
 
 const api = inject('api');
-const user = inject('user');
-const keychain = inject('keychain');
-
-const uploader = new Uploader(user, keychain, api);
-// Load folders once we have a user.
+const userRef = inject('userRef');
+const keychainRef = inject('keychainRef');
+// ================================================
+// File/Folder Manager
 //
+const uploader = new Uploader(userRef, keychainRef, api);
+
+// Load folders once we have a user.
+// Likely unnecessary once we have user sessions on the server.
 watch(
-  () => user.value.id,
+  () => userRef.value.id,
   () => {
     getFolders();
   }
@@ -32,6 +35,15 @@ watch(
 const folders = ref([]);
 const currentFolderId = ref(null);
 const currentFile = ref(null);
+
+function getDefaultFolder() {
+  // TODO: need to designate one as "default"
+  // for now, just use the first one
+  if (folders.value.length === 0) {
+    throw Error('No folders, no default');
+  }
+  return folders.value[folders.value.length - 1];
+}
 
 async function setCurrentFolderId(id) {
   console.log(`just set the currentFolderId.value to ${id}`);
@@ -59,25 +71,25 @@ async function setCurrentFile(obj) {
 
 // TODO: actually limit this to a specific folder
 async function getFolders(root) {
-  if (!user.value.id) {
+  if (!userRef.value.id) {
     console.log(`no valid user id`);
     return;
   }
   if (!root) {
-    folders.value = await api.getAllFolders(user.value.id);
+    folders.value = await api.getAllFolders(userRef.value.id);
     console.log(`loaded ${folders.value.length} folders`);
   } else {
     console.log(`TBD: what to do if we specify a root folder`);
   }
 }
 
-// Can I watch these?
+// Make this computed?
 function sharedWithMe() {
   // Folders I can access, but do not own
   // This is basically a filtering function.
 }
 
-// Can I watch these?
+// Make this computed?
 function sharedWithOthers() {
   // Folders I own, share with others
   // This is basically a filtering function.
@@ -96,11 +108,11 @@ async function setDefaultFolder() {
 
 async function createFolder(parentFolderId = 0) {
   console.log(`you want to create a folder`);
-  const response = await api.createFolder(user.value.id, 'Untitled');
+  const response = await api.createFolder(userRef.value.id, 'Untitled');
   console.log(response);
   // await keychain.createAndAddContainerKey(1);
-  await keychain.value.newKeyForContainer(response.id);
-  await keychain.value.store();
+  await keychainRef.value.newKeyForContainer(response.id);
+  await keychainRef.value.store();
   console.log(`TODO: only reload the one folder`);
   await getFolders();
 }
@@ -146,10 +158,58 @@ provide('folderManager', {
   deleteFolder,
   currentFolderId,
   setCurrentFolderId,
+  getDefaultFolder,
   currentFile,
   setCurrentFile,
   uploadItem,
   deleteItemAndContent,
+});
+
+// ================================================
+// Sharing Manager
+
+// and functions for toggling selections, sharing selections, etc.
+//
+const itemMap = ref(null);
+const selectedItemsForSharing = ref([]);
+
+function toggleItemForSharing(itemId) {
+  console.log(`here is the itemId to toggle: ${itemId}`);
+  if (selectedItemsForSharing.value.includes(itemId)) {
+    // remove
+    selectedItemsForSharing.value = selectedItemsForSharing.value.filter(
+      (id) => id !== itemId
+    );
+  } else {
+    // add
+    selectedItemsForSharing.value = [...selectedItemsForSharing.value, itemId];
+  }
+}
+
+function createItemMap(folders) {
+  const map = {};
+  // TODO: optimize this
+  for (let folder of folders) {
+    for (let item of folder.items) {
+      const { name, uploadId, wrappedKey, type } = item;
+      map[item.id] = {
+        containerId: folder.id,
+        name,
+        uploadId,
+        wrappedKey,
+        type,
+      };
+    }
+  }
+  itemMap.value = map;
+  console.log(`itemMap created`);
+  console.log(map);
+}
+provide('sharingManager', {
+  toggleItemForSharing,
+  createItemMap,
+  itemMap,
+  selectedItemsForSharing,
 });
 </script>
 

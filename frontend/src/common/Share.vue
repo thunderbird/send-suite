@@ -4,14 +4,14 @@ import { Util } from '@/lib/keychain';
 
 const emit = defineEmits(['shareComplete', 'shareAborted']);
 const props = defineProps({
-	items: Array,
-	password: String,
-	// userIdArray: Array,    // TODO: accept an array of user IDs to share with
+  items: Array,
+  password: String,
+  // userIdArray: Array,    // TODO: accept an array of user IDs to share with
 });
 
 const api = inject('api');
-const keychain = inject('keychain');
-const user = inject('user');
+const keychainRef = inject('keychainRef');
+const userRef = inject('userRef');
 /*
 If I'm sharing a file, I just need its item id
 	- basically sharing a new folder with a single item
@@ -36,13 +36,13 @@ In both cases:
 	- set the new item's upload to existing uploadId
 */
 onMounted(() => {
-	console.log(`Creating Share link`);
-	doShare();
-})
+  console.log(`Creating Share link`);
+  doShare();
+});
 
 async function doShare() {
-	const containerId = await createNewShare(props.items, null, user.value.id);
-	await requestShareLink(containerId, props.password);
+  const containerId = await createNewShare(props.items, null, userRef.value.id);
+  await requestShareLink(containerId, props.password);
 }
 
 // TODO: create a version that doesn't require a password
@@ -57,154 +57,152 @@ The items[] arg should have objects with
 }
 */
 async function createNewShare(items = [], containerId = null, userId = null) {
-	if (!props.password) {
-		console.log(`Password is required`);
-		return;
-	}
-	if (!userId) {
-		console.log(`User ID is required`);
-		return;
-	}
+  if (!props.password) {
+    console.log(`Password is required`);
+    return;
+  }
+  if (!userId) {
+    console.log(`User ID is required`);
+    return;
+  }
 
-	if (items.length === 0 && !containerId) {
-		console.log(`Nothing is being shared`);
-		return;
-	}
+  if (items.length === 0 && !containerId) {
+    console.log(`Nothing is being shared`);
+    return;
+  }
 
-	// Arbitrarily picked keychain.value.store to
-	// confirm presence of keychain
-	if (!api && !keychain.value.store) {
-		console.log(`Need access to api and keychain`);
-		return;
-	}
+  // Arbitrarily picked keychain.value.store to
+  // confirm presence of keychain
+  if (!api && !keychainRef.value.store) {
+    console.log(`Need access to api and keychain`);
+    return;
+  }
 
-	let itemsToShare = [...items];
+  let itemsToShare = [...items];
 
-	let currentContainer = { name: 'untitled' };
-	if (containerId) {
-		currentContainer = await api.getContainerInfo(containerId);
-		// TODO: future enhancement
-		// If there are no itemsToShare, get the items from the `currentContainer`
-		// if (itemsToShare.length > 0) {
-		// const { items } = await api.getContainerWithItems(containerId);
-		// itemsToShare = items;
-		// }
-	}
+  let currentContainer = { name: 'untitled' };
+  if (containerId) {
+    currentContainer = await api.getContainerInfo(containerId);
+    // TODO: future enhancement
+    // If there are no itemsToShare, get the items from the `currentContainer`
+    // if (itemsToShare.length > 0) {
+    // const { items } = await api.getContainerWithItems(containerId);
+    // itemsToShare = items;
+    // }
+  }
 
-	const response = await api.createFolder(userId, currentContainer.name);
-	if (!(response || response.id)) {
-		console.log(`could not create a new container for items`);
-		return null;
-	}
+  const response = await api.createFolder(userId, currentContainer.name);
+  if (!(response || response.id)) {
+    console.log(`could not create a new container for items`);
+    return null;
+  }
 
-	const { id: newContainerId } = response;
-	await keychain.value.newKeyForContainer(newContainerId);
-	await keychain.value.store();
+  const { id: newContainerId } = response;
+  await keychainRef.value.newKeyForContainer(newContainerId);
+  await keychainRef.value.store();
 
-	await Promise.all(
-		itemsToShare.map(async (item) => {
-			// TODO: locate source of "folderId" property
-			// rename to more generic "containerId"
-			const containerId = item.containerId ?? item.folderId;
-			// TODO: locate source of "filename" property
-			// rename to more generic "name"
-			const filename = item.name ?? item.filename;
-			const currentWrappingKey = await keychain.value.get(containerId);
-			const { uploadId, wrappedKey, type } = item;
-			const contentKey = await keychain.value.container.unwrapContentKey(
-				wrappedKey,
-				currentWrappingKey
-			);
+  await Promise.all(
+    itemsToShare.map(async (item) => {
+      // TODO: locate source of "folderId" property
+      // rename to more generic "containerId"
+      const containerId = item.containerId ?? item.folderId;
+      // TODO: locate source of "filename" property
+      // rename to more generic "name"
+      const filename = item.name ?? item.filename;
+      const currentWrappingKey = await keychainRef.value.get(containerId);
+      const { uploadId, wrappedKey, type } = item;
+      const contentKey = await keychainRef.value.container.unwrapContentKey(
+        wrappedKey,
+        currentWrappingKey
+      );
 
-			// wrap the content key with the new container key
-			const newWrappingKey = await keychain.value.get(newContainerId);
+      // wrap the content key with the new container key
+      const newWrappingKey = await keychainRef.value.get(newContainerId);
 
-			const wrappedKeyStr = await keychain.value.container.wrapContentKey(
-				contentKey,
-				newWrappingKey
-			);
+      const wrappedKeyStr = await keychainRef.value.container.wrapContentKey(
+        contentKey,
+        newWrappingKey
+      );
 
-			// create the new item with the existing uploadId
-			// in the newContainer
-			const itemResp = await api.createItemInContainer(
-				uploadId,
-				newContainerId,
-				filename,
-				type,
-				wrappedKeyStr
-			);
+      // create the new item with the existing uploadId
+      // in the newContainer
+      const itemResp = await api.createItemInContainer(
+        uploadId,
+        newContainerId,
+        filename,
+        type,
+        wrappedKeyStr
+      );
 
-			console.log(`🎉 here it is...`);
-			console.log(itemResp);
-			return itemResp;
-		})
-	);
+      console.log(`🎉 here it is...`);
+      console.log(itemResp);
+      return itemResp;
+    })
+  );
 
-	return newContainerId;
+  return newContainerId;
 }
 
 async function requestShareLink(containerId, password) {
-	// get the key (which unwraps it),
-	console.log(`using password: ${password}`);
-	const unwrappedKey = await keychain.value.get(containerId);
+  // get the key (which unwraps it),
+  console.log(`using password: ${password}`);
+  const unwrappedKey = await keychainRef.value.get(containerId);
 
-	// and password protect it
-	const salt = Util.generateSalt();
-	const passwordWrappedKeyStr = await keychain.value.password.wrapContainerKey(
-		unwrappedKey,
-		password,
-		salt
-	);
+  // and password protect it
+  const salt = Util.generateSalt();
+  const passwordWrappedKeyStr =
+    await keychainRef.value.password.wrapContainerKey(
+      unwrappedKey,
+      password,
+      salt
+    );
 
-	const challengeKey = await keychain.value.challenge.generateKey();
-	const challengeSalt = Util.generateSalt();
+  const challengeKey = await keychainRef.value.challenge.generateKey();
+  const challengeSalt = Util.generateSalt();
 
-	const passwordWrappedChallengeKeyStr =
-		await keychain.value.password.wrapContentKey(
-			challengeKey,
-			password,
-			challengeSalt
-		);
+  const passwordWrappedChallengeKeyStr =
+    await keychainRef.value.password.wrapContentKey(
+      challengeKey,
+      password,
+      challengeSalt
+    );
 
-	const challengePlaintext = keychain.value.challenge.createChallenge();
+  const challengePlaintext = keychainRef.value.challenge.createChallenge();
 
-	const challengeCiphertext = await keychain.value.challenge.encryptChallenge(
-		challengePlaintext,
-		challengeKey,
-		challengeSalt
-	);
+  const challengeCiphertext =
+    await keychainRef.value.challenge.encryptChallenge(
+      challengePlaintext,
+      challengeKey,
+      challengeSalt
+    );
 
-	// convert salts to base64 strings
-	const saltStr = Util.arrayBufferToBase64(salt);
-	const challengeSaltStr = Util.arrayBufferToBase64(challengeSalt);
+  // convert salts to base64 strings
+  const saltStr = Util.arrayBufferToBase64(salt);
+  const challengeSaltStr = Util.arrayBufferToBase64(challengeSalt);
 
-	const resp = await api.createEphemeralLink(
-		containerId,
-		passwordWrappedKeyStr,
-		saltStr,
-		passwordWrappedChallengeKeyStr,
-		challengeSaltStr,
-		user.value.id,
-		challengePlaintext,
-		challengeCiphertext
-	);
+  const resp = await api.createEphemeralLink(
+    containerId,
+    passwordWrappedKeyStr,
+    saltStr,
+    passwordWrappedChallengeKeyStr,
+    challengeSaltStr,
+    userRef.value.id,
+    challengePlaintext,
+    challengeCiphertext
+  );
 
-	if (resp.id) {
-		console.log(`created share link for container ${containerId}`);
-		const hash = resp.id;
-		const { origin } = new URL(window.location.href);
-		// const url = `${origin}/share/${hash}`;
-		// TODO: need the server url from...elsewhere
-		const url = `http://localhost:5173/share/${hash}`;
-		emit('shareComplete', url);
-	}
+  if (resp.id) {
+    console.log(`created share link for container ${containerId}`);
+    const hash = resp.id;
+    const { origin } = new URL(window.location.href);
+    // const url = `${origin}/share/${hash}`;
+    // TODO: need the server url from...elsewhere
+    const url = `http://localhost:5173/share/${hash}`;
+    emit('shareComplete', url);
+  }
 }
-
-
-
 </script>
 
 <template>
-	<h1>Imagine a spinner here.</h1>
+  <h1>Imagine a spinner here.</h1>
 </template>
-

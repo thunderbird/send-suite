@@ -9,10 +9,10 @@ const props = defineProps({
 });
 
 const api = inject('api');
-const user = inject('user');
-const keychain = inject('keychain');
+const userRef = inject('userRef');
+const keychainRef = inject('keychainRef');
 
-const sharer = new Sharer(user, keychain, api);
+const sharer = new Sharer(userRef, keychainRef, api);
 
 const password = ref('abc');
 const ephemeralHash = ref('');

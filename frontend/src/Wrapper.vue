@@ -1,10 +1,5 @@
 <script setup>
-import {
-  ref,
-  onMounted,
-  provide,
-  watch,
-} from 'vue';
+import { ref, onMounted, provide, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { ApiConnection } from '@/lib/api';
 
@@ -31,12 +26,11 @@ window.storage = storage;
 
 const _keychain = new Keychain(storage);
 const reactiveKeychain = ref(_keychain);
-provide('keychain', reactiveKeychain);
+provide('keychainRef', reactiveKeychain);
 
 const _user = new User(api, storage);
 const reactiveUser = ref(_user);
-provide('user', reactiveUser);
-
+provide('userRef', reactiveUser);
 
 // Init the messageBus for this user
 watch(
@@ -44,7 +38,7 @@ watch(
   async () => {
     const success = await messageBus.initConnection(reactiveUser.value.id);
     if (success) {
-      messageBus.addCallback('burn', data => {
+      messageBus.addCallback('burn', (data) => {
         if (data?.conversationId) {
           cleanAfterBurning(data.conversationId);
         }

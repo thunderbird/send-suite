@@ -12,13 +12,13 @@ const route = useRoute();
 const router = useRouter();
 
 const api = inject('api');
-const keychain = inject('keychain');
-const user = inject('user');
+const keychainRef = inject('keychainRef');
+const userRef = inject('userRef');
 
 watch(
-  () => user.value.id,
+  () => userRef.value.id,
   () => {
-    console.log(user.value.id);
+    console.log(userRef.value.id);
     console.log(`we have a logged-in user`);
   }
 );
@@ -34,7 +34,7 @@ async function accept() {
     route.params.hash,
     password.value,
     api,
-    keychain
+    keychainRef
   );
   key.value = unwrappedKey;
   console.log(`unwrappedKey: ${unwrappedKey}`);
@@ -42,27 +42,24 @@ async function accept() {
   message.value = `and this is where we add the container to the group and then redirect`;
 
   let id;
-  if (user.value.id) {
+  if (userRef.value.id) {
     console.log(`Using existing user id`);
-    id = user.value.id;
+    id = userRef.value.id;
   } else {
     // create an "anonymous" user and keys
 
-    await keychain.value.rsa.generateKeyPair();
-    const jwkPublicKey = await keychain.value.rsa.getPublicKeyJwk();
+    await keychainRef.value.rsa.generateKeyPair();
+    const jwkPublicKey = await keychainRef.value.rsa.getPublicKeyJwk();
     let email = new Date().getTime() + '@example.com';
     email = email.substring(6);
     // const resp = await api.createUser(email, jwkPublicKey, true);
-    const resp = await user.value.createUser(
-      email,
-      jwkPublicKey
-    );
+    const resp = await userRef.value.createUser(email, jwkPublicKey);
     if (!resp) {
-      console.log(`could not creat user`)
+      console.log(`could not creat user`);
       return;
     }
     id = resp.user.id;
-    await user.value.store();
+    await userRef.value.store();
   }
 
   const addMemberResp = await api.addMemberToContainer(id, containerId);
@@ -72,19 +69,18 @@ async function accept() {
     return;
   }
 
-  await keychain.value.add(containerId, unwrappedKey);
-  await keychain.value.store();
+  await keychainRef.value.add(containerId, unwrappedKey);
+  await keychainRef.value.store();
   router.push('/lockbox');
-
 }
 </script>
 
 <template>
   <h1>Lockbox share</h1>
-  <template v-if="user.email">
+  <template v-if="userRef.email">
     <p>
       Hello,
-      {{ user.email }}
+      {{ userRef.email }}
     </p>
   </template>
   <p>

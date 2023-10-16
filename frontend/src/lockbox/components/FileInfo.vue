@@ -6,8 +6,8 @@ import Downloader from '@/common/download';
 const { currentFile, deleteItemAndContent } = inject('folderManager');
 
 const api = inject('api');
-const keychain = inject('keychain');
-const downloader = new Downloader(keychain, api);
+const keychainRef = inject('keychainRef');
+const downloader = new Downloader(keychainRef, api);
 
 async function downloadContent() {
   console.log(`Starting download`);

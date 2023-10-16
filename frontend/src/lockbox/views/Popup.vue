@@ -1,10 +1,7 @@
 <script setup>
 import { ref, inject, watch } from 'vue';
-// import LockboxUI from './Home.vue';
 import FolderView from '../components/FolderView.vue';
-// import Upload from '@/common/Upload.vue';
 import Uploader from '@/common/upload';
-// import Share from '@/common/Share.vue';
 import Sharer from '@/common/share';
 import {
   EXTENSION_READY,
@@ -14,78 +11,20 @@ import {
 } from '@/lib/const';
 
 const api = inject('api');
-const user = inject('user');
-const keychain = inject('keychain');
+const userRef = inject('userRef');
+const keychainRef = inject('keychainRef');
 
-const sharer = new Sharer(user, keychain, api);
-const uploader = new Uploader(user, keychain, api);
+const { getDefaultFolder, currentFolderId, folders, uploadItem } =
+  inject('folderManager');
 
-const folders = ref([]);
-const itemMap = ref(null);
+const { itemMap, createItemMap, selectedItemsForSharing } =
+  inject('sharingManager');
+
+const sharer = new Sharer(userRef, keychainRef, api);
+const uploader = new Uploader(userRef, keychainRef, api);
 
 const password = ref('');
 const fileBlob = ref(null);
-const folderId = ref(null);
-const fileInfoObj = ref(null);
-// const itemObj = ref(null);
-const isUploadReady = ref(false);
-// const isShareReady = ref(false);
-
-const selectedItems = ref([]);
-
-function setFolderId(id) {
-  console.log(`Lockbox sees choice of ${id}`);
-  folderId.value = id;
-  setFileInfoObj(null);
-}
-
-async function setFileInfoObj(obj) {
-  console.log(`you called setFileInfoObj with:`);
-  console.log(obj);
-  if (!obj) {
-    // reset
-    fileInfoObj.value = null;
-    return;
-  }
-  const { size, type } = await api.getUploadMetadata(obj.uploadId);
-  fileInfoObj.value = {
-    ...obj,
-    upload: {
-      size,
-      type,
-    },
-  };
-}
-
-function toggleSelection(itemId) {
-  console.log(`here is the itemId to toggle: ${itemId}`);
-  if (selectedItems.value.includes(itemId)) {
-    // remove
-    selectedItems.value = selectedItems.value.filter((id) => id !== itemId);
-  } else {
-    // add
-    selectedItems.value = [...selectedItems.value, itemId];
-  }
-}
-
-function createItemMap(folders) {
-  const map = {};
-  // TODO: optimize this
-  for (let folder of folders) {
-    for (let item of folder.items) {
-      const { name, uploadId, wrappedKey, type } = item;
-      map[item.id] = {
-        containerId: folder.id,
-        name,
-        uploadId,
-        wrappedKey,
-        type,
-      };
-    }
-  }
-  itemMap.value = map;
-  console.log(map);
-}
 
 // TODO: Make it so you can mix-and-match.
 // i.e., you can convert attachment to lockbox
@@ -93,10 +32,23 @@ function createItemMap(folders) {
 // Need to decide if you should be able to designate
 // the location of the file from the lockbox popup.
 async function uploadAndShare() {
-  // isUploadReady.value = true;
-  if (selectedItems.value.length > 0) {
+  /*
+The way I've got this written now:
+- if the user selects items, it overrides/ignores the fileBlob we were passed via browser.runtime.onMessage
+- what I should do is:
+  - if we have a fileBlob, don't show the FolderView
+  - separate out these two processes:
+    - upload, add new item to selectedForSharing
+    - just share what's selectedForSharing
+  - from popup, we do steps 1 and 2
+  - from share-from-lockbox, we only do step 2
+  */
+  if (selectedItemsForSharing.value.length > 0) {
+    // We've already got items to share
     // get the necessary info for each itemId
-    const itemsToShare = selectedItems.value.map((id) => itemMap.value[id]);
+    const itemsToShare = selectedItemsForSharing.value.map(
+      (id) => itemMap.value[id]
+    );
 
     const url = await sharer.doShare(itemsToShare, password.value);
     if (!url) {
@@ -104,15 +56,20 @@ async function uploadAndShare() {
       return;
     }
     browser.runtime.sendMessage({
+      // TODO: this type needs to be renamed to `SHARING_COMPLETE` or something
       type: SELECTION_COMPLETE,
       url,
       aborted: false,
     });
     window.close();
-    // console.log(`will share the following:`);
-    // console.log(itemsToShare);
   } else {
-    const itemObj = await uploader.doUpload(fileBlob.value, folderId.value);
+    // Otherwise, we're converting,
+    // meaning we need to upload and then share
+
+    const defaultFolder = getDefaultFolder();
+    debugger;
+
+    const itemObj = await uploader.doUpload(fileBlob.value, defaultFolder.id);
     if (!itemObj) {
       uploadAborted();
       return;
@@ -127,20 +84,7 @@ async function uploadAndShare() {
   }
 }
 
-// async function uploadComplete(item) {
-//   isUploadReady.value = false;
-//   fileBlob.value = null;
-//   // itemObj.value = [item];
-//   // isShareReady.value = true;
-//   const url = await sharer.doShare([item], password.value);
-//   if (!url) {
-//     shareAborted();
-//   }
-//   shareComplete(url);
-// }
-
 function uploadAborted() {
-  isUploadReady.value = false;
   console.log('upload aborted for reasons');
 }
 
@@ -152,7 +96,6 @@ function shareComplete(url) {
     aborted: false,
   });
   window.close();
-  // isShareReady.value = false;
 }
 
 function shareAborted() {
@@ -163,40 +106,18 @@ function shareAborted() {
     aborted: true,
   });
   window.close();
-  // isShareReady.value = false;
-}
-
-function selectionComplete(fileInfo) {
-  // itemObj.value = [item];
-  // isShareReady.value = true;
-}
-
-// 1. get a folder (later, the "default" one)
-async function loadFolderList() {
-  if (!user.value.id) {
-    console.log(`no valid user id`);
-    return;
-  }
-  const dirItems = await api.getAllFolders(user.value.id);
-  console.log(dirItems);
-  if (!dirItems) {
-    return;
-  }
-
-  folders.value = dirItems;
-  createItemMap(dirItems);
-
-  // TODO: use a folder designated for uploads,
-  // this is just using the first one
-  if (folders.value.length > 0) {
-    folderId.value = folders.value[0].id;
-  }
 }
 
 watch(
-  () => user.value.id,
+  () => folders.value,
   () => {
-    loadFolderList();
+    createItemMap(folders.value);
+  }
+);
+
+watch(
+  () => userRef.value.id,
+  () => {
     try {
       console.log(`adding listener in Popup for runtime messages`);
       browser.runtime.onMessage.addListener(async (message, sender) => {
@@ -220,20 +141,12 @@ watch(
 </script>
 
 <template>
-  <h1>Lockbox attachment</h1>
+  <h1>The new new lockbox attachment</h1>
   <div>
     <h2>selected items</h2>
-    <p>{{ selectedItems }}</p>
+    <p>{{ selectedItemsForSharing }}</p>
   </div>
-  <FolderView
-    @setFolderId="setFolderId"
-    @setFileInfoObj="setFileInfoObj"
-    @uploadComplete="uploadComplete"
-    @deleteFolder="deleteFolder"
-    :folders="folders"
-    :folderId="folderId"
-    @toggleSelection="toggleSelection"
-  />
+  <FolderView />
   <form @submit.prevent="uploadAndShare">
     <br />
     <label>
