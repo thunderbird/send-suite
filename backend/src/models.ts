@@ -172,10 +172,33 @@ export async function getSharedContainersAndMembers(
   });
 
   if (results) {
-    // only include results with non-null containers
+    // only include results with non-null containers.
+    // null containers happen because:
+    // - the initial query is for GroupUsers
+    // - doing an `include` for containers also returns non-owned ones
     return results.filter((obj) => !!obj.group.container);
   }
   return results;
+}
+
+export async function getContainerWithMembers(containerId: number) {
+  return await prisma.container.findUnique({
+    where: {
+      id: containerId,
+    },
+    select: {
+      group: {
+        select: {
+          id: true,
+          members: {
+            select: {
+              user: true,
+            },
+          },
+        },
+      },
+    },
+  });
 }
 
 export async function createItem(
@@ -474,10 +497,18 @@ export async function acceptInvitation(invitationId: number) {
   };
 }
 
-export async function removeGroupMember(groupId: number, userId: number) {
+export async function removeGroupMember(containerId: number, userId: number) {
+  const group = await prisma.group.findFirst({
+    where: {
+      container: {
+        id: containerId,
+      },
+    },
+  });
+
   return prisma.groupUser.delete({
     where: {
-      groupId_userId: { groupId, userId },
+      groupId_userId: { groupId: group.id, userId },
     },
   });
 }

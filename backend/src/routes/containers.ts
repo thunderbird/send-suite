@@ -12,6 +12,7 @@ import {
   acceptInvitation,
   getContainerInfo,
   burnFolder,
+  getContainerWithMembers,
 } from '../models';
 
 const router: Router = Router();
@@ -183,15 +184,29 @@ router.post('/:containerId/member', async (req, res) => {
 });
 
 // Remove member from access group for container
-router.delete('/:containerId/member', async (req, res) => {
-  const { containerId } = req.params;
-  const { userId } = req.body;
+router.delete('/:containerId/member/:userId', async (req, res) => {
+  const { containerId, userId } = req.params;
   try {
     const container = await removeGroupMember(
       parseInt(containerId),
       parseInt(userId)
     );
     res.status(200).json(container);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+// Get all members for a container
+router.get('/:containerId/members', async (req, res) => {
+  // getContainerWithMembers
+  const { containerId } = req.params;
+  try {
+    const { group } = await getContainerWithMembers(parseInt(containerId));
+    res.status(200).json(group.members);
   } catch (error) {
     res.status(500).json({
       message: 'Server error.',

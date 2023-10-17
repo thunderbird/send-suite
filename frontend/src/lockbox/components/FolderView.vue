@@ -2,6 +2,7 @@
 import { inject, onMounted } from 'vue';
 import FileUpload from './FileUpload.vue';
 import DragAndDropUpload from './DragAndDropUpload.vue';
+import ManageSharing from './ManageSharing.vue';
 
 const {
   deleteFolder,
@@ -84,6 +85,7 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
         </a>
       </div>
       <template v-if="folder.id === currentFolderId">
+        <ManageSharing :folderId="currentFolderId" />
         <FileUpload />
         <DragAndDropUpload />
         <ul class="file-list">

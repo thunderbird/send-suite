@@ -20,7 +20,7 @@ const api = inject('api');
 const userRef = inject('userRef');
 const keychainRef = inject('keychainRef');
 
-// ============================================================================
+// =======================================================================
 // File/Folder Manager
 //
 const uploader = new Uploader(userRef, keychainRef, api);
@@ -167,7 +167,7 @@ provide('folderManager', {
   deleteItemAndContent,
 });
 
-// ============================================================================
+// =======================================================================
 // Sharing Manager
 
 // and functions for toggling selections, sharing selections, etc.
@@ -277,6 +277,10 @@ async function getFoldersSharedByMe() {
   sharedByMe.value = await api.getFoldersSharedByUser(userRef.value.id);
 }
 
+async function getGroupMembers(folderId) {
+  return await api.getContainerGroupMembers(folderId);
+}
+
 provide('sharingManager', {
   toggleItemForSharing,
   createItemMap,
@@ -285,6 +289,7 @@ provide('sharingManager', {
   acceptShare,
   sharedWithMe,
   sharedByMe,
+  getGroupMembers,
 });
 </script>
 

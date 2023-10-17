@@ -168,6 +168,20 @@ export class ApiConnection {
     }
   }
 
+  async getContainerGroupMembers(containerId) {
+    const resp = await this.callApi(
+      `containers/${containerId}/members`,
+      {},
+      'GET'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not list members for container ${containerId}`);
+      return null;
+    }
+  }
+
   async addMemberToContainer(userId, containerId) {
     const resp = await this.callApi(
       `containers/${containerId}/member`,
@@ -188,17 +202,15 @@ export class ApiConnection {
 
   async removeMemberFromContainer(userId, containerId) {
     const resp = await this.callApi(
-      `containers/${containerId}/member`,
-      {
-        userId,
-      },
+      `containers/${containerId}/member/${userId}`,
+      {},
       'DELETE'
     );
     if (resp) {
       return resp;
     } else {
       console.log(
-        `Error: could not remove user ${ownerId} from container ${containerId}`
+        `Error: could not remove user ${userId} from container ${containerId}`
       );
       return null;
     }
