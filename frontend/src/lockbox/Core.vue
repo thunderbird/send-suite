@@ -85,17 +85,17 @@ async function getFolders(root) {
   }
 }
 
-// Make this computed?
-function sharedWithMe() {
-  // Folders I can access, but do not own
-  // This is basically a filtering function.
-}
+// // Make this computed?
+// function sharedWithMe() {
+//   // Folders I can access, but do not own
+//   // This is basically a filtering function.
+// }
 
-// Make this computed?
-function sharedWithOthers() {
-  // Folders I own, share with others
-  // This is basically a filtering function.
-}
+// // Make this computed?
+// function sharedWithOthers() {
+//   // Folders I own, share with others
+//   // This is basically a filtering function.
+// }
 
 async function search(searchString, maybeModifiedDate, maybeCreatedDate) {
   // Can only search titles, not contents
@@ -174,6 +174,16 @@ provide('folderManager', {
 //
 const itemMap = ref(null);
 const selectedItemsForSharing = ref([]);
+const sharedWithMe = ref([]);
+const sharedByMe = ref([]);
+
+watch(
+  () => userRef.value.id,
+  () => {
+    getFoldersSharedWithMe();
+    getFoldersSharedByMe();
+  }
+);
 
 function toggleItemForSharing(itemId) {
   console.log(`here is the itemId to toggle: ${itemId}`);
@@ -252,12 +262,29 @@ async function acceptShare(hash, password) {
   return true;
 }
 
+async function getFoldersSharedWithMe() {
+  if (!userRef.value.id) {
+    console.log(`no valid user id`);
+    return;
+  }
+  sharedWithMe.value = await api.getFoldersSharedWithUser(userRef.value.id);
+}
+async function getFoldersSharedByMe() {
+  if (!userRef.value.id) {
+    console.log(`no valid user id`);
+    return;
+  }
+  sharedByMe.value = await api.getFoldersSharedByUser(userRef.value.id);
+}
+
 provide('sharingManager', {
   toggleItemForSharing,
   createItemMap,
   itemMap,
   selectedItemsForSharing,
   acceptShare,
+  sharedWithMe,
+  sharedByMe,
 });
 </script>
 

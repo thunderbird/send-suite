@@ -274,6 +274,28 @@ export class ApiConnection {
     }
   }
 
+  async getFoldersSharedWithUser(userId) {
+    // TODO: shift the userId from frontend argument to backend session
+    const resp = await this.callApi(`users/${userId}/folders/sharedWithMe`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get folders shared with user ${userId}`);
+      return null;
+    }
+  }
+
+  async getFoldersSharedByUser(userId) {
+    // TODO: shift the userId from frontend argument to backend session
+    const resp = await this.callApi(`users/${userId}/folders/sharedByMe`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get folders shared by user ${userId}`);
+      return null;
+    }
+  }
+
   async getUserPublicKey(userId) {
     console.log(`getting user public key`);
     const resp = await this.callApi(`users/${userId}/`);

@@ -4,6 +4,8 @@ import NewFolder from '../components/NewFolder.vue';
 import FolderView from '../components/FolderView.vue';
 import Breadcrumbs from '../components/Breadcrumbs.vue';
 import FileInfo from '../components/FileInfo.vue';
+import SharedByMe from '../components/SharedByMe.vue';
+import SharedWithMe from '../components/SharedWithMe.vue';
 
 const userRef = inject('userRef');
 </script>
@@ -16,6 +18,12 @@ const userRef = inject('userRef');
       @setCurrentFolderId="setCurrentFolderId"
       :folderPath="folderPath"
     /> -->
+    <div>
+      <SharedWithMe />
+    </div>
+    <div>
+      <SharedByMe />
+    </div>
     <div class="lockbox-main">
       <div>
         <FolderView />

@@ -151,13 +151,13 @@ export async function getSharedContainersAndMembers(
   if (type) {
     where['type'] = type;
   }
-  return await prisma.groupUser.findMany({
+  const results = await prisma.groupUser.findMany({
     where: {
       userId: ownerId,
     },
-    select: {
+    include: {
       group: {
-        select: {
+        include: {
           container: {
             where,
           },
@@ -170,6 +170,12 @@ export async function getSharedContainersAndMembers(
       },
     },
   });
+
+  if (results) {
+    // only include results with non-null containers
+    return results.filter((obj) => !!obj.group.container);
+  }
+  return results;
 }
 
 export async function createItem(
