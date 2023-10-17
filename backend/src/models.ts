@@ -132,6 +132,46 @@ export async function getOwnedContainers(ownerId: number) {
   });
 }
 
+export async function getSharedContainersAndMembers(
+  ownerId: number,
+  type: ContainerType | null,
+  isUserOwner = false
+) {
+  // The `isUserOwner` boolean:
+  // true - get the containers I own and have shared with others
+  // false - get the containers shared with me, owned by someone else
+  const where: Record<string, object | number | string> = {
+    ownerId: {
+      not: ownerId, // Exclude the user's own containers
+    },
+  };
+  if (isUserOwner) {
+    where['ownerId'] = ownerId;
+  }
+  if (type) {
+    where['type'] = type;
+  }
+  return await prisma.groupUser.findMany({
+    where: {
+      userId: ownerId,
+    },
+    select: {
+      group: {
+        select: {
+          container: {
+            where,
+          },
+          members: {
+            select: {
+              user: true,
+            },
+          }, // Include the members of each group
+        },
+      },
+    },
+  });
+}
+
 export async function createItem(
   name: string,
   containerId: number,
