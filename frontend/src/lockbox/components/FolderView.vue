@@ -84,10 +84,7 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
         </a>
       </div>
       <template v-if="folder.id === currentFolderId">
-        <!-- <FileUpload
-          v-if="folder.id === currentFolderId"
-          :folderId="currentFolderId"
-        /> -->
+        <FileUpload />
         <DragAndDropUpload />
         <ul class="file-list">
           <li v-for="file of folder.items">
