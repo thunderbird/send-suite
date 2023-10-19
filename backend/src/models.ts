@@ -3,6 +3,7 @@ import {
   ContainerType,
   ItemType,
   UserTier,
+  Permission,
 } from '@prisma/client';
 const prisma = new PrismaClient();
 import { randomBytes } from 'crypto';
@@ -103,6 +104,7 @@ export async function createContainer(
     data: {
       groupId: group.id,
       userId: ownerId,
+      permission: Permission.READ_WRITE_SHARE, // Owner has full permissions
     },
   });
   console.log(`👿 just added owner to group`);
@@ -423,6 +425,7 @@ export async function addGroupMember(containerId: number, userId: number) {
     data: {
       groupId: group.id,
       userId,
+      permission: Permission.READ, // Lowest permissions, by default
     },
   });
 }
@@ -498,6 +501,10 @@ export async function acceptInvitation(invitationId: number) {
 }
 
 export async function removeGroupMember(containerId: number, userId: number) {
+  // TODO: write a better, more correct version of this.
+  // This code works off of the assumption that there
+  // is a one-to-one correspondence between groups and containers.
+  // This seems to be true, but it isn't guaranteed.
   const group = await prisma.group.findFirst({
     where: {
       container: {

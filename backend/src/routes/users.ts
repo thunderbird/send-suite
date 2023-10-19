@@ -33,7 +33,17 @@ router.post('/login', async (req, res) => {
   try {
     const user = await getUserByEmail(email);
     if (user) {
-      res.status(200).json(user);
+      console.log(`Adding logged-in user to request object`);
+      req.session.user = user;
+      req.session.save((err) => {
+        if (err) {
+          console.log(`💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣`);
+          console.log(`couldn't save session`);
+          res.status(500).json(err);
+        } else {
+          res.status(200).json(user);
+        }
+      });
     } else {
       res.status(404).send();
     }

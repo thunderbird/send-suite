@@ -14,6 +14,15 @@ datasource db {
 enum UserTier {
   PRO
   EPHEMERAL
+  FREE
+}
+
+// Container permissions
+// These a
+enum Permission {
+  READ              // readonly
+  READ_WRITE        // can read + write
+  READ_WRITE_SHARE  // can read + write + and invite others
 }
 
 model User {
@@ -40,11 +49,11 @@ model Group {
 }
 
 model GroupUser {
-  groupId Int
-  group   Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  userId  Int
-  user    User  @relation(fields: [userId], references: [id])
-
+  groupId     Int
+  group       Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId      Int
+  user        User  @relation(fields: [userId], references: [id])
+  permission  Permission
   @@id([groupId, userId])
 }
 
@@ -115,7 +124,7 @@ model Item {
   containerId   Int
   container     Container     @relation(fields: [containerId], references: [id], onDelete: Cascade)
   uploadId      String
-  // Do not cascade, since uploads can exist in different Containers as 
+  // Do not cascade, since uploads can exist in different Containers as
   // different Items
   upload        Upload          @relation(fields: [uploadId], references: [id] )
   type          ItemType

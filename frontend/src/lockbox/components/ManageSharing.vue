@@ -27,7 +27,7 @@ const props = defineProps({
 
 const api = inject('api');
 const userRef = inject('userRef');
-const { getGroupMembers } = inject('sharingManager');
+const { getGroupMembers, removeGroupMember } = inject('sharingManager');
 
 /*
 I'm going to need Core functions for
@@ -51,7 +51,7 @@ async function loadGroupMembers() {
   groupMembers.value = members;
 }
 async function removeMember(userId) {
-  const success = await api.removeMemberFromContainer(userId, props.folderId);
+  const success = await removeGroupMember(userId, props.folderId);
   if (success) {
     loadGroupMembers();
   }
@@ -59,22 +59,24 @@ async function removeMember(userId) {
 </script>
 
 <template>
-  <h1>this is the manage sharing thingy</h1>
-  <!-- list each member, except me (or including me?) -->
+  <h1>Manage Sharing</h1>
+  <button class="btn-primary" @click.prevent="">Invite Member</button>
   <ul>
     <template v-for="user of groupMembers">
+      <!-- Specifically not showing self -->
       <li v-if="userRef.id !== user.user.id">
         {{ user.user.email }} {{ user.user.id }}
-        <a href="#" @click.prevent="removeMember(user.user.id)">Remove</a>
+        <button class="btn-primary" @click.prevent="removeMember(user.user.id)">
+          Remove
+        </button>
       </li>
     </template>
   </ul>
-  <!-- show option to remove them -->
-  <!-- later: show permissions drop down -->
-
   <!-- show a form for adding a new member -->
   <!-- this should create an invitation -->
 
   <!-- maybe show pending invitations? -->
   <!-- with the ability to cancel it -->
+
+  <!-- later: show permissions drop down -->
 </template>

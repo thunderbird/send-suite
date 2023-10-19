@@ -78,5 +78,6 @@ function doUpload() {
   width: 500px;
   height: 200px;
   outline: 1px solid red;
+  overflow-y: scroll;
 }
 </style>

@@ -281,6 +281,40 @@ async function getGroupMembers(folderId) {
   return await api.getContainerGroupMembers(folderId);
 }
 
+async function addGroupMember(userId, folderId) {
+  /*
+  I think I'm creating an invitation.
+  Can I reuse the code from chat?
+
+  OK - that one creates an invitation using their public key.
+  That means, I need to know their email address (or user id or whatever).
+
+  And that's not the same as a sharing link.
+  I can't create an invitation for a non-user or one without a public key.
+
+
+  Here's what I think:
+  - an invitation and a link are the same thing
+    - (but they'd need to be combined)
+  - it is keyed in two ways:
+    - a password
+    - a public key
+  -
+
+  */
+  // update our ref
+  // await getFoldersSharedByMe();
+}
+
+async function removeGroupMember(userId, folderId) {
+  const success = await removeMemberFromContainer(userId, folderId);
+  if (success) {
+    // update our ref
+    await getFoldersSharedByMe();
+  }
+  return success;
+}
+
 provide('sharingManager', {
   toggleItemForSharing,
   createItemMap,
@@ -290,6 +324,8 @@ provide('sharingManager', {
   sharedWithMe,
   sharedByMe,
   getGroupMembers,
+  addGroupMember,
+  removeGroupMember,
 });
 </script>
 
