@@ -323,6 +323,8 @@ provide('sharingManager', {
   acceptShare,
   sharedWithMe,
   sharedByMe,
+  getFoldersSharedWithMe,
+  getFoldersSharedByMe,
   getGroupMembers,
   addGroupMember,
   removeGroupMember,

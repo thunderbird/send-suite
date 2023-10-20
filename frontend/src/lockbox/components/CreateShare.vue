@@ -3,6 +3,7 @@ import { ref, inject } from 'vue';
 // import Share from '@/common/Share.vue';
 import Sharer from '@/common/share';
 
+// shouldn't I be getting this from the sharemanager?
 const props = defineProps({
   items: Array,
   // containerId: number,
@@ -11,6 +12,7 @@ const props = defineProps({
 const api = inject('api');
 const userRef = inject('userRef');
 const keychainRef = inject('keychainRef');
+const { getFoldersSharedByMe } = inject('sharingManager');
 
 const sharer = new Sharer(userRef, keychainRef, api);
 
@@ -26,6 +28,7 @@ async function shareItems() {
     shareAborted();
   }
   shareComplete(url);
+  getFoldersSharedByMe();
 }
 
 function shareComplete(url) {
