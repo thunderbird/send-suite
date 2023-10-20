@@ -4,6 +4,9 @@ import express from 'express';
 import WebSocket from 'ws';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
+import sessionFileStore from 'session-file-store';
+
+import morgan from 'morgan';
 
 import users from './routes/users';
 import containers from './routes/containers';
@@ -43,6 +46,8 @@ const wsUploadServer = new WebSocket.Server({ noServer: true });
 const wsMessageServer = new WebSocket.Server({ noServer: true });
 const app = express();
 
+app.use(morgan('combined'));
+
 app.use(express.json());
 app.use(
   cors({
@@ -50,6 +55,20 @@ app.use(
     credentials: true,
   })
 );
+
+app.set('trust proxy', 1); // trust first proxy
+const FileStore = sessionFileStore(session);
+const fileStoreOptions = {};
+const expressSession = session({
+  secret: process.env.SESSION_SECRET ?? 'abc123xyz',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false },
+  store: new FileStore(fileStoreOptions),
+});
+app.use(expressSession);
+app.use(cookieParser());
+
 // app.use((req, res, next) => {
 //   res.header('Access-Control-Expose-Headers', 'WWW-Authenticate');
 //   next();
@@ -62,18 +81,6 @@ app.use(
 //     next();
 //   }
 // );
-
-app.set('trust proxy', 1); // trust first proxy
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET ?? 'abc123xyz',
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false },
-  })
-);
-app.use(cookieParser());
-
 app.get('/', (req, res) => {
   res.status(200).send('echo');
 });

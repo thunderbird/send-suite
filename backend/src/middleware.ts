@@ -3,16 +3,24 @@ const prisma = new PrismaClient();
 
 // Middleware that attaches the permissions, if any
 export async function getPermissions(req, res, next) {
-  console.log(
-    `begin permissions ====================================================`
-  );
-  console.log(req.session);
-  console.log(`route: ${req.method} ${req.originalUrl}`);
-  console.log(`userId:`, req.body.userId);
-  console.log(`containerId:`, req.params.containerId);
-  console.log(
-    `end permissinos  ====================================================`
-  );
+  try {
+    console.log(
+      `begin permissions ====================================================`
+    );
+    console.log(req.session);
+    console.log(`route: ${req.method} ${req.originalUrl}`);
+    console.log(`userId:`, req.body.userId ?? req.session.user.id);
+    console.log(`containerId:`, req.params.containerId);
+    console.log(
+      `end permissinos  ====================================================`
+    );
+  } catch (e) {
+    console.log;
+    console.log(e);
+    console.log(
+      `exception checking permissions  ====================================================`
+    );
+  }
   next();
   return;
 
