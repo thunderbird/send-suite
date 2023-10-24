@@ -54,7 +54,12 @@ export default class Sharer {
       // }
     }
 
-    const response = await this.api.createFolder(userId, currentContainer.name);
+    const shareOnly = true;
+    const response = await this.api.createFolder(
+      userId,
+      currentContainer.name,
+      shareOnly
+    );
     if (!(response || response.id)) {
       console.log(`could not create a new container for items`);
       return null;

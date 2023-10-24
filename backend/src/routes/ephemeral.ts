@@ -5,11 +5,14 @@ import {
   createAccessLink,
   getAccessLinkChallenge,
   acceptAccessLink,
+  getContainerForAccessLinkHash,
 } from '../models';
+import { getPermissions } from '../middleware';
 
 const router: Router = Router();
 
-// request a hash for an ephemeral user
+// Request a new hash for a shared container,
+// previously only used for "ephemeral chat"
 router.post('/', async (req, res) => {
   const {
     containerId,
@@ -35,7 +38,7 @@ router.post('/', async (req, res) => {
     permission = req.body.permission;
   }
   try {
-    const ephemeralLink = await createAccessLink(
+    const accessLink = await createAccessLink(
       containerId,
       senderId,
       wrappedKey,
@@ -48,7 +51,7 @@ router.post('/', async (req, res) => {
     );
 
     res.status(200).json({
-      id: ephemeralLink.id,
+      id: accessLink.id,
     });
   } catch (e) {
     res.status(500).json({
@@ -57,12 +60,12 @@ router.post('/', async (req, res) => {
   }
 });
 
-// get the challenge info
+// Get the challenge for this hash
 router.get('/:hash/challenge', async (req, res) => {
   const { hash } = req.params;
   if (!hash) {
     res.status(400).json({
-      message: 'Cannot create ephemeral user without hash',
+      message: 'Hash is required',
     });
   }
   try {
@@ -80,14 +83,15 @@ router.get('/:hash/challenge', async (req, res) => {
   }
 });
 
-// activate the hash for an ephemeral user
-// if the challenge is correct
+// Respond to the challenge.
+// If plaintext matches, we respond with wrapped key
+// associated salt
 router.post('/:hash/challenge', async (req, res) => {
   const { hash } = req.params;
   const { challengePlaintext } = req.body;
   if (!hash) {
     res.status(400).json({
-      message: 'Cannot create ephemeral user without hash',
+      message: 'Hash is required',
     });
   }
   try {
@@ -108,6 +112,23 @@ router.post('/:hash/challenge', async (req, res) => {
       res.status(400).json({});
     }
   } catch (e) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+// Get a container and its items
+router.get('/:hash', getPermissions, async (req, res) => {
+  const { hash } = req.params;
+
+  try {
+    // Get the containerId associated with the
+    const containerWithItems = await getContainerForAccessLinkHash(hash);
+    console.log(`here is the container with items:`);
+    console.log(containerWithItems);
+    res.status(200).json(containerWithItems);
+  } catch (error) {
     res.status(500).json({
       message: 'Server error.',
     });

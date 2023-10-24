@@ -35,6 +35,11 @@ router.post('/', async (req, res) => {
     type: ContainerType;
   } = req.body;
 
+  let shareOnly = false;
+  if (req.body.shareOnly) {
+    shareOnly = req.body.shareOnly;
+  }
+
   const messagesByCode: Record<string, string> = {
     P2002: 'Container already exists',
     P2003: 'User does not exist',
@@ -47,7 +52,8 @@ router.post('/', async (req, res) => {
       name.trim().toLowerCase(),
       // publicKey.trim(),
       ownerId,
-      type
+      type,
+      shareOnly
     );
     res.status(201).json({
       message: 'Container created',

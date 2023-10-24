@@ -150,7 +150,7 @@ export class ApiConnection {
     }
   }
 
-  async createFolder(ownerId, name) {
+  async createFolder(ownerId, name, shareOnly = false) {
     // TODO: shift the userId from frontend argument to backend session
     const resp = await this.callApi(
       `containers`,
@@ -158,6 +158,7 @@ export class ApiConnection {
         name: name ?? timestamp(),
         ownerId,
         type: CONTAINER_TYPE.FOLDER,
+        shareOnly,
       },
       'POST'
     );
@@ -402,6 +403,16 @@ export class ApiConnection {
       return resp;
     } else {
       console.log(`Error: could not get ephemeral challenge data`);
+      return null;
+    }
+  }
+
+  async getContainerWithItemsForHash(hash) {
+    const resp = await this.callApi(`ephemeral/${hash}/`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get container for share ${hash}`);
       return null;
     }
   }

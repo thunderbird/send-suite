@@ -93,7 +93,8 @@ export async function createContainer(
   name: string,
   // publicKey: string,
   ownerId: number,
-  type: ContainerType
+  type: ContainerType,
+  shareOnly: boolean
 ) {
   // TODO: figure out the nested create syntax:
   // https://www.prisma.io/docs/reference/api-reference/prisma-client-reference#create-1
@@ -118,6 +119,7 @@ export async function createContainer(
       ownerId,
       groupId: group.id,
       type,
+      shareOnly,
     },
   });
   console.log(`👿 just created container, connected to group`);
@@ -145,6 +147,7 @@ export async function getContainersSharedByMe(
       senderId: userId,
     },
     include: {
+      sender: true,
       // Including related containers and members.
       container: {
         include: {
@@ -168,12 +171,13 @@ export async function getContainersSharedByMe(
     return [];
   }
 
-  const containers = shares.filter(
-    (share) =>
-      share.container.type === type && share.container.group.members.length > 1
-  );
-
-  return containers;
+  // const containers = shares.filter(
+  //   (share) =>
+  //     share.container.type === type && share.container.group.members.length > 1
+  // );
+  // const containers = shares.map((share) => share.container);
+  // return containers;
+  return shares;
 }
 
 export async function getContainersSharedWithMe(
@@ -404,18 +408,19 @@ export async function getAllUserGroupContainers(
     return null;
   }
   const groupIds = user.groups.map(({ groupId }) => groupId);
-  const where = {
+  const containerWhere = {
     groupId: {
       in: groupIds,
     },
+    shareOnly: false,
   };
 
   if (type) {
-    where['type'] = type;
+    containerWhere['type'] = type;
   }
 
   return prisma.container.findMany({
-    where,
+    where: containerWhere,
     // include: {
     //   items: true,
     // },
@@ -719,6 +724,25 @@ export async function acceptAccessLink(
     console.log(e);
     return null;
   }
+}
+
+export async function getContainerForAccessLinkHash(hash: string) {
+  return await prisma.accessLink.findUnique({
+    where: {
+      id: hash,
+    },
+    select: {
+      share: {
+        select: {
+          container: {
+            include: {
+              items: true,
+            },
+          },
+        },
+      },
+    },
+  });
 }
 
 export async function burnEphemeralConversation(containerId: number) {

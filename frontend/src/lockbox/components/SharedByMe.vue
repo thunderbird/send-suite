@@ -7,15 +7,28 @@ const { sharedByMe } = inject('sharingManager');
   <h1>Shared By Me</h1>
   <ul>
     <li v-for="share of sharedByMe">
-      folder name: {{ share.group.container.name }}<br />
-      folder id: {{ share.group.container.id }}<br />
+      folder name: {{ share.container.name }}<br />
+      folder id: {{ share.container.id }}<br />
+      shared with: (need to implement)
+
+      <!--
+        A share can be shared with multiple people.
+        Am I showing with whom?
+        Or am I showing what I shared?
+        What does the user want to access from this?
+        Do they need to get to the user or the folder?
+
+
+
+       -->
+      <!-- shared with: {{ share.recipient.email }} -->
       <br />
-      members:
+      <!-- members:
       <ul>
-        <li v-for="user of share.group.members">
+        <li v-for="user of share.members">
           {{ user.user.email }}
         </li>
-      </ul>
+      </ul> -->
     </li>
   </ul>
 </template>

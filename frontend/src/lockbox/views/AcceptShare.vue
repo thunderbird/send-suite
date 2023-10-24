@@ -2,6 +2,8 @@
 import { ref, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+const emit = defineEmits(['acceptShareComplete']);
+
 const password = ref('');
 const message = ref('');
 
@@ -16,7 +18,14 @@ async function accept() {
   const success = await acceptShare(route.params.hash, password.value);
   if (success) {
     message.value = `and this is where we add the container to the group and then redirect`;
-    router.push('/lockbox');
+
+    if (userRef.value.id) {
+      // Users will go to lockbox home
+      router.push(`/lockbox`);
+    } else {
+      // Non-users stay at this route
+      emit('acceptShareComplete');
+    }
   }
 }
 </script>

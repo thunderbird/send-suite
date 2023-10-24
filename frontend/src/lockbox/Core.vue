@@ -229,34 +229,25 @@ async function acceptShare(hash, password) {
   console.log(`unwrappedKey: ${unwrappedKey}`);
   console.log(`containerId: ${containerId}`);
 
-  let id;
+  // let id;
 
   if (userRef.value.id) {
     console.log(`Using existing user id`);
-    id = userRef.value.id;
-  } else {
-    // create an "anonymous" user and keys
-    await keychainRef.value.rsa.generateKeyPair();
-    const jwkPublicKey = await keychainRef.value.rsa.getPublicKeyJwk();
-    let email = new Date().getTime() + '@example.com';
-    email = email.substring(6);
-
-    const resp = await userRef.value.createUser(email, jwkPublicKey);
-    if (!resp) {
-      console.log(`could not creat user`);
+    const addMemberResp = await api.addMemberToContainer(
+      userRef.value.id,
+      containerId
+    );
+    console.log(`adding user to convo`);
+    console.log(addMemberResp);
+    if (!addMemberResp) {
       return false;
     }
-    id = resp.user.id;
-    await userRef.value.store();
+  } else {
+    // TODO: consider switching to sessionStorage
+    // Generate a temporary keypair
+    // for encrypting containerKey in keychain.
+    await keychainRef.value.rsa.generateKeyPair();
   }
-
-  const addMemberResp = await api.addMemberToContainer(id, containerId);
-  console.log(`adding user to convo`);
-  console.log(addMemberResp);
-  if (!addMemberResp) {
-    return false;
-  }
-
   await keychainRef.value.add(containerId, unwrappedKey);
   await keychainRef.value.store();
   return true;
@@ -269,12 +260,17 @@ async function getFoldersSharedWithMe() {
   }
   sharedWithMe.value = await api.getFoldersSharedWithUser(userRef.value.id);
 }
+
 async function getFoldersSharedByMe() {
   if (!userRef.value.id) {
     console.log(`no valid user id`);
     return;
   }
   sharedByMe.value = await api.getFoldersSharedByUser(userRef.value.id);
+}
+
+async function getSharedFolder(hash) {
+  return await api.getContainerWithItemsForHash(hash);
 }
 
 async function getGroupMembers(folderId) {
@@ -328,6 +324,7 @@ provide('sharingManager', {
   getGroupMembers,
   addGroupMember,
   removeGroupMember,
+  getSharedFolder,
 });
 </script>
 

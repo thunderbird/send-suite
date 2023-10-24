@@ -1,6 +1,6 @@
 <script setup>
-import Core from './Core.vue';
-import Home from './views/Home.vue';
+import Core from '@/lockbox/Core.vue';
+import Home from '../views/Home.vue';
 </script>
 
 <template>
