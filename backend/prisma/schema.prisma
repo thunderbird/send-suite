@@ -54,7 +54,8 @@ model Membership {
   group       Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
   userId      Int
   user        User  @relation(fields: [userId], references: [id])
-  permission  Int   // Modeled as a bitfield, i.e., 0b00000110
+  permission  Int   @default(0)
+                    // Modeled as a bitfield, i.e., 0b00000110
                     // See src/types/custom.ts for values
                     // Prisma's enums don't allow specify values.
                     // Need an expandable way to represent permissions.
@@ -100,7 +101,7 @@ model Invitation {
   status        InvitationStatus @default(PENDING)
 
   // Will be copied over to the resulting Membership
-  permission          Int
+  permission  Int   @default(0)
   // Modeled as a bitfield, i.e., 0b00000110
   // See src/types/custom.ts for values
   // Prisma's enums don't allow specify values.
@@ -126,7 +127,7 @@ model AccessLink {
   challengeCiphertext String
   challengePlaintext  String
 
-  permission          Int
+  permission          Int     @default(0)
   // Modeled as a bitfield, i.e., 0b00000110
   // See src/types/custom.ts for values
   // Prisma's enums don't allow specify values.

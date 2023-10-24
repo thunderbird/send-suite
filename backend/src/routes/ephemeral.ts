@@ -30,6 +30,10 @@ router.post('/', async (req, res) => {
     challengeCiphertext: string;
     challengePlaintext: string;
   } = req.body;
+  let permission = '0';
+  if (req.body.permission) {
+    permission = req.body.permission;
+  }
   try {
     const ephemeralLink = await createAccessLink(
       containerId,
@@ -39,7 +43,8 @@ router.post('/', async (req, res) => {
       challengeKey,
       challengeSalt,
       challengeCiphertext,
-      challengePlaintext
+      challengePlaintext,
+      parseInt(permission)
     );
 
     res.status(200).json({

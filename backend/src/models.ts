@@ -486,7 +486,8 @@ export async function createInvitation(
   containerId: number,
   wrappedKey: string,
   senderId: number,
-  recipientId: number
+  recipientId: number,
+  permission: number
 ) {
   console.log(`Looking for existing share`);
   let share = await prisma.share.findFirst({
@@ -533,6 +534,7 @@ export async function createInvitation(
           id: recipientId,
         },
       },
+      permission,
     },
   });
 }
@@ -630,7 +632,8 @@ export async function createAccessLink(
   challengeKey: string,
   challengeSalt: string,
   challengeCiphertext: string,
-  challengePlaintext: string
+  challengePlaintext: string,
+  permission: number
 ) {
   let share = await prisma.share.findFirst({
     where: {
@@ -650,21 +653,28 @@ export async function createAccessLink(
   }
 
   if (!share) {
-    console.log(`Could not create share before creating invitation.`);
+    console.log(`Could not create share before creating accessLink.`);
     return null;
   }
 
+  console.log(`Created share for access link: ${share.id}`);
   const id = base64url(randomBytes(64));
+
   return prisma.accessLink.create({
     data: {
       id,
-      shareId: share.id,
+      share: {
+        connect: {
+          id: share.id,
+        },
+      },
       wrappedKey,
       salt,
       challengeKey,
       challengeSalt,
       challengeCiphertext,
       challengePlaintext,
+      permission,
     },
   });
 }

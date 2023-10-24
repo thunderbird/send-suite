@@ -5,7 +5,9 @@ export type Logger = {
 };
 
 // Container permissions
-// These a
+// These are modeled as a bitfield, i.e., 0b00000110
+// Allows us to mix and match permissions without
+// requiring extra columns.
 export enum PermissionType {
   NONE = 0,
   READ = 1 << 1,
