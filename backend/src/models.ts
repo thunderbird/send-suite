@@ -3,11 +3,13 @@ import {
   ContainerType,
   ItemType,
   UserTier,
-  Permission,
+  InvitationStatus,
 } from '@prisma/client';
 const prisma = new PrismaClient();
 import { randomBytes } from 'crypto';
 import { base64url } from './utils';
+
+import { PermissionType } from './types/custom';
 
 export async function createUser(
   publicKey: string,
@@ -100,11 +102,11 @@ export async function createContainer(
   });
 
   console.log(`👿 just created group`);
-  await prisma.groupUser.create({
+  await prisma.membership.create({
     data: {
       groupId: group.id,
       userId: ownerId,
-      permission: Permission.READ_WRITE_SHARE, // Owner has full permissions
+      permission: PermissionType.ADMIN, // Owner has full permissions
     },
   });
   console.log(`👿 just added owner to group`);
@@ -134,34 +136,80 @@ export async function getOwnedContainers(ownerId: number) {
   });
 }
 
-export async function getSharedContainersAndMembers(
-  ownerId: number,
-  type: ContainerType | null,
-  isUserOwner = false
+export async function getContainersSharedByMe(
+  userId: number,
+  type: ContainerType
 ) {
-  // The `isUserOwner` boolean:
-  // true - get the containers I own and have shared with others
-  // false - get the containers shared with me, owned by someone else
-  const where: Record<string, object | number | string> = {
-    ownerId: {
-      not: ownerId, // Exclude the user's own containers
-    },
-  };
-  if (isUserOwner) {
-    where['ownerId'] = ownerId;
-  }
-  if (type) {
-    where['type'] = type;
-  }
-  const results = await prisma.groupUser.findMany({
+  const shares = await prisma.share.findMany({
     where: {
-      userId: ownerId,
+      senderId: userId,
+    },
+    include: {
+      // Including related containers and members.
+      container: {
+        include: {
+          group: {
+            include: {
+              members: true,
+            },
+          },
+        },
+      },
+      // Include who we sent the invitation to.
+      invitations: {
+        include: {
+          recipient: true,
+        },
+      },
+    },
+  });
+
+  if (!shares) {
+    return [];
+  }
+
+  const containers = shares.filter(
+    (share) =>
+      share.container.type === type && share.container.group.members.length > 1
+  );
+
+  return containers;
+}
+
+export async function getContainersSharedWithMe(
+  ownerId: number,
+  type: ContainerType
+) {
+  throw Error('finish writing this');
+  // Need to figure out where I'm the recipient
+  const shares = await prisma.share.findMany({
+    where: {
+      senderId: ownerId,
+    },
+  });
+}
+
+export async function __getSharedContainersAndMembers(
+  userId: number,
+  type: ContainerType
+) {
+  // Get the containers I can access, but owned by someone else
+  const containerWhere = {
+    ownerId: {
+      not: userId, // Exclude the user's own containers
+    },
+    type,
+  };
+
+  const results = await prisma.membership.findMany({
+    where: {
+      userId,
     },
     include: {
       group: {
         include: {
           container: {
-            where,
+            where: containerWhere,
           },
           members: {
             select: {
@@ -174,11 +222,15 @@ export async function getSharedContainersAndMembers(
   });
 
   if (results) {
-    // only include results with non-null containers.
-    // null containers happen because:
+    // Only include results with non-null containers.
+    // Null containers happen because:
     // - the initial query is for GroupUsers
     // - doing an `include` for containers also returns non-owned ones
-    return results.filter((obj) => !!obj.group.container);
+    // Return container objects whose type matches.
+    return results
+      .filter((obj) => !!obj.group.container)
+      .map((obj) => obj.group.container)
+      .filter((container) => container.type === type);
   }
   return results;
 }
@@ -421,11 +473,11 @@ export async function addGroupMember(containerId: number, userId: number) {
     return null;
   }
 
-  return prisma.groupUser.create({
+  return prisma.membership.create({
     data: {
       groupId: group.id,
       userId,
-      permission: Permission.READ, // Lowest permissions, by default
+      permission: PermissionType.READ, // Lowest permissions, by default
     },
   });
 }
@@ -433,21 +485,52 @@ export async function addGroupMember(containerId: number, userId: number) {
 export async function createInvitation(
   containerId: number,
   wrappedKey: string,
-  userId: number,
-  senderId: number
+  senderId: number,
+  recipientId: number
 ) {
+  console.log(`Looking for existing share`);
+  let share = await prisma.share.findFirst({
+    where: {
+      containerId,
+      senderId,
+    },
+  });
+
+  if (!share) {
+    console.log(`getting user with id ${senderId}`);
+    const user = await prisma.user.findUnique({
+      where: {
+        id: senderId,
+      },
+    });
+
+    console.log(`No existing share. Let's create one.`);
+    // Create a share
+    share = await prisma.share.create({
+      data: {
+        containerId,
+        senderId: user.id,
+      },
+    });
+  }
+
+  if (!share) {
+    console.log(`Could not create share before creating invitation.`);
+    return null;
+  }
+  console.log(`Creating invitation`);
+
   return prisma.invitation.create({
     data: {
-      containerId,
-      wrappedKey,
-      sender: {
+      share: {
         connect: {
-          id: senderId,
+          id: share.id,
         },
       },
+      wrappedKey,
       recipient: {
         connect: {
-          id: userId,
+          id: recipientId,
         },
       },
     },
@@ -477,17 +560,36 @@ export async function acceptInvitation(invitationId: number) {
 
   // get the recipientId from invitation
   // get container from the invitation
-  const { recipientId, containerId } = invitation;
+  const { recipientId, shareId } = invitation;
   console.log(
-    `creating membership to container ${containerId} for user ${recipientId} `
+    `got share id ${shareId} from invitation, getting containerId from share`
+  );
+
+  const share = await prisma.share.findUnique({
+    where: {
+      id: shareId,
+    },
+  });
+
+  if (!share) {
+    console.log(`Cannot accept invitation - Share does not exist.`);
+    return null;
+  }
+
+  const { containerId } = share;
+  console.log(
+    `creating membership to container ${containerId} for user ${recipientId}`
   );
   // create a new groupUser for recipientId and group
   const groupUser = await addGroupMember(containerId, recipientId);
 
-  // delete the invitation
-  const result = await prisma.invitation.delete({
+  // Mark the invitation as accepted
+  const result = await prisma.invitation.update({
     where: {
       id: invitationId,
+    },
+    data: {
+      status: InvitationStatus.ACCEPTED,
     },
   });
 
@@ -513,45 +615,62 @@ export async function removeGroupMember(containerId: number, userId: number) {
     },
   });
 
-  return prisma.groupUser.delete({
+  return prisma.membership.delete({
     where: {
       groupId_userId: { groupId: group.id, userId },
     },
   });
 }
 
-export async function createEphemeralLink(
+export async function createAccessLink(
   containerId: number,
+  senderId: number,
   wrappedKey: string,
   salt: string,
   challengeKey: string,
   challengeSalt: string,
-  senderId: number,
   challengeCiphertext: string,
   challengePlaintext: string
 ) {
+  let share = await prisma.share.findFirst({
+    where: {
+      containerId,
+      senderId,
+    },
+  });
+
+  if (!share) {
+    // Create a share
+    share = await prisma.share.create({
+      data: {
+        containerId,
+        senderId,
+      },
+    });
+  }
+
+  if (!share) {
+    console.log(`Could not create share before creating invitation.`);
+    return null;
+  }
+
   const id = base64url(randomBytes(64));
-  return prisma.ephemeralLink.create({
+  return prisma.accessLink.create({
     data: {
       id,
-      containerId,
+      shareId: share.id,
       wrappedKey,
       salt,
       challengeKey,
       challengeSalt,
-      sender: {
-        connect: {
-          id: senderId,
-        },
-      },
       challengeCiphertext,
       challengePlaintext,
     },
   });
 }
 
-export async function getEphemeralLinkChallenge(hash: string) {
-  return prisma.ephemeralLink.findUnique({
+export async function getAccessLinkChallenge(hash: string) {
+  return prisma.accessLink.findUnique({
     where: {
       id: hash,
     },
@@ -563,21 +682,28 @@ export async function getEphemeralLinkChallenge(hash: string) {
   });
 }
 
-export async function acceptEphemeralLink(
+export async function acceptAccessLink(
   hash: string,
   challengePlaintext: string
 ) {
   try {
-    // find the ephemeralLink in the database
+    // find the accessLink in the database
     // for the hash, does the challenge match
     // what's in the database?
-    const ephemeralLink = await prisma.ephemeralLink.findUnique({
+    const accessLink = await prisma.accessLink.findUnique({
       where: {
         id: hash,
         challengePlaintext,
       },
+      include: {
+        share: {
+          select: {
+            containerId: true,
+          },
+        },
+      },
     });
-    return ephemeralLink;
+    return accessLink;
   } catch (e) {
     console.log(`👿😿`);
     console.log(e);
@@ -595,14 +721,21 @@ export async function burnFolder(
 ) {
   // delete the ephemeral link
   console.log(`🤡 burning container id: ${containerId}`);
-  const links = await prisma.ephemeralLink.deleteMany({
+  const shares = await prisma.share.findMany({
     where: {
       containerId,
     },
-    // select: {
-    //   id: true,
-    // },
   });
+
+  // For each share, delete corresponding access links
+  for (const share of shares) {
+    await prisma.accessLink.deleteMany({
+      where: {
+        shareId: share.id,
+      },
+    });
+  }
+
   console.log(`✅ deleted ephemeral links`);
   // links.forEach(({ id }) => {
   //   console.log(`✅ link id: ${id}`);
@@ -681,7 +814,7 @@ export async function burnFolder(
   console.log(`✅ deleting container ${containerId}`);
   await Promise.all(
     users.map(async ({ id, tier }) => {
-      return await prisma.groupUser.deleteMany({
+      return await prisma.membership.deleteMany({
         where: {
           groupId: container.group.id,
           // don't specify the user id

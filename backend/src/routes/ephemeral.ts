@@ -2,9 +2,9 @@ import { Prisma, ContainerType } from '@prisma/client';
 import { Router } from 'express';
 import {
   burnEphemeralConversation,
-  createEphemeralLink,
-  getEphemeralLinkChallenge,
-  acceptEphemeralLink,
+  createAccessLink,
+  getAccessLinkChallenge,
+  acceptAccessLink,
 } from '../models';
 
 const router: Router = Router();
@@ -13,31 +13,31 @@ const router: Router = Router();
 router.post('/', async (req, res) => {
   const {
     containerId,
+    senderId,
     wrappedKey,
     salt,
     challengeKey,
     challengeSalt,
-    senderId,
     challengeCiphertext,
     challengePlaintext,
   }: {
     containerId: number;
+    senderId: number;
     wrappedKey: string;
     salt: string;
     challengeKey: string;
     challengeSalt: string;
-    senderId: number;
     challengeCiphertext: string;
     challengePlaintext: string;
   } = req.body;
   try {
-    const ephemeralLink = await createEphemeralLink(
+    const ephemeralLink = await createAccessLink(
       containerId,
+      senderId,
       wrappedKey,
       salt,
       challengeKey,
       challengeSalt,
-      senderId,
       challengeCiphertext,
       challengePlaintext
     );
@@ -62,7 +62,7 @@ router.get('/:hash/challenge', async (req, res) => {
   }
   try {
     const { challengeKey, challengeSalt, challengeCiphertext } =
-      await getEphemeralLinkChallenge(hash);
+      await getAccessLinkChallenge(hash);
     res.status(200).json({
       challengeKey,
       challengeSalt,
@@ -86,16 +86,16 @@ router.post('/:hash/challenge', async (req, res) => {
     });
   }
   try {
-    const link = await acceptEphemeralLink(hash, challengePlaintext);
+    const link = await acceptAccessLink(hash, challengePlaintext);
     if (link) {
       // console.log(link);
       console.log(
         `challenge success, sending back the containerId, wrappedKey, and salt`
       );
-      const { containerId, wrappedKey, salt } = link;
+      const { share, wrappedKey, salt } = link;
       res.status(200).json({
         status: 'success',
-        containerId,
+        containerId: share.containerId,
         wrappedKey,
         salt,
       });

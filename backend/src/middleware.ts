@@ -1,4 +1,6 @@
-import { PrismaClient, Permission } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+
+import { PermissionType } from './types/custom';
 const prisma = new PrismaClient();
 
 // Middleware that attaches the permissions, if any
@@ -7,9 +9,8 @@ export async function getPermissions(req, res, next) {
     console.log(
       `begin permissions ====================================================`
     );
-    console.log(req.session);
     console.log(`route: ${req.method} ${req.originalUrl}`);
-    console.log(`userId:`, req.body.userId ?? req.session.user.id);
+    console.log(`userId:`, req?.session?.user?.id);
     console.log(`containerId:`, req.params.containerId);
     console.log(
       `end permissinos  ====================================================`
@@ -54,15 +55,15 @@ export async function getPermissions(req, res, next) {
 
   if (group) {
     // Find the GroupUser row
-    const groupUser = await prisma.groupUser.findUnique({
+    const membership = await prisma.membership.findUnique({
       where: {
         groupId_userId: { groupId: group.id, userId },
       },
     });
 
-    if (groupUser) {
+    if (membership) {
       // Attach it to the route, if it exists
-      req.permission = groupUser.permission;
+      req.permission = membership.permission;
       console.log(`😻 Found permission for user`);
       console.log(req.permission);
     }

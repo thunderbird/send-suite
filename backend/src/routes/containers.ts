@@ -124,27 +124,23 @@ router.delete(
   }
 );
 
-router.post(
-  '/:containerId/member/sharekey',
-  getPermissions,
-  async (req, res) => {
-    const { containerId } = req.params;
-    const { userId, senderId, wrappedKey } = req.body;
-    try {
-      const invitation = await createInvitation(
-        parseInt(containerId),
-        wrappedKey,
-        parseInt(userId),
-        parseInt(senderId)
-      );
-      res.status(200).json(invitation);
-    } catch (error) {
-      res.status(500).json({
-        message: 'Server error.',
-      });
-    }
+router.post('/:containerId/member/invite', getPermissions, async (req, res) => {
+  const { containerId } = req.params;
+  const { userId, recipientId, wrappedKey } = req.body;
+  try {
+    const invitation = await createInvitation(
+      parseInt(containerId),
+      wrappedKey,
+      parseInt(userId),
+      parseInt(recipientId)
+    );
+    res.status(200).json(invitation);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
   }
-);
+});
 
 router.post('/:containerId/member/accept/:invitationId', async (req, res) => {
   const { invitationId } = req.params;

@@ -6,7 +6,8 @@ import {
   getUserPublicKey,
   getAllInvitations,
   getUserByEmail,
-  getSharedContainersAndMembers,
+  getContainersSharedByMe,
+  getContainersSharedWithMe,
 } from '../models';
 
 const router: Router = Router();
@@ -148,18 +149,12 @@ router.get('/:userId/folders', async (req, res) => {
 router.get('/:userId/folders/sharedByMe', async (req, res) => {
   const { userId } = req.params;
   try {
-    const containersAndMembers = await getSharedContainersAndMembers(
+    const containersAndMembers = await getContainersSharedByMe(
       parseInt(userId),
-      ContainerType.FOLDER,
-      true // only containers owned by userId
+      ContainerType.FOLDER
     );
 
-    // This shows accepted shares, i.e., a recipient has
-    // joined the container's group.
-    const containers = containersAndMembers.filter((obj) => {
-      return obj.group.members.length > 1;
-    });
-    res.status(200).json(containers);
+    res.status(200).json(containersAndMembers);
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -170,25 +165,25 @@ router.get('/:userId/folders/sharedByMe', async (req, res) => {
 
 router.get('/:userId/folders/sharedWithMe', async (req, res) => {
   const { userId } = req.params;
-  try {
-    const containersAndMembers = await getSharedContainersAndMembers(
-      parseInt(userId),
-      ContainerType.FOLDER,
-      false // only containers not owned by userId
-    );
+  res.status(501);
+  // try {
+  //   const containersAndMembers = await getContainersSharedWithMe(
+  //     parseInt(userId),
+  //     ContainerType.FOLDER
+  //   );
 
-    // A container shared with me has at least 2 members:
-    // me and the owner.
-    const containers = containersAndMembers.filter((obj) => {
-      return obj.group.members.length > 1;
-    });
-    res.status(200).json(containers);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      message: 'Server error.',
-    });
-  }
+  //   // A container shared with me has at least 2 members:
+  //   // me and the owner.
+  //   const containers = containersAndMembers.filter((obj) => {
+  //     return obj.group.members.length > 1;
+  //   });
+  //   res.status(200).json(containers);
+  // } catch (error) {
+  //   console.log(error);
+  //   res.status(500).json({
+  //     message: 'Server error.',
+  //   });
+  // }
 });
 
 router.get('/:userId/invitations', async (req, res) => {
