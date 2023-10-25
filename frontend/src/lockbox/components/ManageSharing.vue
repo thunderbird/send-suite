@@ -64,10 +64,10 @@ async function removeMember(userId) {
   }
 }
 
-async function inviteMember(userId) {
+async function inviteMember(email) {
   const result = await sharer.shareContainerWithInvitation(
     props.folderId,
-    userId
+    email
   );
   if (!result) {
     console.log(`Could not invite member`);

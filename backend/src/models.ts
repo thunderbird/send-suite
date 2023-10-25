@@ -32,6 +32,7 @@ export async function getUserByEmail(email: string) {
     },
   });
 }
+
 export async function getUserPublicKey(id: number) {
   return prisma.user.findUnique({
     where: {

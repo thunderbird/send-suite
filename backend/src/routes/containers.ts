@@ -148,6 +148,8 @@ router.post('/:containerId/member/invite', getPermissions, async (req, res) => {
     );
     res.status(200).json(invitation);
   } catch (error) {
+    console.log(`🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡`);
+    console.log(error);
     res.status(500).json({
       message: 'Server error.',
     });

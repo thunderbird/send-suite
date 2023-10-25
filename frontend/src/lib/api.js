@@ -349,6 +349,17 @@ export class ApiConnection {
     }
   }
 
+  async getUserByEmail(email) {
+    console.log(`getting user public key`);
+    const resp = await this.callApi(`users/lookup/${email}/`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get user ${email}`);
+      return null;
+    }
+  }
+
   async createUser(email, publicKey, isEphemeral = false) {
     const resp = await this.callApi(
       `users`,

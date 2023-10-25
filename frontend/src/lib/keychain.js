@@ -79,7 +79,7 @@ class Container {
 class Password {
   async _wrap(keyToWrap, password, salt) {
     // Derive key using the password and the salt.
-    const keyMaterial = await getKeyMaterial(password);
+    const keyMaterial = await KeyMaterial(password);
     const wrappingKey = await getKey(keyMaterial, salt);
 
     const wrappedKey = await crypto.subtle.wrapKey(
@@ -153,7 +153,8 @@ class Rsa {
       return null;
     }
     const jwk = await rsaToJwk(this.publicKey);
-    return JSON.stringify(jwk);
+    // return JSON.stringify(jwk);
+    return jwk;
   }
 
   async getPrivateKeyJwk() {

@@ -23,13 +23,13 @@ export default class Sharer {
   }
 
   // Creates Invitation
-  async shareContainerWithInvitation(containerId, recipientId) {
-    const publicKeyResp = await this.api.getUserPublicKey(recipientId);
-    if (publicKeyResp) {
-      let { publicKey } = publicKeyResp;
+  async shareContainerWithInvitation(containerId, email) {
+    let user = await this.api.getUserByEmail(email);
 
+    if (user) {
+      let { publicKey, id: recipientId } = user;
       if (!publicKey) {
-        console.log(`Could not find public key for user ${recipientId}`);
+        console.log(`Could not find public key for user ${email}`);
       }
 
       console.warn('SOMETHING WEIRD IS HAPPENING WITH PUBLIC KEYS ON SERVER');
