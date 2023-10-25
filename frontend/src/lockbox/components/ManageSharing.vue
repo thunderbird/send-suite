@@ -20,15 +20,20 @@ Maybe I could create kinds of invitations:
   - anonymous (creates a new share)
 */
 import { inject, ref, onMounted } from 'vue';
+import Sharer from '@/common/share';
+
+const api = inject('api');
+const keychainRef = inject('keychainRef');
+const userRef = inject('userRef');
+const { getSharesForFolder, getGroupMembers, removeGroupMember } =
+  inject('sharingManager');
+
 // const emit = defineEmits(['setCurrentFolderId']);
 const props = defineProps({
   folderId: Number,
 });
-
-const api = inject('api');
-const userRef = inject('userRef');
-const { getSharesForFolder, getGroupMembers, removeGroupMember } =
-  inject('sharingManager');
+const sharer = new Sharer(userRef, keychainRef, api);
+const newMember = ref(null);
 
 /*
 I'm going to need Core functions for
@@ -58,21 +63,40 @@ async function removeMember(userId) {
     getSharingInfo();
   }
 }
+
+async function inviteMember(userId) {
+  const result = await sharer.shareContainerWithInvitation(
+    props.folderId,
+    userId
+  );
+  if (!result) {
+    console.log(`Could not invite member`);
+    return;
+  }
+  console.log(`🚀🚀🚀🚀🚀🚀🚀 invitation sent!`);
+}
+
+async function createAccessLink() {}
 </script>
 
 <template>
   <h1>Manage Sharing</h1>
-  <button class="btn-primary" @click.prevent="">Invite Member</button>
+  <label>
+    User id:
+    <input v-model="newMember" />
+  </label>
+  <button class="btn-primary" @click.prevent="inviteMember(newMember)">
+    Invite Member
+  </button>
   <ul>
-    <template v-for="user of groupMembers">
-      <!-- Specifically not showing self -->
+    <!-- <template v-for="user of groupMembers">
       <li v-if="userRef.id !== user.user.id">
         {{ user.user.email }} {{ user.user.id }}
         <button class="btn-primary" @click.prevent="removeMember(user.user.id)">
           Remove
         </button>
       </li>
-    </template>
+    </template> -->
   </ul>
   <!-- show a form for adding a new member -->
   <!-- this should create an invitation -->

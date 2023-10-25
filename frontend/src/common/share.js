@@ -7,6 +7,7 @@ export default class Sharer {
     this.api = api;
   }
 
+  // Creates AccessLink
   async shareItemsWithPassword(items, password) {
     const containerId = await this.createShareOnlyContainer(
       items,
@@ -22,10 +23,54 @@ export default class Sharer {
   }
 
   // Creates Invitation
-  async shareContainerWithInvitation(containerId, userId) {
-    // start here: create an invitation
-    // on the backend, you need something like models/createAccessLink
-    // it should look for the existing share and add the invitation to it
+  async shareContainerWithInvitation(containerId, recipientId) {
+    const publicKeyResp = await this.api.getUserPublicKey(recipientId);
+    if (publicKeyResp) {
+      let { publicKey } = publicKeyResp;
+
+      if (!publicKey) {
+        console.log(`Could not find public key for user ${recipientId}`);
+      }
+
+      console.warn('SOMETHING WEIRD IS HAPPENING WITH PUBLIC KEYS ON SERVER');
+
+      // TODO: make sure we're not double-escaping before storing on server
+      while (typeof publicKey !== 'object') {
+        publicKey = JSON.parse(publicKey);
+      }
+
+      const importedPublicKey = await crypto.subtle.importKey(
+        'jwk',
+        publicKey,
+        {
+          name: 'RSA-OAEP',
+          hash: { name: 'SHA-256' },
+        },
+        true,
+        ['wrapKey']
+      );
+
+      const key = await this.keychain.get(containerId);
+      const wrappedKey = await this.keychain.rsa.wrapContainerKey(
+        key,
+        importedPublicKey
+      );
+
+      if (!wrappedKey) {
+        console.log(`no wrapped key for the invitation`);
+        return null;
+      }
+
+      const resp = await this.api.inviteGroupMember(
+        containerId,
+        wrappedKey,
+        recipientId,
+        this.user.id
+      );
+      console.log(`Invitation creation response:`);
+      console.log(resp);
+      return resp;
+    }
   }
 
   /*
@@ -186,6 +231,7 @@ export default class Sharer {
     const { origin } = new URL(window.location.href);
     // const url = `${origin}/share/${hash}`;
     // TODO: need the server url from...elsewhere
+    // Using `origin` works fine for web application, but not for extension
     const url = `http://localhost:5173/share/${hash}`;
     return url;
   }

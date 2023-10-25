@@ -6,7 +6,6 @@ import {
   getAccessLinkChallenge,
   acceptAccessLink,
   getContainerForAccessLinkHash,
-  createInvitation,
   createInvitationForHash,
 } from '../models';
 import { getPermissions } from '../middleware';

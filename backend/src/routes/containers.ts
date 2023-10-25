@@ -133,7 +133,7 @@ router.delete(
 
 router.post('/:containerId/member/invite', getPermissions, async (req, res) => {
   const { containerId } = req.params;
-  const { userId, recipientId, wrappedKey } = req.body;
+  const { senderId, recipientId, wrappedKey } = req.body;
   let permission = '0';
   if (req.body.permission) {
     permission = req.body.permission;
@@ -142,7 +142,7 @@ router.post('/:containerId/member/invite', getPermissions, async (req, res) => {
     const invitation = await createInvitation(
       parseInt(containerId),
       wrappedKey,
-      parseInt(userId),
+      parseInt(senderId),
       parseInt(recipientId),
       parseInt(permission)
     );

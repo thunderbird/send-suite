@@ -135,6 +135,12 @@ model AccessLink {
   // Postgres (for example) gives us a 32 bit Int.
 
   // TODO: count how many times used?
+  // accessCount      Int
+  // It increments each time it's unlocked?
+  // This should only increment on a specific API route,
+  // not one that is hit several times while being used.
+
+  // expiresAfter        DateTime?
 }
 
 

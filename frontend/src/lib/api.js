@@ -218,13 +218,12 @@ export class ApiConnection {
     }
   }
 
-  async inviteGroupMember(containerId, wrappedKey, userId, senderId) {
+  async inviteGroupMember(containerId, wrappedKey, recipientId, senderId) {
     const resp = await this.callApi(
-      `containers/${containerId}/member/sharekey`,
+      `containers/${containerId}/member/invite`,
       {
-        containerId,
         wrappedKey,
-        userId,
+        recipientId,
         senderId,
       },
       'POST'
