@@ -304,6 +304,19 @@ export class ApiConnection {
     }
   }
 
+  async getSharesForFolder(containerId, userId) {
+    // TODO: shift the userId from frontend argument to backend session
+    const resp = await this.callApi(`containers/${containerId}/shares`, {
+      userId,
+    });
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get sharing info for ${containerId}`);
+      return null;
+    }
+  }
+
   async getFoldersSharedWithUser(userId) {
     // TODO: shift the userId from frontend argument to backend session
     const resp = await this.callApi(`users/${userId}/folders/sharedWithMe`);
@@ -365,7 +378,7 @@ export class ApiConnection {
     }
   }
 
-  async createEphemeralLink(
+  async createAccessLink(
     containerId,
     wrappedKey,
     salt,

@@ -13,6 +13,7 @@ import {
   getContainerInfo,
   burnFolder,
   getContainerWithMembers,
+  getSharesForContainer,
 } from '../models';
 import { getPermissions } from '../middleware';
 
@@ -248,6 +249,25 @@ router.delete('/:containerId', getPermissions, async (req, res) => {
   console.log(`👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿`);
   try {
     const result = await burnFolder(parseInt(containerId));
+    res.status(200).json({
+      result,
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({
+      message: 'Server error',
+    });
+  }
+});
+
+router.get('/:containerId/shares', getPermissions, async (req, res) => {
+  const { containerId } = req.params;
+  const { userId } = req.body; // TODO: get from session
+  try {
+    const result = await getSharesForContainer(
+      parseInt(containerId),
+      parseInt(userId)
+    );
     res.status(200).json({
       result,
     });

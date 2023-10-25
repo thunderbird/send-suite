@@ -286,6 +286,14 @@ async function getSharedFolder(hash) {
   return await api.getContainerWithItemsForHash(hash);
 }
 
+async function getSharesForFolder(containerId) {
+  if (!userRef.value.id) {
+    console.log(`no valid user id`);
+    return;
+  }
+  return await api.getSharesForFolder(containerId, userRef.value.id);
+}
+
 async function getGroupMembers(folderId) {
   return await api.getContainerGroupMembers(folderId);
 }
@@ -338,6 +346,7 @@ provide('sharingManager', {
   addGroupMember,
   removeGroupMember,
   getSharedFolder,
+  getSharesForFolder,
 });
 </script>
 

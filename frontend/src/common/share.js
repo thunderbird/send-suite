@@ -7,9 +7,25 @@ export default class Sharer {
     this.api = api;
   }
 
-  async doShare(items, password) {
-    const containerId = await this.createNewShare(items, null, this.user.id);
-    return await this.requestShareLink(containerId, password);
+  async shareItemsWithPassword(items, password) {
+    const containerId = await this.createShareOnlyContainer(
+      items,
+      null,
+      this.user.id
+    );
+    return await this.requestAccessLink(containerId, password);
+  }
+
+  // Creates AccessLink
+  async shareContainerWithPassword(containerId, password) {
+    return await this.requestAccessLink(containerId, password);
+  }
+
+  // Creates Invitation
+  async shareContainerWithInvitation(containerId, userId) {
+    // start here: create an invitation
+    // on the backend, you need something like models/createAccessLink
+    // it should look for the existing share and add the invitation to it
   }
 
   /*
@@ -23,7 +39,11 @@ export default class Sharer {
   }
 
   */
-  async createNewShare(items = [], containerId = null, userId = null) {
+  async createShareOnlyContainer(
+    items = [],
+    containerId = null,
+    userId = null
+  ) {
     if (!userId) {
       console.log(`User ID is required`);
       return;
@@ -111,7 +131,7 @@ export default class Sharer {
     return newContainerId;
   }
 
-  async requestShareLink(containerId, password) {
+  async requestAccessLink(containerId, password) {
     // get the key (which unwraps it),
     console.log(`using password: ${password}`);
     const unwrappedKey = await this.keychain.get(containerId);
@@ -146,7 +166,7 @@ export default class Sharer {
     const saltStr = Util.arrayBufferToBase64(salt);
     const challengeSaltStr = Util.arrayBufferToBase64(challengeSalt);
 
-    const resp = await this.api.createEphemeralLink(
+    const resp = await this.api.createAccessLink(
       containerId,
       passwordWrappedKeyStr,
       saltStr,

@@ -23,7 +23,7 @@ const message = ref('');
 
 async function shareItems() {
   // isShareReady.value = true;
-  const url = await sharer.doShare(props.items, password.value);
+  const url = await sharer.shareItemsWithPassword(props.items, password.value);
   if (!url) {
     shareAborted();
   }

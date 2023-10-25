@@ -206,6 +206,36 @@ export async function getContainersSharedWithMe(
   return invitations.filter((i) => i.share.container.type === type);
 }
 
+export async function getSharesForContainer(
+  containerId: number,
+  userId: number
+) {
+  return await prisma.share.findMany({
+    where: {
+      // Removing senderId for now
+      // TODO: determine when other users should see/control sharing
+      // senderId: userId,
+      containerId,
+    },
+    include: {
+      invitations: {
+        include: {
+          recipient: {
+            select: {
+              email: true,
+            },
+          },
+        },
+      },
+      accessLinks: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  });
+}
+
 export async function __getSharedContainersAndMembers(
   userId: number,
   type: ContainerType

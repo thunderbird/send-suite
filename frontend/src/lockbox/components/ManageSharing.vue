@@ -27,7 +27,8 @@ const props = defineProps({
 
 const api = inject('api');
 const userRef = inject('userRef');
-const { getGroupMembers, removeGroupMember } = inject('sharingManager');
+const { getSharesForFolder, getGroupMembers, removeGroupMember } =
+  inject('sharingManager');
 
 /*
 I'm going to need Core functions for
@@ -42,18 +43,19 @@ I'm going to need Core functions for
 What about transferring ownership?
 */
 
-const groupMembers = ref([]);
-onMounted(loadGroupMembers);
+const shares = ref([]);
+onMounted(getSharingInfo);
 
-async function loadGroupMembers() {
-  const members = await getGroupMembers(props.folderId);
-  // console.log(members);
-  groupMembers.value = members;
+async function getSharingInfo() {
+  const result = await getSharesForFolder(props.folderId);
+  console.log(`🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉`);
+  console.log(result);
+  shares.value = result;
 }
 async function removeMember(userId) {
   const success = await removeGroupMember(userId, props.folderId);
   if (success) {
-    loadGroupMembers();
+    getSharingInfo();
   }
 }
 </script>

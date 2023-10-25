@@ -50,9 +50,9 @@ The way I've got this written now:
       (id) => itemMap.value[id]
     );
 
-    const url = await sharer.doShare(itemsToShare, password.value);
+    const url = await sharer.shareItems(itemsToShare, password.value);
     if (!url) {
-      console.log(`cannot doShare`);
+      console.log(`cannot shareItems`);
       return;
     }
     browser.runtime.sendMessage({
@@ -75,7 +75,7 @@ The way I've got this written now:
       return;
     }
     fileBlob.value = null;
-    const url = await sharer.doShare([itemObj], password.value);
+    const url = await sharer.shareItems([itemObj], password.value);
     if (!url) {
       shareAborted();
       return;
