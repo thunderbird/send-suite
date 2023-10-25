@@ -266,6 +266,22 @@ export class ApiConnection {
     }
   }
 
+  async createInvitationForHash(hash, recipientId) {
+    const resp = await this.callApi(
+      `/ephemeral/${hash}/member/${recipientId}/accept`,
+      {},
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(
+        `Error: could not create invitation for accessLink ${hash} for recipient ${recipientId}`
+      );
+      return null;
+    }
+  }
+
   async getAllConversations(userId) {
     // TODO: shift the userId from frontend argument to backend session
     const resp = await this.callApi(`users/${userId}/conversations/`);

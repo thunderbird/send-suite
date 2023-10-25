@@ -745,6 +745,45 @@ export async function getContainerForAccessLinkHash(hash: string) {
   });
 }
 
+export async function createInvitationForHash(
+  hash: string,
+  recipientId: number
+) {
+  const accessLink = await prisma.accessLink.findUnique({
+    where: {
+      id: hash,
+    },
+    select: {
+      wrappedKey: true,
+      permission: true,
+      share: {
+        select: {
+          senderId: true,
+          containerId: true,
+        },
+      },
+    },
+  });
+  console.log(accessLink);
+  const invitation = await createInvitation(
+    accessLink.share.containerId,
+    accessLink.wrappedKey,
+    accessLink.share.senderId,
+    recipientId,
+    accessLink.permission
+  );
+  const result = await prisma.invitation.update({
+    where: {
+      id: invitation.id,
+    },
+    data: {
+      status: InvitationStatus.ACCEPTED,
+    },
+  });
+
+  return result;
+}
+
 export async function burnEphemeralConversation(containerId: number) {
   return await burnFolder(containerId);
 }

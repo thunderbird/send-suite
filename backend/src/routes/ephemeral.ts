@@ -6,6 +6,8 @@ import {
   getAccessLinkChallenge,
   acceptAccessLink,
   getContainerForAccessLinkHash,
+  createInvitation,
+  createInvitationForHash,
 } from '../models';
 import { getPermissions } from '../middleware';
 
@@ -134,6 +136,24 @@ router.get('/:hash', getPermissions, async (req, res) => {
     });
   }
 });
+
+// For record keeping purposes, create a corresponding invitation
+router.post(
+  '/:hash/member/:recipientId/accept',
+  getPermissions,
+  async (req, res) => {
+    const { hash, recipientId } = req.params;
+
+    try {
+      const result = await createInvitationForHash(hash, parseInt(recipientId));
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(500).json({
+        message: 'Server error.',
+      });
+    }
+  }
+);
 
 router.post('/burn', async (req, res) => {
   const { containerId } = req.body;

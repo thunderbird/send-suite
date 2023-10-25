@@ -218,7 +218,7 @@ function createItemMap(folders) {
   console.log(map);
 }
 
-// TODO: consider moving this to the server-side
+// TODO: move this to the server-side
 async function acceptShare(hash, password) {
   const { unwrappedKey, containerId } = await getContainerKeyFromChallenge(
     hash,
@@ -232,7 +232,20 @@ async function acceptShare(hash, password) {
   // let id;
 
   if (userRef.value.id) {
+    // TODO: if the user has already used the accessLink successfully
+    // we should skip this part and just return true
+    // There's no need to create a duplicate invitation and membership
     console.log(`Using existing user id`);
+    // TODO: this in particular needs to be server-side
+    // Create an Invitation and set it to ACCEPTED
+    const createInvitationResp = await api.createInvitationForHash(
+      hash,
+      userRef.value.id
+    );
+    if (!createInvitationResp) {
+      return false;
+    }
+
     const addMemberResp = await api.addMemberToContainer(
       userRef.value.id,
       containerId
