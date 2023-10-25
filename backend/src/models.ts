@@ -181,16 +181,29 @@ export async function getContainersSharedByMe(
 }
 
 export async function getContainersSharedWithMe(
-  ownerId: number,
+  recipientId: number,
   type: ContainerType
 ) {
-  throw Error('finish writing this');
-  // Need to figure out where I'm the recipient
-  const shares = await prisma.share.findMany({
+  const invitations = await prisma.invitation.findMany({
     where: {
-      senderId: ownerId,
+      recipientId,
+      status: InvitationStatus.ACCEPTED,
+    },
+    select: {
+      share: {
+        select: {
+          sender: {
+            select: {
+              id: true,
+              email: true,
+            },
+          },
+          container: true,
+        },
+      },
     },
   });
+  return invitations.filter((i) => i.share.container.type === type);
 }
 
 export async function __getSharedContainersAndMembers(

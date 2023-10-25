@@ -6,15 +6,10 @@ const { sharedWithMe } = inject('sharingManager');
 <template>
   <h1>Shared With Me</h1>
   <ul>
-    <li v-for="share of sharedWithMe">
-      folder name: {{ share.group.container.name }}
+    <li v-for="obj of sharedWithMe">
+      folder name: {{ obj.share.container.name }}
       <br />
-      members:
-      <ul>
-        <li v-for="user of share.group.members">
-          {{ user.user.email }}
-        </li>
-      </ul>
+      shared by: {{ obj.share.sender.email }}
     </li>
   </ul>
 </template>

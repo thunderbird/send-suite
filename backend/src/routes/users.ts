@@ -165,25 +165,19 @@ router.get('/:userId/folders/sharedByMe', async (req, res) => {
 
 router.get('/:userId/folders/sharedWithMe', async (req, res) => {
   const { userId } = req.params;
-  res.status(501).json({});
-  // try {
-  //   const containersAndMembers = await getContainersSharedWithMe(
-  //     parseInt(userId),
-  //     ContainerType.FOLDER
-  //   );
+  try {
+    const containersAndMembers = await getContainersSharedWithMe(
+      parseInt(userId),
+      ContainerType.FOLDER
+    );
 
-  //   // A container shared with me has at least 2 members:
-  //   // me and the owner.
-  //   const containers = containersAndMembers.filter((obj) => {
-  //     return obj.group.members.length > 1;
-  //   });
-  //   res.status(200).json(containers);
-  // } catch (error) {
-  //   console.log(error);
-  //   res.status(500).json({
-  //     message: 'Server error.',
-  //   });
-  // }
+    res.status(200).json(containersAndMembers);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
 });
 
 router.get('/:userId/invitations', async (req, res) => {
