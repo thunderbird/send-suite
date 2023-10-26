@@ -5,11 +5,6 @@ Given a folder that I own:
 - for each one, show a...dropdown?
 - and an "Remove"
 
-Dropdown should include:
-- read-only
-- edit (upload files, replace existing)
-- admin (manage sharing)
-
 Also show controls for inviting new members
 Or creating an anonymous share (which creates a new container).
 ^^^^^ WAIT.
@@ -21,14 +16,19 @@ Maybe I could create kinds of invitations:
 */
 import { inject, ref, onMounted } from 'vue';
 import Sharer from '@/common/share';
+import PermissionsDropDown from '../elements/PermissionsDropDown.vue';
 
 const api = inject('api');
 const keychainRef = inject('keychainRef');
 const userRef = inject('userRef');
-const { getSharesForFolder, getGroupMembers, removeGroupMember } =
-  inject('sharingManager');
+const {
+  getSharesForFolder,
+  getGroupMembers,
+  removeGroupMember,
+  updateInvitationPermissions,
+  updateAccessLinkPermissions,
+} = inject('sharingManager');
 
-// const emit = defineEmits(['setCurrentFolderId']);
 const props = defineProps({
   folderId: Number,
 });
@@ -43,27 +43,6 @@ I'm going to need Core functions for
 - removing members
   - should I also track revocations?
 - setting/updating permissions
-
-
-What about transferring ownership?
-
-vs SharedByMe.vue, this one is folder-centric (is it?)
-I get the share associated with the folder.
-However, isn't that the same thing?
-Will I have multiple shares per folder?
-Or is it like Groups, where I won't really ever have more than one.
-(and I really should enforce this in the database).
-
-Anyway, I need to decide:
-- what does this component display?
-  - it seems like it should be "share-for-this-folder" centric
-
-I think that's what I already have, so we're already share centric.
-That means I could potentially make the global sharedByMe more easily searchable (or provide a convenience function to get a specific share from the array of shares.)
-
-So, do this: make `getSharesForFolder` *not* call the api.
-Make it get the shares for a folder id
-
 
 */
 
@@ -96,6 +75,16 @@ async function inviteMember(email) {
 }
 
 async function createAccessLink() {}
+
+const INVITATION = 'invitation';
+const ACCESSLINK = 'accessLink';
+async function setPermission(type, containerId, id, permission) {
+  if (type === INVITATION) {
+    updateInvitationPermissions(containerId, id, permission);
+  } else if (type === ACCESSLINK) {
+    updateAccessLinkPermissions(containerId, id, permission);
+  }
+}
 </script>
 
 <template>
@@ -112,8 +101,14 @@ async function createAccessLink() {}
       Invitations:
       <ul>
         <li v-for="invitation of share.invitations">
+          id: {{ invitation.id }}<br />
           {{ invitation.recipient.email }}<br />
-          {{ invitation.permission }}
+          <PermissionsDropDown
+            :currentPermission="invitation.permission"
+            @setPermission="
+              (p) => setPermission(INVITATION, folderId, invitation.id, p)
+            "
+          />
         </li>
       </ul>
     </li>
@@ -121,8 +116,13 @@ async function createAccessLink() {}
       Links:
       <ul>
         <li v-for="accessLink of share.accessLinks">
-          {{ accessLink.id }}<br />
-          {{ accessLink.permission }}
+          id: {{ accessLink.id }}<br />
+          <PermissionsDropDown
+            :currentPermission="accessLink.permission"
+            @setPermission="
+              (p) => setPermission(ACCESSLINK, folderId, accessLink.id, p)
+            "
+          />
         </li>
       </ul>
     </li>

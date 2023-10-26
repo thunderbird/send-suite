@@ -296,6 +296,49 @@ async function getSharesForFolder(containerId) {
   return sharedByMe.value.filter((share) => share.container.id === containerId);
 }
 
+async function updateInvitationPermissions(
+  containerId,
+  invitationId,
+  permission
+) {
+  if (!userRef.value.id) {
+    console.log(`no valid user id`);
+    return;
+  }
+  const result = await api.updateInvitationPermissions(
+    containerId,
+    userRef.value.id,
+    invitationId,
+    permission
+  );
+
+  if (result) {
+    getFoldersSharedByMe();
+  }
+  return result;
+}
+async function updateAccessLinkPermissions(
+  containerId,
+  accessLinkId,
+  permission
+) {
+  if (!userRef.value.id) {
+    console.log(`no valid user id`);
+    return;
+  }
+  const result = await api.updateAccessLinkPermissions(
+    containerId,
+    userRef.value.id,
+    accessLinkId,
+    permission
+  );
+
+  if (result) {
+    getFoldersSharedByMe();
+  }
+  return result;
+}
+
 async function getGroupMembers(folderId) {
   return await api.getContainerGroupMembers(folderId);
 }
@@ -349,6 +392,8 @@ provide('sharingManager', {
   removeGroupMember,
   getSharedFolder,
   getSharesForFolder,
+  updateInvitationPermissions,
+  updateAccessLinkPermissions,
 });
 </script>
 

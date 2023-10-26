@@ -239,6 +239,44 @@ export async function getSharesForContainer(
   });
 }
 
+export async function updateInvitationPermissions(
+  containerId: number,
+  invitationId: number,
+  userId: number,
+  permission: PermissionType
+) {
+  // TODO: confirm that the userId matches the senderId of the share
+  // or if the user is the owner of the container
+
+  const result = await prisma.invitation.update({
+    where: {
+      id: invitationId,
+    },
+    data: {
+      permission,
+    },
+  });
+  return result;
+}
+export async function updateAccessLinkPermissions(
+  containerId: number,
+  accessLinkId: string,
+  userId: number,
+  permission: PermissionType
+) {
+  // TODO: confirm that the userId matches the senderId of the share
+  // or if the user is the owner of the container
+  const result = await prisma.accessLink.update({
+    where: {
+      id: accessLinkId,
+    },
+    data: {
+      permission,
+    },
+  });
+  return result;
+}
+
 export async function __getSharedContainersAndMembers(
   userId: number,
   type: ContainerType

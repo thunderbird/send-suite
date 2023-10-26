@@ -14,6 +14,8 @@ import {
   burnFolder,
   getContainerWithMembers,
   getSharesForContainer,
+  updateInvitationPermissions,
+  updateAccessLinkPermissions,
 } from '../models';
 import { getPermissions } from '../middleware';
 
@@ -280,5 +282,57 @@ router.get('/:containerId/shares', getPermissions, async (req, res) => {
     });
   }
 });
+
+router.post(
+  '/:containerId/shares/invitation/update',
+  getPermissions,
+  async (req, res) => {
+    const { containerId } = req.params;
+    const { userId, invitationId, permission } = req.body; // TODO: get from session
+    console.log(req.body);
+    console.log(`🤡 invitationId`, invitationId);
+    try {
+      const result = await updateInvitationPermissions(
+        parseInt(containerId),
+        parseInt(invitationId),
+        parseInt(userId),
+        parseInt(permission)
+      );
+      res.status(200).json({
+        result,
+      });
+    } catch (e) {
+      console.log(e);
+      res.status(500).json({
+        message: 'Server error',
+      });
+    }
+  }
+);
+router.post(
+  '/:containerId/shares/accessLink/update',
+  getPermissions,
+  async (req, res) => {
+    const { containerId } = req.params;
+    const { userId, accessLinkId, permission } = req.body; // TODO: get from session
+
+    try {
+      const result = await updateAccessLinkPermissions(
+        parseInt(containerId),
+        accessLinkId,
+        parseInt(userId),
+        parseInt(permission)
+      );
+      res.status(200).json({
+        result,
+      });
+    } catch (e) {
+      console.log(e);
+      res.status(500).json({
+        message: 'Server error',
+      });
+    }
+  }
+);
 
 export default router;

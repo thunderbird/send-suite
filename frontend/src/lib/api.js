@@ -338,6 +338,47 @@ export class ApiConnection {
     }
   }
 
+  async updateInvitationPermissions(
+    containerId,
+    userId,
+    invitationId,
+    permission
+  ) {
+    const resp = await this.callApi(
+      `containers/${containerId}/shares/invitation/update`,
+      { userId, invitationId, permission },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(
+        `Error: could not update permissions for invitation ${invitationId}`
+      );
+      return null;
+    }
+  }
+  async updateAccessLinkPermissions(
+    containerId,
+    userId,
+    accessLinkId,
+    permission
+  ) {
+    const resp = await this.callApi(
+      `containers/${containerId}/shares/accessLink/update`,
+      { userId, accessLinkId, permission },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(
+        `Error: could not update permissions for accessLink ${accessLinkId}`
+      );
+      return null;
+    }
+  }
+
   async getUserPublicKey(userId) {
     console.log(`getting user public key`);
     const resp = await this.callApi(`users/${userId}/`);
