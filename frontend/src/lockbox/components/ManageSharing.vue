@@ -22,11 +22,13 @@ const api = inject('api');
 const keychainRef = inject('keychainRef');
 const userRef = inject('userRef');
 const {
+  sharedByMe,
   getSharesForFolder,
   getGroupMembers,
   removeGroupMember,
   updateInvitationPermissions,
   updateAccessLinkPermissions,
+  getFoldersSharedByMe,
 } = inject('sharingManager');
 
 const props = defineProps({
@@ -50,15 +52,21 @@ const shares = ref([]);
 onMounted(getSharingInfo);
 
 async function getSharingInfo() {
+  await getFoldersSharedByMe();
+  // ☝️☝️☝️ updates the sharing info
+  // sourced by getSharesForFolder
+  // TODO: consolidate, possibly add
+  // a `refresh` flag to getSharesForFolder()
   const result = await getSharesForFolder(props.folderId);
   shares.value = result;
   console.log(result.length);
+  console.log(`Just updated 🤡🤡🤡🤡🤡🤡🤡`);
 }
 
 async function removeMember(userId) {
   const success = await removeGroupMember(userId, props.folderId);
   if (success) {
-    getSharingInfo();
+    await getSharingInfo();
   }
 }
 
@@ -72,6 +80,8 @@ async function inviteMember(email) {
     return;
   }
   console.log(`🚀🚀🚀🚀🚀🚀🚀 invitation sent!`);
+  newMember.value = '';
+  await getSharingInfo();
 }
 
 async function createAccessLink() {}
@@ -90,7 +100,7 @@ async function setPermission(type, containerId, id, permission) {
 <template>
   <h1>Manage Sharing</h1>
   <label>
-    User id:
+    member email:
     <input v-model="newMember" />
   </label>
   <button class="btn-primary" @click.prevent="inviteMember(newMember)">
@@ -100,7 +110,7 @@ async function setPermission(type, containerId, id, permission) {
     <li>
       Invitations:
       <ul>
-        <li v-for="invitation of share.invitations">
+        <li v-for="invitation of share.invitations" :key="invitation.id">
           id: {{ invitation.id }}<br />
           {{ invitation.recipient.email }}<br />
           <PermissionsDropDown
@@ -115,7 +125,7 @@ async function setPermission(type, containerId, id, permission) {
     <li>
       Links:
       <ul>
-        <li v-for="accessLink of share.accessLinks">
+        <li v-for="accessLink of share.accessLinks" :key="accessLink.id">
           id: {{ accessLink.id }}<br />
           <PermissionsDropDown
             :currentPermission="accessLink.permission"

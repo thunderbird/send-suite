@@ -313,7 +313,7 @@ async function updateInvitationPermissions(
   );
 
   if (result) {
-    getFoldersSharedByMe();
+    await getFoldersSharedByMe();
   }
   return result;
 }
@@ -334,7 +334,7 @@ async function updateAccessLinkPermissions(
   );
 
   if (result) {
-    getFoldersSharedByMe();
+    await getFoldersSharedByMe();
   }
   return result;
 }
