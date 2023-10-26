@@ -780,7 +780,11 @@ export async function getContainerForAccessLinkHash(hash: string) {
         select: {
           container: {
             include: {
-              items: true,
+              items: {
+                include: {
+                  upload: true,
+                },
+              },
             },
           },
         },
