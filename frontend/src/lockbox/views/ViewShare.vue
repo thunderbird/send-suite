@@ -49,6 +49,7 @@ onMounted(async () => {
       >
         id: {{ file.uploadId }}<br />
         file name: {{ file.name }}<br />
+        size: {{ file.upload.size }} bytes<br />
         mime type: {{ file.upload.type }}
       </a>
     </li>
