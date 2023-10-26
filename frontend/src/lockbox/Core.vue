@@ -291,7 +291,9 @@ async function getSharesForFolder(containerId) {
     console.log(`no valid user id`);
     return;
   }
-  return await api.getSharesForFolder(containerId, userRef.value.id);
+  // return await api.getSharesForFolder(containerId, userRef.value.id);
+  // Changing in favor of searching the local array
+  return sharedByMe.value.filter((share) => share.container.id === containerId);
 }
 
 async function getGroupMembers(folderId) {

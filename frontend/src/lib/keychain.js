@@ -79,7 +79,7 @@ class Container {
 class Password {
   async _wrap(keyToWrap, password, salt) {
     // Derive key using the password and the salt.
-    const keyMaterial = await KeyMaterial(password);
+    const keyMaterial = await getKeyMaterial(password);
     const wrappingKey = await getKey(keyMaterial, salt);
 
     const wrappedKey = await crypto.subtle.wrapKey(

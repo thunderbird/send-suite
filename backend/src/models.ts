@@ -165,6 +165,8 @@ export async function getContainersSharedByMe(
           recipient: true,
         },
       },
+      // Include all accessLinks
+      accessLinks: true,
     },
   });
 

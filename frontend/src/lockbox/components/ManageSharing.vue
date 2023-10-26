@@ -46,6 +46,25 @@ I'm going to need Core functions for
 
 
 What about transferring ownership?
+
+vs SharedByMe.vue, this one is folder-centric (is it?)
+I get the share associated with the folder.
+However, isn't that the same thing?
+Will I have multiple shares per folder?
+Or is it like Groups, where I won't really ever have more than one.
+(and I really should enforce this in the database).
+
+Anyway, I need to decide:
+- what does this component display?
+  - it seems like it should be "share-for-this-folder" centric
+
+I think that's what I already have, so we're already share centric.
+That means I could potentially make the global sharedByMe more easily searchable (or provide a convenience function to get a specific share from the array of shares.)
+
+So, do this: make `getSharesForFolder` *not* call the api.
+Make it get the shares for a folder id
+
+
 */
 
 const shares = ref([]);
@@ -53,10 +72,10 @@ onMounted(getSharingInfo);
 
 async function getSharingInfo() {
   const result = await getSharesForFolder(props.folderId);
-  console.log(`🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉`);
-  console.log(result);
   shares.value = result;
+  console.log(result.length);
 }
+
 async function removeMember(userId) {
   const success = await removeGroupMember(userId, props.folderId);
   if (success) {
@@ -88,7 +107,25 @@ async function createAccessLink() {}
   <button class="btn-primary" @click.prevent="inviteMember(newMember)">
     Invite Member
   </button>
-  <ul>
+  <ul v-for="share of shares">
+    <li>
+      Invitations:
+      <ul>
+        <li v-for="invitation of share.invitations">
+          {{ invitation.recipient.email }}<br />
+          {{ invitation.permission }}
+        </li>
+      </ul>
+    </li>
+    <li>
+      Links:
+      <ul>
+        <li v-for="accessLink of share.accessLinks">
+          {{ accessLink.id }}<br />
+          {{ accessLink.permission }}
+        </li>
+      </ul>
+    </li>
     <!-- <template v-for="user of groupMembers">
       <li v-if="userRef.id !== user.user.id">
         {{ user.user.email }} {{ user.user.id }}
@@ -106,3 +143,13 @@ async function createAccessLink() {}
 
   <!-- later: show permissions drop down -->
 </template>
+
+<style scoped>
+li > ul {
+  margin-left: 2rem;
+}
+
+li > ul > li {
+  list-style: disc;
+}
+</style>
