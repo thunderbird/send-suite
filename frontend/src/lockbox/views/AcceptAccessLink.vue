@@ -12,9 +12,15 @@ const router = useRouter();
 
 const userRef = inject('userRef');
 
-const { acceptAccessLink } = inject('sharingManager');
+const { acceptAccessLink, isAccessLinkValid } = inject('sharingManager');
 
 async function accept() {
+  const isValid = await isAccessLinkValid(route.params.linkId);
+  if (!isValid) {
+    message.value = 'Access Link is no longer valid';
+    return;
+  }
+
   const success = await acceptAccessLink(route.params.linkId, password.value);
   if (success) {
     message.value = `and this is where we add the container to the group and then redirect`;

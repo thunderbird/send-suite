@@ -176,7 +176,7 @@ export default class Sharer {
     return newContainerId;
   }
 
-  async requestAccessLink(containerId, password) {
+  async requestAccessLink(containerId, password, expiration) {
     // get the key (which unwraps it),
     console.log(`using password: ${password}`);
     const unwrappedKey = await this.keychain.get(containerId);
@@ -219,7 +219,8 @@ export default class Sharer {
       challengeSaltStr,
       this.user.id,
       challengePlaintext,
-      challengeCiphertext
+      challengeCiphertext,
+      expiration
     );
 
     if (!resp.id) {

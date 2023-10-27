@@ -100,10 +100,9 @@ async function createAccessLinkComplete(url) {
   console.log(`Created access link ${url}`);
   alert(`
   (This should be a modal)
-  Copy the following URL to send to someone.
 
-  Because it uses an auto-generated password, the full URL is not stored on the server.
-  You will not be able to view the full URL again.
+  If you did not enter a password, make sure to copy it now.
+  You will not be able to view the full, valid URL again.
 
   ${url}
   `);
@@ -133,6 +132,10 @@ async function setPermission(type, containerId, id, permission) {
   <button class="btn-primary" @click.prevent="inviteMember(newMember)">
     Invite Member
   </button>
+  <br />
+  <br />
+  <hr />
+  <br />
   <CreateAccessLink
     :containerId="folderId"
     @createAccessLinkComplete="createAccessLinkComplete"
@@ -159,6 +162,11 @@ async function setPermission(type, containerId, id, permission) {
           </button>
         </li>
       </ul>
+    </li>
+    <li>
+      <br />
+      <hr />
+      <br />
     </li>
     <li>
       Links:

@@ -140,7 +140,7 @@ model AccessLink {
   // This should only increment on a specific API route,
   // not one that is hit several times while being used.
 
-  // expiresAfter        DateTime?
+  expiryDate        DateTime?
 }
 
 

@@ -5,9 +5,10 @@ import {
   createAccessLink,
   getAccessLinkChallenge,
   acceptAccessLink,
-  getContainerForAccessLinkHash,
-  createInvitationForHash,
+  getContainerForAccessLink,
+  createInvitationForAccessLink,
   removeAccessLink,
+  isAccessLinkValid,
 } from '../models';
 import { getPermissions } from '../middleware';
 
@@ -25,6 +26,7 @@ router.post('/', async (req, res) => {
     challengeSalt,
     challengeCiphertext,
     challengePlaintext,
+    expiration,
   }: {
     containerId: number;
     senderId: number;
@@ -34,6 +36,7 @@ router.post('/', async (req, res) => {
     challengeSalt: string;
     challengeCiphertext: string;
     challengePlaintext: string;
+    expiration: string;
   } = req.body;
   let permission = '0';
   if (req.body.permission) {
@@ -49,7 +52,8 @@ router.post('/', async (req, res) => {
       challengeSalt,
       challengeCiphertext,
       challengePlaintext,
-      parseInt(permission)
+      parseInt(permission),
+      expiration
     );
 
     res.status(200).json({
@@ -63,16 +67,16 @@ router.post('/', async (req, res) => {
 });
 
 // Get the challenge for this hash
-router.get('/:hash/challenge', async (req, res) => {
-  const { hash } = req.params;
-  if (!hash) {
+router.get('/:linkId/challenge', async (req, res) => {
+  const { linkId } = req.params;
+  if (!linkId) {
     res.status(400).json({
-      message: 'Hash is required',
+      message: 'linkId is required',
     });
   }
   try {
     const { challengeKey, challengeSalt, challengeCiphertext } =
-      await getAccessLinkChallenge(hash);
+      await getAccessLinkChallenge(linkId);
     res.status(200).json({
       challengeKey,
       challengeSalt,
@@ -88,16 +92,16 @@ router.get('/:hash/challenge', async (req, res) => {
 // Respond to the challenge.
 // If plaintext matches, we respond with wrapped key
 // associated salt
-router.post('/:hash/challenge', async (req, res) => {
-  const { hash } = req.params;
+router.post('/:linkId/challenge', async (req, res) => {
+  const { linkId } = req.params;
   const { challengePlaintext } = req.body;
-  if (!hash) {
+  if (!linkId) {
     res.status(400).json({
-      message: 'Hash is required',
+      message: 'linkId is required',
     });
   }
   try {
-    const link = await acceptAccessLink(hash, challengePlaintext);
+    const link = await acceptAccessLink(linkId, challengePlaintext);
     if (link) {
       // console.log(link);
       console.log(
@@ -120,13 +124,26 @@ router.post('/:hash/challenge', async (req, res) => {
   }
 });
 
-// Get a container and its items
-router.get('/:hash', getPermissions, async (req, res) => {
-  const { hash } = req.params;
+// Get an AccessLink's container and items
+router.get('/exists/:linkId', async (req, res) => {
+  const { linkId } = req.params;
+
+  try {
+    res.status(200).json(await isAccessLinkValid(linkId));
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+// Get an AccessLink's container and items
+router.get('/:linkId', getPermissions, async (req, res) => {
+  const { linkId } = req.params;
 
   try {
     // Get the containerId associated with the
-    const containerWithItems = await getContainerForAccessLinkHash(hash);
+    const containerWithItems = await getContainerForAccessLink(linkId);
     console.log(`here is the container with items:`);
     console.log(containerWithItems);
     res.status(200).json(containerWithItems);
@@ -138,10 +155,10 @@ router.get('/:hash', getPermissions, async (req, res) => {
 });
 
 // Remove accessLink
-router.delete('/:hash', async (req, res) => {
-  const { hash } = req.params;
+router.delete('/:linkId', async (req, res) => {
+  const { linkId } = req.params;
   try {
-    const result = await removeAccessLink(hash);
+    const result = await removeAccessLink(linkId);
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({
@@ -152,13 +169,16 @@ router.delete('/:hash', async (req, res) => {
 
 // For record keeping purposes, create a corresponding invitation
 router.post(
-  '/:hash/member/:recipientId/accept',
+  '/:linkId/member/:recipientId/accept',
   getPermissions,
   async (req, res) => {
-    const { hash, recipientId } = req.params;
+    const { linkId, recipientId } = req.params;
 
     try {
-      const result = await createInvitationForHash(hash, parseInt(recipientId));
+      const result = await createInvitationForAccessLink(
+        linkId,
+        parseInt(recipientId)
+      );
       res.status(200).json(result);
     } catch (error) {
       res.status(500).json({
@@ -168,9 +188,10 @@ router.post(
   }
 );
 
+//
 router.post('/burn', async (req, res) => {
   const { containerId } = req.body;
-  console.log(`👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿`);
+  console.log(`🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥`);
   try {
     const result = await burnEphemeralConversation(parseInt(containerId));
     res.status(200).json({

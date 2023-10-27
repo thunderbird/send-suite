@@ -15,6 +15,7 @@ const emit = defineEmits(['createAccessLinkComplete', 'createAccessLinkError']);
 
 const sharer = new Sharer(userRef, keychainRef, api);
 const password = ref('');
+const expiration = ref(null);
 
 async function newAccessLink() {
   let pw = password.value;
@@ -26,7 +27,11 @@ async function newAccessLink() {
   }
 
   console.log(`using password ${pw}`);
-  let url = await sharer.requestAccessLink(props.containerId, pw);
+  let url = await sharer.requestAccessLink(
+    props.containerId,
+    pw,
+    expiration.value
+  );
   if (!url) {
     emit('createAccessLinkError');
     return;
@@ -41,9 +46,15 @@ async function newAccessLink() {
 <template>
   <form @submit.prevent="newAccessLink">
     <label>
-      Password:
+      Password (optional):
       <input v-model="password" type="password" />
     </label>
+    <br />
+    <label>
+      Expiration date (optional):
+      <input v-model="expiration" type="datetime-local" />
+    </label>
+    <br />
     <input type="submit" value="Create Access Link" />
   </form>
 </template>

@@ -265,9 +265,9 @@ export class ApiConnection {
     }
   }
 
-  async createInvitationForHash(hash, recipientId) {
+  async createInvitationForAccessLink(linkId, recipientId) {
     const resp = await this.callApi(
-      `ephemeral/${hash}/member/${recipientId}/accept`,
+      `ephemeral/${linkId}/member/${recipientId}/accept`,
       {},
       'POST'
     );
@@ -275,7 +275,7 @@ export class ApiConnection {
       return resp;
     } else {
       console.log(
-        `Error: could not create invitation for accessLink ${hash} for recipient ${recipientId}`
+        `Error: could not create invitation for accessLink ${linkId} for recipient ${recipientId}`
       );
       return null;
     }
@@ -437,7 +437,8 @@ export class ApiConnection {
     challengeSalt,
     senderId,
     challengePlaintext,
-    challengeCiphertext
+    challengeCiphertext,
+    expiration
   ) {
     const resp = await this.callApi(
       `ephemeral`,
@@ -450,6 +451,7 @@ export class ApiConnection {
         senderId,
         challengePlaintext,
         challengeCiphertext,
+        expiration,
       },
       'POST'
     );
@@ -461,8 +463,17 @@ export class ApiConnection {
     }
   }
 
-  async deleteAccessLink(hash) {
-    const resp = await this.callApi(`ephemeral/${hash}`, {}, 'DELETE');
+  async isAccessLinkValid(linkId) {
+    const resp = await this.callApi(`ephemeral/exists/${linkId}`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not query access link`);
+      return null;
+    }
+  }
+  async deleteAccessLink(linkId) {
+    const resp = await this.callApi(`ephemeral/${linkId}`, {}, 'DELETE');
     if (resp) {
       return resp;
     } else {
@@ -471,8 +482,8 @@ export class ApiConnection {
     }
   }
 
-  async getEphemeralLinkChallenge(hash) {
-    const resp = await this.callApi(`ephemeral/${hash}/challenge`);
+  async getEphemeralLinkChallenge(linkId) {
+    const resp = await this.callApi(`ephemeral/${linkId}/challenge`);
     if (resp) {
       return resp;
     } else {
@@ -481,9 +492,9 @@ export class ApiConnection {
     }
   }
 
-  async acceptEphemeralLink(hash, challengePlaintext) {
+  async acceptEphemeralLink(linkId, challengePlaintext) {
     const resp = await this.callApi(
-      `ephemeral/${hash}/challenge`,
+      `ephemeral/${linkId}/challenge`,
       {
         challengePlaintext,
       },
@@ -497,12 +508,12 @@ export class ApiConnection {
     }
   }
 
-  async getContainerWithItemsForHash(hash) {
-    const resp = await this.callApi(`ephemeral/${hash}/`);
+  async getContainerWithItemsForAccessLink(linkId) {
+    const resp = await this.callApi(`ephemeral/${linkId}/`);
     if (resp) {
       return resp;
     } else {
-      console.log(`Error: could not get container for share ${hash}`);
+      console.log(`Error: could not get container for share ${linkId}`);
       return null;
     }
   }

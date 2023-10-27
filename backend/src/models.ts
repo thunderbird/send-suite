@@ -765,7 +765,8 @@ export async function createAccessLink(
   challengeSalt: string,
   challengeCiphertext: string,
   challengePlaintext: string,
-  permission: number
+  permission: number,
+  expiration?: string
 ) {
   let share = await prisma.share.findFirst({
     where: {
@@ -792,6 +793,15 @@ export async function createAccessLink(
   console.log(`Created share for access link: ${share.id}`);
   const id = base64url(randomBytes(64));
 
+  console.log(`🚀 I see an expiration of: ${expiration}`);
+  let expiryDate = null;
+  if (expiration) {
+    expiryDate = new Date(expiration);
+  }
+
+  console.log(`🚀 using expiryDate`);
+  console.log(expiryDate);
+
   return prisma.accessLink.create({
     data: {
       id,
@@ -807,14 +817,15 @@ export async function createAccessLink(
       challengeCiphertext,
       challengePlaintext,
       permission,
+      expiryDate,
     },
   });
 }
 
-export async function getAccessLinkChallenge(hash: string) {
+export async function getAccessLinkChallenge(linkId: string) {
   return prisma.accessLink.findUnique({
     where: {
-      id: hash,
+      id: linkId,
     },
     select: {
       challengeKey: true,
@@ -825,16 +836,16 @@ export async function getAccessLinkChallenge(hash: string) {
 }
 
 export async function acceptAccessLink(
-  hash: string,
+  linkId: string,
   challengePlaintext: string
 ) {
   try {
     // find the accessLink in the database
-    // for the hash, does the challenge match
+    // for the linkId, does the challenge match
     // what's in the database?
     const accessLink = await prisma.accessLink.findUnique({
       where: {
-        id: hash,
+        id: linkId,
         challengePlaintext,
       },
       include: {
@@ -853,10 +864,10 @@ export async function acceptAccessLink(
   }
 }
 
-export async function getContainerForAccessLinkHash(hash: string) {
+export async function getContainerForAccessLink(linkId: string) {
   return await prisma.accessLink.findUnique({
     where: {
-      id: hash,
+      id: linkId,
     },
     select: {
       share: {
@@ -876,13 +887,13 @@ export async function getContainerForAccessLinkHash(hash: string) {
   });
 }
 
-export async function createInvitationForHash(
-  hash: string,
+export async function createInvitationForAccessLink(
+  linkId: string,
   recipientId: number
 ) {
   const accessLink = await prisma.accessLink.findUnique({
     where: {
-      id: hash,
+      id: linkId,
     },
     select: {
       wrappedKey: true,
@@ -919,10 +930,29 @@ export async function createInvitationForHash(
   return result;
 }
 
-export async function removeAccessLink(accessLink: string) {
+export async function isAccessLinkValid(linkId: string) {
+  const now = new Date();
+  const results = await prisma.accessLink.findMany({
+    where: {
+      AND: [
+        { id: { equals: linkId } },
+        {
+          OR: [{ expiryDate: { gt: now } }, { expiryDate: null }],
+        },
+      ],
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  return results.length > 0 ? results[0] : null;
+}
+
+export async function removeAccessLink(linkId: string) {
   return prisma.accessLink.delete({
     where: {
-      id: accessLink,
+      id: linkId,
     },
   });
 }

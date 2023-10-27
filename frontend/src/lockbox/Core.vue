@@ -221,9 +221,11 @@ function createItemMap(folders) {
 }
 
 // TODO: move this to the server-side
-async function acceptAccessLink(hash, password) {
+async function acceptAccessLink(linkId, password) {
+  // Check for existence of link
+
   const { unwrappedKey, containerId } = await getContainerKeyFromChallenge(
-    hash,
+    linkId,
     password,
     api,
     keychainRef
@@ -240,8 +242,8 @@ async function acceptAccessLink(hash, password) {
     console.log(`Using existing user id`);
     // TODO: this in particular needs to be server-side
     // Create an Invitation and set it to ACCEPTED
-    const createInvitationResp = await api.createInvitationForHash(
-      hash,
+    const createInvitationResp = await api.createInvitationForAcessLink(
+      linkId,
       userRef.value.id
     );
     // TODO: reminder that this creates an invitation, where the value of
@@ -271,6 +273,10 @@ async function acceptAccessLink(hash, password) {
   return true;
 }
 
+async function isAccessLinkValid(linkId) {
+  return await api.isAccessLinkValid(linkId);
+}
+
 async function getFoldersSharedWithMe() {
   if (!userRef.value.id) {
     console.log(`no valid user id`);
@@ -288,7 +294,7 @@ async function getFoldersSharedByMe() {
 }
 
 async function getSharedFolder(hash) {
-  return await api.getContainerWithItemsForHash(hash);
+  return await api.getContainerWithItemsForAccessLink(hash);
 }
 
 async function getSharesForFolder(containerId) {
@@ -432,6 +438,8 @@ provide('sharingManager', {
   toggleItemForSharing,
   createItemMap,
   acceptAccessLink,
+  deleteAccessLink,
+  isAccessLinkValid,
   getFoldersSharedWithMe,
   getFoldersSharedByMe,
   getGroupMembers,
@@ -443,7 +451,6 @@ provide('sharingManager', {
   updateAccessLinkPermissions,
   acceptInvitation,
   getInvitations,
-  deleteAccessLink,
 });
 </script>
 
