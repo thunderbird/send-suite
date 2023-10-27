@@ -3,8 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Chat from '@/chat/views/Home.vue';
 import EphemeralChat from '@/chat/views/EphemeralChat.vue';
 
-import Lockbox from '@/lockbox/Web.vue';
-import Share from '@/lockbox/Share.vue';
+import Lockbox from '@/lockbox/pages/Web.vue';
+import Share from '@/lockbox/pages/Share.vue';
 
 const routes = [
   // Chat
@@ -13,7 +13,7 @@ const routes = [
   { path: '/ephemeral/:hash', component: EphemeralChat },
   // Lockbox
   { path: '/lockbox', component: Lockbox },
-  { path: '/share/:hash', component: Share },
+  { path: '/share/:linkId', component: Share },
 ];
 
 const router = createRouter({

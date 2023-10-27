@@ -93,7 +93,7 @@ async function requestEphemeralLink() {
     //   }`
     // );
     // with the password protected key and the salt, create an ephemeral link
-    const resp = await api.createEphemeralLink(
+    const resp = await api.createAccessLink(
       id,
       passwordWrappedKeyStr,
       saltStr,

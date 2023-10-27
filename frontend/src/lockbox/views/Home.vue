@@ -6,6 +6,7 @@ import Breadcrumbs from '../components/Breadcrumbs.vue';
 import FileInfo from '../components/FileInfo.vue';
 import SharedByMe from '../components/SharedByMe.vue';
 import SharedWithMe from '../components/SharedWithMe.vue';
+import InvitationList from '../components/InvitationList.vue';
 
 const userRef = inject('userRef');
 </script>
@@ -18,6 +19,7 @@ const userRef = inject('userRef');
       @setCurrentFolderId="setCurrentFolderId"
       :folderPath="folderPath"
     /> -->
+    <InvitationList />
     <div>
       <SharedWithMe />
     </div>

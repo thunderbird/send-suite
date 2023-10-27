@@ -1,0 +1,68 @@
+<script setup>
+import { ref, inject, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+const emit = defineEmits(['acceptAccessLinkComplete']);
+
+const password = ref('');
+const message = ref('');
+
+const route = useRoute();
+const router = useRouter();
+
+const userRef = inject('userRef');
+
+const { acceptAccessLink, isAccessLinkValid } = inject('sharingManager');
+
+async function accept() {
+  const isValid = await isAccessLinkValid(route.params.linkId);
+  if (!isValid) {
+    message.value = 'Access Link is no longer valid';
+    return;
+  }
+
+  const success = await acceptAccessLink(route.params.linkId, password.value);
+  if (success) {
+    message.value = `and this is where we add the container to the group and then redirect`;
+
+    if (userRef.value.id) {
+      // Users will go to lockbox home
+      router.push(`/lockbox`);
+    } else {
+      // Non-users stay at this route
+      emit('acceptAccessLinkComplete');
+    }
+  }
+}
+
+onMounted(() => {
+  const { hash } = window.location;
+  if (hash) {
+    password.value = hash.substring(1);
+    console.log(`Setting password.value to ${password.value}`);
+    accept();
+  }
+});
+</script>
+
+<template>
+  <h1>Lockbox share</h1>
+  <template v-if="userRef.email">
+    <p>
+      Hello,
+      {{ userRef.email }}
+    </p>
+  </template>
+  <p>
+    The hash:
+    {{ route.params.linkId }}
+  </p>
+  <label>
+    Password:
+    <input v-model="password" type="password" />
+  </label>
+  <div>
+    {{ message }}
+  </div>
+  <button class="btn-primary" @click="accept">Go</button>
+</template>

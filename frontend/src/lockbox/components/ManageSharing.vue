@@ -5,11 +5,6 @@ Given a folder that I own:
 - for each one, show a...dropdown?
 - and an "Remove"
 
-Dropdown should include:
-- read-only
-- edit (upload files, replace existing)
-- admin (manage sharing)
-
 Also show controls for inviting new members
 Or creating an anonymous share (which creates a new container).
 ^^^^^ WAIT.
@@ -20,14 +15,29 @@ Maybe I could create kinds of invitations:
   - anonymous (creates a new share)
 */
 import { inject, ref, onMounted } from 'vue';
-// const emit = defineEmits(['setCurrentFolderId']);
+import Sharer from '@/common/share';
+import CreateAccessLink from './CreateAccessLink.vue';
+import PermissionsDropDown from '../elements/PermissionsDropDown.vue';
+
+const api = inject('api');
+const keychainRef = inject('keychainRef');
+const userRef = inject('userRef');
+const {
+  sharedByMe,
+  getSharesForFolder,
+  getGroupMembers,
+  removeInvitationAndGroupMembership,
+  updateInvitationPermissions,
+  updateAccessLinkPermissions,
+  getFoldersSharedByMe,
+  deleteAccessLink,
+} = inject('sharingManager');
+
 const props = defineProps({
   folderId: Number,
 });
-
-const api = inject('api');
-const userRef = inject('userRef');
-const { getGroupMembers, removeGroupMember } = inject('sharingManager');
+const sharer = new Sharer(userRef, keychainRef, api);
+const newMember = ref(null);
 
 /*
 I'm going to need Core functions for
@@ -38,39 +48,156 @@ I'm going to need Core functions for
   - should I also track revocations?
 - setting/updating permissions
 
-
-What about transferring ownership?
 */
 
-const groupMembers = ref([]);
-onMounted(loadGroupMembers);
+const shares = ref([]);
+onMounted(getSharingInfo);
 
-async function loadGroupMembers() {
-  const members = await getGroupMembers(props.folderId);
-  // console.log(members);
-  groupMembers.value = members;
+async function getSharingInfo() {
+  await getFoldersSharedByMe();
+  // ☝️☝️☝️ updates the sharing info
+  // sourced by getSharesForFolder
+  // TODO: consolidate, possibly add
+  // a `refresh` flag to getSharesForFolder()
+  const result = await getSharesForFolder(props.folderId);
+  shares.value = result;
+  console.log(result.length);
+  console.log(`Just updated 🤡🤡🤡🤡🤡🤡🤡`);
 }
-async function removeMember(userId) {
-  const success = await removeGroupMember(userId, props.folderId);
+
+async function removeMember(invitationId) {
+  const success = await removeInvitationAndGroupMembership(
+    props.folderId,
+    invitationId
+  );
   if (success) {
-    loadGroupMembers();
+    await getSharingInfo();
+  }
+}
+
+async function removeLink(accessLinkId) {
+  const success = await deleteAccessLink(accessLinkId);
+  if (success) {
+    await getSharingInfo();
+  }
+}
+
+async function inviteMember(email) {
+  const result = await sharer.shareContainerWithInvitation(
+    props.folderId,
+    email
+  );
+  if (!result) {
+    console.log(`Could not invite member`);
+    return;
+  }
+  console.log(`🚀🚀🚀🚀🚀🚀🚀 invitation sent!`);
+  newMember.value = '';
+  await getSharingInfo();
+}
+
+async function createAccessLinkComplete(url) {
+  console.log(`Created access link ${url}`);
+  alert(`
+  (This should be a modal)
+
+  If you did not enter a password, make sure to copy it now.
+  You will not be able to view the full, valid URL again.
+
+  ${url}
+  `);
+  await getSharingInfo();
+}
+function createAccessLinkError() {
+  console.log(`Could not create access link`);
+}
+
+const INVITATION = 'invitation';
+const ACCESSLINK = 'accessLink';
+async function setPermission(type, containerId, id, permission) {
+  if (type === INVITATION) {
+    updateInvitationPermissions(containerId, id, permission);
+  } else if (type === ACCESSLINK) {
+    updateAccessLinkPermissions(containerId, id, permission);
   }
 }
 </script>
 
 <template>
   <h1>Manage Sharing</h1>
-  <button class="btn-primary" @click.prevent="">Invite Member</button>
-  <ul>
-    <template v-for="user of groupMembers">
-      <!-- Specifically not showing self -->
+  <label>
+    member email:
+    <input v-model="newMember" />
+  </label>
+  <button class="btn-primary" @click.prevent="inviteMember(newMember)">
+    Invite Member
+  </button>
+  <br />
+  <br />
+  <hr />
+  <br />
+  <CreateAccessLink
+    :containerId="folderId"
+    @createAccessLinkComplete="createAccessLinkComplete"
+    @createAccessLinkError="createAccessLinkError"
+  />
+  <ul v-for="share of shares">
+    <li>
+      Invitations:
+      <ul>
+        <li v-for="invitation of share.invitations" :key="invitation.id">
+          id: {{ invitation.id }}<br />
+          {{ invitation.recipient.email }}<br />
+          <PermissionsDropDown
+            :currentPermission="invitation.permission"
+            @setPermission="
+              (p) => setPermission(INVITATION, folderId, invitation.id, p)
+            "
+          />
+          <button
+            class="btn-primary"
+            @click.prevent="removeMember(invitation.id)"
+          >
+            ⛔
+          </button>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <br />
+      <hr />
+      <br />
+    </li>
+    <li>
+      Links:
+      <ul>
+        <li v-for="accessLink of share.accessLinks" :key="accessLink.id">
+          <a :href="'http://localhost:5173/share/' + accessLink.id"
+            >Access Link</a
+          ><br />
+          <PermissionsDropDown
+            :currentPermission="accessLink.permission"
+            @setPermission="
+              (p) => setPermission(ACCESSLINK, folderId, accessLink.id, p)
+            "
+          />
+          <button
+            class="btn-primary"
+            @click.prevent="removeLink(accessLink.id)"
+          >
+            ⛔
+          </button>
+        </li>
+      </ul>
+    </li>
+    <!-- <template v-for="user of groupMembers">
       <li v-if="userRef.id !== user.user.id">
         {{ user.user.email }} {{ user.user.id }}
         <button class="btn-primary" @click.prevent="removeMember(user.user.id)">
           Remove
         </button>
       </li>
-    </template>
+    </template> -->
   </ul>
   <!-- show a form for adding a new member -->
   <!-- this should create an invitation -->
@@ -80,3 +207,13 @@ async function removeMember(userId) {
 
   <!-- later: show permissions drop down -->
 </template>
+
+<style scoped>
+li > ul {
+  margin-left: 2rem;
+}
+
+li > ul > li {
+  list-style: disc;
+}
+</style>

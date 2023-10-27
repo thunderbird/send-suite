@@ -153,7 +153,8 @@ class Rsa {
       return null;
     }
     const jwk = await rsaToJwk(this.publicKey);
-    return JSON.stringify(jwk);
+    // return JSON.stringify(jwk);
+    return jwk;
   }
 
   async getPrivateKeyJwk() {
@@ -347,6 +348,10 @@ export class Util {
     let salt = crypto.getRandomValues(new Uint8Array(size));
 
     return salt;
+  }
+
+  static generateRandomPassword() {
+    return this.arrayBufferToBase64(this.generateSalt(16));
   }
 
   static async compareKeys(k1, k2) {

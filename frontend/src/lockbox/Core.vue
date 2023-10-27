@@ -176,12 +176,14 @@ const itemMap = ref(null);
 const selectedItemsForSharing = ref([]);
 const sharedWithMe = ref([]);
 const sharedByMe = ref([]);
+const invitations = ref([]);
 
 watch(
   () => userRef.value.id,
   () => {
     getFoldersSharedWithMe();
     getFoldersSharedByMe();
+    getInvitations();
   }
 );
 
@@ -218,10 +220,12 @@ function createItemMap(folders) {
   console.log(map);
 }
 
-// TODO: consider moving this to the server-side
-async function acceptShare(hash, password) {
+// TODO: move this to the server-side
+async function acceptAccessLink(linkId, password) {
+  // Check for existence of link
+
   const { unwrappedKey, containerId } = await getContainerKeyFromChallenge(
-    hash,
+    linkId,
     password,
     api,
     keychainRef
@@ -229,37 +233,48 @@ async function acceptShare(hash, password) {
   console.log(`unwrappedKey: ${unwrappedKey}`);
   console.log(`containerId: ${containerId}`);
 
-  let id;
+  // let id;
 
   if (userRef.value.id) {
+    // TODO: if the user has already used the accessLink successfully
+    // we should skip this part and just return true
+    // There's no need to create a duplicate invitation and membership
     console.log(`Using existing user id`);
-    id = userRef.value.id;
-  } else {
-    // create an "anonymous" user and keys
-    await keychainRef.value.rsa.generateKeyPair();
-    const jwkPublicKey = await keychainRef.value.rsa.getPublicKeyJwk();
-    let email = new Date().getTime() + '@example.com';
-    email = email.substring(6);
+    // TODO: this in particular needs to be server-side
+    // Create an Invitation and set it to ACCEPTED
+    const createInvitationResp = await api.createInvitationForAcessLink(
+      linkId,
+      userRef.value.id
+    );
+    // TODO: reminder that this creates an invitation, where the value of
+    // the wrappedKey is the password-wrapped one, not the publicKey wrapped one.
 
-    const resp = await userRef.value.createUser(email, jwkPublicKey);
-    if (!resp) {
-      console.log(`could not creat user`);
+    if (!createInvitationResp) {
       return false;
     }
-    id = resp.user.id;
-    await userRef.value.store();
-  }
 
-  const addMemberResp = await api.addMemberToContainer(id, containerId);
-  console.log(`adding user to convo`);
-  console.log(addMemberResp);
-  if (!addMemberResp) {
-    return false;
+    const addMemberResp = await api.addMemberToContainer(
+      userRef.value.id,
+      containerId
+    );
+    console.log(`adding user to convo`);
+    console.log(addMemberResp);
+    if (!addMemberResp) {
+      return false;
+    }
+  } else {
+    // TODO: consider switching to sessionStorage
+    // Generate a temporary keypair
+    // for encrypting containerKey in keychain.
+    await keychainRef.value.rsa.generateKeyPair();
   }
-
   await keychainRef.value.add(containerId, unwrappedKey);
   await keychainRef.value.store();
   return true;
+}
+
+async function isAccessLinkValid(linkId) {
+  return await api.isAccessLinkValid(linkId);
 }
 
 async function getFoldersSharedWithMe() {
@@ -269,12 +284,79 @@ async function getFoldersSharedWithMe() {
   }
   sharedWithMe.value = await api.getFoldersSharedWithUser(userRef.value.id);
 }
+
 async function getFoldersSharedByMe() {
   if (!userRef.value.id) {
     console.log(`no valid user id`);
     return;
   }
   sharedByMe.value = await api.getFoldersSharedByUser(userRef.value.id);
+}
+
+async function getSharedFolder(hash) {
+  return await api.getContainerWithItemsForAccessLink(hash);
+}
+
+async function getSharesForFolder(containerId) {
+  if (!userRef.value.id) {
+    console.log(`no valid user id`);
+    return;
+  }
+  // return await api.getSharesForFolder(containerId, userRef.value.id);
+  // Changing in favor of searching the local array
+  return sharedByMe.value.filter((share) => share.container.id === containerId);
+}
+
+async function updateInvitationPermissions(
+  containerId,
+  invitationId,
+  permission
+) {
+  if (!userRef.value.id) {
+    console.log(`no valid user id`);
+    return;
+  }
+  const result = await api.updateInvitationPermissions(
+    containerId,
+    userRef.value.id,
+    invitationId,
+    permission
+  );
+
+  if (result) {
+    await getFoldersSharedByMe();
+  }
+  return result;
+}
+async function updateAccessLinkPermissions(
+  containerId,
+  accessLinkId,
+  permission
+) {
+  if (!userRef.value.id) {
+    console.log(`no valid user id`);
+    return;
+  }
+  const result = await api.updateAccessLinkPermissions(
+    containerId,
+    userRef.value.id,
+    accessLinkId,
+    permission
+  );
+
+  if (result) {
+    await getFoldersSharedByMe();
+  }
+  return result;
+}
+
+async function deleteAccessLink(hash) {
+  const result = await api.deleteAccessLink(hash);
+
+  if (result) {
+    await getFoldersSharedByMe();
+  }
+  return result;
 }
 
 async function getGroupMembers(folderId) {
@@ -306,8 +388,11 @@ async function addGroupMember(userId, folderId) {
   // await getFoldersSharedByMe();
 }
 
-async function removeGroupMember(userId, folderId) {
-  const success = await removeMemberFromContainer(userId, folderId);
+async function removeInvitationAndGroupMembership(containerId, invitationId) {
+  const success = await api.removeInvitationAndGroupMembership(
+    containerId,
+    invitationId
+  );
   if (success) {
     // update our ref
     await getFoldersSharedByMe();
@@ -315,19 +400,57 @@ async function removeGroupMember(userId, folderId) {
   return success;
 }
 
+async function getInvitations() {
+  invitations.value = await api.getInvitations(userRef.value.id);
+}
+
+async function acceptInvitation(containerId, invitationId, wrappedKey) {
+  // Unwrap and store key
+  try {
+    const unwrappedKey = await keychainRef.value.rsa.unwrapContainerKey(
+      wrappedKey,
+      keychainRef.value.rsa.privateKey
+    );
+
+    await keychainRef.value.add(containerId, unwrappedKey);
+    await keychainRef.value.store();
+
+    const resp = await api.acceptInvitation(invitationId, containerId);
+    if (!resp) {
+      return null;
+    }
+    await getFoldersSharedWithMe();
+    await getInvitations();
+    await getFolders();
+    return resp;
+  } catch (e) {
+    console.log(e);
+    debugger;
+  }
+}
+
 provide('sharingManager', {
-  toggleItemForSharing,
-  createItemMap,
   itemMap,
   selectedItemsForSharing,
-  acceptShare,
   sharedWithMe,
   sharedByMe,
+  invitations,
+  toggleItemForSharing,
+  createItemMap,
+  acceptAccessLink,
+  deleteAccessLink,
+  isAccessLinkValid,
   getFoldersSharedWithMe,
   getFoldersSharedByMe,
   getGroupMembers,
   addGroupMember,
-  removeGroupMember,
+  removeInvitationAndGroupMembership,
+  getSharedFolder,
+  getSharesForFolder,
+  updateInvitationPermissions,
+  updateAccessLinkPermissions,
+  acceptInvitation,
+  getInvitations,
 });
 </script>
 

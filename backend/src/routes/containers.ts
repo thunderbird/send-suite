@@ -13,6 +13,10 @@ import {
   getContainerInfo,
   burnFolder,
   getContainerWithMembers,
+  getSharesForContainer,
+  updateInvitationPermissions,
+  updateAccessLinkPermissions,
+  removeInvitationAndGroup,
 } from '../models';
 import { getPermissions } from '../middleware';
 
@@ -35,6 +39,11 @@ router.post('/', async (req, res) => {
     type: ContainerType;
   } = req.body;
 
+  let shareOnly = false;
+  if (req.body.shareOnly) {
+    shareOnly = req.body.shareOnly;
+  }
+
   const messagesByCode: Record<string, string> = {
     P2002: 'Container already exists',
     P2003: 'User does not exist',
@@ -47,7 +56,8 @@ router.post('/', async (req, res) => {
       name.trim().toLowerCase(),
       // publicKey.trim(),
       ownerId,
-      type
+      type,
+      shareOnly
     );
     res.status(201).json({
       message: 'Container created',
@@ -124,32 +134,48 @@ router.delete(
   }
 );
 
-router.post(
-  '/:containerId/member/sharekey',
-  getPermissions,
-  async (req, res) => {
-    const { containerId } = req.params;
-    const { userId, senderId, wrappedKey } = req.body;
-    try {
-      const invitation = await createInvitation(
-        parseInt(containerId),
-        wrappedKey,
-        parseInt(userId),
-        parseInt(senderId)
-      );
-      res.status(200).json(invitation);
-    } catch (error) {
-      res.status(500).json({
-        message: 'Server error.',
-      });
-    }
+router.post('/:containerId/member/invite', getPermissions, async (req, res) => {
+  const { containerId } = req.params;
+  const { senderId, recipientId, wrappedKey } = req.body;
+  let permission = '0';
+  if (req.body.permission) {
+    permission = req.body.permission;
   }
-);
+  try {
+    const invitation = await createInvitation(
+      parseInt(containerId),
+      wrappedKey,
+      parseInt(senderId),
+      parseInt(recipientId),
+      parseInt(permission)
+    );
+    res.status(200).json(invitation);
+  } catch (error) {
+    console.log(`🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡`);
+    console.log(error);
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
 
 router.post('/:containerId/member/accept/:invitationId', async (req, res) => {
   const { invitationId } = req.params;
   try {
     const result = await acceptInvitation(parseInt(invitationId));
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+// Remove invitation and group membership
+router.delete('/:containerId/member/remove/:invitationId', async (req, res) => {
+  const { invitationId } = req.params;
+  try {
+    const result = await removeInvitationAndGroup(parseInt(invitationId));
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({
@@ -251,5 +277,76 @@ router.delete('/:containerId', getPermissions, async (req, res) => {
     });
   }
 });
+
+router.get('/:containerId/shares', getPermissions, async (req, res) => {
+  const { containerId } = req.params;
+  const { userId } = req.body; // TODO: get from session
+  try {
+    const result = await getSharesForContainer(
+      parseInt(containerId),
+      parseInt(userId)
+    );
+    res.status(200).json({
+      result,
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({
+      message: 'Server error',
+    });
+  }
+});
+
+router.post(
+  '/:containerId/shares/invitation/update',
+  getPermissions,
+  async (req, res) => {
+    const { containerId } = req.params;
+    const { userId, invitationId, permission } = req.body; // TODO: get from session
+    console.log(req.body);
+    console.log(`🤡 invitationId`, invitationId);
+    try {
+      const result = await updateInvitationPermissions(
+        parseInt(containerId),
+        parseInt(invitationId),
+        parseInt(userId),
+        parseInt(permission)
+      );
+      res.status(200).json({
+        result,
+      });
+    } catch (e) {
+      console.log(e);
+      res.status(500).json({
+        message: 'Server error',
+      });
+    }
+  }
+);
+router.post(
+  '/:containerId/shares/accessLink/update',
+  getPermissions,
+  async (req, res) => {
+    const { containerId } = req.params;
+    const { userId, accessLinkId, permission } = req.body; // TODO: get from session
+
+    try {
+      const result = await updateAccessLinkPermissions(
+        parseInt(containerId),
+        accessLinkId,
+        parseInt(userId),
+        parseInt(permission)
+      );
+      res.status(200).json({
+        result,
+      });
+    } catch (e) {
+      console.log(e);
+      res.status(500).json({
+        message: 'Server error',
+      });
+    }
+  }
+);
 
 export default router;

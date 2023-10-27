@@ -7,9 +7,70 @@ export default class Sharer {
     this.api = api;
   }
 
-  async doShare(items, password) {
-    const containerId = await this.createNewShare(items, null, this.user.id);
-    return await this.requestShareLink(containerId, password);
+  // Creates AccessLink
+  async shareItemsWithPassword(items, password) {
+    const containerId = await this.createShareOnlyContainer(
+      items,
+      null,
+      this.user.id
+    );
+    return await this.requestAccessLink(containerId, password);
+  }
+
+  // Creates AccessLink
+  async shareContainerWithPassword(containerId, password) {
+    return await this.requestAccessLink(containerId, password);
+  }
+
+  // Creates Invitation
+  async shareContainerWithInvitation(containerId, email) {
+    let user = await this.api.getUserByEmail(email);
+
+    if (user) {
+      let { publicKey, id: recipientId } = user;
+      if (!publicKey) {
+        console.log(`Could not find public key for user ${email}`);
+      }
+
+      console.warn('SOMETHING WEIRD IS HAPPENING WITH PUBLIC KEYS ON SERVER');
+
+      // TODO: make sure we're not double-escaping before storing on server
+      while (typeof publicKey !== 'object') {
+        publicKey = JSON.parse(publicKey);
+      }
+
+      const importedPublicKey = await crypto.subtle.importKey(
+        'jwk',
+        publicKey,
+        {
+          name: 'RSA-OAEP',
+          hash: { name: 'SHA-256' },
+        },
+        true,
+        ['wrapKey']
+      );
+
+      const key = await this.keychain.get(containerId);
+      const wrappedKey = await this.keychain.rsa.wrapContainerKey(
+        key,
+        importedPublicKey
+      );
+
+      if (!wrappedKey) {
+        console.log(`no wrapped key for the invitation`);
+        return null;
+      }
+
+      const resp = await this.api.inviteGroupMember(
+        containerId,
+        wrappedKey,
+        recipientId,
+        this.user.id
+      );
+      console.log(`Invitation creation response:`);
+      console.log(resp);
+      return resp;
+    }
   }
 
   /*
@@ -23,7 +84,11 @@ export default class Sharer {
   }
 
   */
-  async createNewShare(items = [], containerId = null, userId = null) {
+  async createShareOnlyContainer(
+    items = [],
+    containerId = null,
+    userId = null
+  ) {
     if (!userId) {
       console.log(`User ID is required`);
       return;
@@ -54,7 +119,12 @@ export default class Sharer {
       // }
     }
 
-    const response = await this.api.createFolder(userId, currentContainer.name);
+    const shareOnly = true;
+    const response = await this.api.createFolder(
+      userId,
+      currentContainer.name,
+      shareOnly
+    );
     if (!(response || response.id)) {
       console.log(`could not create a new container for items`);
       return null;
@@ -106,7 +176,7 @@ export default class Sharer {
     return newContainerId;
   }
 
-  async requestShareLink(containerId, password) {
+  async requestAccessLink(containerId, password, expiration) {
     // get the key (which unwraps it),
     console.log(`using password: ${password}`);
     const unwrappedKey = await this.keychain.get(containerId);
@@ -141,7 +211,7 @@ export default class Sharer {
     const saltStr = Util.arrayBufferToBase64(salt);
     const challengeSaltStr = Util.arrayBufferToBase64(challengeSalt);
 
-    const resp = await this.api.createEphemeralLink(
+    const resp = await this.api.createAccessLink(
       containerId,
       passwordWrappedKeyStr,
       saltStr,
@@ -149,7 +219,8 @@ export default class Sharer {
       challengeSaltStr,
       this.user.id,
       challengePlaintext,
-      challengeCiphertext
+      challengeCiphertext,
+      expiration
     );
 
     if (!resp.id) {
@@ -157,11 +228,12 @@ export default class Sharer {
     }
 
     console.log(`created share link for container ${containerId}`);
-    const hash = resp.id;
+    const accessLink = resp.id;
     const { origin } = new URL(window.location.href);
-    // const url = `${origin}/share/${hash}`;
+    // const url = `${origin}/share/${accessLink}`;
     // TODO: need the server url from...elsewhere
-    const url = `http://localhost:5173/share/${hash}`;
+    // Using `origin` works fine for web application, but not for extension
+    const url = `http://localhost:5173/share/${accessLink}`;
     return url;
   }
 }

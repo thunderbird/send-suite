@@ -2,48 +2,62 @@ import { Prisma, ContainerType } from '@prisma/client';
 import { Router } from 'express';
 import {
   burnEphemeralConversation,
-  createEphemeralLink,
-  getEphemeralLinkChallenge,
-  acceptEphemeralLink,
+  createAccessLink,
+  getAccessLinkChallenge,
+  acceptAccessLink,
+  getContainerForAccessLink,
+  createInvitationForAccessLink,
+  removeAccessLink,
+  isAccessLinkValid,
 } from '../models';
+import { getPermissions } from '../middleware';
 
 const router: Router = Router();
 
-// request a hash for an ephemeral user
+// Request a new hash for a shared container,
+// previously only used for "ephemeral chat"
 router.post('/', async (req, res) => {
   const {
     containerId,
+    senderId,
     wrappedKey,
     salt,
     challengeKey,
     challengeSalt,
-    senderId,
     challengeCiphertext,
     challengePlaintext,
+    expiration,
   }: {
     containerId: number;
+    senderId: number;
     wrappedKey: string;
     salt: string;
     challengeKey: string;
     challengeSalt: string;
-    senderId: number;
     challengeCiphertext: string;
     challengePlaintext: string;
+    expiration: string;
   } = req.body;
+  let permission = '0';
+  if (req.body.permission) {
+    permission = req.body.permission;
+  }
   try {
-    const ephemeralLink = await createEphemeralLink(
+    const accessLink = await createAccessLink(
       containerId,
+      senderId,
       wrappedKey,
       salt,
       challengeKey,
       challengeSalt,
-      senderId,
       challengeCiphertext,
-      challengePlaintext
+      challengePlaintext,
+      parseInt(permission),
+      expiration
     );
 
     res.status(200).json({
-      id: ephemeralLink.id,
+      id: accessLink.id,
     });
   } catch (e) {
     res.status(500).json({
@@ -52,17 +66,17 @@ router.post('/', async (req, res) => {
   }
 });
 
-// get the challenge info
-router.get('/:hash/challenge', async (req, res) => {
-  const { hash } = req.params;
-  if (!hash) {
+// Get the challenge for this hash
+router.get('/:linkId/challenge', async (req, res) => {
+  const { linkId } = req.params;
+  if (!linkId) {
     res.status(400).json({
-      message: 'Cannot create ephemeral user without hash',
+      message: 'linkId is required',
     });
   }
   try {
     const { challengeKey, challengeSalt, challengeCiphertext } =
-      await getEphemeralLinkChallenge(hash);
+      await getAccessLinkChallenge(linkId);
     res.status(200).json({
       challengeKey,
       challengeSalt,
@@ -75,27 +89,28 @@ router.get('/:hash/challenge', async (req, res) => {
   }
 });
 
-// activate the hash for an ephemeral user
-// if the challenge is correct
-router.post('/:hash/challenge', async (req, res) => {
-  const { hash } = req.params;
+// Respond to the challenge.
+// If plaintext matches, we respond with wrapped key
+// associated salt
+router.post('/:linkId/challenge', async (req, res) => {
+  const { linkId } = req.params;
   const { challengePlaintext } = req.body;
-  if (!hash) {
+  if (!linkId) {
     res.status(400).json({
-      message: 'Cannot create ephemeral user without hash',
+      message: 'linkId is required',
     });
   }
   try {
-    const link = await acceptEphemeralLink(hash, challengePlaintext);
+    const link = await acceptAccessLink(linkId, challengePlaintext);
     if (link) {
       // console.log(link);
       console.log(
         `challenge success, sending back the containerId, wrappedKey, and salt`
       );
-      const { containerId, wrappedKey, salt } = link;
+      const { share, wrappedKey, salt } = link;
       res.status(200).json({
         status: 'success',
-        containerId,
+        containerId: share.containerId,
         wrappedKey,
         salt,
       });
@@ -109,9 +124,74 @@ router.post('/:hash/challenge', async (req, res) => {
   }
 });
 
+// Get an AccessLink's container and items
+router.get('/exists/:linkId', async (req, res) => {
+  const { linkId } = req.params;
+
+  try {
+    res.status(200).json(await isAccessLinkValid(linkId));
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+// Get an AccessLink's container and items
+router.get('/:linkId', getPermissions, async (req, res) => {
+  const { linkId } = req.params;
+
+  try {
+    // Get the containerId associated with the
+    const containerWithItems = await getContainerForAccessLink(linkId);
+    console.log(`here is the container with items:`);
+    console.log(containerWithItems);
+    res.status(200).json(containerWithItems);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+// Remove accessLink
+router.delete('/:linkId', async (req, res) => {
+  const { linkId } = req.params;
+  try {
+    const result = await removeAccessLink(linkId);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+// For record keeping purposes, create a corresponding invitation
+router.post(
+  '/:linkId/member/:recipientId/accept',
+  getPermissions,
+  async (req, res) => {
+    const { linkId, recipientId } = req.params;
+
+    try {
+      const result = await createInvitationForAccessLink(
+        linkId,
+        parseInt(recipientId)
+      );
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(500).json({
+        message: 'Server error.',
+      });
+    }
+  }
+);
+
+//
 router.post('/burn', async (req, res) => {
   const { containerId } = req.body;
-  console.log(`👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿`);
+  console.log(`🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥`);
   try {
     const result = await burnEphemeralConversation(parseInt(containerId));
     res.status(200).json({

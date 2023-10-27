@@ -55,13 +55,17 @@ export class User {
   }
 
   async load() {
-    const { id, tier, email } = await this._storage.loadUser();
+    try {
+      const { id, tier, email } = await this._storage.loadUser();
 
-    console.log(`loading user`);
-    console.table({ id, tier, email });
-    this.id = id;
-    this.tier = tier;
-    this.email = email;
+      console.log(`loading user`);
+      console.table({ id, tier, email });
+      this.id = id;
+      this.tier = tier;
+      this.email = email;
+    } catch (e) {
+      console.log(`No user in storage`);
+    }
 
     // this._onLoadCallbacks.forEach(async (cb) => await cb());
   }
