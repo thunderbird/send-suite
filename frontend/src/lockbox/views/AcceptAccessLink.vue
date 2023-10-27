@@ -2,7 +2,7 @@
 import { ref, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-const emit = defineEmits(['acceptShareComplete']);
+const emit = defineEmits(['acceptAccessLinkComplete']);
 
 const password = ref('');
 const message = ref('');
@@ -12,10 +12,10 @@ const router = useRouter();
 
 const userRef = inject('userRef');
 
-const { acceptShare } = inject('sharingManager');
+const { acceptAccessLink } = inject('sharingManager');
 
 async function accept() {
-  const success = await acceptShare(route.params.hash, password.value);
+  const success = await acceptAccessLink(route.params.hash, password.value);
   if (success) {
     message.value = `and this is where we add the container to the group and then redirect`;
 
@@ -24,7 +24,7 @@ async function accept() {
       router.push(`/lockbox`);
     } else {
       // Non-users stay at this route
-      emit('acceptShareComplete');
+      emit('acceptAccessLinkComplete');
     }
   }
 }

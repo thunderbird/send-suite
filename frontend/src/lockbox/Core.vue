@@ -176,12 +176,14 @@ const itemMap = ref(null);
 const selectedItemsForSharing = ref([]);
 const sharedWithMe = ref([]);
 const sharedByMe = ref([]);
+const invitations = ref([]);
 
 watch(
   () => userRef.value.id,
   () => {
     getFoldersSharedWithMe();
     getFoldersSharedByMe();
+    getInvitations();
   }
 );
 
@@ -219,7 +221,7 @@ function createItemMap(folders) {
 }
 
 // TODO: move this to the server-side
-async function acceptShare(hash, password) {
+async function acceptAccessLink(hash, password) {
   const { unwrappedKey, containerId } = await getContainerKeyFromChallenge(
     hash,
     password,
@@ -242,6 +244,9 @@ async function acceptShare(hash, password) {
       hash,
       userRef.value.id
     );
+    // TODO: reminder that this creates an invitation, where the value of
+    // the wrappedKey is the password-wrapped one, not the publicKey wrapped one.
+
     if (!createInvitationResp) {
       return false;
     }
@@ -380,14 +385,44 @@ async function removeInvitationAndGroupMembership(containerId, invitationId) {
   return success;
 }
 
+async function getInvitations() {
+  invitations.value = await api.getInvitations(userRef.value.id);
+}
+
+async function acceptInvitation(containerId, invitationId, wrappedKey) {
+  // Unwrap and store key
+  try {
+    const unwrappedKey = await keychainRef.value.rsa.unwrapContainerKey(
+      wrappedKey,
+      keychainRef.value.rsa.privateKey
+    );
+
+    await keychainRef.value.add(containerId, unwrappedKey);
+    await keychainRef.value.store();
+
+    const resp = await api.acceptInvitation(invitationId, containerId);
+    if (!resp) {
+      return null;
+    }
+    await getFoldersSharedWithMe();
+    await getInvitations();
+    await getFolders();
+    return resp;
+  } catch (e) {
+    console.log(e);
+    debugger;
+  }
+}
+
 provide('sharingManager', {
-  toggleItemForSharing,
-  createItemMap,
   itemMap,
   selectedItemsForSharing,
-  acceptShare,
   sharedWithMe,
   sharedByMe,
+  invitations,
+  toggleItemForSharing,
+  createItemMap,
+  acceptAccessLink,
   getFoldersSharedWithMe,
   getFoldersSharedByMe,
   getGroupMembers,
@@ -397,6 +432,8 @@ provide('sharingManager', {
   getSharesForFolder,
   updateInvitationPermissions,
   updateAccessLinkPermissions,
+  acceptInvitation,
+  getInvitations,
 });
 </script>
 

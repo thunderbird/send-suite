@@ -16,6 +16,7 @@ Maybe I could create kinds of invitations:
 */
 import { inject, ref, onMounted } from 'vue';
 import Sharer from '@/common/share';
+import CreateAccessLink from './CreateAccessLink.vue';
 import PermissionsDropDown from '../elements/PermissionsDropDown.vue';
 
 const api = inject('api');
@@ -87,7 +88,13 @@ async function inviteMember(email) {
   await getSharingInfo();
 }
 
-async function createAccessLink() {}
+async function createAccessLinkComplete(url) {
+  console.log(`Created access link ${url}`);
+  await getSharingInfo();
+}
+function createAccessLinkError() {
+  console.log(`Could not create access link`);
+}
 
 const INVITATION = 'invitation';
 const ACCESSLINK = 'accessLink';
@@ -109,6 +116,11 @@ async function setPermission(type, containerId, id, permission) {
   <button class="btn-primary" @click.prevent="inviteMember(newMember)">
     Invite Member
   </button>
+  <CreateAccessLink
+    :containerId="folderId"
+    @createAccessLinkComplete="createAccessLinkComplete"
+    @createAccessLinkError="createAccessLinkError"
+  />
   <ul v-for="share of shares">
     <li>
       Invitations:

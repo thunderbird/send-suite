@@ -267,7 +267,7 @@ export class ApiConnection {
 
   async createInvitationForHash(hash, recipientId) {
     const resp = await this.callApi(
-      `/ephemeral/${hash}/member/${recipientId}/accept`,
+      `ephemeral/${hash}/member/${recipientId}/accept`,
       {},
       'POST'
     );

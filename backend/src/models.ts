@@ -632,6 +632,15 @@ export async function getAllInvitations(userId: number) {
   const invitations = await prisma.invitation.findMany({
     where: {
       recipientId: userId,
+      status: InvitationStatus.PENDING,
+    },
+    include: {
+      share: {
+        include: {
+          sender: true,
+          container: true,
+        },
+      },
     },
   });
   return invitations;
@@ -887,6 +896,10 @@ export async function createInvitationForHash(
     },
   });
   console.log(accessLink);
+
+  // NOTE: we're just copying over the password-wrapped key
+  // we *are not* wrapping the key with the user's publicKey
+  // that's what's supposed to be in that field
   const invitation = await createInvitation(
     accessLink.share.containerId,
     accessLink.wrappedKey,

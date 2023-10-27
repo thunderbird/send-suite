@@ -1,6 +1,5 @@
 <script setup>
 import { ref, inject } from 'vue';
-// import Share from '@/common/Share.vue';
 import Sharer from '@/common/share';
 
 // shouldn't I be getting this from the sharemanager?
@@ -26,6 +25,7 @@ async function shareItems() {
   const url = await sharer.shareItemsWithPassword(props.items, password.value);
   if (!url) {
     shareAborted();
+    return;
   }
   shareComplete(url);
   getFoldersSharedByMe();

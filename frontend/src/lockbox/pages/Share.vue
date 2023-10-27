@@ -2,12 +2,12 @@
 import { ref } from 'vue';
 
 import Core from '@/lockbox/Core.vue';
-import AcceptShare from '../views/AcceptShare.vue';
+import AcceptAccessLink from '../views/AcceptAccessLink.vue';
 import ViewShare from '../views/ViewShare.vue';
 
 const isViewShareReady = ref(false);
 
-function acceptShareComplete() {
+function acceptAccessLinkComplete() {
   isViewShareReady.value = true;
 }
 </script>
@@ -18,7 +18,7 @@ function acceptShareComplete() {
       <ViewShare />
     </template>
     <template v-else>
-      <AcceptShare @acceptShareComplete="acceptShareComplete" />
+      <AcceptAccessLink @acceptAccessLinkComplete="acceptAccessLinkComplete" />
     </template>
   </Core>
 </template>
