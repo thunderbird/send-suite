@@ -5,9 +5,14 @@ import {
   getAllUserGroupContainers,
   getUserPublicKey,
   getAllInvitations,
+  getUserByEmail,
+  getContainersSharedByMe,
+  getContainersSharedWithMe,
 } from '../models';
 
 const router: Router = Router();
+
+// TODO: shift userId to session and out of req.params
 
 router.get('/', (req, res) => {
   res.status(200).send('hey from user router');
@@ -21,6 +26,48 @@ router.get('/:id', async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: 'Server error.',
+    });
+  }
+});
+
+router.get('/lookup/:email', async (req, res) => {
+  const { email } = req.params;
+  try {
+    const user = await getUserByEmail(email);
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+router.post('/login', async (req, res) => {
+  const { email } = req.body;
+  console.log(`looking for user ${email}`);
+  try {
+    const user = await getUserByEmail(email);
+    if (user) {
+      console.log(`Adding logged-in user to request object`);
+      req.session.user = user;
+      req.session.save((err) => {
+        if (err) {
+          console.log(`💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣`);
+          console.log(`couldn't save session`);
+          res.status(500).json(err);
+        } else {
+          res.status(200).json(user);
+        }
+      });
+    } else {
+      res.status(404).send();
+    }
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: 'Server error.',
+      error: error.message,
     });
   }
 });
@@ -105,12 +152,49 @@ router.get('/:userId/folders', async (req, res) => {
     );
     res.status(200).json(containers);
   } catch (error) {
+    console.log(`🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡`);
+    console.log(error);
     res.status(500).json({
       message: 'Server error.',
     });
   }
 });
 
+router.get('/:userId/folders/sharedByMe', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const containersAndMembers = await getContainersSharedByMe(
+      parseInt(userId),
+      ContainerType.FOLDER
+    );
+
+    res.status(200).json(containersAndMembers);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+router.get('/:userId/folders/sharedWithMe', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const containersAndMembers = await getContainersSharedWithMe(
+      parseInt(userId),
+      ContainerType.FOLDER
+    );
+
+    res.status(200).json(containersAndMembers);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+// Get invitations for user
 router.get('/:userId/invitations', async (req, res) => {
   const { userId } = req.params;
   try {

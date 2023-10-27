@@ -8,7 +8,7 @@ import {
 import { blobStream } from './streams';
 import { encryptStream, decryptStream } from './ece';
 
-export async function upload(blob, key, canceller = {}) {
+async function _upload(blob, key, canceller = {}) {
   const endpoint = 'wss://localhost:8088/api/ws';
   const ws = await asyncInitWebSocket(endpoint);
 
@@ -80,39 +80,6 @@ export async function upload(blob, key, canceller = {}) {
   }
 }
 
-// export async function download(id, canceller = {}, doDecrypt = true) {
-//   // const endpoint = 'wss://localhost:8088/api/ws';
-//   // const ws = await asyncInitWebSocket(endpoint);
-
-//   // try {
-//   //   const fileMeta = {
-//   //     type: 'download',
-//   //     id,
-//   //   };
-
-//   //   const downloadInfoResponse = listenForResponse(ws, canceller);
-//   //   ws.send(JSON.stringify(fileMeta));
-//   //   const downloadInfo = await downloadInfoResponse;
-//   //   console.log(downloadInfo);
-
-//   //   const completedResponse = listenForResponse(ws, canceller);
-
-//   //   if (doDecrypt) {
-//   //     // TODO: decrypt the stream
-//   //   }
-
-//   //   ws.read()
-
-//   // } catch (e) {
-//   //   throw e;
-//   // } finally {
-//   //   if (![WebSocket.CLOSED, WebSocket.CLOSING].includes(ws.readyState)) {
-//   //     ws.close();
-//   //   }
-//   // }
-// }
-
-// async download(id, keychain, onprogress, canceller) {
 async function _doDownload(id, canceller = {}) {
   const endpoint = 'https://localhost:8088/api/download';
   const xhr = new XMLHttpRequest();
@@ -145,7 +112,8 @@ async function _doDownload(id, canceller = {}) {
   });
 }
 
-export async function saveFile(file) {
+// TODO: see download() fn from appointment (src/utils.js)
+async function _saveFile(file) {
   return new Promise(function (resolve, reject) {
     const dataView = new DataView(file.plaintext);
     const blob = new Blob([dataView], { type: file.type });
@@ -175,44 +143,35 @@ export async function download(
   type = 'text/plain'
 ) {
   const downloadedBlob = await _doDownload(id);
-  // This is *not* where we figure out the type
-  // I can't just `const { type } = downloadedBlob`
-  // unless I want to add a mimetype to the blob
-  // I don't think this is the right place for that.
 
   let plaintext;
-  // here's where we would decrypt:
   if (key) {
-    // console.log(`decrypting with key`);
     let plainStream = decryptStream(blobStream(downloadedBlob), key);
-    // console.log(plainStream);
 
     plaintext = await streamToArrayBuffer(plainStream, size);
   } else {
     console.log(`no decryption, just convert blob to array buffer`);
     plaintext = await downloadedBlob.arrayBuffer();
   }
-  // const plaintext = await downloadedBlob.arrayBuffer();
-
-  // but how did I figure out the type before in the old front-end?
-  // ... it came from the metadata I stored in the `Uploads` table
-  //
-  // And do something different with the plaintext based on type
-  // if (type === 'MESSAGE') {}
   if (isMessage) {
     const decoder = new TextDecoder();
     const plaintextString = decoder.decode(plaintext);
     return plaintextString;
   } else {
-    return await saveFile({
-      // plaintext: await streamToArrayBuffer(blobStream(ciphertext), size),
+    return await _saveFile({
       plaintext,
       name: decodeURIComponent(filename),
       type, // mime type of the upload
     });
   }
+}
 
-  // if (type === 'FILE') {}
-  /*
-   */
+export async function sendBlob(blob, aesKey) {
+  console.log(`want to send blob of size ${blob.size}`);
+  console.log(blob);
+
+  const stream = blobStream(blob);
+  const result = await _upload(stream, aesKey);
+  console.log(result);
+  return result.id;
 }

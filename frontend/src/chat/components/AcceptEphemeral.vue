@@ -149,17 +149,17 @@ async function getContainerKeyFromChallenge() {
   }
 }
 
-watch(user, () => {
-  console.log(`accept ephemeral sees user 🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉 with id:`);
-  console.log(user.value.id);
-  // for now, sort the keys alphabetically to get the latest one
-  // const conversationIds = Object.keys(keychain.keys).sort();
-  // const mostRecentId = conversationIds[conversationIds.length - 1];
-  // if (mostRecentId) {
-  //   // setConversationId(mostRecentId);
-  //   emit(`setConversationId`, mostRecentId);
-  // }
-});
+// watch(user, () => {
+//   console.log(`accept ephemeral sees user 🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉 with id:`);
+//   console.log(user.value.id);
+//   // for now, sort the keys alphabetically to get the latest one
+//   // const conversationIds = Object.keys(keychain.keys).sort();
+//   // const mostRecentId = conversationIds[conversationIds.length - 1];
+//   // if (mostRecentId) {
+//   //   // setConversationId(mostRecentId);
+//   //   emit(`setConversationId`, mostRecentId);
+//   // }
+// });
 </script>
 <template>
   <!-- <label>
@@ -174,10 +174,5 @@ watch(user, () => {
   <div>
     {{ message }}
   </div>
-  <button
-    class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-    @click="acceptEphemeralLink"
-  >
-    Go
-  </button>
+  <button class="btn-primary" @click="acceptEphemeralLink">Go</button>
 </template>

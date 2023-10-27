@@ -16,6 +16,7 @@ export class ApiConnection {
     const url = `${this.serverUrl}/api/${path}`;
     const opts = {
       mode: 'cors',
+      credentials: 'include',
       method,
       headers: { 'content-type': 'application/json' },
     };
@@ -94,8 +95,34 @@ export class ApiConnection {
     }
   }
 
+  async deleteItem(itemId, containerId, shouldDeleteContent) {
+    const resp = await this.callApi(
+      `containers/${containerId}/item/${itemId}`,
+      {
+        shouldDeleteContent,
+      },
+      'DELETE'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: Unable to delete Item.`);
+      return null;
+    }
+  }
+
   async getContainerWithItems(containerId) {
     const resp = await this.callApi(`containers/${containerId}`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get container ${containerId}`);
+      return null;
+    }
+  }
+
+  async getContainerInfo(containerId) {
+    const resp = await this.callApi(`containers/${containerId}/info`);
     if (resp) {
       return resp;
     } else {
@@ -123,7 +150,7 @@ export class ApiConnection {
     }
   }
 
-  async createFolder(ownerId, name) {
+  async createFolder(ownerId, name, shareOnly = false) {
     // TODO: shift the userId from frontend argument to backend session
     const resp = await this.callApi(
       `containers`,
@@ -131,6 +158,7 @@ export class ApiConnection {
         name: name ?? timestamp(),
         ownerId,
         type: CONTAINER_TYPE.FOLDER,
+        shareOnly,
       },
       'POST'
     );
@@ -138,6 +166,20 @@ export class ApiConnection {
       return resp.container;
     } else {
       console.log(`Error: could not create folder for user ${ownerId}`);
+      return null;
+    }
+  }
+
+  async getContainerGroupMembers(containerId) {
+    const resp = await this.callApi(
+      `containers/${containerId}/members`,
+      {},
+      'GET'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not list members for container ${containerId}`);
       return null;
     }
   }
@@ -154,37 +196,34 @@ export class ApiConnection {
       return resp;
     } else {
       console.log(
-        `Error: could not add user ${ownerId} to container ${containerId}`
+        `Error: could not add user ${userId} to container ${containerId}`
       );
       return null;
     }
   }
 
-  async removeMemberFromContainer(userId, containerId) {
+  async removeInvitationAndGroupMembership(containerId, invitationId) {
     const resp = await this.callApi(
-      `containers/${containerId}/member`,
-      {
-        userId,
-      },
+      `containers/${containerId}/member/remove/${invitationId}`,
+      {},
       'DELETE'
     );
     if (resp) {
       return resp;
     } else {
       console.log(
-        `Error: could not remove user ${ownerId} from container ${containerId}`
+        `Error: could not remove invitation ${invitationId} from container ${containerId}`
       );
       return null;
     }
   }
 
-  async inviteGroupMember(containerId, wrappedKey, userId, senderId) {
+  async inviteGroupMember(containerId, wrappedKey, recipientId, senderId) {
     const resp = await this.callApi(
-      `containers/${containerId}/member/sharekey`,
+      `containers/${containerId}/member/invite`,
       {
-        containerId,
         wrappedKey,
-        userId,
+        recipientId,
         senderId,
       },
       'POST'
@@ -226,6 +265,22 @@ export class ApiConnection {
     }
   }
 
+  async createInvitationForAccessLink(linkId, recipientId) {
+    const resp = await this.callApi(
+      `ephemeral/${linkId}/member/${recipientId}/accept`,
+      {},
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(
+        `Error: could not create invitation for accessLink ${linkId} for recipient ${recipientId}`
+      );
+      return null;
+    }
+  }
+
   async getAllConversations(userId) {
     // TODO: shift the userId from frontend argument to backend session
     const resp = await this.callApi(`users/${userId}/conversations/`);
@@ -248,6 +303,82 @@ export class ApiConnection {
     }
   }
 
+  async getSharesForFolder(containerId, userId) {
+    // TODO: shift the userId from frontend argument to backend session
+    const resp = await this.callApi(`containers/${containerId}/shares`, {
+      userId,
+    });
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get sharing info for ${containerId}`);
+      return null;
+    }
+  }
+
+  async getFoldersSharedWithUser(userId) {
+    // TODO: shift the userId from frontend argument to backend session
+    const resp = await this.callApi(`users/${userId}/folders/sharedWithMe`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get folders shared with user ${userId}`);
+      return null;
+    }
+  }
+
+  async getFoldersSharedByUser(userId) {
+    // TODO: shift the userId from frontend argument to backend session
+    const resp = await this.callApi(`users/${userId}/folders/sharedByMe`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get folders shared by user ${userId}`);
+      return null;
+    }
+  }
+
+  async updateInvitationPermissions(
+    containerId,
+    userId,
+    invitationId,
+    permission
+  ) {
+    const resp = await this.callApi(
+      `containers/${containerId}/shares/invitation/update`,
+      { userId, invitationId, permission },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(
+        `Error: could not update permissions for invitation ${invitationId}`
+      );
+      return null;
+    }
+  }
+  async updateAccessLinkPermissions(
+    containerId,
+    userId,
+    accessLinkId,
+    permission
+  ) {
+    const resp = await this.callApi(
+      `containers/${containerId}/shares/accessLink/update`,
+      { userId, accessLinkId, permission },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(
+        `Error: could not update permissions for accessLink ${accessLinkId}`
+      );
+      return null;
+    }
+  }
+
   async getUserPublicKey(userId) {
     console.log(`getting user public key`);
     const resp = await this.callApi(`users/${userId}/`);
@@ -255,6 +386,17 @@ export class ApiConnection {
       return resp;
     } else {
       console.log(`Error: could not get public key for user ${userId}`);
+      return null;
+    }
+  }
+
+  async getUserByEmail(email) {
+    console.log(`getting user public key`);
+    const resp = await this.callApi(`users/lookup/${email}/`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get user ${email}`);
       return null;
     }
   }
@@ -277,7 +419,17 @@ export class ApiConnection {
     }
   }
 
-  async createEphemeralLink(
+  async login(email) {
+    const resp = await this.callApi(`users/login`, { email }, 'POST');
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not log user in`);
+      return null;
+    }
+  }
+
+  async createAccessLink(
     containerId,
     wrappedKey,
     salt,
@@ -285,7 +437,8 @@ export class ApiConnection {
     challengeSalt,
     senderId,
     challengePlaintext,
-    challengeCiphertext
+    challengeCiphertext,
+    expiration
   ) {
     const resp = await this.callApi(
       `ephemeral`,
@@ -298,6 +451,7 @@ export class ApiConnection {
         senderId,
         challengePlaintext,
         challengeCiphertext,
+        expiration,
       },
       'POST'
     );
@@ -309,8 +463,27 @@ export class ApiConnection {
     }
   }
 
-  async getEphemeralLinkChallenge(hash) {
-    const resp = await this.callApi(`ephemeral/${hash}/challenge`);
+  async isAccessLinkValid(linkId) {
+    const resp = await this.callApi(`ephemeral/exists/${linkId}`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not query access link`);
+      return null;
+    }
+  }
+  async deleteAccessLink(linkId) {
+    const resp = await this.callApi(`ephemeral/${linkId}`, {}, 'DELETE');
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not delete accessLink`);
+      return null;
+    }
+  }
+
+  async getEphemeralLinkChallenge(linkId) {
+    const resp = await this.callApi(`ephemeral/${linkId}/challenge`);
     if (resp) {
       return resp;
     } else {
@@ -319,9 +492,9 @@ export class ApiConnection {
     }
   }
 
-  async acceptEphemeralLink(hash, challengePlaintext) {
+  async acceptEphemeralLink(linkId, challengePlaintext) {
     const resp = await this.callApi(
-      `ephemeral/${hash}/challenge`,
+      `ephemeral/${linkId}/challenge`,
       {
         challengePlaintext,
       },
@@ -331,6 +504,16 @@ export class ApiConnection {
       return resp;
     } else {
       console.log(`Error: could not get ephemeral challenge data`);
+      return null;
+    }
+  }
+
+  async getContainerWithItemsForAccessLink(linkId) {
+    const resp = await this.callApi(`ephemeral/${linkId}/`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get container for share ${linkId}`);
       return null;
     }
   }
@@ -347,6 +530,16 @@ export class ApiConnection {
       return resp;
     } else {
       console.log(`Error: could not burn ephemeral conversation`);
+      return null;
+    }
+  }
+
+  async deleteContainer(containerId) {
+    const resp = await this.callApi(`containers/${containerId}`, {}, 'DELETE');
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not delete container`);
       return null;
     }
   }

@@ -7,3 +7,10 @@ export const ITEM_TYPE = {
   MESSAGE: 'MESSAGE',
   FILE: 'FILE',
 };
+
+export const EXTENSION_READY = 'EXTENSION_READY';
+export const SHARE_COMPLETE = 'SHARE_COMPLETE';
+export const SHARE_ABORTED = 'SHARE_ABORTED';
+
+export const FILE_SELECTED = 'FILE_SELECTED';
+export const SELECTION_COMPLETE = 'SELECTION_COMPLETE';

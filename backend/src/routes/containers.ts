@@ -4,12 +4,21 @@ import {
   createContainer,
   getOwnedContainers,
   createItem,
+  deleteItem,
   getItemsInContainer,
   addGroupMember,
   removeGroupMember,
   createInvitation,
   acceptInvitation,
+  getContainerInfo,
+  burnFolder,
+  getContainerWithMembers,
+  getSharesForContainer,
+  updateInvitationPermissions,
+  updateAccessLinkPermissions,
+  removeInvitationAndGroup,
 } from '../models';
+import { getPermissions } from '../middleware';
 
 const router: Router = Router();
 
@@ -30,6 +39,11 @@ router.post('/', async (req, res) => {
     type: ContainerType;
   } = req.body;
 
+  let shareOnly = false;
+  if (req.body.shareOnly) {
+    shareOnly = req.body.shareOnly;
+  }
+
   const messagesByCode: Record<string, string> = {
     P2002: 'Container already exists',
     P2003: 'User does not exist',
@@ -42,7 +56,8 @@ router.post('/', async (req, res) => {
       name.trim().toLowerCase(),
       // publicKey.trim(),
       ownerId,
-      type
+      type,
+      shareOnly
     );
     res.status(201).json({
       message: 'Container created',
@@ -75,7 +90,8 @@ router.get('/owner/:userId', async (req, res) => {
   }
 });
 
-router.post('/:containerId', async (req, res) => {
+// Add an Item
+router.post('/:containerId', getPermissions, async (req, res) => {
   const { containerId } = req.params;
   const { name, uploadId, type, wrappedKey } = req.body;
   try {
@@ -98,35 +114,45 @@ router.post('/:containerId', async (req, res) => {
   }
 });
 
-// Add member to access group for container
-router.post('/:containerId/member', async (req, res) => {
-  const { containerId } = req.params;
-  const { userId } = req.body;
-  try {
-    const container = await addGroupMember(
-      parseInt(containerId),
-      parseInt(userId)
-    );
-    res.status(200).json(container);
-  } catch (error) {
-    res.status(500).json({
-      message: 'Server error.',
-    });
+router.delete(
+  '/:containerId/item/:itemId',
+  getPermissions,
+  async (req, res) => {
+    const { containerId, itemId } = req.params;
+    // Force req.body.shouldDeleteUpload to a boolean
+    const shouldDeleteUpload = !!req.body.shouldDeleteUpload;
+    try {
+      const result = await deleteItem(parseInt(itemId), shouldDeleteUpload);
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(`error deleting item ${itemId} in container ${containerId}`);
+      console.log(error);
+      res.status(500).json({
+        message: 'Server error.',
+      });
+    }
   }
-});
+);
 
-router.post('/:containerId/member/sharekey', async (req, res) => {
+router.post('/:containerId/member/invite', getPermissions, async (req, res) => {
   const { containerId } = req.params;
-  const { userId, senderId, wrappedKey } = req.body;
+  const { senderId, recipientId, wrappedKey } = req.body;
+  let permission = '0';
+  if (req.body.permission) {
+    permission = req.body.permission;
+  }
   try {
     const invitation = await createInvitation(
       parseInt(containerId),
       wrappedKey,
-      parseInt(userId),
-      parseInt(senderId)
+      parseInt(senderId),
+      parseInt(recipientId),
+      parseInt(permission)
     );
     res.status(200).json(invitation);
   } catch (error) {
+    console.log(`🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡`);
+    console.log(error);
     res.status(500).json({
       message: 'Server error.',
     });
@@ -145,8 +171,21 @@ router.post('/:containerId/member/accept/:invitationId', async (req, res) => {
   }
 });
 
+// Remove invitation and group membership
+router.delete('/:containerId/member/remove/:invitationId', async (req, res) => {
+  const { invitationId } = req.params;
+  try {
+    const result = await removeInvitationAndGroup(parseInt(invitationId));
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
 // Add member to access group for container
-router.post('/:containerId/member', async (req, res) => {
+router.post('/:containerId/member', getPermissions, async (req, res) => {
   const { containerId } = req.params;
   const { userId } = req.body;
   try {
@@ -163,15 +202,33 @@ router.post('/:containerId/member', async (req, res) => {
 });
 
 // Remove member from access group for container
-router.delete('/:containerId/member', async (req, res) => {
+router.delete(
+  '/:containerId/member/:userId',
+  getPermissions,
+  async (req, res) => {
+    const { containerId, userId } = req.params;
+    try {
+      const container = await removeGroupMember(
+        parseInt(containerId),
+        parseInt(userId)
+      );
+      res.status(200).json(container);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        message: 'Server error.',
+      });
+    }
+  }
+);
+
+// Get all members for a container
+router.get('/:containerId/members', getPermissions, async (req, res) => {
+  // getContainerWithMembers
   const { containerId } = req.params;
-  const { userId } = req.body;
   try {
-    const container = await removeGroupMember(
-      parseInt(containerId),
-      parseInt(userId)
-    );
-    res.status(200).json(container);
+    const { group } = await getContainerWithMembers(parseInt(containerId));
+    res.status(200).json(group.members);
   } catch (error) {
     res.status(500).json({
       message: 'Server error.',
@@ -180,7 +237,7 @@ router.delete('/:containerId/member', async (req, res) => {
 });
 
 // Get a container and its items
-router.get('/:containerId', async (req, res) => {
+router.get('/:containerId', getPermissions, async (req, res) => {
   const { containerId } = req.params;
   try {
     const containerWithItems = await getItemsInContainer(parseInt(containerId));
@@ -191,5 +248,105 @@ router.get('/:containerId', async (req, res) => {
     });
   }
 });
+
+// Get container info
+router.get('/:containerId/info', getPermissions, async (req, res) => {
+  const { containerId } = req.params;
+  try {
+    const container = await getContainerInfo(parseInt(containerId));
+    res.status(200).json(container);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+router.delete('/:containerId', getPermissions, async (req, res) => {
+  const { containerId } = req.params;
+  console.log(`👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿`);
+  try {
+    const result = await burnFolder(parseInt(containerId));
+    res.status(200).json({
+      result,
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({
+      message: 'Server error',
+    });
+  }
+});
+
+router.get('/:containerId/shares', getPermissions, async (req, res) => {
+  const { containerId } = req.params;
+  const { userId } = req.body; // TODO: get from session
+  try {
+    const result = await getSharesForContainer(
+      parseInt(containerId),
+      parseInt(userId)
+    );
+    res.status(200).json({
+      result,
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({
+      message: 'Server error',
+    });
+  }
+});
+
+router.post(
+  '/:containerId/shares/invitation/update',
+  getPermissions,
+  async (req, res) => {
+    const { containerId } = req.params;
+    const { userId, invitationId, permission } = req.body; // TODO: get from session
+    console.log(req.body);
+    console.log(`🤡 invitationId`, invitationId);
+    try {
+      const result = await updateInvitationPermissions(
+        parseInt(containerId),
+        parseInt(invitationId),
+        parseInt(userId),
+        parseInt(permission)
+      );
+      res.status(200).json({
+        result,
+      });
+    } catch (e) {
+      console.log(e);
+      res.status(500).json({
+        message: 'Server error',
+      });
+    }
+  }
+);
+router.post(
+  '/:containerId/shares/accessLink/update',
+  getPermissions,
+  async (req, res) => {
+    const { containerId } = req.params;
+    const { userId, accessLinkId, permission } = req.body; // TODO: get from session
+
+    try {
+      const result = await updateAccessLinkPermissions(
+        parseInt(containerId),
+        accessLinkId,
+        parseInt(userId),
+        parseInt(permission)
+      );
+      res.status(200).json({
+        result,
+      });
+    } catch (e) {
+      console.log(e);
+      res.status(500).json({
+        message: 'Server error',
+      });
+    }
+  }
+);
 
 export default router;

@@ -1,6 +1,6 @@
 <script setup>
-import Debug from '@/chat/views/Debug.vue';
-import Wrapper from './Wrapper.vue';
+import Debug from '@/Debug.vue';
+import Wrapper from '@/Wrapper.vue';
 </script>
 
 <template>

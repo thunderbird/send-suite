@@ -1,7 +1,6 @@
 <script setup>
 import { ref, inject } from 'vue';
-import { upload } from '@/lib/filesync';
-import { blobStream } from '@/lib/streams';
+import { sendBlob } from '@/lib/filesync';
 
 const props = defineProps({
   conversationId: Number,
@@ -31,20 +30,6 @@ async function handleFile(event) {
   reader.readAsArrayBuffer(file);
   message.value = file.name;
   msgInput.value.disabled = true;
-}
-
-async function sendBlob(blob, aesKey) {
-  console.log(`want to send blob of size ${blob.size}`);
-  console.log(blob);
-
-  // const aesKey = await keychain.get(props.conversationId);
-  // if (!aesKey) {
-  //   return;
-  // }
-  const stream = blobStream(blob);
-  const result = await upload(stream, aesKey);
-  console.log(result);
-  return result.id;
 }
 
 async function sendMessage(isText = true) {
@@ -259,19 +244,6 @@ async function sendMessage(isText = true) {
           </div>
         </div>
       </div>
-      <!-- <form @submit.prevent>
-      <label>
-        Message:
-        <textarea v-model="message">{{ message }}</textarea>
-      </label>
-
-      <button
-        class="h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out inline-flex items-center justify-center gap-1 text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-        @click="sendMessage"
-      >
-        Send Message
-      </button>
-    </form> -->
     </div>
   </form>
 </template>

@@ -77,7 +77,7 @@ onMounted(async () => {
     <div class="flex items-center pl-3">
       <!-- <button
           type="button"
-          class="inline-flex items-center justify-center rounded-lg border h-10 w-10 transition duration-500 ease-in-out text-gray-500 hover:bg-gray-300 focus:outline-none"
+          class="btn-primary"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -96,7 +96,7 @@ onMounted(async () => {
         </button> -->
       <!-- <button
           type="button"
-          class="inline-flex items-center justify-center rounded-lg border h-10 w-10 transition duration-500 ease-in-out text-gray-500 hover:bg-gray-300 focus:outline-none"
+          class="btn-primary"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -113,12 +113,7 @@ onMounted(async () => {
             ></path>
           </svg>
         </button> -->
-      <button
-        class="inline-flex items-center justify-center rounded-lg border h-10 w-10 transition duration-500 ease-in-out text-gray-500 hover:bg-gray-300 focus:outline-none"
-        @click="loadAllConversations"
-      >
-        🔃
-      </button>
+      <button class="btn-primary" @click="loadAllConversations">🔃</button>
     </div>
   </div>
   <div class="border-r border-gray-300 lg:col-span-1">

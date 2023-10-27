@@ -1,141 +1,84 @@
 <script setup>
-/*
-Should:
-- provide userId globally
-- provide keychain globally
-
-
-Does vue already have the notion of a store?
-(Or is this why Pinia exists?)
-*/
-import { ref, onMounted, provide, watch, computed } from 'vue';
+import { ref, onMounted, provide, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { ApiConnection } from './lib/api';
-import Storage from './lib/storage/localStorage';
-import { Keychain } from './lib/keychain';
-import { createMessageSocket } from './lib/messageSocket';
+import { ApiConnection } from '@/lib/api';
+
+import { Keychain } from '@/lib/keychain';
+import { Storage } from '@/lib/storage';
+import { User } from '@/lib/user';
+import { MessageBus } from '@/lib/messageBus';
 const router = useRouter();
 
-const api = new ApiConnection('https://localhost:8088');
+const TEMP_SERVER_URL = 'https://localhost:8088';
 
+const api = new ApiConnection(TEMP_SERVER_URL);
 provide('api', api);
 
-const user = ref({
-  id: 0,
-  email: '',
-});
-
-// const eventSource = ref(null);
-// provide('eventSource', eventSource);
-const messageSocket = ref(null);
-provide('messageSocket', messageSocket);
-
-const messageBus = ref(null);
+const messageBus = new MessageBus(TEMP_SERVER_URL);
 provide('messageBus', messageBus);
 
-function setUser(obj) {
-  user.value = {
-    ...user.value,
-    ...obj,
-  };
-  console.log(`set user object as ref`);
-  console.log(obj);
-}
+// TODO: consider getting rid of this.
+const isInitComplete = ref(true);
 
-function storeUser(id, email, tier) {
-  const jsonUser = JSON.stringify({
-    id,
-    email,
-    tier,
-  });
-  localStorage.setItem('send-user', jsonUser);
-}
-function loadUser() {
-  const jsonUser = localStorage.getItem('send-user');
-  if (jsonUser) {
-    setUser(JSON.parse(jsonUser));
-  }
-}
+const storage = new Storage();
+provide('storage', storage);
+window.storage = storage;
 
-provide('user', {
-  user: computed(() => user.value),
-  setUser,
-  storeUser,
-  loadUser,
-});
+const _keychain = new Keychain(storage);
+const reactiveKeychain = ref(_keychain);
+provide('keychainRef', reactiveKeychain);
 
-const isInitComplete = ref({});
+const _user = new User(api, storage);
+const reactiveUser = ref(_user);
+provide('userRef', reactiveUser);
 
-// const keychain = new Keychain(new Storage());
-const keychain = new Keychain();
-provide('keychain', keychain);
-
-watch(user, async () => {
-  if (user.value.id !== 0) {
-    messageSocket.value = await createMessageSocket(user.value.id);
-    if (messageSocket.value) {
-      console.log(`created messageSocket`);
-      messageSocket.value.onmessage = (event) => {
-        console.log(`heard from the messageSocket`);
-        console.log(event.data);
-        const data = JSON.parse(event.data);
-        switch (data?.type) {
-          case 'burn':
-            if (data?.conversationId) {
-              cleanAfterBurning(data.conversationId);
-            }
-            break;
-          case 'newMessage':
-            if (data?.conversationId) {
-              newMessageCallbacks.forEach((cb) => {
-                cb(data.conversationId);
-              });
-            }
-            break;
-          case 'newChat':
-            newChatCallbacks.forEach((cb) => {
-              cb();
-            });
-          default:
-            break;
+// Init the messageBus for this user
+watch(
+  () => reactiveUser.value.id,
+  async () => {
+    const success = await messageBus.initConnection(reactiveUser.value.id);
+    if (success) {
+      messageBus.addCallback('burn', (data) => {
+        if (data?.conversationId) {
+          cleanAfterBurning(data.conversationId);
         }
-      };
+      });
+      // other callback types:
+      // newChat
+      // newMessage
+      // isInitComplete.value = true;
     }
-    isInitComplete.value = true;
   }
-});
-
-// keychain.addOnload(() => {
-//   console.log(`confirming keychain.addOnload works`);
-// });
+);
 
 onMounted(async () => {
   try {
-    await keychain.load();
+    await reactiveKeychain.value.load();
   } catch (e) {
     console.log(`no keys`);
     return;
   }
   console.log(`keychain loaded`);
-  if (keychain.keys) {
-    console.log(`we have keys`);
-    loadUser();
+  if (reactiveKeychain.value.rsa.privateKey) {
+    console.log(`we have keys, attempting to load user`);
+    // user.load();
+    reactiveUser.value.load();
   }
   // console.log('TODO: get/set auth0 user');
   // console.log(`api should have a value now`);
 });
 
-provide('onNewMessage', onNewMessage);
-const newMessageCallbacks = [];
-async function onNewMessage(cb) {
-  newMessageCallbacks.push(cb);
-}
+// provide('onNewMessage', onNewMessage);
+// const newMessageCallbacks = [];
+// async function onNewMessage(cb) {
+//   newMessageCallbacks.push(cb);
+// }
 
-provide('onNewChat', onNewChat);
-const newChatCallbacks = [];
-async function onNewChat(cb) {
-  newChatCallbacks.push(cb);
-}
+// provide('onNewChat', onNewChat);
+// const newChatCallbacks = [];
+// async function onNewChat(cb) {
+//   newChatCallbacks.push(cb);
+// }
 
 provide('burn', burnAfterReading);
 async function burnAfterReading(conversationId) {
@@ -148,12 +91,12 @@ async function burnAfterReading(conversationId) {
 provide('clean', cleanAfterBurning);
 function cleanAfterBurning(conversationId) {
   try {
-    keychain.get(conversationId);
+    reactiveKeychain.value.get(conversationId);
     console.log(`CLEANING ${conversationId}`);
-    keychain.remove(conversationId);
+    reactiveKeychain.value.remove(conversationId);
 
-    if (user.value.tier !== 'PRO') {
-      keychain.clear();
+    if (reactiveUser.value.tier !== 'PRO') {
+      reactiveKeychain.value.clear();
       localStorage.removeItem('send-user');
       router.push('/');
     }

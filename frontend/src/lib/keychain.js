@@ -1,6 +1,7 @@
+import { Storage } from './storage';
+
 // When running automated tests, use crypto module instead of `window.crypto`
 import nodeCrypto from 'crypto';
-
 let crypto = nodeCrypto;
 try {
   crypto = window.crypto;
@@ -62,9 +63,10 @@ class Container {
 
   // Unwrap an AES-GCM (content) key
   async unwrapContentKey(wrappedKeyStr, wrappingKey) {
+    const buf = Util.base64ToArrayBuffer(wrappedKeyStr);
     return await crypto.subtle.unwrapKey(
       'raw',
-      Util.base64ToArrayBuffer(wrappedKeyStr),
+      buf,
       wrappingKey,
       'AES-KW',
       'AES-GCM',
@@ -150,8 +152,25 @@ class Rsa {
     if (!this.publicKey) {
       return null;
     }
-    const publicKeyJwk = await rsaToJwk(this.publicKey);
-    return publicKeyJwk;
+    const jwk = await rsaToJwk(this.publicKey);
+    // return JSON.stringify(jwk);
+    return jwk;
+  }
+
+  async getPrivateKeyJwk() {
+    if (!this.privateKey) {
+      return null;
+    }
+    const jwk = await rsaToJwk(this.privateKey);
+    return JSON.stringify(jwk);
+  }
+
+  async setPrivateKeyFromJwk(jwk) {
+    this.privateKey = await jwkToRsa(jwk);
+  }
+
+  async setPublicKeyFromJwk(jwk) {
+    this.publicKey = await jwkToRsa(jwk);
   }
 
   // Wraps an AES-KW (container) key
@@ -228,7 +247,7 @@ class Challenge {
 
 // Should I rename this to KeyManager?
 export class Keychain {
-  constructor() {
+  constructor(storage) {
     //
     this.content = new Content();
     this.container = new Container();
@@ -237,13 +256,23 @@ export class Keychain {
     this.challenge = new Challenge();
 
     this._keys = {};
-    this._onloadArray = [];
+    this._storage = storage ?? new Storage();
+
+    // this._onLoadCallbacks = [];
   }
 
   get keys() {
     return {
       ...this._keys,
     };
+  }
+
+  set keys(keyObj) {
+    this._keys = keyObj;
+  }
+
+  count() {
+    return Object.keys(this._keys).length;
   }
 
   async add(id, key) {
@@ -278,8 +307,40 @@ export class Keychain {
 
   async newKeyForContainer(id) {
     const key = await this.container.generateContainerKey();
+    console.log(`adding key for container id ${id}`);
     await this.add(id, key);
   }
+
+  async store() {
+    // store public/private keys
+    // these need conversion to jwk (JSON strings)
+    const keysObj = {
+      publicKey: await this.rsa.getPublicKeyJwk(),
+      privateKey: await this.rsa.getPrivateKeyJwk(),
+    };
+
+    await this._storage.storeKeypair(keysObj);
+
+    // store other keys
+    await this._storage.storeKeys(this.keys);
+  }
+
+  async load() {
+    // load public/private keys
+    const { publicKey, privateKey } = await this._storage.loadKeypair();
+
+    // these need conversion from jwk
+    await this.rsa.setPrivateKeyFromJwk(privateKey);
+    await this.rsa.setPublicKeyFromJwk(publicKey);
+
+    // load other keys
+    this.keys = await this._storage.loadKeys();
+    // this._onLoadCallbacks.forEach(async (cb) => await cb());
+  }
+
+  // _addOnLoad(cb) {
+  //   this._onLoadCallbacks.push(cb);
+  // }
 }
 
 export class Util {
@@ -287,6 +348,10 @@ export class Util {
     let salt = crypto.getRandomValues(new Uint8Array(size));
 
     return salt;
+  }
+
+  static generateRandomPassword() {
+    return this.arrayBufferToBase64(this.generateSalt(16));
   }
 
   static async compareKeys(k1, k2) {
@@ -384,6 +449,20 @@ function bytesToArrayBuffer(bytes) {
 
 async function rsaToJwk(key) {
   return await crypto.subtle.exportKey('jwk', key);
+}
+
+async function jwkToRsa(jwk) {
+  jwk = typeof jwk === 'string' ? JSON.parse(jwk) : jwk;
+  return await crypto.subtle.importKey(
+    'jwk',
+    jwk,
+    {
+      name: 'RSA-OAEP',
+      hash: 'SHA-256',
+    },
+    true,
+    jwk.key_ops
+  );
 }
 
 // Used for Util.compareKeys()

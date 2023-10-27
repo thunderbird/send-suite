@@ -2,17 +2,38 @@ import 'dotenv/config';
 import cors from 'cors';
 import express from 'express';
 import WebSocket from 'ws';
+import session from 'express-session';
+import cookieParser from 'cookie-parser';
+import sessionFileStore from 'session-file-store';
+
+import morgan from 'morgan';
 
 import users from './routes/users';
 import containers from './routes/containers';
 import uploads from './routes/uploads';
 import download from './routes/download';
 import ephemeral from './routes/ephemeral';
-import createStreamingRouter from './routes/streamingRouter';
+// import createStreamingRouter from './routes/streamingRouter';
 
-import wsHandler from './wsHandler';
+import wsUploadHandler from './wsUploadHandler';
 import wsMsgHandler from './wsMsgHandler';
 import { uuidv4 } from './utils';
+
+// TODO: look into moving this to src/types/index.d.ts (or more appropriate filename)
+type User = {
+  id: Number;
+  email: String;
+  publicKey: String;
+  tier: String;
+  createdAt: Date;
+  updatedAt: Date;
+  activatedAt: Date;
+};
+declare module 'express-session' {
+  interface SessionData {
+    user: User;
+  }
+}
 
 const PORT = 8080;
 const HOST = '0.0.0.0';
@@ -20,14 +41,34 @@ const WS_UPLOAD_PATH = `/api/ws`;
 const WS_MESSAGE_PATH = `/api/messagebus`;
 
 let streamingClients = [];
-// const { router: streamingRouter, broadcast: streamingBroadcast } =
-createStreamingRouter(streamingClients);
+// const { router: streamingRouter, broadcast: streamingBroadcast } = createStreamingRouter(streamingClients);
 const wsUploadServer = new WebSocket.Server({ noServer: true });
 const wsMessageServer = new WebSocket.Server({ noServer: true });
 const app = express();
 
+app.use(morgan('combined'));
+
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+  })
+);
+
+app.set('trust proxy', 1); // trust first proxy
+const FileStore = sessionFileStore(session);
+const fileStoreOptions = {};
+const expressSession = session({
+  secret: process.env.SESSION_SECRET ?? 'abc123xyz',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false, sameSite: 'strict' },
+  store: new FileStore(fileStoreOptions),
+});
+app.use(expressSession);
+app.use(cookieParser());
+
 // app.use((req, res, next) => {
 //   res.header('Access-Control-Expose-Headers', 'WWW-Authenticate');
 //   next();
@@ -40,7 +81,6 @@ app.use(cors());
 //     next();
 //   }
 // );
-
 app.get('/', (req, res) => {
   res.status(200).send('echo');
 });
@@ -69,7 +109,7 @@ server.on('upgrade', (req, socket, head) => {
     wsUploadServer.handleUpgrade(req, socket, head, (ws) => {
       console.log('handling upgrade for upload');
       wsUploadServer.emit('connection', ws, req);
-      wsHandler(ws, req);
+      wsUploadHandler(ws, req);
     });
   } else if (req.url.startsWith(WS_MESSAGE_PATH)) {
     console.log(`upgrading ${WS_MESSAGE_PATH}`);

@@ -1,0 +1,53 @@
+{
+  "manifest_version": 3,
+  "version": "0.1",
+  "author": "Chris Aquino",
+  "name": "Thunderbird Send",
+  "description": "Lockbox and friends",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "lockbox@services.thunderbird.net",
+      "strict_min_version": "110.0a1"
+    }
+  },
+  "action": {
+    "default_title": "Send-ish"
+  },
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "compose_action": {
+    "default_title": "attach from lockbox"
+  },
+  "options_ui": {
+    "page": "index.management.html",
+    "open_in_tab": true,
+    "browser_style": true
+  },
+  "cloud_file": {
+    "name": "Lockbox Send",
+    "management_url": "index.management.html",
+    "browser_style": true,
+    "reuse_uploads": false
+  },
+  "permissions": [
+    "storage",
+    "compose",
+    "notifications",
+    "activeTab",
+    "tabs",
+    "tabHide",
+    "messagesRead",
+    "messagesModify"
+  ],
+  "experiment_apis": {
+    "FileSystem": {
+      "schema": "api/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "paths": [["FileSystem"]],
+        "script": "api/implementation.js"
+      }
+    }
+  }
+}
