@@ -12,6 +12,8 @@ import {
 
 const router: Router = Router();
 
+// TODO: shift userId to session and out of req.params
+
 router.get('/', (req, res) => {
   res.status(200).send('hey from user router');
 });
@@ -192,6 +194,7 @@ router.get('/:userId/folders/sharedWithMe', async (req, res) => {
   }
 });
 
+// Get invitations for user
 router.get('/:userId/invitations', async (req, res) => {
   const { userId } = req.params;
   try {

@@ -693,6 +693,40 @@ export async function acceptInvitation(invitationId: number) {
   };
 }
 
+export async function removeInvitationAndGroup(invitationId: number) {
+  const invitation = await prisma.invitation.findUnique({
+    where: {
+      id: invitationId,
+    },
+    include: {
+      share: true,
+      recipient: true,
+    },
+  });
+  if (!invitation) {
+    return null;
+  }
+
+  // remove membership, if any
+  try {
+    await removeGroupMember(
+      invitation.share.containerId,
+      invitation.recipient.id
+    );
+  } catch (e) {
+    console.log(e);
+    console.log(`Could not remove membership - may not exist`);
+  }
+
+  const result = await prisma.invitation.delete({
+    where: {
+      id: invitationId,
+    },
+  });
+
+  return result;
+}
+
 export async function removeGroupMember(containerId: number, userId: number) {
   // TODO: write a better, more correct version of this.
   // This code works off of the assumption that there

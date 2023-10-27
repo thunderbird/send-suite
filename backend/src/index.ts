@@ -63,7 +63,7 @@ const expressSession = session({
   secret: process.env.SESSION_SECRET ?? 'abc123xyz',
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false },
+  cookie: { secure: false, sameSite: 'strict' },
   store: new FileStore(fileStoreOptions),
 });
 app.use(expressSession);

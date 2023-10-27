@@ -25,7 +25,7 @@ const {
   sharedByMe,
   getSharesForFolder,
   getGroupMembers,
-  removeGroupMember,
+  removeInvitationAndGroupMembership,
   updateInvitationPermissions,
   updateAccessLinkPermissions,
   getFoldersSharedByMe,
@@ -63,8 +63,11 @@ async function getSharingInfo() {
   console.log(`Just updated 🤡🤡🤡🤡🤡🤡🤡`);
 }
 
-async function removeMember(userId) {
-  const success = await removeGroupMember(userId, props.folderId);
+async function removeMember(invitationId) {
+  const success = await removeInvitationAndGroupMembership(
+    props.folderId,
+    invitationId
+  );
   if (success) {
     await getSharingInfo();
   }
@@ -119,6 +122,12 @@ async function setPermission(type, containerId, id, permission) {
               (p) => setPermission(INVITATION, folderId, invitation.id, p)
             "
           />
+          <button
+            class="btn-primary"
+            @click.prevent="removeMember(invitation.id)"
+          >
+            ⛔
+          </button>
         </li>
       </ul>
     </li>

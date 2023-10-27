@@ -368,8 +368,11 @@ async function addGroupMember(userId, folderId) {
   // await getFoldersSharedByMe();
 }
 
-async function removeGroupMember(userId, folderId) {
-  const success = await removeMemberFromContainer(userId, folderId);
+async function removeInvitationAndGroupMembership(containerId, invitationId) {
+  const success = await api.removeInvitationAndGroupMembership(
+    containerId,
+    invitationId
+  );
   if (success) {
     // update our ref
     await getFoldersSharedByMe();
@@ -389,7 +392,7 @@ provide('sharingManager', {
   getFoldersSharedByMe,
   getGroupMembers,
   addGroupMember,
-  removeGroupMember,
+  removeInvitationAndGroupMembership,
   getSharedFolder,
   getSharesForFolder,
   updateInvitationPermissions,

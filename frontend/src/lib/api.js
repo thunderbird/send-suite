@@ -202,9 +202,9 @@ export class ApiConnection {
     }
   }
 
-  async removeMemberFromContainer(userId, containerId) {
+  async removeInvitationAndGroupMembership(containerId, invitationId) {
     const resp = await this.callApi(
-      `containers/${containerId}/member/${userId}`,
+      `containers/${containerId}/member/remove/${invitationId}`,
       {},
       'DELETE'
     );
@@ -212,7 +212,7 @@ export class ApiConnection {
       return resp;
     } else {
       console.log(
-        `Error: could not remove user ${userId} from container ${containerId}`
+        `Error: could not remove invitation ${invitationId} from container ${containerId}`
       );
       return null;
     }
