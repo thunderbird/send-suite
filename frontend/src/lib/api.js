@@ -461,6 +461,16 @@ export class ApiConnection {
     }
   }
 
+  async deleteAccessLink(hash) {
+    const resp = await this.callApi(`ephemeral/${hash}`, {}, 'DELETE');
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not delete accessLink`);
+      return null;
+    }
+  }
+
   async getEphemeralLinkChallenge(hash) {
     const resp = await this.callApi(`ephemeral/${hash}/challenge`);
     if (resp) {

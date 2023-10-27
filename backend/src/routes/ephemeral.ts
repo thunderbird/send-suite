@@ -7,6 +7,7 @@ import {
   acceptAccessLink,
   getContainerForAccessLinkHash,
   createInvitationForHash,
+  removeAccessLink,
 } from '../models';
 import { getPermissions } from '../middleware';
 
@@ -129,6 +130,19 @@ router.get('/:hash', getPermissions, async (req, res) => {
     console.log(`here is the container with items:`);
     console.log(containerWithItems);
     res.status(200).json(containerWithItems);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+// Remove accessLink
+router.delete('/:hash', async (req, res) => {
+  const { hash } = req.params;
+  try {
+    const result = await removeAccessLink(hash);
+    res.status(200).json(result);
   } catch (error) {
     res.status(500).json({
       message: 'Server error.',

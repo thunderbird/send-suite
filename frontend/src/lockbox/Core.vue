@@ -344,6 +344,15 @@ async function updateAccessLinkPermissions(
   return result;
 }
 
+async function deleteAccessLink(hash) {
+  const result = await api.deleteAccessLink(hash);
+
+  if (result) {
+    await getFoldersSharedByMe();
+  }
+  return result;
+}
+
 async function getGroupMembers(folderId) {
   return await api.getContainerGroupMembers(folderId);
 }
@@ -434,6 +443,7 @@ provide('sharingManager', {
   updateAccessLinkPermissions,
   acceptInvitation,
   getInvitations,
+  deleteAccessLink,
 });
 </script>
 

@@ -919,6 +919,14 @@ export async function createInvitationForHash(
   return result;
 }
 
+export async function removeAccessLink(accessLink: string) {
+  return prisma.accessLink.delete({
+    where: {
+      id: accessLink,
+    },
+  });
+}
+
 export async function burnEphemeralConversation(containerId: number) {
   return await burnFolder(containerId);
 }

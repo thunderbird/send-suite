@@ -30,6 +30,7 @@ const {
   updateInvitationPermissions,
   updateAccessLinkPermissions,
   getFoldersSharedByMe,
+  deleteAccessLink,
 } = inject('sharingManager');
 
 const props = defineProps({
@@ -69,6 +70,13 @@ async function removeMember(invitationId) {
     props.folderId,
     invitationId
   );
+  if (success) {
+    await getSharingInfo();
+  }
+}
+
+async function removeLink(accessLinkId) {
+  const success = await deleteAccessLink(accessLinkId);
   if (success) {
     await getSharingInfo();
   }
@@ -154,6 +162,12 @@ async function setPermission(type, containerId, id, permission) {
               (p) => setPermission(ACCESSLINK, folderId, accessLink.id, p)
             "
           />
+          <button
+            class="btn-primary"
+            @click.prevent="removeLink(accessLink.id)"
+          >
+            ⛔
+          </button>
         </li>
       </ul>
     </li>
