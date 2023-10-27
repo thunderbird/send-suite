@@ -350,6 +350,10 @@ export class Util {
     return salt;
   }
 
+  static generateRandomPassword() {
+    return this.arrayBufferToBase64(this.generateSalt(16));
+  }
+
   static async compareKeys(k1, k2) {
     const originalAESBase64 = await exportKeyToBase64(k1);
     const unwrappedAESBase64 = await exportKeyToBase64(k2);

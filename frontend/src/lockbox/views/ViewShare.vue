@@ -11,8 +11,8 @@ const containerId = ref(null);
 
 onMounted(async () => {
   console.log(`ViewShare ready to get folder for hash`);
-  // Using route.params.hash, get the folder contents
-  const { share } = await getSharedFolder(route.params.hash);
+  // Using route.params.linkId, get the folder contents
+  const { share } = await getSharedFolder(route.params.linkId);
   folder.value = share.container;
   containerId.value = share.container.id;
 });

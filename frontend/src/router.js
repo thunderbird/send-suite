@@ -13,7 +13,7 @@ const routes = [
   { path: '/ephemeral/:hash', component: EphemeralChat },
   // Lockbox
   { path: '/lockbox', component: Lockbox },
-  { path: '/share/:hash', component: Share },
+  { path: '/share/:linkId', component: Share },
 ];
 
 const router = createRouter({

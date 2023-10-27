@@ -1,5 +1,5 @@
 <script setup>
-import { ref, inject } from 'vue';
+import { ref, inject, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const emit = defineEmits(['acceptAccessLinkComplete']);
@@ -15,7 +15,7 @@ const userRef = inject('userRef');
 const { acceptAccessLink } = inject('sharingManager');
 
 async function accept() {
-  const success = await acceptAccessLink(route.params.hash, password.value);
+  const success = await acceptAccessLink(route.params.linkId, password.value);
   if (success) {
     message.value = `and this is where we add the container to the group and then redirect`;
 
@@ -28,6 +28,15 @@ async function accept() {
     }
   }
 }
+
+onMounted(() => {
+  const { hash } = window.location;
+  if (hash) {
+    password.value = hash.substring(1);
+    console.log(`Setting password.value to ${password.value}`);
+    accept();
+  }
+});
 </script>
 
 <template>
@@ -40,7 +49,7 @@ async function accept() {
   </template>
   <p>
     The hash:
-    {{ route.params.hash }}
+    {{ route.params.linkId }}
   </p>
   <label>
     Password:

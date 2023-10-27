@@ -227,12 +227,12 @@ export default class Sharer {
     }
 
     console.log(`created share link for container ${containerId}`);
-    const hash = resp.id;
+    const accessLink = resp.id;
     const { origin } = new URL(window.location.href);
-    // const url = `${origin}/share/${hash}`;
+    // const url = `${origin}/share/${accessLink}`;
     // TODO: need the server url from...elsewhere
     // Using `origin` works fine for web application, but not for extension
-    const url = `http://localhost:5173/share/${hash}`;
+    const url = `http://localhost:5173/share/${accessLink}`;
     return url;
   }
 }

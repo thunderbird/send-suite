@@ -98,6 +98,15 @@ async function inviteMember(email) {
 
 async function createAccessLinkComplete(url) {
   console.log(`Created access link ${url}`);
+  alert(`
+  (This should be a modal)
+  Copy the following URL to send to someone.
+
+  Because it uses an auto-generated password, the full URL is not stored on the server.
+  You will not be able to view the full URL again.
+
+  ${url}
+  `);
   await getSharingInfo();
 }
 function createAccessLinkError() {
@@ -155,7 +164,9 @@ async function setPermission(type, containerId, id, permission) {
       Links:
       <ul>
         <li v-for="accessLink of share.accessLinks" :key="accessLink.id">
-          id: {{ accessLink.id }}<br />
+          <a :href="'http://localhost:5173/share/' + accessLink.id"
+            >Access Link</a
+          ><br />
           <PermissionsDropDown
             :currentPermission="accessLink.permission"
             @setPermission="
