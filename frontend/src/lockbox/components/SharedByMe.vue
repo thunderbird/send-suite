@@ -1,25 +1,32 @@
 <script setup>
-import { inject } from 'vue';
-import ManageSharing from './ManageSharing.vue';
+import { inject, computed } from 'vue';
+import ContactCard from '@/lockbox/elements/ContactCard.vue';
+
 const { sharedByMe } = inject('sharingManager');
+
+// get list of unique recipients out of all invitations from the current user
+const recipients = computed(() => {
+  const contacts = {};
+  sharedByMe.value.forEach((share) => {
+    share.invitations.forEach((invitation) => {
+      contacts[invitation.recipientId] = invitation.recipient;
+    });
+  });
+  return Object.values(contacts);
+});
 </script>
 
 <template>
-  <h1>Shared By Me</h1>
-  <div v-for="share of sharedByMe">
-    folder name: {{ share.container.name }}<br />
-    folder id: {{ share.container.id }}<br />
-
-    <!-- ok, this one is share-centric
-    as in, the share has a container, invitations, and accessLinks
-
-    -->
-    <ManageSharing :folderId="share.container.id" />
+  <div class="flex flex-col gap-3">
+    <h2 class="font-bold">Shared With</h2>
+    <div class="flex flex-wrap gap-4">
+      <ContactCard
+        v-for="recipient of recipients"
+        :key="recipient.id"
+        :title="'No Name'"
+        :subtitle="recipient.email"
+        initials
+      />
+    </div>
   </div>
 </template>
-
-<style scoped>
-div {
-  outline: 1px solid grey;
-}
-</style>
