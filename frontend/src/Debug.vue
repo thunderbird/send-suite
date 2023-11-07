@@ -109,10 +109,7 @@ function clearStorage() {
 }
 </script>
 <template>
-  <div class="fixed right-2 top-12 flex flex-col items-end">
-    <button @click.prevent="showDebug = !showDebug">
-      {{ showDebug ? 'Hide' : 'Show' }} debug panel
-    </button>
+  <div class="fixed right-2 bottom-2 flex flex-col items-end bg-white px-3 py-3">
     <div v-if="showDebug" class="flex flex-col gap-2">
       <label class="flex flex-col">
         <span>Public Key</span>
@@ -143,5 +140,8 @@ function clearStorage() {
         Clear Stored User and Keys
       </Btn>
     </div>
+    <button @click.prevent="showDebug = !showDebug">
+        {{ showDebug ? 'Hide' : 'Show' }} debug panel
+      </button>
   </div>
 </template>
