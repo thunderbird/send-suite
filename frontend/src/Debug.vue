@@ -109,7 +109,7 @@ function clearStorage() {
 }
 </script>
 <template>
-  <div class="fixed right-2 bottom-2 flex flex-col items-end bg-white px-3 py-3">
+  <div class="fixed left-2 bottom-2 flex flex-col items-start bg-white px-3 py-3">
     <div v-if="showDebug" class="flex flex-col gap-2">
       <label class="flex flex-col">
         <span>Public Key</span>

@@ -35,6 +35,22 @@ docker compose up
 
 The plain `http` version is useful for calling the API directly, but the front-end expects to use `https`.
 
+### Initialize the database
+
+Enter a `bash` shell for the backend:
+
+```
+docker compose exec app bash
+```
+
+In that shell, run the following commands:
+
+```
+npm run db:migrate
+npm run db:generate
+```
+
+
 ### ⚠️ Allow connections to `https://localhost:8088` in your browser. ⚠️
 
 The front-end won't be able to make any requests to the backend unless you allow the self-signed certificate.
@@ -49,6 +65,29 @@ pnpm run dev
 ```
 
 Then go to [http://localhost:5173](http://localhost:5173)
+
+
+### First visit
+
+(you should see the following in your browser)
+
+#### Generate keys
+
+
+Click "Gen Keypair" to create a public and private key.
+Then click "Store Keys"
+
+
+#### Create a user
+
+Enter an email address (e.g., "test1234@example.com")
+Click "Log in"
+
+Confirm that the API accepted your user information.
+A non-zero ID should now appear in the `ID` field.
+
+Click "Store User"
+
 
 # Building the extension
 
