@@ -1,5 +1,5 @@
 <script setup>
-import { ref, inject, watch } from 'vue';
+import { inject } from 'vue';
 import NewFolder from '../components/NewFolder.vue';
 import FolderView from '../components/FolderView.vue';
 import Breadcrumbs from '../components/Breadcrumbs.vue';
@@ -12,7 +12,7 @@ const userRef = inject('userRef');
 </script>
 
 <template>
-  <div class="lockbox-container">
+  <div class="flex flex-col items-start gap-4">
     <h1>{{ userRef.email }}'s Lockbox</h1>
     <NewFolder />
     <!-- <Breadcrumbs
@@ -20,18 +20,14 @@ const userRef = inject('userRef');
       :folderPath="folderPath"
     /> -->
     <InvitationList />
-    <div>
-      <SharedWithMe />
-    </div>
-    <div>
-      <SharedByMe />
-    </div>
-    <div class="lockbox-main">
+    <SharedWithMe />
+    <SharedByMe />
+    <div class="flex">
       <div>
         <FolderView />
       </div>
       <div>
-        <div class="lockbox-fileinfo">
+        <div class="sticky top-4">
           <p>this is the file info component:</p>
           <FileInfo />
         </div>
@@ -39,21 +35,3 @@ const userRef = inject('userRef');
     </div>
   </div>
 </template>
-
-<style scoped>
-.lockbox-container {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.lockbox-main {
-  display: flex;
-  flex-direction: row;
-}
-
-.lockbox-fileinfo {
-  position: sticky;
-  top: 2rem;
-}
-</style>

@@ -21,7 +21,7 @@ const recipients = computed(() => {
     <h2 class="font-bold">Shared With</h2>
     <div class="flex flex-wrap gap-4">
       <ContactCard
-        v-for="recipient of recipients"
+        v-for="recipient in recipients"
         :key="recipient.id"
         :title="'No Name'"
         :subtitle="recipient.email"

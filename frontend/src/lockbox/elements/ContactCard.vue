@@ -11,7 +11,7 @@ defineProps({
     <div class="flex items-center justify-between gap-4">
       <div
         v-if="initials"
-        class="w-8 h-8 rounded-full bg-gray-300 text-white flex justify-center items-center text-lg"
+        class="w-8 h-8 rounded-full bg-gray-400 text-white flex justify-center items-center text-lg"
       >
         {{ title.substring(0, 1) }}
       </div>
