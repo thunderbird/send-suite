@@ -1,5 +1,6 @@
 <script setup>
-import { ref, inject, onMounted, watch, watchEffect } from 'vue';
+import { ref, inject, onMounted, watchEffect } from 'vue';
+import Btn from '@/lockbox/elements/Btn.vue';
 
 const email = ref('');
 const id = ref(null);
@@ -108,57 +109,39 @@ function clearStorage() {
 }
 </script>
 <template>
-  <a href="#" @click.prevent="showDebug = !showDebug">
-    {{ showDebug ? 'Hide' : 'Show' }} debug panel
-  </a>
-  <div v-if="showDebug">
-    <label>
-      Public Key:
-      <br />
-      <textarea v-model="jwkPublicKey">{{ jwkPublicKey }}</textarea>
-    </label>
-    <br />
-    <button class="btn-primary" @click="generateKeys">Gen Keypair</button>
-    <button class="btn-primary" @click="saveKeys">Store Keys</button>
-    <button class="btn-primary" @click="loadKeys">Load Keys</button>
-    <br />
-    <label>
-      ID:
-      <input type="email" v-model="id" />
-    </label>
-    <br />
-    <label>
-      Email:
-      <input type="email" v-model="email" />
-    </label>
-    <br />
-    <button class="btn-primary" @click="storeUser">Store User</button>
-    <button class="btn-primary" @click="loadUser">Load User</button>
-    <br />
-    <button class="btn-primary" @click="login">Log in</button>
-
-    <br />
-    <button class="btn-primary" @click="sendHeartbeat">Send heartbeat</button>
-    <hr />
-    <button class="btn-primary" @click="clearStorage">
-      Clear Stored User and Keys
+  <div class="fixed right-2 top-2 flex flex-col items-end">
+    <button @click.prevent="showDebug = !showDebug">
+      {{ showDebug ? 'Hide' : 'Show' }} debug panel
     </button>
-    <br />
-    <hr />
+    <div v-if="showDebug" class="flex flex-col gap-2">
+      <label class="flex flex-col">
+        <span>Public Key</span>
+        <textarea v-model="jwkPublicKey"></textarea>
+      </label>
+      <div class="flex gap-1">
+        <Btn @click="generateKeys">Gen Keypair</Btn>
+        <Btn @click="saveKeys">Store Keys</Btn>
+        <Btn @click="loadKeys">Load Keys</Btn>
+      </div>
+      <div class="flex gap-1">
+        <label class="flex flex-col">
+          <span>ID</span>
+          <input type="email" v-model="id" class="w-32" />
+        </label>
+        <label class="flex flex-col">
+          <span>Email</span>
+          <input type="email" v-model="email" />
+        </label>
+      </div>
+      <div class="flex gap-1">
+        <Btn @click="storeUser">Store User</Btn>
+        <Btn @click="loadUser">Load User</Btn>
+        <Btn @click="login">Log in</Btn>
+        <Btn @click="sendHeartbeat">Send heartbeat</Btn>
+      </div>
+      <Btn @click="clearStorage">
+        Clear Stored User and Keys
+      </Btn>
+    </div>
   </div>
 </template>
-
-<style scoped>
-textarea {
-  width: 80%;
-  height: 8em;
-  font-size: 10px;
-}
-
-hr {
-  margin-top: 1em;
-  padding-top: 1em;
-  /* padding-bottom: 1em; */
-  margin-bottom: 0;
-}
-</style>
