@@ -12,26 +12,30 @@ const userRef = inject('userRef');
 </script>
 
 <template>
-  <div class="flex flex-col items-start gap-4">
-    <h1>{{ userRef.email }}'s Lockbox</h1>
-    <NewFolder />
-    <!-- <Breadcrumbs
-      @setCurrentFolderId="setCurrentFolderId"
-      :folderPath="folderPath"
-    /> -->
-    <InvitationList />
-    <SharedWithMe />
-    <SharedByMe />
-    <div class="flex">
-      <div>
-        <FolderView />
-      </div>
-      <div>
-        <div class="sticky top-4">
-          <p>this is the file info component:</p>
-          <FileInfo />
+  <div class="flex flex-col gap-4">
+    <header class="w-full sticky top-0 flex justify-between px-4 py-2 bg-white/90 border-b border-gray-300">
+      <h1>{{ userRef.email }}'s Lockbox</h1>
+      <NewFolder />
+      <!-- <Breadcrumbs
+        @setCurrentFolderId="setCurrentFolderId"
+        :folderPath="folderPath"
+      /> -->
+    </header>
+    <main class="flex flex-col gap-4 px-4">
+      <InvitationList />
+      <SharedWithMe />
+      <SharedByMe />
+      <div class="flex">
+        <div>
+          <FolderView />
+        </div>
+        <div>
+          <div class="sticky top-4">
+            <p>this is the file info component:</p>
+            <FileInfo />
+          </div>
         </div>
       </div>
-    </div>
+    </main>
   </div>
 </template>
