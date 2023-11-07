@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  th {
+    @apply py-1 px-4 text-gray-800 font-semibold text-sm text-left
+  }
+}

@@ -26,15 +26,8 @@ const userRef = inject('userRef');
       <SharedWithMe />
       <SharedByMe />
       <div class="flex">
-        <div>
-          <FolderView />
-        </div>
-        <div>
-          <div class="sticky top-4">
-            <p>this is the file info component:</p>
-            <FileInfo />
-          </div>
-        </div>
+        <FolderView />
+        <FileInfo />
       </div>
     </main>
   </div>
