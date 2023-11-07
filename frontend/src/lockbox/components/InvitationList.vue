@@ -1,8 +1,8 @@
 <script setup>
 import { inject, onMounted } from 'vue';
+import ContactCard from '@/lockbox/elements/ContactCard.vue';
 
-const { invitations, acceptInvitation, getInvitations } =
-  inject('sharingManager');
+const { invitations, acceptInvitation, getInvitations } = inject('sharingManager');
 
 onMounted(() => {
   getInvitations();
@@ -10,25 +10,20 @@ onMounted(() => {
 </script>
 
 <template>
-  <h1>Pending Invitations</h1>
-  <button class="btn-primary" @click="getInvitations">
-    Check for invitations
-  </button>
-  <ul>
-    <li v-for="invite of invitations">
-      <a
-        href="#"
-        @click.prevent="
-          acceptInvitation(
-            invite.share.container.id,
-            invite.id,
-            invite.wrappedKey
-          )
-        "
-      >
-        invitation from {{ invite.share.sender.email }} for folder id
-        {{ invite.share.container.id }}
-      </a>
-    </li>
-  </ul>
+  <div class="flex flex-col gap-3">
+    <h2 class="font-bold">
+      Pending Invitations
+      <button @click="getInvitations">🔁</button>
+    </h2>
+    <div class="flex flex-wrap gap-4">
+      <ContactCard
+        v-for="invite in invitations"
+        :key="invite.share.container.id"
+        :title="`Folder ID ${invite.share.container.id}`"
+        :subtitle="invite.share.sender.email"
+        class="cursor-pointer"
+        @click="acceptInvitation(invite.share.container.id,invite.id,invite.wrappedKey)"
+      />
+    </div>
+  </div>
 </template>
