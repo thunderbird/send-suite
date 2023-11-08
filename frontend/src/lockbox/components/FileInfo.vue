@@ -1,5 +1,5 @@
 <script setup>
-import { inject, watch } from 'vue';
+import { inject } from 'vue';
 import CreateShare from './CreateShare.vue';
 import Downloader from '@/common/download';
 
