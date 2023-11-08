@@ -47,46 +47,8 @@ async function newAccessLink() {
   // emit('createAccessLinkComplete', url);
 }
 
-/*
-
-START HERE
-
-
-
-I'm going to rework this component and pull it out of the ManageSharing.vue component.
-
-I'll style it as necessary for use in FolderDetail.vue
-
-
-
-
-
-
-
-
-
-
-
-
-
-*/
-
 </script>
 <template>
-  <form @submit.prevent="newAccessLink">
-    <label>
-      Password (optional):
-      <input v-model="password" type="password" />
-    </label>
-    <br />
-    <label>
-      Expiration date (optional):
-      <input v-model="expiration" type="datetime-local" />
-    </label>
-    <br />
-    <input type="submit" value="Create Access Link" />
-  </form>
-
   <div class="mb-4">
     <div class="font-bold mb-1 text-gray-600">
       Share Link
@@ -96,7 +58,6 @@ I'll style it as necessary for use in FolderDetail.vue
       class="rounded-sm w-full px-2 py-2"
       placeholder="https://pro.thunderbird.com/abc123"
     />
-    <Btn @click="newAccessLink">(icon)</Btn>
   </div>
   <div class="mb-4">
     <div class="font-bold mb-1 text-gray-600">
@@ -115,4 +76,5 @@ I'll style it as necessary for use in FolderDetail.vue
       placeholder="Optional password"
     />
   </div>
+  <Btn class="mb-8" @click="newAccessLink">Create Share Link</Btn>
 </template>

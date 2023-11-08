@@ -1,6 +1,7 @@
 <script setup>
-import { ref, inject, watch } from 'vue';
+import { ref, inject, watch, computed } from 'vue';
 import CreateAccessLink from './CreateAccessLink.vue';
+import Avatar from '../elements/Avatar.vue';
 
 const {
   deleteFolder,
@@ -11,6 +12,8 @@ const {
   getFolders,
 } = inject('folderManager');
 
+const { sharedByMe } = inject('sharingManager');
+
 const folder = ref(null);
 /*
 - show ManageSharing component
@@ -20,6 +23,19 @@ const folder = ref(null);
 - download link is TBD
 */
 const accessLink = ref(null);
+
+const recipients = computed(() => {
+  const contacts = {};
+  sharedByMe.value.filter((share) => (
+    share.containerId === currentFolderId.value
+  )).forEach((share) => {
+    console.log(`have a share`)
+    share.invitations.forEach((invitation) => {
+      contacts[invitation.recipientId] = invitation.recipient;
+    });
+  });
+  return Object.values(contacts);
+});
 
 watch(currentFolderId, () => {
   folder.value = folders.value.find(f => {
@@ -45,10 +61,16 @@ watch(currentFolderId, () => {
         <!-- Top -->
         <div>
           <CreateAccessLink :folderId="currentFolderId" />
-          <div class="w-full">
+          <div class="w-full mb-3">
             <div class="font-bold mb-1 text-gray-600">
               Shared With
             </div>
+            <Avatar v-for="recipient in recipients"
+            :key="recipient.id"
+            :title="'No name'"
+            :subtitle="recipient.email"
+            :initials="true"
+            />
           </div>
           <!-- <div class="w-full">
             <div class="font-bold mb-1 text-gray-600">
