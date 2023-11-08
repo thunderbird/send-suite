@@ -1,9 +1,9 @@
 <script setup>
 import { inject, onMounted } from 'vue';
+import FolderTableRowCell from '@/lockbox/elements/FolderTableRowCell.vue';
 import FileUpload from '@/lockbox/components/FileUpload.vue';
 import DragAndDropUpload from '@/lockbox/components/DragAndDropUpload.vue';
 import ManageSharing from '@/lockbox/components/ManageSharing.vue';
-import FolderTableRowCell from '@/lockbox/elements/FolderTableRowCell.vue';
 // import Btn from '@/lockbox/elements/Btn.vue';
 
 const {
@@ -33,7 +33,7 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
     <table class="border-separate border-spacing-x-0 border-spacing-y-1">
       <thead>
         <tr>
-          <th class="border-r border-b border-gray-300 w-24"></th>
+          <th class="border-r border-b border-gray-300 w-24"><input type="checkbox" /></th>
           <th class="border-r border-b border-gray-300">Name</th>
           <th class="border-r border-b border-gray-300">Tags</th>
           <th class="border-r border-b border-gray-300">Shared With</th>
@@ -50,7 +50,7 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
           </FolderTableRowCell>
           <FolderTableRowCell :selected="folder.id === currentFolderId">
             <div>{{ folder.name }} (ID {{ folder.id }})</div>
-            <div class="text-sm">Last modified TODO</div>
+            <div class="text-sm">Last modified</div>
           </FolderTableRowCell>
           <FolderTableRowCell :selected="folder.id === currentFolderId"></FolderTableRowCell>
           <FolderTableRowCell :selected="folder.id === currentFolderId"></FolderTableRowCell>
@@ -79,24 +79,3 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
     </table>
   </div>
 </template>
-
-<style scoped lang="postcss">
-.lockbox-folder {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-}
-
-.active {
-  font-weight: bold;
-}
-
-.file-list {
-  margin-left: 2rem;
-}
-
-.file-list li {
-  list-style-type: disc;
-}
-</style>

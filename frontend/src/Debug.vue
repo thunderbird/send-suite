@@ -109,7 +109,7 @@ function clearStorage() {
 }
 </script>
 <template>
-  <div class="fixed right-2 top-12 flex flex-col items-end">
+  <div class="fixed right-1/2 z-50 translate-x-1/2 top-2 flex flex-col items-center">
     <button @click.prevent="showDebug = !showDebug">
       {{ showDebug ? 'Hide' : 'Show' }} debug panel
     </button>
