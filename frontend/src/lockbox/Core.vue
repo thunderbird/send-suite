@@ -242,7 +242,7 @@ async function acceptAccessLink(linkId, password) {
     console.log(`Using existing user id`);
     // TODO: this in particular needs to be server-side
     // Create an Invitation and set it to ACCEPTED
-    const createInvitationResp = await api.createInvitationForAcessLink(
+    const createInvitationResp = await api.createInvitationForAccessLink(
       linkId,
       userRef.value.id
     );

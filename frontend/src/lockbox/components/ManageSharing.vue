@@ -16,7 +16,7 @@ Maybe I could create kinds of invitations:
 */
 import { inject, ref, onMounted } from 'vue';
 import Sharer from '@/common/share';
-import CreateAccessLink from './CreateAccessLink.vue';
+// import CreateAccessLink from './CreateAccessLink.vue';
 import PermissionsDropDown from '../elements/PermissionsDropDown.vue';
 
 const api = inject('api');
@@ -136,11 +136,11 @@ async function setPermission(type, containerId, id, permission) {
   <br />
   <hr />
   <br />
-  <CreateAccessLink
+  <!-- <CreateAccessLink
     :containerId="folderId"
     @createAccessLinkComplete="createAccessLinkComplete"
     @createAccessLinkError="createAccessLinkError"
-  />
+  /> -->
   <ul v-for="share of shares">
     <li>
       Invitations:

@@ -1,5 +1,7 @@
 <script setup>
 import { ref, inject, watch } from 'vue';
+import CreateAccessLink from './CreateAccessLink.vue';
+
 const {
   deleteFolder,
   setCurrentFile,
@@ -17,7 +19,7 @@ const folder = ref(null);
 - tags aren't implemented yet
 - download link is TBD
 */
-
+const accessLink = ref(null);
 
 watch(currentFolderId, () => {
   folder.value = folders.value.find(f => {
@@ -42,33 +44,7 @@ watch(currentFolderId, () => {
 
         <!-- Top -->
         <div>
-          <div class="mb-4">
-            <div class="font-bold mb-1 text-gray-600">
-              Share Link
-            </div>
-            <input
-              class="rounded-sm w-full px-2 py-2"
-              placeholder="https://pro.thunderbird.com/abc123"
-            />
-          </div>
-          <div class="mb-4">
-            <div class="font-bold mb-1 text-gray-600">
-              Link Expires
-            </div>
-            <select class="w-full">
-              <option>Never</option>
-            </select>
-          </div>
-          <div class="mb-4">
-            <div class="font-bold mb-1 text-gray-600">
-              Password
-            </div>
-            <input
-              class="rounded-sm w-full px-2 py-2"
-              type="password"
-              placeholder="Optional password"
-            />
-          </div>
+          <CreateAccessLink :folderId="currentFolderId" />
           <div class="w-full">
             <div class="font-bold mb-1 text-gray-600">
               Shared With

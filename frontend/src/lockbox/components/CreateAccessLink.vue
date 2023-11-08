@@ -1,14 +1,16 @@
 <script setup>
 import { ref, inject } from 'vue';
 import { Util } from '@/lib/keychain';
-
 import Sharer from '@/common/share';
+
+import Btn from '../elements/Btn.vue';
+
 const api = inject('api');
 const userRef = inject('userRef');
 const keychainRef = inject('keychainRef');
 
 const props = defineProps({
-  containerId: Number,
+  folderId: Number,
 });
 
 const emit = defineEmits(['createAccessLinkComplete', 'createAccessLinkError']);
@@ -16,6 +18,7 @@ const emit = defineEmits(['createAccessLinkComplete', 'createAccessLinkError']);
 const sharer = new Sharer(userRef, keychainRef, api);
 const password = ref('');
 const expiration = ref(null);
+const accessUrl = ref('');
 
 async function newAccessLink() {
   let pw = password.value;
@@ -28,20 +31,46 @@ async function newAccessLink() {
 
   console.log(`using password ${pw}`);
   let url = await sharer.requestAccessLink(
-    props.containerId,
+    props.folderId,
     pw,
     expiration.value
   );
   if (!url) {
-    emit('createAccessLinkError');
+    // emit('createAccessLinkError');
     return;
   }
   if (shouldAddPasswordAsHash) {
     url = `${url}#${pw}`;
   }
 
-  emit('createAccessLinkComplete', url);
+  accessUrl.value = url;
+  // emit('createAccessLinkComplete', url);
 }
+
+/*
+
+START HERE
+
+
+
+I'm going to rework this component and pull it out of the ManageSharing.vue component.
+
+I'll style it as necessary for use in FolderDetail.vue
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
+
 </script>
 <template>
   <form @submit.prevent="newAccessLink">
@@ -57,4 +86,33 @@ async function newAccessLink() {
     <br />
     <input type="submit" value="Create Access Link" />
   </form>
+
+  <div class="mb-4">
+    <div class="font-bold mb-1 text-gray-600">
+      Share Link
+    </div>
+    <input
+      v-model="accessUrl"
+      class="rounded-sm w-full px-2 py-2"
+      placeholder="https://pro.thunderbird.com/abc123"
+    />
+    <Btn @click="newAccessLink">(icon)</Btn>
+  </div>
+  <div class="mb-4">
+    <div class="font-bold mb-1 text-gray-600">
+      Link Expires
+    </div>
+    <input v-model="expiration" type="datetime-local" />
+  </div>
+  <div class="mb-4">
+    <div class="font-bold mb-1 text-gray-600">
+      Password
+    </div>
+    <input
+      v-model="password"
+      class="rounded-sm w-full px-2 py-2"
+      type="password"
+      placeholder="Optional password"
+    />
+  </div>
 </template>
