@@ -76,18 +76,18 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
           </svg>
           {{ folder.name }} (ID {{ folder.id }})
         </a>
-        <a
+        <!-- <a
           v-if="folder.id === currentFolderId"
           href="#"
           @click.prevent="deleteFolder(folder.id)"
         >
           Delete folder
-        </a>
+        </a> -->
       </div>
       <template v-if="folder.id === currentFolderId">
-        <ManageSharing :folderId="currentFolderId" />
-        <FileUpload />
-        <DragAndDropUpload />
+        <!-- <ManageSharing :folderId="currentFolderId" /> -->
+        <!-- <FileUpload /> -->
+        <!-- <DragAndDropUpload /> -->
         <ul class="file-list">
           <li v-for="file of folder.items">
             <a
