@@ -113,7 +113,7 @@ function clearStorage() {
     <Btn @click.prevent="showDebug = !showDebug">
       {{ showDebug ? 'Hide' : 'Show' }} debug panel
     </Btn>
-    <div v-if="showDebug" class="flex flex-col gap-2">
+    <div v-if="showDebug" class="flex flex-col gap-2 bg-white p-1 mt-1">
       <label class="flex flex-col">
         <span>Public Key</span>
         <textarea v-model="jwkPublicKey"></textarea>

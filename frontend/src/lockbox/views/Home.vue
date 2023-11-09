@@ -5,6 +5,7 @@ import FolderView from '@/lockbox/components/FolderView.vue';
 import Breadcrumbs from '@/lockbox/components/Breadcrumbs.vue';
 import FileInfo from '@/lockbox/components/FileInfo.vue';
 import FolderInfo from '@/lockbox/components/FolderInfo.vue';
+import FolderNavigation from '@/lockbox/components/FolderNavigation.vue';
 import SharedByMe from '@/lockbox/components/SharedByMe.vue';
 import SharedWithMe from '@/lockbox/components/SharedWithMe.vue';
 import InvitationList from '@/lockbox/components/InvitationList.vue';
@@ -15,6 +16,9 @@ const { currentFile, currentFolderId } = inject('folderManager');
 
 <template>
   <div class="flex min-h-screen">
+    <aside class="w-64 border-r border-gray-300 bg-gray-50">
+      <FolderNavigation />
+    </aside>
     <div class="flex flex-col gap-4 grow">
       <header class="w-full sticky top-0 flex items-center justify-between px-4 py-2 bg-white/90 border-b border-gray-300">
         <h1>{{ userRef.email }}'s Lockbox</h1>
