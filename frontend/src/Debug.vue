@@ -110,10 +110,10 @@ function clearStorage() {
 </script>
 <template>
   <div class="fixed right-1/2 z-50 translate-x-1/2 top-2 flex flex-col items-center">
-    <button @click.prevent="showDebug = !showDebug">
+    <Btn @click.prevent="showDebug = !showDebug">
       {{ showDebug ? 'Hide' : 'Show' }} debug panel
-    </button>
-    <div v-if="showDebug" class="flex flex-col gap-2">
+    </Btn>
+    <div v-if="showDebug" class="flex flex-col gap-2 bg-white p-1 mt-1">
       <label class="flex flex-col">
         <span>Public Key</span>
         <textarea v-model="jwkPublicKey"></textarea>
@@ -126,7 +126,7 @@ function clearStorage() {
       <div class="flex gap-1">
         <label class="flex flex-col">
           <span>ID</span>
-          <input type="email" v-model="id" class="w-32" />
+          <input type="text" v-model="id" class="w-32" />
         </label>
         <label class="flex flex-col">
           <span>Email</span>
