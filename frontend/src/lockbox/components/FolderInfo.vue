@@ -1,11 +1,12 @@
 <script setup>
-import { inject } from 'vue';
+import { inject, ref } from 'vue';
 import Avatar from '@/lockbox/elements/Avatar.vue';
 import Tag from '@/lockbox/elements/Tag.vue';
 import Btn from '@/lockbox/elements/Btn.vue';
-import { IconDownload, IconShare, IconLink } from '@tabler/icons-vue';
+import { IconDownload, IconShare, IconLink, IconEye, IconEyeOff } from '@tabler/icons-vue';
 
 const { currentFolderId } = inject('folderManager');
+const showPassword = ref(false);
 </script>
 
 <template>
@@ -31,9 +32,16 @@ const { currentFolderId } = inject('folderManager');
           <option>Never</option>
         </select>
       </label>
-      <label class="flex flex-col gap-2">
+      <label class="flex flex-col gap-2 relative">
         <span class="text-xs font-semibold text-gray-600">Password</span>
-        <input type="password" value="abcdefg" />
+        <input :type="showPassword ? 'text' : 'password'" value="abcdefg" />
+        <button
+          @click.prevent="showPassword = !showPassword"
+          class="absolute right-3 bottom-2 select-none"
+        >
+          <IconEye v-if="showPassword" class="w-4 h-4" />
+          <IconEyeOff v-else class="w-4 h-4" />
+        </button>
       </label>
     </section>
     <!-- people -->
