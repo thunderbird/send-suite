@@ -3,6 +3,7 @@ import { inject } from 'vue';
 import Avatar from '@/lockbox/elements/Avatar.vue';
 import Tag from '@/lockbox/elements/Tag.vue';
 import Btn from '@/lockbox/elements/Btn.vue';
+import { IconDownload, IconShare, IconLink } from '@tabler/icons-vue';
 
 const { currentFolderId } = inject('folderManager');
 </script>
@@ -19,7 +20,10 @@ const { currentFolderId } = inject('folderManager');
     <section class="flex flex-col gap-3">
       <label class="flex flex-col gap-2">
         <span class="text-xs font-semibold text-gray-600">Share Link</span>
-        <input type="text" value="https://pro.thunderbird.com" />
+        <div class="flex">
+          <input type="text" value="https://pro.thunderbird.com" class="!rounded-r-none" />
+          <Btn primary class="!rounded-l-none !px-1.5"><IconLink class="w-4 h-4" /></Btn>
+        </div>
       </label>
       <label class="flex flex-col gap-2">
         <span class="text-xs font-semibold text-gray-600">Link Expires</span>
@@ -61,8 +65,8 @@ const { currentFolderId } = inject('folderManager');
         <div class="text-xs">7/10/23, 12:00 PM</div>
       </label>
       <div class="flex justify-end gap-2">
-        <Btn>Download</Btn>
-        <Btn>Share</Btn>
+        <Btn><IconDownload class="w-4 h-4" /></Btn>
+        <Btn primary><IconShare class="w-4 h-4" /> Share</Btn>
       </div>
     </footer>
   </div>

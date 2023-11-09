@@ -1,10 +1,23 @@
+<script setup>
+defineProps({
+  primary: Boolean,
+  secondary: Boolean,
+  danger: Boolean,
+});
+</script>
+
 <template>
   <button
     class="
-      h-7 font-semibold text-sm whitespace-nowrap border rounded-md hover:shadow-md px-2 transition-all ease-in-out
-      inline-flex items-center justify-center gap-1 
-      text-gray-500 dark:text-gray-800 dark:hover:text-gray-200 border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800
+      px-3 py-2 font-semibold text-sm whitespace-nowrap border rounded hover:shadow-md transition-all
+      flex items-center justify-center gap-2 
     "
+    :class="{
+      'text-gray-700 border-gray-100 bg-gray-100': !secondary && !primary && !danger,
+      'text-white border-blue-800 bg-blue-600': primary,
+      'text-gray-800 border-gray-400 bg-gray-200': secondary,
+      'text-white border-red-800 bg-red-600': danger,
+    }"
   >
     <slot></slot>
   </button>

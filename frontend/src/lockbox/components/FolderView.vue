@@ -1,6 +1,8 @@
 <script setup>
 import { inject, onMounted } from 'vue';
+import { IconDownload, IconShare, IconTrash, IconDotsVertical } from '@tabler/icons-vue';
 import FolderTableRowCell from '@/lockbox/elements/FolderTableRowCell.vue';
+import Btn from '@/lockbox/elements/Btn.vue';
 import FileUpload from '@/lockbox/components/FileUpload.vue';
 import DragAndDropUpload from '@/lockbox/components/DragAndDropUpload.vue';
 import ManageSharing from '@/lockbox/components/ManageSharing.vue';
@@ -55,9 +57,25 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
           <FolderTableRowCell :selected="folder.id === currentFolderId"></FolderTableRowCell>
           <FolderTableRowCell :selected="folder.id === currentFolderId"></FolderTableRowCell>
           <FolderTableRowCell :selected="folder.id === currentFolderId">
-            <button v-if="folder.id === currentFolderId" @click="deleteFolder(folder.id)">
-              Delete folder
-            </button>
+            <div class="flex justify-between">
+              <div
+                class="flex gap-2 opacity-0 group-hover:!opacity-100 transition-opacity"
+                :class="{ '!opacity-100': folder.id === currentFolderId }"
+              >
+                <Btn secondary>
+                  <IconDownload class="w-4 h-4" />
+                </Btn>
+                <Btn primary>
+                  <IconShare class="w-4 h-4" /> Share
+                </Btn>
+                <Btn danger @click="deleteFolder(folder.id)">
+                  <IconTrash class="w-4 h-4" />
+                </Btn>
+              </div>
+              <Btn class="ml-auto">
+                <IconDotsVertical class="w-4 h-4" />
+              </Btn>
+            </div>
             <!-- <template v-if="folder.id === currentFolderId">
               <ManageSharing :folderId="currentFolderId" />
               <FileUpload />
