@@ -51,13 +51,6 @@ async function doUpload() {
 <template>
   <div ref="dropZoneRef" :class="{ active: isOverDropZone }">
     <slot></slot>
-    <!-- <div>isOverDropZone: {{ isOverDropZone }}</div>
-    <div v-for="(file, index) in filesMetadata" :key="index">
-      <p>Name: {{ file.name }}</p>
-      <p>Size: {{ file.size }}</p>
-      <p>Type: {{ file.type }}</p>
-      <p>Last modified: {{ file.lastModified }}</p>
-    </div> -->
   </div>
 
   <button
@@ -71,8 +64,3 @@ async function doUpload() {
   </button>
 </template>
 
-<style scoped>
-/* .active {
-  outline: 1px solid red;
-} */
-</style>

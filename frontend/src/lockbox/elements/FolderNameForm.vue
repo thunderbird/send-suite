@@ -1,8 +1,4 @@
 <script setup>
-/*
-
-
-*/
 import { inject, ref, onMounted } from 'vue';
 import Btn from '@/lockbox/elements/Btn.vue';
 
