@@ -24,7 +24,7 @@ const recipients = computed(() => {
   return Object.values(contacts);
 });
 
-const showPassword = ref(false);
+
 const showForm = ref(false);
 
 watchEffect(
@@ -52,32 +52,9 @@ watchEffect(
       <div class="text-xs">{{ formatBytes(currentFolder.size) }}</div>
     </header>
     <!-- sharing config -->
-    <section class="flex flex-col gap-3">
-      <label class="flex flex-col gap-2">
-        <span class="text-xs font-semibold text-gray-600">Share Link</span>
-        <div class="flex">
-          <input type="text" value="https://pro.thunderbird.com" class="!rounded-r-none" />
-          <Btn primary class="!rounded-l-none !px-1.5"><IconLink class="w-4 h-4" /></Btn>
-        </div>
-      </label>
-      <label class="flex flex-col gap-2">
-        <span class="text-xs font-semibold text-gray-600">Link Expires</span>
-        <select>
-          <option>Never</option>
-        </select>
-      </label>
-      <label class="flex flex-col gap-2 relative">
-        <span class="text-xs font-semibold text-gray-600">Password</span>
-        <input :type="showPassword ? 'text' : 'password'" value="abcdefg" />
-        <button
-          @click.prevent="showPassword = !showPassword"
-          class="absolute right-3 bottom-2 select-none"
-        >
-          <IconEye v-if="showPassword" class="w-4 h-4" />
-          <IconEyeOff v-else class="w-4 h-4" />
-        </button>
-      </label>
-    </section>
+    <CreateAccessLink
+      :folderId="currentFolder.id"
+    />
     <!-- people -->
     <section class="flex flex-col gap-2">
       <div class="font-semibold text-gray-600">Shared With</div>
