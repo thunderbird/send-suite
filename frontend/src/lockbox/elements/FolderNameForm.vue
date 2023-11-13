@@ -29,7 +29,7 @@ onMounted(() => {
 
 <template>
   <form @submit.prevent="updateFolderName">
-    <input v-model="currentFolderName" ref="input" />
+    <input type="text" v-model="currentFolderName" ref="input" />
     <div class="flex flex-row justify-end">
       <Btn @click="updateFolderName">Rename</Btn>
     </div>

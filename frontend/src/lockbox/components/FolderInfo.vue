@@ -59,11 +59,9 @@ watchEffect(
     <section class="flex flex-col gap-2">
       <div class="font-semibold text-gray-600">Shared With</div>
       <div class="flex flex-wrap gap-1">
-        <Avatar v-for="recipient in recipients"
-            :key="recipient.id"
-          >
+        <Avatar v-for="recipient in recipients" :key="recipient.id">
           {{ recipient.email.substring(0, 1) }}
-          </Avatar>
+        </Avatar>
       </div>
     </section>
     <!-- tags -->
