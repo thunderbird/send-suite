@@ -37,6 +37,7 @@ watch(
 const folders = ref([]);
 const currentFolderId = ref(null);
 const currentFile = ref(null);
+const currentFolder = ref(null);
 
 function getDefaultFolder() {
   // TODO: need to designate one as "default"
@@ -51,6 +52,9 @@ async function setCurrentFolderId(id) {
   console.log(`just set the currentFolderId.value to ${id}`);
   currentFolderId.value = id;
   await setCurrentFile(null);
+
+  // Also set the currentFolder
+  currentFolder.value = folders.value.find(f => f.id === id);
 }
 
 async function setCurrentFile(obj) {
@@ -71,6 +75,15 @@ async function setCurrentFile(obj) {
   };
 }
 
+function calculateFolderSizes(folders) {
+  // NOT recursive.
+  const foldersWithSizes = folders.map(folder => {
+    folder.size = folder.items.reduce((total, {upload}) => total + upload.size, 0)
+    return folder;
+  });
+  return foldersWithSizes;
+}
+
 // TODO: actually limit this to a specific folder
 async function getFolders(root) {
   if (!userRef.value.id) {
@@ -78,8 +91,14 @@ async function getFolders(root) {
     return;
   }
   if (!root) {
-    folders.value = await api.getAllFolders(userRef.value.id);
+    const foldersFromApi = await api.getAllFolders(userRef.value.id);
+    folders.value = calculateFolderSizes(foldersFromApi);
     console.log(`loaded ${folders.value.length} folders`);
+
+    // update the currentFolder
+    if (currentFolderId.value) {
+      currentFolder.value = folders.value.find(f => f.id === currentFolderId.value);
+    }
   } else {
     console.log(`TBD: what to do if we specify a root folder`);
   }
@@ -125,6 +144,7 @@ async function uploadItem(fileBlob, folderId) {
   if (itemObj) {
     getFolders();
   }
+  return itemObj;
 }
 async function deleteFolder(id) {
   // remove self from group?
@@ -153,11 +173,20 @@ async function moveItems(itemIds, destinationFolderId) {
   // this.delete();
 }
 
+async function renameFolder(containerId, name) {
+  const result = await api.renameFolder(containerId, name);
+  if (result) {
+    await getFolders();
+  }
+  return result;
+}
+
 provide('folderManager', {
   folders,
   getFolders,
   createFolder,
   deleteFolder,
+  currentFolder,
   currentFolderId,
   setCurrentFolderId,
   getDefaultFolder,
@@ -165,6 +194,7 @@ provide('folderManager', {
   setCurrentFile,
   uploadItem,
   deleteItemAndContent,
+  renameFolder,
 });
 
 // =======================================================================

@@ -5,7 +5,7 @@ const { currentFolderId, uploadItem } = inject('folderManager');
 
 const dropZoneRef = ref();
 
-const filesMetadata = ref([]);
+const filesMetadata = ref(null);
 const fileBlobs = ref([]);
 function onDrop(files) {
   filesMetadata.value = [];
@@ -34,25 +34,33 @@ function onDrop(files) {
 
 const { isOverDropZone } = useDropZone(dropZoneRef, onDrop);
 
-function doUpload() {
-  fileBlobs.value.forEach((blob) => {
+async function doUpload() {
+  const result = await Promise.all(fileBlobs.value.map(async (blob) => {
     console.log(`uploading ${blob.name}`);
-    uploadItem(blob, currentFolderId.value);
-  });
+    const uploadResult = await uploadItem(blob, currentFolderId.value);
+    console.log(uploadResult);
+    return uploadResult;
+  }));
+
+  if (result?.length === fileBlobs.value.length) {
+    filesMetadata.value = null;
+  }
 }
 </script>
 
 <template>
-  <div ref="dropZoneRef" class="drag-and-drop">
-    <div>isOverDropZone: {{ isOverDropZone }}</div>
+  <div ref="dropZoneRef" class="drag-and-drop"
+  :class="{ active: isOverDropZone }">
+    <slot></slot>
+    <!-- <div>isOverDropZone: {{ isOverDropZone }}</div>
     <div v-for="(file, index) in filesMetadata" :key="index">
       <p>Name: {{ file.name }}</p>
       <p>Size: {{ file.size }}</p>
       <p>Type: {{ file.type }}</p>
       <p>Last modified: {{ file.lastModified }}</p>
-    </div>
+    </div> -->
   </div>
-  <br />
+
   <button
     v-if="filesMetadata"
     type="submit"
@@ -60,24 +68,12 @@ function doUpload() {
     @click="doUpload"
   >
     <span class="font-bold">Upload</span>
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 20 20"
-      fill="currentColor"
-      class="h-6 w-6 ml-2 transform rotate-90"
-    >
-      <path
-        d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"
-      ></path>
-    </svg>
+
   </button>
 </template>
 
 <style scoped>
-.drag-and-drop {
-  width: 500px;
-  height: 200px;
+.active {
   outline: 1px solid red;
-  overflow-y: scroll;
 }
 </style>

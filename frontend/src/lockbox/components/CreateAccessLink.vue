@@ -1,14 +1,16 @@
 <script setup>
 import { ref, inject } from 'vue';
 import { Util } from '@/lib/keychain';
-
 import Sharer from '@/common/share';
+
+import Btn from '../elements/Btn.vue';
+
 const api = inject('api');
 const userRef = inject('userRef');
 const keychainRef = inject('keychainRef');
 
 const props = defineProps({
-  containerId: Number,
+  folderId: Number,
 });
 
 const emit = defineEmits(['createAccessLinkComplete', 'createAccessLinkError']);
@@ -16,6 +18,7 @@ const emit = defineEmits(['createAccessLinkComplete', 'createAccessLinkError']);
 const sharer = new Sharer(userRef, keychainRef, api);
 const password = ref('');
 const expiration = ref(null);
+const accessUrl = ref('');
 
 async function newAccessLink() {
   let pw = password.value;
@@ -28,33 +31,37 @@ async function newAccessLink() {
 
   console.log(`using password ${pw}`);
   let url = await sharer.requestAccessLink(
-    props.containerId,
+    props.folderId,
     pw,
     expiration.value
   );
   if (!url) {
-    emit('createAccessLinkError');
+    // emit('createAccessLinkError');
     return;
   }
   if (shouldAddPasswordAsHash) {
     url = `${url}#${pw}`;
   }
 
-  emit('createAccessLinkComplete', url);
+  accessUrl.value = url;
+  // emit('createAccessLinkComplete', url);
 }
+
 </script>
 <template>
-  <form @submit.prevent="newAccessLink">
-    <label>
-      Password (optional):
-      <input v-model="password" type="password" />
+  <section class="flex flex-col gap-3">
+    <label class="flex flex-col gap-2">
+      <span class="text-xs font-semibold text-gray-600">Share Link</span>
+      <input type="text" v-model="accessUrl" />
     </label>
-    <br />
-    <label>
-      Expiration date (optional):
+    <label class="flex flex-col gap-2">
+      <span class="text-xs font-semibold text-gray-600">Link Expires</span>
       <input v-model="expiration" type="datetime-local" />
     </label>
-    <br />
-    <input type="submit" value="Create Access Link" />
-  </form>
+    <label class="flex flex-col gap-2">
+      <span class="text-xs font-semibold text-gray-600">Password</span>
+      <input type="password" v-model="password" />
+    </label>
+  </section>
+  <Btn class="mb-8" @click="newAccessLink">Create Share Link</Btn>
 </template>
