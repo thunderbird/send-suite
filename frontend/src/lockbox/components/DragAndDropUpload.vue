@@ -49,8 +49,7 @@ async function doUpload() {
 </script>
 
 <template>
-  <div ref="dropZoneRef" class="drag-and-drop"
-  :class="{ active: isOverDropZone }">
+  <div ref="dropZoneRef" :class="{ active: isOverDropZone }">
     <slot></slot>
     <!-- <div>isOverDropZone: {{ isOverDropZone }}</div>
     <div v-for="(file, index) in filesMetadata" :key="index">
