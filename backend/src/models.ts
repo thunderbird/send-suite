@@ -95,7 +95,7 @@ export async function createContainer(
   // publicKey: string,
   ownerId: number,
   type: ContainerType,
-  shareOnly: boolean
+  shareOnly: boolean,
 ) {
   // TODO: figure out the nested create syntax:
   // https://www.prisma.io/docs/reference/api-reference/prisma-client-reference#create-1
@@ -121,6 +121,7 @@ export async function createContainer(
       groupId: group.id,
       type,
       shareOnly,
+      createdAt: new Date(),
     },
   });
   console.log(`👿 just created container, connected to group`);
@@ -237,6 +238,22 @@ export async function getSharesForContainer(
       },
     },
   });
+}
+
+export async function updateContainerName(
+  containerId: number,
+  name: string
+) {
+  const result = await prisma.container.update({
+    where: {
+      id: containerId,
+    },
+    data: {
+      name,
+      updatedAt: new Date(),
+    },
+  });
+  return result;
 }
 
 export async function updateInvitationPermissions(
@@ -523,6 +540,7 @@ export async function getAllUserGroupContainers(
           upload: {
             select: {
               // type: true,
+              size: true,
               owner: {
                 select: {
                   email: true,

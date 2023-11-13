@@ -17,6 +17,7 @@ import {
   updateInvitationPermissions,
   updateAccessLinkPermissions,
   removeInvitationAndGroup,
+  updateContainerName,
 } from '../models';
 import { getPermissions } from '../middleware';
 
@@ -254,6 +255,19 @@ router.get('/:containerId/info', getPermissions, async (req, res) => {
   const { containerId } = req.params;
   try {
     const container = await getContainerInfo(parseInt(containerId));
+    res.status(200).json(container);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+router.post('/:containerId/rename', getPermissions, async (req, res) => {
+  const { containerId } = req.params;
+  const { name } = req.body;
+  try {
+    const container = await updateContainerName(parseInt(containerId), name);
     res.status(200).json(container);
   } catch (error) {
     res.status(500).json({

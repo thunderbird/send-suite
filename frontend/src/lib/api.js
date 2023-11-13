@@ -338,6 +338,22 @@ export class ApiConnection {
     }
   }
 
+  async renameFolder(containerId, name) {
+    const resp = await this.callApi(
+      `containers/${containerId}/rename`,
+      { name },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(
+        `Error: could not update name for container ${containerId}`
+      );
+      return null;
+    }
+  }
+
   async updateInvitationPermissions(
     containerId,
     userId,
