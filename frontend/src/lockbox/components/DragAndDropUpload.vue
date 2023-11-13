@@ -73,7 +73,7 @@ async function doUpload() {
 </template>
 
 <style scoped>
-.active {
+/* .active {
   outline: 1px solid red;
-}
+} */
 </style>
