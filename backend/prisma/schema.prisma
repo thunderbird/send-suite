@@ -170,7 +170,7 @@ model Container {
   children  Container[]     @relation("Nesting")
 
   // unique container names in the same parent
-  @@unique([name, parentId])
+  // @@unique([name, parentId])
 }
 
 enum ItemType {

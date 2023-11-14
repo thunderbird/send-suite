@@ -496,7 +496,7 @@ export async function getItemsInContainer(id: number) {
 
 export async function getAllUserGroupContainers(
   userId: number,
-  type: ContainerType | null
+  type: ContainerType | null,
 ) {
   const params = {
     where: {
@@ -521,6 +521,7 @@ export async function getAllUserGroupContainers(
       in: groupIds,
     },
     shareOnly: false,
+    parentId: null,
   };
 
   if (type) {
