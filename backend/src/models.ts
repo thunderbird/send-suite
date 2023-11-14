@@ -95,6 +95,7 @@ export async function createContainer(
   // publicKey: string,
   ownerId: number,
   type: ContainerType,
+  parentId: number,
   shareOnly: boolean,
 ) {
   // TODO: figure out the nested create syntax:
@@ -113,7 +114,7 @@ export async function createContainer(
   });
   console.log(`👿 just added owner to group`);
 
-  const container = await prisma.container.create({
+  const createArgs = {
     data: {
       name,
       // publicKey,
@@ -123,7 +124,12 @@ export async function createContainer(
       shareOnly,
       createdAt: new Date(),
     },
-  });
+  }
+  if (parentId !== 0) {
+    createArgs.data['parentId'] = parentId;
+  }
+
+  const container = await prisma.container.create(createArgs);
   console.log(`👿 just created container, connected to group`);
 
   return container;
@@ -457,6 +463,7 @@ export async function getItemsInContainer(id: number) {
     },
     select: {
       type: true,
+      children: true,
       items: {
         select: {
           name: true,

@@ -45,9 +45,15 @@ router.post('/', async (req, res) => {
     shareOnly = req.body.shareOnly;
   }
 
+  let parentId = 0;
+  if (req.body.parentId) {
+    parentId = req.body.parentId;
+  }
+
   const messagesByCode: Record<string, string> = {
     P2002: 'Container already exists',
-    P2003: 'User does not exist',
+    // P2003: 'User does not exist',
+    // Can't use P2003, it's a generic foreign-key error
   };
 
   const defaultMessage = 'Bad request';
@@ -58,6 +64,7 @@ router.post('/', async (req, res) => {
       // publicKey.trim(),
       ownerId,
       type,
+      parentId,
       shareOnly
     );
     res.status(201).json({
@@ -65,6 +72,8 @@ router.post('/', async (req, res) => {
       container,
     });
   } catch (error) {
+    console.log(`🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎`);
+    console.log(error)
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       res.status(400).json({
         message: messagesByCode[error.code] || defaultMessage,
