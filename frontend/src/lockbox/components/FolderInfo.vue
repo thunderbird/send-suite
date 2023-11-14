@@ -77,13 +77,13 @@ watchEffect(
     </section>
     <!-- meta -->
     <footer class="mt-auto flex flex-col gap-3">
-      <label class="flex flex-col gap-1">
+      <label class="flex flex-col gap-1" v-if="currentFolder.createdAt">
         <span class="text-xs font-semibold text-gray-600">Created</span>
-        <div class="text-xs">7/10/23, 12:00 PM</div>
+        <div class="text-xs">{{ currentFolder.createdAt }}</div>
       </label>
-      <label class="flex flex-col gap-1">
+      <label class="flex flex-col gap-1" v-if="currentFolder.updatedAt">
         <span class="text-xs font-semibold text-gray-600">Modified</span>
-        <div class="text-xs">7/10/23, 12:00 PM</div>
+        <div class="text-xs">{{ currentFolder.updatedAt }}</div>
       </label>
       <div class="flex justify-end gap-2">
         <Btn><IconDownload class="w-4 h-4" /></Btn>

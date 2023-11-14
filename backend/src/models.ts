@@ -462,7 +462,16 @@ export async function getItemsInContainer(id: number) {
       id,
     },
     select: {
+      id: true,
+      name: true,
+      createdAt: true,
+      updatedAt: true,
       type: true,
+      shareOnly: true,
+      ownerId: true,
+      groupId: true,
+      wrappedKey: true,
+      parentId: true,
       children: {
         select: {
           id: true,
@@ -496,7 +505,7 @@ export async function getItemsInContainer(id: number) {
           },
         }
       },
-      parentId: true,
+
       items: {
         select: {
           name: true,
@@ -569,6 +578,14 @@ export async function getAllUserGroupContainers(
     select: {
       id: true,
       name: true,
+      createdAt: true,
+      updatedAt: true,
+      type: true,
+      shareOnly: true,
+      ownerId: true,
+      groupId: true,
+      wrappedKey: true,
+      parentId: true,
       items: {
         select: {
           id: true,
