@@ -2,8 +2,8 @@
 import { ref, inject } from 'vue';
 import { Util } from '@/lib/keychain';
 import Sharer from '@/common/share';
-
-import Btn from '../elements/Btn.vue';
+import Btn from '@/lockbox/elements/Btn.vue';
+import { IconLink, IconEye, IconEyeOff } from '@tabler/icons-vue';
 
 const api = inject('api');
 const userRef = inject('userRef');

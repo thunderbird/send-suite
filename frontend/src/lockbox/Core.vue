@@ -30,7 +30,7 @@ const uploader = new Uploader(userRef, keychainRef, api);
 watch(
   () => userRef.value.id,
   () => {
-    getFolders();
+    getVisibleFolders();
   }
 );
 
@@ -38,6 +38,8 @@ const folders = ref([]);
 const currentFolderId = ref(null);
 const currentFile = ref(null);
 const currentFolder = ref(null);
+const rootFolderId = ref(null);
+const parentFolderId = ref(null);
 
 function getDefaultFolder() {
   // TODO: need to designate one as "default"
@@ -55,6 +57,11 @@ async function setCurrentFolderId(id) {
 
   // Also set the currentFolder
   currentFolder.value = folders.value.find(f => f.id === id);
+}
+
+async function setRootFolderId(id) {
+  console.log(`just set the rootFolderId.value to ${id}`);
+  rootFolderId.value = id;
 }
 
 async function setCurrentFile(obj) {
@@ -78,27 +85,61 @@ async function setCurrentFile(obj) {
 function calculateFolderSizes(folders) {
   // NOT recursive.
   const foldersWithSizes = folders.map(folder => {
-    folder.size = folder.items.reduce((total, {upload}) => total + upload.size, 0)
+    folder.size = folder.items?.reduce((total, {upload}) => total + upload.size, 0)
     return folder;
   });
   return foldersWithSizes;
 }
 
 // TODO: actually limit this to a specific folder
-async function getFolders(root) {
+async function getVisibleFolders() {
+  if (!userRef.value.id) {
+    console.log(`no valid user id`);
+    return;
+  }
+  let foldersFromApi;
+  if (rootFolderId.value) {
+    const tree = await api.getFolderTree(userRef.value.id, rootFolderId.value);
+    foldersFromApi = tree.children;
+    console.log(tree)
+    parentFolderId.value = tree.parentId || null;
+  } else {
+    // foldersFromApi = await api.getUserFolders(userRef.value.id);
+
+    // We want:
+    // - our own folders with no parent
+    // - folders shared with me
+    const userFolders = await api.getUserFolders(userRef.value.id);
+    // const foldersSharedwithMe = await api.getFoldersSharedWithUser(userRef.value.id);
+    foldersFromApi = [
+      ...userFolders,
+      // ...foldersSharedwithMe.map(f => f.share.container),
+    ]
+  }
+
+  folders.value = calculateFolderSizes(foldersFromApi);
+  if (currentFolderId.value) {
+    currentFolder.value = folders.value.find(f => f.id === currentFolderId.value);
+  }
+  console.log(`got foldersFromApi: `);
+  console.log(foldersFromApi)
+}
+
+async function getFolderTree(root) {
   if (!userRef.value.id) {
     console.log(`no valid user id`);
     return;
   }
   if (!root) {
-    const foldersFromApi = await api.getAllFolders(userRef.value.id);
+    const foldersFromApi = await api.getFolderTree(userRef.value.id);
     folders.value = calculateFolderSizes(foldersFromApi);
     console.log(`loaded ${folders.value.length} folders`);
 
-    // update the currentFolder
-    if (currentFolderId.value) {
-      currentFolder.value = folders.value.find(f => f.id === currentFolderId.value);
-    }
+    // The root and the current aren't necessarily the same.
+    // // update the currentFolder
+    // if (rootFolderId.value) {
+    //   currentFolder.value = folders.value.find(f => f.id === rootFolderId.value);
+    // }
   } else {
     console.log(`TBD: what to do if we specify a root folder`);
   }
@@ -127,22 +168,22 @@ async function setDefaultFolder() {
   // should we be able to set a different default?
 }
 
-async function createFolder(parentFolderId = 0) {
+async function createFolder(parentId = 0) {
   console.log(`you want to create a folder`);
-  const response = await api.createFolder(userRef.value.id, 'Untitled');
+  const response = await api.createFolder(userRef.value.id, 'Untitled', parentId);
   console.log(response);
   // await keychain.createAndAddContainerKey(1);
   await keychainRef.value.newKeyForContainer(response.id);
   await keychainRef.value.store();
   console.log(`TODO: only reload the one folder`);
-  await getFolders();
+  await getVisibleFolders();
 }
 
 async function uploadItem(fileBlob, folderId) {
   console.log(`Rendering Upload component with containerId and fileBlob`);
   const itemObj = await uploader.doUpload(fileBlob, folderId);
   if (itemObj) {
-    getFolders();
+    getVisibleFolders();
   }
   return itemObj;
 }
@@ -152,7 +193,7 @@ async function deleteFolder(id) {
   const resp = await api.deleteContainer(id);
   if (resp) {
     console.log(`delete successful, updating folder list`);
-    getFolders();
+    getVisibleFolders();
     setCurrentFile(null);
   }
 }
@@ -163,7 +204,7 @@ async function deleteItemAndContent(itemId, folderId) {
   // `true` as the third arg means delete the Content, not just the Item
   const result = await api.deleteItem(itemId, folderId, true);
   if (result) {
-    getFolders();
+    getVisibleFolders();
     setCurrentFile(null);
   }
 }
@@ -176,14 +217,15 @@ async function moveItems(itemIds, destinationFolderId) {
 async function renameFolder(containerId, name) {
   const result = await api.renameFolder(containerId, name);
   if (result) {
-    await getFolders();
+    await getVisibleFolders();
   }
   return result;
 }
 
 provide('folderManager', {
   folders,
-  getFolders,
+  getVisibleFolders,
+  getFolderTree,
   createFolder,
   deleteFolder,
   currentFolder,
@@ -195,6 +237,9 @@ provide('folderManager', {
   uploadItem,
   deleteItemAndContent,
   renameFolder,
+  rootFolderId,
+  setRootFolderId,
+  parentFolderId,
 });
 
 // =======================================================================
@@ -451,7 +496,7 @@ async function acceptInvitation(containerId, invitationId, wrappedKey) {
     }
     await getFoldersSharedWithMe();
     await getInvitations();
-    await getFolders();
+    await getVisibleFolders();
     return resp;
   } catch (e) {
     console.log(e);

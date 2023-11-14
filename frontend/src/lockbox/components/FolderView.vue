@@ -4,7 +4,7 @@ import { IconDownload, IconShare, IconTrash, IconDotsVertical } from '@tabler/ic
 import FolderTableRowCell from '@/lockbox/elements/FolderTableRowCell.vue';
 import Btn from '@/lockbox/elements/Btn.vue';
 import FileUpload from '@/lockbox/components/FileUpload.vue';
-import DragAndDropUpload from '@/lockbox/components/DragAndDropUpload.vue';
+import BreadCrumbs from '@/lockbox/components/Breadcrumbs.vue';
 import ManageSharing from '@/lockbox/components/ManageSharing.vue';
 // import Btn from '@/lockbox/elements/Btn.vue';
 
@@ -14,12 +14,12 @@ const {
   currentFolderId,
   setCurrentFolderId,
   folders,
-  getFolders,
+  getVisibleFolders,
 } = inject('folderManager');
 
 const { toggleItemForSharing } = inject('sharingManager');
 
-onMounted(getFolders);
+onMounted(getVisibleFolders);
 
 function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
   console.log(`user chose to show info for file ${itemId}`);
@@ -76,21 +76,6 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
                 <IconDotsVertical class="w-4 h-4" />
               </Btn>
             </div>
-            <!-- <template v-if="folder.id === currentFolderId">
-              <ManageSharing :folderId="currentFolderId" />
-              <FileUpload />
-              <DragAndDropUpload />
-              <ul class="file-list">
-                <li v-for="file of folder.items">
-                  <button @click="showFileInfo(file.id, file.uploadId, folder.id, file.wrappedKey, file.name, file.type)">
-                    {{ file.name }}
-                  </button>
-                  <button @click="toggleItemForSharing(file.id)">
-                    [Share]
-                  </button>
-                </li>
-              </ul>
-            </template> -->
           </FolderTableRowCell>
         </tr>
       </tbody>

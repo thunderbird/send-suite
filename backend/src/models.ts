@@ -464,6 +464,7 @@ export async function getItemsInContainer(id: number) {
     select: {
       type: true,
       children: true,
+      parentId: true,
       items: {
         select: {
           name: true,

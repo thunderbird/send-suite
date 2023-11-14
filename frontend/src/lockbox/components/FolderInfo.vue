@@ -6,7 +6,7 @@ import Avatar from '@/lockbox/elements/Avatar.vue';
 import Tag from '@/lockbox/elements/Tag.vue';
 import Btn from '@/lockbox/elements/Btn.vue';
 import { formatBytes } from '@/lib/utils'
-import { IconDownload, IconShare, IconLink, IconEye, IconEyeOff } from '@tabler/icons-vue';
+import { IconDownload, IconShare } from '@tabler/icons-vue';
 
 const { currentFolder } = inject('folderManager');
 const { sharedByMe } = inject('sharingManager');

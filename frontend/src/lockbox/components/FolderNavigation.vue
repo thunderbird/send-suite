@@ -1,15 +1,22 @@
 <script setup>
+import { inject, ref } from 'vue';
 import { IconRefresh, IconPlus, IconDots, IconDotsVertical, IconTag, IconFolder, IconFileText } from '@tabler/icons-vue';
 import Btn from '@/lockbox/elements/Btn.vue';
 import DragAndDropUpload from '@/lockbox/components/DragAndDropUpload.vue'
 
-// for demonstration purposes only
-const directory = [
-  { type: 'folder', title: 'Folder Name' },
-  { type: 'folder', title: 'Folder Name' },
-  { type: 'file', title: 'Folder Name' },
-  { type: 'folder', title: 'Folder Name' },
-];
+const {
+  folders,
+  parentFolderId,
+  rootFolderId,
+  setRootFolderId,
+  getVisibleFolders,
+} = inject('folderManager');
+
+async function gotoRootFolder(id) {
+  await setRootFolderId(id);
+  await getVisibleFolders();
+}
+
 </script>
 
 <template>
@@ -35,19 +42,21 @@ const directory = [
     <!-- folder tree -->
     <section class="flex flex-col gap-2 p-2.5">
       <div class="flex justify-between items-center">
-        <div class="font-semibold text-lg text-gray-900">Navigation</div>
+        <div class="font-semibold text-lg text-gray-900">Navigation {{ rootFolderId }}</div>
         <Btn class="!px-1.5"><IconDotsVertical class="w-4 h-4" /></Btn>
+        <Btn v-if="rootFolderId" class="" @click="gotoRootFolder(parentFolderId)">Up</Btn>
+
       </div>
       <div class="flex flex-col gap-1 pl-3">
-        <div v-for="f in directory">
-          <div v-if="f.type == 'folder'" class="flex gap-1.5 items-center">
+        <div v-for="f in folders" @click="gotoRootFolder(f.id)">
+          <div class="flex gap-1.5 items-center">
             <IconFolder class="w-5 h-5 !stroke-amber-800/50 fill-amber-800/20" />
-            <span class="pb-1 text-gray-700">{{ f.title }}</span>
+            <span class="pb-1 text-gray-700">{{ f.name }} {{ f.id }}</span>
           </div>
-          <div v-if="f.type == 'file'" class="flex gap-1.5 items-center">
+          <!-- <div v-if="f.type == 'file'" class="flex gap-1.5 items-center">
             <IconFileText class="w-5 h-5 !stroke-gray-500 fill-gray-800/20" />
             <span class="pb-1 text-gray-700">{{ f.title }}</span>
-          </div>
+          </div> -->
         </div>
       </div>
     </section>
