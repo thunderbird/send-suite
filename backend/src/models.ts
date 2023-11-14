@@ -463,7 +463,39 @@ export async function getItemsInContainer(id: number) {
     },
     select: {
       type: true,
-      children: true,
+      children: {
+        select: {
+          id: true,
+          name: true,
+          createdAt: true,
+          updatedAt: true,
+          type: true,
+          shareOnly: true,
+          ownerId: true,
+          groupId: true,
+          wrappedKey: true,
+          parentId: true,
+          items: {
+            select: {
+              name: true,
+              wrappedKey: true,
+              uploadId: true,
+              createdAt: true,
+              type: true,
+              upload: {
+                select: {
+                  type: true,
+                  owner: {
+                    select: {
+                      email: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        }
+      },
       parentId: true,
       items: {
         select: {
