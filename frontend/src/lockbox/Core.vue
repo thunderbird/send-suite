@@ -222,6 +222,11 @@ async function renameFolder(containerId, name) {
   return result;
 }
 
+async function gotoRootFolder(id) {
+  await setRootFolderId(id);
+  await getVisibleFolders();
+}
+
 provide('folderManager', {
   folders,
   getVisibleFolders,
@@ -240,6 +245,7 @@ provide('folderManager', {
   rootFolderId,
   setRootFolderId,
   parentFolderId,
+  gotoRootFolder,
 });
 
 // =======================================================================

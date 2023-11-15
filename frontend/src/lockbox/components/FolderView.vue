@@ -13,8 +13,10 @@ const {
   setCurrentFile,
   currentFolderId,
   setCurrentFolderId,
+  setRootFolderId,
   folders,
   getVisibleFolders,
+  gotoRootFolder
 } = inject('folderManager');
 
 const { toggleItemForSharing } = inject('sharingManager');
@@ -35,7 +37,7 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
     <table class="border-separate border-spacing-x-0 border-spacing-y-1">
       <thead>
         <tr>
-          <th class="border-r border-b border-gray-300 w-24"><input type="checkbox" /></th>
+          <!-- <th class="border-r border-b border-gray-300 w-24"><input type="checkbox" /></th> -->
           <th class="border-r border-b border-gray-300">Name</th>
           <th class="border-r border-b border-gray-300">Tags</th>
           <th class="border-r border-b border-gray-300">Shared With</th>
@@ -43,13 +45,16 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
         </tr>
       </thead>
       <tbody>
-        <tr class="group" v-for="folder in folders" :key="folder.id" @click="setCurrentFolderId(folder.id)">
-          <FolderTableRowCell :selected="folder.id === currentFolderId">
+        <tr class="group" v-for="folder in folders" :key="folder.id"
+          @click="setCurrentFolderId(folder.id)"
+          @dblclick="gotoRootFolder(folder.id)"
+        >
+          <!-- <FolderTableRowCell :selected="folder.id === currentFolderId">
             <div class="flex items-center gap-4">
               <input type="checkbox" :checked="folder.id === currentFolderId">
               <img src="@/assets/folder.svg" class="w-8 h-8" />
             </div>
-          </FolderTableRowCell>
+          </FolderTableRowCell> -->
           <FolderTableRowCell :selected="folder.id === currentFolderId">
             <div>{{ folder.name }} (ID {{ folder.id }})</div>
             <div class="text-sm">Last modified</div>

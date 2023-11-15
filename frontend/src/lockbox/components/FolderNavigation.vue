@@ -8,14 +8,8 @@ const {
   folders,
   parentFolderId,
   rootFolderId,
-  setRootFolderId,
-  getVisibleFolders,
+  gotoRootFolder
 } = inject('folderManager');
-
-async function gotoRootFolder(id) {
-  await setRootFolderId(id);
-  await getVisibleFolders();
-}
 
 </script>
 
