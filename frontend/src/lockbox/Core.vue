@@ -39,6 +39,7 @@ const currentFolderId = ref(null);
 const currentFile = ref(null);
 const currentFolder = ref(null);
 const rootFolderId = ref(null);
+const rootFolder = ref(null);
 const parentFolderId = ref(null);
 
 function getDefaultFolder() {
@@ -62,6 +63,9 @@ async function setCurrentFolderId(id) {
 async function setRootFolderId(id) {
   console.log(`just set the rootFolderId.value to ${id}`);
   rootFolderId.value = id;
+  if (!id) {
+    rootFolder.value = null;
+  }
 }
 
 async function setCurrentFile(obj) {
@@ -103,6 +107,10 @@ async function getVisibleFolders() {
     foldersFromApi = tree.children;
     console.log(tree)
     parentFolderId.value = tree.parentId || null;
+    rootFolder.value = tree;
+    console.log(`root folder has these items 🍬🍬🍬🍬🍬🍬`)
+    console.log(tree.items)
+
   } else {
     // foldersFromApi = await api.getUserFolders(userRef.value.id);
 
@@ -123,26 +131,6 @@ async function getVisibleFolders() {
   }
   console.log(`got foldersFromApi: `);
   console.log(foldersFromApi)
-}
-
-async function getFolderTree(root) {
-  if (!userRef.value.id) {
-    console.log(`no valid user id`);
-    return;
-  }
-  if (!root) {
-    const foldersFromApi = await api.getFolderTree(userRef.value.id);
-    folders.value = calculateFolderSizes(foldersFromApi);
-    console.log(`loaded ${folders.value.length} folders`);
-
-    // The root and the current aren't necessarily the same.
-    // // update the currentFolder
-    // if (rootFolderId.value) {
-    //   currentFolder.value = folders.value.find(f => f.id === rootFolderId.value);
-    // }
-  } else {
-    console.log(`TBD: what to do if we specify a root folder`);
-  }
 }
 
 // // Make this computed?
@@ -230,7 +218,6 @@ async function gotoRootFolder(id) {
 provide('folderManager', {
   folders,
   getVisibleFolders,
-  getFolderTree,
   createFolder,
   deleteFolder,
   currentFolder,
@@ -243,6 +230,7 @@ provide('folderManager', {
   deleteItemAndContent,
   renameFolder,
   rootFolderId,
+  rootFolder,
   setRootFolderId,
   parentFolderId,
   gotoRootFolder,

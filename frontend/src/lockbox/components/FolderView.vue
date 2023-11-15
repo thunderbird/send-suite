@@ -11,9 +11,9 @@ import ManageSharing from '@/lockbox/components/ManageSharing.vue';
 const {
   deleteFolder,
   setCurrentFile,
+  rootFolder,
   currentFolderId,
   setCurrentFolderId,
-  setRootFolderId,
   folders,
   getVisibleFolders,
   gotoRootFolder
@@ -37,7 +37,8 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
     <table class="border-separate border-spacing-x-0 border-spacing-y-1">
       <thead>
         <tr>
-          <!-- <th class="border-r border-b border-gray-300 w-24"><input type="checkbox" /></th> -->
+          <th class="border-r border-b border-gray-300">
+          </th>
           <th class="border-r border-b border-gray-300">Name</th>
           <th class="border-r border-b border-gray-300">Tags</th>
           <th class="border-r border-b border-gray-300">Shared With</th>
@@ -45,44 +46,80 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
         </tr>
       </thead>
       <tbody>
-        <tr class="group" v-for="folder in folders" :key="folder.id"
-          @click="setCurrentFolderId(folder.id)"
-          @dblclick="gotoRootFolder(folder.id)"
-        >
-          <!-- <FolderTableRowCell :selected="folder.id === currentFolderId">
-            <div class="flex items-center gap-4">
-              <input type="checkbox" :checked="folder.id === currentFolderId">
+        <tr class="group cursor-pointer" v-for="folder in folders" :key="folder.id"
+            @click="setCurrentFolderId(folder.id)"
+            @dblclick="gotoRootFolder(folder.id)"
+          >
+            <FolderTableRowCell :selected="folder.id === currentFolderId">
               <img src="@/assets/folder.svg" class="w-8 h-8" />
-            </div>
-          </FolderTableRowCell> -->
-          <FolderTableRowCell :selected="folder.id === currentFolderId">
-            <div>{{ folder.name }} (ID {{ folder.id }})</div>
-            <div class="text-sm">Last modified</div>
-          </FolderTableRowCell>
-          <FolderTableRowCell :selected="folder.id === currentFolderId"></FolderTableRowCell>
-          <FolderTableRowCell :selected="folder.id === currentFolderId"></FolderTableRowCell>
-          <FolderTableRowCell :selected="folder.id === currentFolderId">
-            <div class="flex justify-between">
-              <div
-                class="flex gap-2 opacity-0 group-hover:!opacity-100 transition-opacity"
-                :class="{ '!opacity-100': folder.id === currentFolderId }"
-              >
-                <Btn secondary>
-                  <IconDownload class="w-4 h-4" />
-                </Btn>
-                <Btn primary>
-                  <IconShare class="w-4 h-4" /> Share
-                </Btn>
-                <Btn danger @click="deleteFolder(folder.id)">
-                  <IconTrash class="w-4 h-4" />
+            </FolderTableRowCell>
+            <FolderTableRowCell :selected="folder.id === currentFolderId">
+              <div>{{ folder.name }}</div>
+              <div class="text-sm">Last modified</div>
+            </FolderTableRowCell>
+            <FolderTableRowCell :selected="folder.id === currentFolderId"></FolderTableRowCell>
+            <FolderTableRowCell :selected="folder.id === currentFolderId"></FolderTableRowCell>
+            <FolderTableRowCell :selected="folder.id === currentFolderId">
+              <div class="flex justify-between">
+                <div
+                  class="flex gap-2 opacity-0 group-hover:!opacity-100 transition-opacity"
+                  :class="{ '!opacity-100': folder.id === currentFolderId }"
+                >
+                  <Btn secondary>
+                    <IconDownload class="w-4 h-4" />
+                  </Btn>
+                  <Btn primary>
+                    <IconShare class="w-4 h-4" /> Share
+                  </Btn>
+                  <Btn danger @click="deleteFolder(folder.id)">
+                    <IconTrash class="w-4 h-4" />
+                  </Btn>
+                </div>
+                <Btn class="ml-auto">
+                  <IconDotsVertical class="w-4 h-4" />
                 </Btn>
               </div>
-              <Btn class="ml-auto">
-                <IconDotsVertical class="w-4 h-4" />
-              </Btn>
-            </div>
-          </FolderTableRowCell>
-        </tr>
+            </FolderTableRowCell>
+          </tr>
+
+
+          <!-- v-if="folder.id === currentFolderId" -->
+          <tr class="group cursor-pointer"
+            v-if="rootFolder"
+            v-for="item in rootFolder.items" :key="item.id"
+          >
+            <FolderTableRowCell>
+              <div class="flex justify-end">
+                <img src="@/assets/file.svg" class="w-8 h-8" />
+              </div>
+            </FolderTableRowCell>
+            <FolderTableRowCell>
+              <div>{{ item.name }}</div>
+              <div class="text-sm">Last modified</div>
+            </FolderTableRowCell>
+            <FolderTableRowCell></FolderTableRowCell>
+            <FolderTableRowCell></FolderTableRowCell>
+            <FolderTableRowCell>
+              <div class="flex justify-between">
+                <div
+                  class="flex gap-2 opacity-0 group-hover:!opacity-100 transition-opacity"
+                >
+                  <Btn secondary>
+                    <IconDownload class="w-4 h-4" />
+                  </Btn>
+                  <Btn primary>
+                    <IconShare class="w-4 h-4" /> Share
+                  </Btn>
+                  <Btn danger>
+                    <IconTrash class="w-4 h-4" />
+                  </Btn>
+                </div>
+                <Btn class="ml-auto">
+                  <IconDotsVertical class="w-4 h-4" />
+                </Btn>
+              </div>
+            </FolderTableRowCell>
+          </tr>
       </tbody>
     </table>
   </div>
