@@ -57,7 +57,7 @@ async function setCurrentFolderId(id) {
   await setCurrentFile(null);
 
   // Also set the currentFolder
-  currentFolder.value = folders.value.find(f => f.id === id);
+  currentFolder.value = folders.value.find((f) => f.id === id);
 }
 
 async function setRootFolderId(id) {
@@ -88,8 +88,8 @@ async function setCurrentFile(obj) {
 
 function calculateFolderSizes(folders) {
   // NOT recursive.
-  const foldersWithSizes = folders.map(folder => {
-    folder.size = folder.items?.reduce((total, {upload}) => total + upload.size, 0)
+  const foldersWithSizes = folders.map((folder) => {
+    folder.size = folder.items?.reduce((total, { upload }) => total + upload?.size || 0, 0);
     return folder;
   });
   return foldersWithSizes;
@@ -105,12 +105,14 @@ async function getVisibleFolders() {
   if (rootFolderId.value) {
     const tree = await api.getFolderTree(userRef.value.id, rootFolderId.value);
     foldersFromApi = tree.children;
-    console.log(tree)
+
+    console.log(tree);
+
     parentFolderId.value = tree.parentId || null;
     rootFolder.value = tree;
-    console.log(`root folder has these items 🍬🍬🍬🍬🍬🍬`)
-    console.log(tree.items)
 
+    console.log(`root folder has these items 🍬🍬🍬🍬🍬🍬`);
+    console.log(tree.items);
   } else {
     // foldersFromApi = await api.getUserFolders(userRef.value.id);
 
@@ -122,15 +124,15 @@ async function getVisibleFolders() {
     foldersFromApi = [
       ...userFolders,
       // ...foldersSharedwithMe.map(f => f.share.container),
-    ]
+    ];
   }
 
   folders.value = calculateFolderSizes(foldersFromApi);
   if (currentFolderId.value) {
-    currentFolder.value = folders.value.find(f => f.id === currentFolderId.value);
+    currentFolder.value = folders.value.find((f) => f.id === currentFolderId.value);
   }
   console.log(`got foldersFromApi: `);
-  console.log(foldersFromApi)
+  console.log(foldersFromApi);
 }
 
 // // Make this computed?
@@ -260,9 +262,7 @@ function toggleItemForSharing(itemId) {
   console.log(`here is the itemId to toggle: ${itemId}`);
   if (selectedItemsForSharing.value.includes(itemId)) {
     // remove
-    selectedItemsForSharing.value = selectedItemsForSharing.value.filter(
-      (id) => id !== itemId
-    );
+    selectedItemsForSharing.value = selectedItemsForSharing.value.filter((id) => id !== itemId);
   } else {
     // add
     selectedItemsForSharing.value = [...selectedItemsForSharing.value, itemId];
@@ -293,12 +293,7 @@ function createItemMap(folders) {
 async function acceptAccessLink(linkId, password) {
   // Check for existence of link
 
-  const { unwrappedKey, containerId } = await getContainerKeyFromChallenge(
-    linkId,
-    password,
-    api,
-    keychainRef
-  );
+  const { unwrappedKey, containerId } = await getContainerKeyFromChallenge(linkId, password, api, keychainRef);
   console.log(`unwrappedKey: ${unwrappedKey}`);
   console.log(`containerId: ${containerId}`);
 
@@ -311,10 +306,7 @@ async function acceptAccessLink(linkId, password) {
     console.log(`Using existing user id`);
     // TODO: this in particular needs to be server-side
     // Create an Invitation and set it to ACCEPTED
-    const createInvitationResp = await api.createInvitationForAccessLink(
-      linkId,
-      userRef.value.id
-    );
+    const createInvitationResp = await api.createInvitationForAccessLink(linkId, userRef.value.id);
     // TODO: reminder that this creates an invitation, where the value of
     // the wrappedKey is the password-wrapped one, not the publicKey wrapped one.
 
@@ -322,10 +314,7 @@ async function acceptAccessLink(linkId, password) {
       return false;
     }
 
-    const addMemberResp = await api.addMemberToContainer(
-      userRef.value.id,
-      containerId
-    );
+    const addMemberResp = await api.addMemberToContainer(userRef.value.id, containerId);
     console.log(`adding user to convo`);
     console.log(addMemberResp);
     if (!addMemberResp) {
@@ -376,42 +365,24 @@ async function getSharesForFolder(containerId) {
   return sharedByMe.value.filter((share) => share.container.id === containerId);
 }
 
-async function updateInvitationPermissions(
-  containerId,
-  invitationId,
-  permission
-) {
+async function updateInvitationPermissions(containerId, invitationId, permission) {
   if (!userRef.value.id) {
     console.log(`no valid user id`);
     return;
   }
-  const result = await api.updateInvitationPermissions(
-    containerId,
-    userRef.value.id,
-    invitationId,
-    permission
-  );
+  const result = await api.updateInvitationPermissions(containerId, userRef.value.id, invitationId, permission);
 
   if (result) {
     await getFoldersSharedByMe();
   }
   return result;
 }
-async function updateAccessLinkPermissions(
-  containerId,
-  accessLinkId,
-  permission
-) {
+async function updateAccessLinkPermissions(containerId, accessLinkId, permission) {
   if (!userRef.value.id) {
     console.log(`no valid user id`);
     return;
   }
-  const result = await api.updateAccessLinkPermissions(
-    containerId,
-    userRef.value.id,
-    accessLinkId,
-    permission
-  );
+  const result = await api.updateAccessLinkPermissions(containerId, userRef.value.id, accessLinkId, permission);
 
   if (result) {
     await getFoldersSharedByMe();
@@ -458,10 +429,7 @@ async function addGroupMember(userId, folderId) {
 }
 
 async function removeInvitationAndGroupMembership(containerId, invitationId) {
-  const success = await api.removeInvitationAndGroupMembership(
-    containerId,
-    invitationId
-  );
+  const success = await api.removeInvitationAndGroupMembership(containerId, invitationId);
   if (success) {
     // update our ref
     await getFoldersSharedByMe();
@@ -476,10 +444,7 @@ async function getInvitations() {
 async function acceptInvitation(containerId, invitationId, wrappedKey) {
   // Unwrap and store key
   try {
-    const unwrappedKey = await keychainRef.value.rsa.unwrapContainerKey(
-      wrappedKey,
-      keychainRef.value.rsa.privateKey
-    );
+    const unwrappedKey = await keychainRef.value.rsa.unwrapContainerKey(wrappedKey, keychainRef.value.rsa.privateKey);
 
     await keychainRef.value.add(containerId, unwrappedKey);
     await keychainRef.value.store();

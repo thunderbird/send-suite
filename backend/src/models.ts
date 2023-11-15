@@ -96,7 +96,7 @@ export async function createContainer(
   ownerId: number,
   type: ContainerType,
   parentId: number,
-  shareOnly: boolean,
+  shareOnly: boolean
 ) {
   // TODO: figure out the nested create syntax:
   // https://www.prisma.io/docs/reference/api-reference/prisma-client-reference#create-1
@@ -125,7 +125,7 @@ export async function createContainer(
       createdAt: new Date(),
       updatedAt: new Date(),
     },
-  }
+  };
   if (parentId !== 0) {
     createArgs.data['parentId'] = parentId;
   }
@@ -247,10 +247,7 @@ export async function getSharesForContainer(
   });
 }
 
-export async function updateContainerName(
-  containerId: number,
-  name: string
-) {
+export async function updateContainerName(containerId: number, name: string) {
   const result = await prisma.container.update({
     where: {
       id: containerId,
@@ -507,6 +504,7 @@ export async function getItemsInContainer(id: number) {
               type: true,
               upload: {
                 select: {
+                  size: true,
                   type: true,
                   owner: {
                     select: {
@@ -517,7 +515,7 @@ export async function getItemsInContainer(id: number) {
               },
             },
           },
-        }
+        },
       },
 
       items: {
@@ -529,6 +527,7 @@ export async function getItemsInContainer(id: number) {
           type: true,
           upload: {
             select: {
+              size: true,
               type: true,
               owner: {
                 select: {
@@ -552,7 +551,7 @@ export async function getItemsInContainer(id: number) {
 
 export async function getAllUserGroupContainers(
   userId: number,
-  type: ContainerType | null,
+  type: ContainerType | null
 ) {
   const params = {
     where: {

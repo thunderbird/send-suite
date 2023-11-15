@@ -1,16 +1,18 @@
 <script setup>
 import { inject, ref } from 'vue';
-import { IconRefresh, IconPlus, IconDots, IconDotsVertical, IconTag, IconFolder, IconFileText } from '@tabler/icons-vue';
+import {
+  IconRefresh,
+  IconPlus,
+  IconDots,
+  IconDotsVertical,
+  IconTag,
+  IconFolder,
+  IconFileText,
+} from '@tabler/icons-vue';
 import Btn from '@/lockbox/elements/Btn.vue';
-import DragAndDropUpload from '@/lockbox/components/DragAndDropUpload.vue'
+import DragAndDropUpload from '@/lockbox/components/DragAndDropUpload.vue';
 
-const {
-  folders,
-  parentFolderId,
-  rootFolderId,
-  gotoRootFolder
-} = inject('folderManager');
-
+const { folders, parentFolderId, rootFolderId, gotoRootFolder } = inject('folderManager');
 </script>
 
 <template>
@@ -24,10 +26,9 @@ const {
     <!-- upload zone -->
     <section class="px-2.5">
       <DragAndDropUpload v-if="rootFolderId">
-        <div class="
-          h-36 flex justify-center items-center text-center font-bold text-lg text-gray-500
-          border-4 border-dashed border-gray-300 rounded-lg
-        ">
+        <div
+          class="h-36 flex justify-center items-center text-center font-bold text-lg text-gray-500 border-4 border-dashed border-gray-300 rounded-lg"
+        >
           Drag &amp; Drop<br />
           files here to upload
         </div>
@@ -36,10 +37,9 @@ const {
     <!-- folder tree -->
     <section class="flex flex-col gap-2 p-2.5">
       <div class="flex justify-between items-center">
-        <div class="font-semibold text-lg text-gray-900">Navigation {{ rootFolderId }}</div>
+        <div class="font-semibold text-lg text-gray-900">(replaceme) {{ rootFolderId }}</div>
         <Btn class="!px-1.5"><IconDotsVertical class="w-4 h-4" /></Btn>
         <Btn v-if="rootFolderId" class="" @click="gotoRootFolder(parentFolderId)">Up</Btn>
-
       </div>
       <div class="flex flex-col gap-1 pl-3">
         <div v-for="f in folders" @click="gotoRootFolder(f.id)">
