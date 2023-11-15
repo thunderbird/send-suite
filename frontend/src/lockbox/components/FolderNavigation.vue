@@ -29,7 +29,7 @@ async function gotoRootFolder(id) {
     </header>
     <!-- upload zone -->
     <section class="px-2.5">
-      <DragAndDropUpload>
+      <DragAndDropUpload v-if="rootFolderId">
         <div class="
           h-36 flex justify-center items-center text-center font-bold text-lg text-gray-500
           border-4 border-dashed border-gray-300 rounded-lg

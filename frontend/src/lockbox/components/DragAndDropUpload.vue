@@ -1,7 +1,7 @@
 <script setup>
 import { ref, inject } from 'vue';
 import { useDropZone } from '@vueuse/core';
-const { currentFolderId, uploadItem } = inject('folderManager');
+const { rootFolderId, uploadItem } = inject('folderManager');
 
 const dropZoneRef = ref();
 
@@ -37,7 +37,7 @@ const { isOverDropZone } = useDropZone(dropZoneRef, onDrop);
 async function doUpload() {
   const result = await Promise.all(fileBlobs.value.map(async (blob) => {
     console.log(`uploading ${blob.name}`);
-    const uploadResult = await uploadItem(blob, currentFolderId.value);
+    const uploadResult = await uploadItem(blob, rootFolderId.value);
     console.log(uploadResult);
     return uploadResult;
   }));
