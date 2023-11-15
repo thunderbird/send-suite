@@ -373,7 +373,7 @@ export async function createItem(
   type: ItemType,
   wrappedKey: string
 ) {
-  return prisma.item.create({
+  const item = await prisma.item.create({
     data: {
       createdAt: new Date(),
       name,
@@ -393,6 +393,18 @@ export async function createItem(
       },
     },
   });
+  if (item) {
+    // touch the container's `updatedAt` date
+    await prisma.container.update({
+      where: {
+        id: containerId,
+      },
+      data: {
+        updatedAt: new Date(),
+      },
+    });
+  }
+  return item;
 }
 
 export async function deleteItem(id: number, shouldDeleteUpload = false) {
