@@ -2,7 +2,6 @@
 import { ref, inject } from 'vue';
 import { useDropZone } from '@vueuse/core';
 const { rootFolderId, uploadItem } = inject('folderManager');
-
 const dropZoneRef = ref();
 
 const filesMetadata = ref(null);
@@ -35,12 +34,14 @@ function onDrop(files) {
 const { isOverDropZone } = useDropZone(dropZoneRef, onDrop);
 
 async function doUpload() {
-  const result = await Promise.all(fileBlobs.value.map(async (blob) => {
-    console.log(`uploading ${blob.name}`);
-    const uploadResult = await uploadItem(blob, rootFolderId.value);
-    console.log(uploadResult);
-    return uploadResult;
-  }));
+  const result = await Promise.all(
+    fileBlobs.value.map(async (blob) => {
+      console.log(`uploading ${blob.name}`);
+      const uploadResult = await uploadItem(blob, rootFolderId.value);
+      console.log(uploadResult);
+      return uploadResult;
+    })
+  );
 
   if (result?.length === fileBlobs.value.length) {
     filesMetadata.value = null;
@@ -49,18 +50,16 @@ async function doUpload() {
 </script>
 
 <template>
-  <div ref="dropZoneRef" :class="{ active: isOverDropZone }">
+  <div ref="dropZoneRef" class="h-full">
     <slot></slot>
   </div>
 
   <button
-    v-if="filesMetadata"
+    v-if="rootFolderId && filesMetadata"
     type="submit"
     class="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none"
     @click="doUpload"
   >
     <span class="font-bold">Upload</span>
-
   </button>
 </template>
-
