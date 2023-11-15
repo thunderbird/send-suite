@@ -190,6 +190,7 @@ model Item {
   upload        Upload          @relation(fields: [uploadId], references: [id] )
   type          ItemType
   createdAt     DateTime?
+  updatedAt     DateTime?
   // unique "file names" in a container
   @@unique([name, containerId])
 

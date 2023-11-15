@@ -123,6 +123,7 @@ export async function createContainer(
       type,
       shareOnly,
       createdAt: new Date(),
+      updatedAt: new Date(),
     },
   }
   if (parentId !== 0) {
@@ -376,6 +377,7 @@ export async function createItem(
   const item = await prisma.item.create({
     data: {
       createdAt: new Date(),
+      updatedAt: new Date(),
       name,
       wrappedKey,
       // containerId,
