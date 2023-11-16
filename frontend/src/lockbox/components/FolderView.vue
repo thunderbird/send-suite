@@ -3,8 +3,8 @@ import { inject, onMounted } from 'vue';
 import { IconDownload, IconShare, IconTrash, IconDotsVertical } from '@tabler/icons-vue';
 import FolderTableRowCell from '@/lockbox/elements/FolderTableRowCell.vue';
 import Btn from '@/lockbox/elements/Btn.vue';
-import DragAndDropUpload from './DragAndDropUpload.vue';
-// import Btn from '@/lockbox/elements/Btn.vue';
+import DragAndDropUpload from '@/lockbox/components/DragAndDropUpload.vue';
+import Breadcrumbs from '@/lockbox/components/Breadcrumbs.vue';
 
 const {
   deleteFolder,
@@ -29,6 +29,7 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
 <template>
   <div class="w-full flex flex-col gap-3">
     <h2 class="font-bold">Your Files</h2>
+    <Breadcrumbs v-if="rootFolder" />
     <DragAndDropUpload>
       <table class="w-full border-separate border-spacing-x-0 border-spacing-y-1">
         <thead>

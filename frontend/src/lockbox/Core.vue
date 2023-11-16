@@ -41,6 +41,7 @@ const currentFolder = ref(null);
 const rootFolderId = ref(null);
 const rootFolder = ref(null);
 const parentFolderId = ref(null);
+const folderPath = ref([]);
 
 function getDefaultFolder() {
   // TODO: need to designate one as "default"
@@ -213,8 +214,10 @@ async function renameFolder(containerId, name) {
 }
 
 async function gotoRootFolder(id) {
-  await setRootFolderId(id);
-  await getVisibleFolders();
+  if (id !== rootFolderId.value) {
+    await setRootFolderId(id);
+    await getVisibleFolders();
+  }
 }
 
 provide('folderManager', {

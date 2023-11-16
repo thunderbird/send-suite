@@ -18,6 +18,7 @@ import {
   updateAccessLinkPermissions,
   removeInvitationAndGroup,
   updateContainerName,
+  getContainerWithAncestors,
 } from '../models';
 import { getPermissions } from '../middleware';
 
@@ -73,7 +74,7 @@ router.post('/', async (req, res) => {
     });
   } catch (error) {
     console.log(`🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎`);
-    console.log(error)
+    console.log(error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       res.status(400).json({
         message: messagesByCode[error.code] || defaultMessage,
@@ -247,11 +248,17 @@ router.get('/:containerId/members', getPermissions, async (req, res) => {
 });
 
 // Get a container and its items
+// Add the folder path as a property.
 router.get('/:containerId', getPermissions, async (req, res) => {
   const { containerId } = req.params;
   try {
-    const containerWithItems = await getItemsInContainer(parseInt(containerId));
-    res.status(200).json(containerWithItems);
+    const container = await getItemsInContainer(parseInt(containerId));
+
+    if (container.parentId) {
+      container['parent'] = await getContainerWithAncestors(container.parentId);
+    }
+
+    res.status(200).json(container);
   } catch (error) {
     res.status(500).json({
       message: 'Server error.',
