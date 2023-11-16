@@ -1,5 +1,5 @@
 <script setup>
-import { ref, inject, provide, watch } from 'vue';
+import { ref, inject, provide, watch, toRaw } from 'vue';
 import Uploader from '@/common/upload';
 import { getContainerKeyFromChallenge } from '@/common/challenge.js';
 /*
@@ -358,6 +358,30 @@ async function getSharedFolder(hash) {
   return await api.getContainerWithItemsForAccessLink(hash);
 }
 
+async function showFoldersSharedBySender(userId) {
+  folders.value = sharedWithMe.value
+    .filter((shareRef) => {
+      const { share } = toRaw(shareRef);
+      return userId === share?.sender?.id;
+    })
+    .map((shareRef) => {
+      const { share } = toRaw(shareRef);
+      return share.container;
+    });
+}
+
+async function showFoldersSharedWithRecipient(userId) {
+  folders.value = sharedByMe.value
+    .filter((shareRef) => {
+      const share = toRaw(shareRef);
+      return share.invitations.some((invitation) => userId === invitation.recipientId);
+    })
+    .map((shareRef) => {
+      const { container } = toRaw(shareRef);
+      return container;
+    });
+}
+
 async function getSharesForFolder(containerId) {
   if (!userRef.value.id) {
     console.log(`no valid user id`);
@@ -479,6 +503,8 @@ provide('sharingManager', {
   isAccessLinkValid,
   getFoldersSharedWithMe,
   getFoldersSharedByMe,
+  showFoldersSharedBySender,
+  showFoldersSharedWithRecipient,
   getGroupMembers,
   addGroupMember,
   removeInvitationAndGroupMembership,
