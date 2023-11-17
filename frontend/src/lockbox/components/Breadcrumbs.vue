@@ -17,7 +17,7 @@ watchEffect(() => {
 <template>
   <ul>
     <li>
-      <a href="#" @click.prevent="gotoRootFolder(null)"> 🏠 </a>
+      <button @click="gotoRootFolder(null)"> 🏠 </button>
     </li>
     <li v-for="node of path">
       <a href="#" @click.prevent="gotoRootFolder(node.id)">
