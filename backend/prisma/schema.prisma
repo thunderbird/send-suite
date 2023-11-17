@@ -168,9 +168,6 @@ model Container {
   parentId  Int?
   parent    Container?      @relation("Nesting", fields: [parentId], references: [id])
   children  Container[]     @relation("Nesting")
-
-  // unique container names in the same parent
-  // @@unique([name, parentId])
 }
 
 enum ItemType {

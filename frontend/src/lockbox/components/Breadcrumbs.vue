@@ -16,23 +16,14 @@ watchEffect(() => {
 
 <template>
   <ul>
-    <li>
-      <button @click="gotoRootFolder(null)"> 🏠 </button>
+    <li class="inline-block pl-1">
+      <button @click="gotoRootFolder(null)">🏠</button>
     </li>
-    <li v-for="node of path">
-      <a href="#" @click.prevent="gotoRootFolder(node.id)">
+    <li v-for="node of path" class="inline-block pl-1">
+      &nbsp;&gt;&nbsp;
+      <button @click.prevent="gotoRootFolder(node.id)">
         {{ node.name }}
-      </a>
+      </button>
     </li>
   </ul>
 </template>
-
-<style scoped>
-li {
-  display: inline-block;
-  padding-left: 0.25rem;
-}
-li + li::before {
-  content: '> ';
-}
-</style>
