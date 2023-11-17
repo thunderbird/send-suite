@@ -21,7 +21,7 @@ const senders = computed(() => {
       <ContactCard
         v-for="sender in senders"
         :key="sender.id"
-        :title="'No Name' + sender.id"
+        :title="`No Name ${sender.id}`"
         :subtitle="sender.email"
         initials
         @click="showFoldersSharedBySender(sender.id)"
