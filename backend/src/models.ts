@@ -95,7 +95,8 @@ export async function createContainer(
   // publicKey: string,
   ownerId: number,
   type: ContainerType,
-  shareOnly: boolean,
+  parentId: number,
+  shareOnly: boolean
 ) {
   // TODO: figure out the nested create syntax:
   // https://www.prisma.io/docs/reference/api-reference/prisma-client-reference#create-1
@@ -113,7 +114,7 @@ export async function createContainer(
   });
   console.log(`👿 just added owner to group`);
 
-  const container = await prisma.container.create({
+  const createArgs = {
     data: {
       name,
       // publicKey,
@@ -122,8 +123,14 @@ export async function createContainer(
       type,
       shareOnly,
       createdAt: new Date(),
+      updatedAt: new Date(),
     },
-  });
+  };
+  if (parentId !== 0) {
+    createArgs.data['parentId'] = parentId;
+  }
+
+  const container = await prisma.container.create(createArgs);
   console.log(`👿 just created container, connected to group`);
 
   return container;
@@ -240,10 +247,7 @@ export async function getSharesForContainer(
   });
 }
 
-export async function updateContainerName(
-  containerId: number,
-  name: string
-) {
+export async function updateContainerName(containerId: number, name: string) {
   const result = await prisma.container.update({
     where: {
       id: containerId,
@@ -367,9 +371,10 @@ export async function createItem(
   type: ItemType,
   wrappedKey: string
 ) {
-  return prisma.item.create({
+  const item = await prisma.item.create({
     data: {
       createdAt: new Date(),
+      updatedAt: new Date(),
       name,
       wrappedKey,
       // containerId,
@@ -387,6 +392,18 @@ export async function createItem(
       },
     },
   });
+  if (item) {
+    // touch the container's `updatedAt` date
+    await prisma.container.update({
+      where: {
+        id: containerId,
+      },
+      data: {
+        updatedAt: new Date(),
+      },
+    });
+  }
+  return item;
 }
 
 export async function deleteItem(id: number, shouldDeleteUpload = false) {
@@ -450,13 +467,69 @@ export async function getContainerInfo(id: number) {
   });
 }
 
+export async function getContainerWithAncestors(id: number) {
+  const container = await prisma.container.findUnique({
+    where: {
+      id,
+    },
+  });
+  if (container.parentId) {
+    container['parent'] = await getContainerWithAncestors(container.parentId);
+  }
+  return container;
+}
+
 export async function getItemsInContainer(id: number) {
   return prisma.container.findUnique({
     where: {
       id,
     },
     select: {
+      id: true,
+      name: true,
+      createdAt: true,
+      updatedAt: true,
       type: true,
+      shareOnly: true,
+      ownerId: true,
+      groupId: true,
+      wrappedKey: true,
+      parentId: true,
+      children: {
+        select: {
+          id: true,
+          name: true,
+          createdAt: true,
+          updatedAt: true,
+          type: true,
+          shareOnly: true,
+          ownerId: true,
+          groupId: true,
+          wrappedKey: true,
+          parentId: true,
+          items: {
+            select: {
+              name: true,
+              wrappedKey: true,
+              uploadId: true,
+              createdAt: true,
+              type: true,
+              upload: {
+                select: {
+                  size: true,
+                  type: true,
+                  owner: {
+                    select: {
+                      email: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+
       items: {
         select: {
           name: true,
@@ -466,6 +539,7 @@ export async function getItemsInContainer(id: number) {
           type: true,
           upload: {
             select: {
+              size: true,
               type: true,
               owner: {
                 select: {
@@ -514,6 +588,7 @@ export async function getAllUserGroupContainers(
       in: groupIds,
     },
     shareOnly: false,
+    parentId: null,
   };
 
   if (type) {
@@ -528,6 +603,14 @@ export async function getAllUserGroupContainers(
     select: {
       id: true,
       name: true,
+      createdAt: true,
+      updatedAt: true,
+      type: true,
+      shareOnly: true,
+      ownerId: true,
+      groupId: true,
+      wrappedKey: true,
+      parentId: true,
       items: {
         select: {
           id: true,

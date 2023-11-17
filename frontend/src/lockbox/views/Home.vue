@@ -11,7 +11,8 @@ import SharedWithMe from '@/lockbox/components/SharedWithMe.vue';
 import InvitationList from '@/lockbox/components/InvitationList.vue';
 
 const userRef = inject('userRef');
-const { currentFile, currentFolderId } = inject('folderManager');
+const { currentFile, currentFolderId, rootFolderId } = inject('folderManager');
+
 </script>
 
 <template>
@@ -30,8 +31,10 @@ const { currentFile, currentFolderId } = inject('folderManager');
       </header>
       <main class="flex flex-col gap-4 px-4">
         <InvitationList />
-        <SharedWithMe />
-        <SharedByMe />
+        <template v-if="!rootFolderId">
+          <SharedWithMe />
+          <SharedByMe />
+        </template>
         <FolderView />
       </main>
     </div>

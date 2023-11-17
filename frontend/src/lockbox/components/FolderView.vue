@@ -3,23 +3,23 @@ import { inject, onMounted } from 'vue';
 import { IconDownload, IconShare, IconTrash, IconDotsVertical } from '@tabler/icons-vue';
 import FolderTableRowCell from '@/lockbox/elements/FolderTableRowCell.vue';
 import Btn from '@/lockbox/elements/Btn.vue';
-import FileUpload from '@/lockbox/components/FileUpload.vue';
 import DragAndDropUpload from '@/lockbox/components/DragAndDropUpload.vue';
-import ManageSharing from '@/lockbox/components/ManageSharing.vue';
-// import Btn from '@/lockbox/elements/Btn.vue';
+import Breadcrumbs from '@/lockbox/components/Breadcrumbs.vue';
 
 const {
   deleteFolder,
   setCurrentFile,
+  rootFolder,
   currentFolderId,
   setCurrentFolderId,
   folders,
-  getFolders,
+  getVisibleFolders,
+  gotoRootFolder,
 } = inject('folderManager');
 
 const { toggleItemForSharing } = inject('sharingManager');
 
-onMounted(getFolders);
+onMounted(getVisibleFolders);
 
 function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
   console.log(`user chose to show info for file ${itemId}`);
@@ -28,72 +28,89 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
 </script>
 <template>
   <div class="w-full flex flex-col gap-3">
-    <h2 class="font-bold">
-      Your Files
-      <button @click="loadFolderList">🔁</button>
-    </h2>
-    <table class="border-separate border-spacing-x-0 border-spacing-y-1">
-      <thead>
-        <tr>
-          <th class="border-r border-b border-gray-300 w-24"><input type="checkbox" /></th>
-          <th class="border-r border-b border-gray-300">Name</th>
-          <th class="border-r border-b border-gray-300">Tags</th>
-          <th class="border-r border-b border-gray-300">Shared With</th>
-          <th class="border-b border-gray-300">Access</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="group" v-for="folder in folders" :key="folder.id" @click="setCurrentFolderId(folder.id)">
-          <FolderTableRowCell :selected="folder.id === currentFolderId">
-            <div class="flex items-center gap-4">
-              <input type="checkbox" :checked="folder.id === currentFolderId">
+    <h2 class="font-bold">Your Files</h2>
+    <Breadcrumbs v-if="rootFolder" />
+    <DragAndDropUpload>
+      <table class="w-full border-separate border-spacing-x-0 border-spacing-y-1">
+        <thead>
+          <tr>
+            <th class="border-r border-b border-gray-300"></th>
+            <th class="border-r border-b border-gray-300">Name</th>
+            <th class="border-r border-b border-gray-300">Tags</th>
+            <th class="border-r border-b border-gray-300">Shared With</th>
+            <th class="border-b border-gray-300">Access</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            class="group cursor-pointer"
+            v-for="folder in folders"
+            :key="folder.id"
+            @click="setCurrentFolderId(folder.id)"
+            @dblclick="gotoRootFolder(folder.id)"
+          >
+            <FolderTableRowCell :selected="folder.id === currentFolderId">
               <img src="@/assets/folder.svg" class="w-8 h-8" />
-            </div>
-          </FolderTableRowCell>
-          <FolderTableRowCell :selected="folder.id === currentFolderId">
-            <div>{{ folder.name }} (ID {{ folder.id }})</div>
-            <div class="text-sm">Last modified</div>
-          </FolderTableRowCell>
-          <FolderTableRowCell :selected="folder.id === currentFolderId"></FolderTableRowCell>
-          <FolderTableRowCell :selected="folder.id === currentFolderId"></FolderTableRowCell>
-          <FolderTableRowCell :selected="folder.id === currentFolderId">
-            <div class="flex justify-between">
-              <div
-                class="flex gap-2 opacity-0 group-hover:!opacity-100 transition-opacity"
-                :class="{ '!opacity-100': folder.id === currentFolderId }"
-              >
-                <Btn secondary>
-                  <IconDownload class="w-4 h-4" />
-                </Btn>
-                <Btn primary>
-                  <IconShare class="w-4 h-4" /> Share
-                </Btn>
-                <Btn danger @click="deleteFolder(folder.id)">
-                  <IconTrash class="w-4 h-4" />
+            </FolderTableRowCell>
+            <FolderTableRowCell :selected="folder.id === currentFolderId">
+              <div>{{ folder.name }}</div>
+              <div class="text-sm">Last modified</div>
+            </FolderTableRowCell>
+            <FolderTableRowCell :selected="folder.id === currentFolderId"></FolderTableRowCell>
+            <FolderTableRowCell :selected="folder.id === currentFolderId"></FolderTableRowCell>
+            <FolderTableRowCell :selected="folder.id === currentFolderId">
+              <div class="flex justify-between">
+                <div
+                  class="flex gap-2 opacity-0 group-hover:!opacity-100 transition-opacity"
+                  :class="{ '!opacity-100': folder.id === currentFolderId }"
+                >
+                  <Btn secondary>
+                    <IconDownload class="w-4 h-4" />
+                  </Btn>
+                  <Btn primary> <IconShare class="w-4 h-4" /> Share </Btn>
+                  <Btn danger @click="deleteFolder(folder.id)">
+                    <IconTrash class="w-4 h-4" />
+                  </Btn>
+                </div>
+                <Btn class="ml-auto">
+                  <IconDotsVertical class="w-4 h-4" />
                 </Btn>
               </div>
-              <Btn class="ml-auto">
-                <IconDotsVertical class="w-4 h-4" />
-              </Btn>
-            </div>
-            <!-- <template v-if="folder.id === currentFolderId">
-              <ManageSharing :folderId="currentFolderId" />
-              <FileUpload />
-              <DragAndDropUpload />
-              <ul class="file-list">
-                <li v-for="file of folder.items">
-                  <button @click="showFileInfo(file.id, file.uploadId, folder.id, file.wrappedKey, file.name, file.type)">
-                    {{ file.name }}
-                  </button>
-                  <button @click="toggleItemForSharing(file.id)">
-                    [Share]
-                  </button>
-                </li>
-              </ul>
-            </template> -->
-          </FolderTableRowCell>
-        </tr>
-      </tbody>
-    </table>
+            </FolderTableRowCell>
+          </tr>
+
+          <!-- v-if="folder.id === currentFolderId" -->
+          <tr class="group cursor-pointer" v-if="rootFolder" v-for="item in rootFolder.items" :key="item.id">
+            <FolderTableRowCell>
+              <div class="flex justify-end">
+                <img src="@/assets/file.svg" class="w-8 h-8" />
+              </div>
+            </FolderTableRowCell>
+            <FolderTableRowCell>
+              <div>{{ item.name }}</div>
+              <div class="text-sm">Last modified</div>
+            </FolderTableRowCell>
+            <FolderTableRowCell></FolderTableRowCell>
+            <FolderTableRowCell></FolderTableRowCell>
+            <FolderTableRowCell>
+              <div class="flex justify-between">
+                <div class="flex gap-2 opacity-0 group-hover:!opacity-100 transition-opacity">
+                  <Btn secondary>
+                    <IconDownload class="w-4 h-4" />
+                  </Btn>
+                  <Btn primary> <IconShare class="w-4 h-4" /> Share </Btn>
+                  <Btn danger>
+                    <IconTrash class="w-4 h-4" />
+                  </Btn>
+                </div>
+                <Btn class="ml-auto">
+                  <IconDotsVertical class="w-4 h-4" />
+                </Btn>
+              </div>
+            </FolderTableRowCell>
+          </tr>
+        </tbody>
+      </table>
+    </DragAndDropUpload>
   </div>
 </template>

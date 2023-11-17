@@ -119,10 +119,14 @@ export default class Sharer {
       // }
     }
 
+    // A share-only Folder shouldn't
+    // have a parentId
+    const parentId = 0;
     const shareOnly = true;
     const response = await this.api.createFolder(
       userId,
       currentContainer.name,
+      parentId,
       shareOnly
     );
     if (!(response || response.id)) {

@@ -150,7 +150,7 @@ export class ApiConnection {
     }
   }
 
-  async createFolder(ownerId, name, shareOnly = false) {
+  async createFolder(ownerId, name, parentId = 0, shareOnly = false) {
     // TODO: shift the userId from frontend argument to backend session
     const resp = await this.callApi(
       `containers`,
@@ -158,6 +158,7 @@ export class ApiConnection {
         name: name ?? timestamp(),
         ownerId,
         type: CONTAINER_TYPE.FOLDER,
+        parentId,
         shareOnly,
       },
       'POST'
@@ -292,9 +293,20 @@ export class ApiConnection {
     }
   }
 
-  async getAllFolders(userId) {
+  async getUserFolders(userId) {
     // TODO: shift the userId from frontend argument to backend session
     const resp = await this.callApi(`users/${userId}/folders/`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get folders for user ${userId}`);
+      return null;
+    }
+  }
+
+  async getFolderTree(userId, rootFolderId) {
+    // TODO: shift the userId from frontend argument to backend session
+    const resp = await this.callApi(`containers/${rootFolderId}/`);
     if (resp) {
       return resp;
     } else {

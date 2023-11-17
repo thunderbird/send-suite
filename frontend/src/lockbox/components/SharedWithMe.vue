@@ -2,12 +2,12 @@
 import { inject, computed } from 'vue';
 import ContactCard from '@/lockbox/elements/ContactCard.vue';
 
-const { sharedWithMe } = inject('sharingManager');
+const { sharedWithMe, showFoldersSharedBySender } = inject('sharingManager');
 
 // get list of unique senders out of all invitations for the current user
 const senders = computed(() => {
   const contacts = {};
-  sharedWithMe.value.forEach(({share}) => {
+  sharedWithMe.value.forEach(({ share }) => {
     contacts[share.sender.id] = share.sender;
   });
   return Object.values(contacts);
@@ -21,9 +21,11 @@ const senders = computed(() => {
       <ContactCard
         v-for="sender in senders"
         :key="sender.id"
-        :title="'No Name'"
+        :title="`No Name ${sender.id}`"
         :subtitle="sender.email"
         initials
+        @click="showFoldersSharedBySender(sender.id)"
+        class="cursor-pointer"
       />
     </div>
   </div>

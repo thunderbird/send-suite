@@ -1,23 +1,29 @@
 <script setup>
-import { ref, onMounted, inject, watch } from 'vue';
-const emit = defineEmits(['setCurrentFolderId']);
-const props = defineProps({
-  folderPath: Array,
-});
+import { ref, onMounted, inject, watchEffect } from 'vue';
+const { rootFolder, gotoRootFolder } = inject('folderManager');
 
-function loadFolder(id) {
-  console.log(`you want to go to folder ${id}`);
-  emit(`setCurrentFolderId`, id);
-}
+const path = ref([]);
+
+watchEffect(() => {
+  path.value = [rootFolder.value];
+  let parent = rootFolder.value.parent;
+  while (parent) {
+    path.value.unshift(parent);
+    parent = parent.parent;
+  }
+});
 </script>
+
 <template>
   <ul>
-    <li v-for="folder of props.folderPath">
-      <a href="#" @click.prevent="loadFolder(folder.id)">
-        {{ folder.name }}
-      </a>
+    <li class="inline-block pl-1">
+      <button @click="gotoRootFolder(null)">🏠</button>
+    </li>
+    <li v-for="node of path" class="inline-block pl-1">
+      &nbsp;&gt;&nbsp;
+      <button @click.prevent="gotoRootFolder(node.id)">
+        {{ node.name }}
+      </button>
     </li>
   </ul>
 </template>
-
-<style scoped></style>

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, inject, provide, watch } from 'vue';
+import { ref, inject, provide, watch, toRaw } from 'vue';
 import Uploader from '@/common/upload';
 import { getContainerKeyFromChallenge } from '@/common/challenge.js';
 /*
@@ -30,7 +30,7 @@ const uploader = new Uploader(userRef, keychainRef, api);
 watch(
   () => userRef.value.id,
   () => {
-    getFolders();
+    getVisibleFolders();
   }
 );
 
@@ -38,6 +38,10 @@ const folders = ref([]);
 const currentFolderId = ref(null);
 const currentFile = ref(null);
 const currentFolder = ref(null);
+const rootFolderId = ref(null);
+const rootFolder = ref(null);
+const parentFolderId = ref(null);
+const folderPath = ref([]);
 
 function getDefaultFolder() {
   // TODO: need to designate one as "default"
@@ -54,7 +58,15 @@ async function setCurrentFolderId(id) {
   await setCurrentFile(null);
 
   // Also set the currentFolder
-  currentFolder.value = folders.value.find(f => f.id === id);
+  currentFolder.value = folders.value.find((f) => f.id === id);
+}
+
+async function setRootFolderId(id) {
+  console.log(`just set the rootFolderId.value to ${id}`);
+  rootFolderId.value = id;
+  if (!id) {
+    rootFolder.value = null;
+  }
 }
 
 async function setCurrentFile(obj) {
@@ -77,31 +89,51 @@ async function setCurrentFile(obj) {
 
 function calculateFolderSizes(folders) {
   // NOT recursive.
-  const foldersWithSizes = folders.map(folder => {
-    folder.size = folder.items.reduce((total, {upload}) => total + upload.size, 0)
+  const foldersWithSizes = folders.map((folder) => {
+    folder.size = folder.items?.reduce((total, { upload }) => total + upload?.size || 0, 0);
     return folder;
   });
   return foldersWithSizes;
 }
 
 // TODO: actually limit this to a specific folder
-async function getFolders(root) {
+async function getVisibleFolders() {
   if (!userRef.value.id) {
     console.log(`no valid user id`);
     return;
   }
-  if (!root) {
-    const foldersFromApi = await api.getAllFolders(userRef.value.id);
-    folders.value = calculateFolderSizes(foldersFromApi);
-    console.log(`loaded ${folders.value.length} folders`);
+  let foldersFromApi;
+  if (rootFolderId.value) {
+    const tree = await api.getFolderTree(userRef.value.id, rootFolderId.value);
+    foldersFromApi = tree.children;
 
-    // update the currentFolder
-    if (currentFolderId.value) {
-      currentFolder.value = folders.value.find(f => f.id === currentFolderId.value);
-    }
+    console.log(tree);
+
+    parentFolderId.value = tree.parentId || null;
+    rootFolder.value = tree;
+
+    console.log(`root folder has these items 🍬🍬🍬🍬🍬🍬`);
+    console.log(tree.items);
   } else {
-    console.log(`TBD: what to do if we specify a root folder`);
+    // foldersFromApi = await api.getUserFolders(userRef.value.id);
+
+    // We want:
+    // - our own folders with no parent
+    // - folders shared with me
+    const userFolders = await api.getUserFolders(userRef.value.id);
+    // const foldersSharedwithMe = await api.getFoldersSharedWithUser(userRef.value.id);
+    foldersFromApi = [
+      ...userFolders,
+      // ...foldersSharedwithMe.map(f => f.share.container),
+    ];
   }
+
+  folders.value = calculateFolderSizes(foldersFromApi);
+  if (currentFolderId.value) {
+    currentFolder.value = folders.value.find((f) => f.id === currentFolderId.value);
+  }
+  console.log(`got foldersFromApi: `);
+  console.log(foldersFromApi);
 }
 
 // // Make this computed?
@@ -127,22 +159,22 @@ async function setDefaultFolder() {
   // should we be able to set a different default?
 }
 
-async function createFolder(parentFolderId = 0) {
+async function createFolder(parentId = 0) {
   console.log(`you want to create a folder`);
-  const response = await api.createFolder(userRef.value.id, 'Untitled');
+  const response = await api.createFolder(userRef.value.id, 'Untitled', parentId);
   console.log(response);
   // await keychain.createAndAddContainerKey(1);
   await keychainRef.value.newKeyForContainer(response.id);
   await keychainRef.value.store();
   console.log(`TODO: only reload the one folder`);
-  await getFolders();
+  await getVisibleFolders();
 }
 
 async function uploadItem(fileBlob, folderId) {
   console.log(`Rendering Upload component with containerId and fileBlob`);
   const itemObj = await uploader.doUpload(fileBlob, folderId);
   if (itemObj) {
-    getFolders();
+    getVisibleFolders();
   }
   return itemObj;
 }
@@ -152,7 +184,7 @@ async function deleteFolder(id) {
   const resp = await api.deleteContainer(id);
   if (resp) {
     console.log(`delete successful, updating folder list`);
-    getFolders();
+    getVisibleFolders();
     setCurrentFile(null);
   }
 }
@@ -163,7 +195,7 @@ async function deleteItemAndContent(itemId, folderId) {
   // `true` as the third arg means delete the Content, not just the Item
   const result = await api.deleteItem(itemId, folderId, true);
   if (result) {
-    getFolders();
+    getVisibleFolders();
     setCurrentFile(null);
   }
 }
@@ -176,14 +208,21 @@ async function moveItems(itemIds, destinationFolderId) {
 async function renameFolder(containerId, name) {
   const result = await api.renameFolder(containerId, name);
   if (result) {
-    await getFolders();
+    await getVisibleFolders();
   }
   return result;
 }
 
+async function gotoRootFolder(id) {
+  if (id !== rootFolderId.value) {
+    await setRootFolderId(id);
+    await getVisibleFolders();
+  }
+}
+
 provide('folderManager', {
   folders,
-  getFolders,
+  getVisibleFolders,
   createFolder,
   deleteFolder,
   currentFolder,
@@ -195,6 +234,11 @@ provide('folderManager', {
   uploadItem,
   deleteItemAndContent,
   renameFolder,
+  rootFolderId,
+  rootFolder,
+  setRootFolderId,
+  parentFolderId,
+  gotoRootFolder,
 });
 
 // =======================================================================
@@ -221,9 +265,7 @@ function toggleItemForSharing(itemId) {
   console.log(`here is the itemId to toggle: ${itemId}`);
   if (selectedItemsForSharing.value.includes(itemId)) {
     // remove
-    selectedItemsForSharing.value = selectedItemsForSharing.value.filter(
-      (id) => id !== itemId
-    );
+    selectedItemsForSharing.value = selectedItemsForSharing.value.filter((id) => id !== itemId);
   } else {
     // add
     selectedItemsForSharing.value = [...selectedItemsForSharing.value, itemId];
@@ -254,12 +296,7 @@ function createItemMap(folders) {
 async function acceptAccessLink(linkId, password) {
   // Check for existence of link
 
-  const { unwrappedKey, containerId } = await getContainerKeyFromChallenge(
-    linkId,
-    password,
-    api,
-    keychainRef
-  );
+  const { unwrappedKey, containerId } = await getContainerKeyFromChallenge(linkId, password, api, keychainRef);
   console.log(`unwrappedKey: ${unwrappedKey}`);
   console.log(`containerId: ${containerId}`);
 
@@ -272,10 +309,7 @@ async function acceptAccessLink(linkId, password) {
     console.log(`Using existing user id`);
     // TODO: this in particular needs to be server-side
     // Create an Invitation and set it to ACCEPTED
-    const createInvitationResp = await api.createInvitationForAccessLink(
-      linkId,
-      userRef.value.id
-    );
+    const createInvitationResp = await api.createInvitationForAccessLink(linkId, userRef.value.id);
     // TODO: reminder that this creates an invitation, where the value of
     // the wrappedKey is the password-wrapped one, not the publicKey wrapped one.
 
@@ -283,10 +317,7 @@ async function acceptAccessLink(linkId, password) {
       return false;
     }
 
-    const addMemberResp = await api.addMemberToContainer(
-      userRef.value.id,
-      containerId
-    );
+    const addMemberResp = await api.addMemberToContainer(userRef.value.id, containerId);
     console.log(`adding user to convo`);
     console.log(addMemberResp);
     if (!addMemberResp) {
@@ -327,6 +358,30 @@ async function getSharedFolder(hash) {
   return await api.getContainerWithItemsForAccessLink(hash);
 }
 
+async function showFoldersSharedBySender(userId) {
+  folders.value = sharedWithMe.value
+    .filter((shareRef) => {
+      const { share } = toRaw(shareRef);
+      return userId === share?.sender?.id;
+    })
+    .map((shareRef) => {
+      const { share } = toRaw(shareRef);
+      return share.container;
+    });
+}
+
+async function showFoldersSharedWithRecipient(userId) {
+  folders.value = sharedByMe.value
+    .filter((shareRef) => {
+      const share = toRaw(shareRef);
+      return share.invitations.some((invitation) => userId === invitation.recipientId);
+    })
+    .map((shareRef) => {
+      const { container } = toRaw(shareRef);
+      return container;
+    });
+}
+
 async function getSharesForFolder(containerId) {
   if (!userRef.value.id) {
     console.log(`no valid user id`);
@@ -337,42 +392,24 @@ async function getSharesForFolder(containerId) {
   return sharedByMe.value.filter((share) => share.container.id === containerId);
 }
 
-async function updateInvitationPermissions(
-  containerId,
-  invitationId,
-  permission
-) {
+async function updateInvitationPermissions(containerId, invitationId, permission) {
   if (!userRef.value.id) {
     console.log(`no valid user id`);
     return;
   }
-  const result = await api.updateInvitationPermissions(
-    containerId,
-    userRef.value.id,
-    invitationId,
-    permission
-  );
+  const result = await api.updateInvitationPermissions(containerId, userRef.value.id, invitationId, permission);
 
   if (result) {
     await getFoldersSharedByMe();
   }
   return result;
 }
-async function updateAccessLinkPermissions(
-  containerId,
-  accessLinkId,
-  permission
-) {
+async function updateAccessLinkPermissions(containerId, accessLinkId, permission) {
   if (!userRef.value.id) {
     console.log(`no valid user id`);
     return;
   }
-  const result = await api.updateAccessLinkPermissions(
-    containerId,
-    userRef.value.id,
-    accessLinkId,
-    permission
-  );
+  const result = await api.updateAccessLinkPermissions(containerId, userRef.value.id, accessLinkId, permission);
 
   if (result) {
     await getFoldersSharedByMe();
@@ -419,10 +456,7 @@ async function addGroupMember(userId, folderId) {
 }
 
 async function removeInvitationAndGroupMembership(containerId, invitationId) {
-  const success = await api.removeInvitationAndGroupMembership(
-    containerId,
-    invitationId
-  );
+  const success = await api.removeInvitationAndGroupMembership(containerId, invitationId);
   if (success) {
     // update our ref
     await getFoldersSharedByMe();
@@ -437,10 +471,7 @@ async function getInvitations() {
 async function acceptInvitation(containerId, invitationId, wrappedKey) {
   // Unwrap and store key
   try {
-    const unwrappedKey = await keychainRef.value.rsa.unwrapContainerKey(
-      wrappedKey,
-      keychainRef.value.rsa.privateKey
-    );
+    const unwrappedKey = await keychainRef.value.rsa.unwrapContainerKey(wrappedKey, keychainRef.value.rsa.privateKey);
 
     await keychainRef.value.add(containerId, unwrappedKey);
     await keychainRef.value.store();
@@ -451,7 +482,7 @@ async function acceptInvitation(containerId, invitationId, wrappedKey) {
     }
     await getFoldersSharedWithMe();
     await getInvitations();
-    await getFolders();
+    await getVisibleFolders();
     return resp;
   } catch (e) {
     console.log(e);
@@ -472,6 +503,8 @@ provide('sharingManager', {
   isAccessLinkValid,
   getFoldersSharedWithMe,
   getFoldersSharedByMe,
+  showFoldersSharedBySender,
+  showFoldersSharedWithRecipient,
   getGroupMembers,
   addGroupMember,
   removeInvitationAndGroupMembership,

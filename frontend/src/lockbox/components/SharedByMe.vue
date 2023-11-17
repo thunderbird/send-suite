@@ -2,7 +2,7 @@
 import { inject, computed } from 'vue';
 import ContactCard from '@/lockbox/elements/ContactCard.vue';
 
-const { sharedByMe } = inject('sharingManager');
+const { sharedByMe, showFoldersSharedWithRecipient } = inject('sharingManager');
 
 // get list of unique recipients out of all invitations from the current user
 const recipients = computed(() => {
@@ -26,6 +26,8 @@ const recipients = computed(() => {
         :title="'No Name'"
         :subtitle="recipient.email"
         initials
+        @click="showFoldersSharedWithRecipient(recipient.id)"
+        class="cursor-pointer"
       />
     </div>
   </div>
