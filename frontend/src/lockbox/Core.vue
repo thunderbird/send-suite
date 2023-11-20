@@ -31,10 +31,12 @@ watch(
   () => userRef.value.id,
   () => {
     getVisibleFolders();
+    getRecentActivity();
   }
 );
 
 const folders = ref([]);
+const recentFolders = ref([]);
 const currentFolderId = ref(null);
 const currentFile = ref(null);
 const currentFolder = ref(null);
@@ -134,6 +136,14 @@ async function getVisibleFolders() {
   }
   console.log(`got foldersFromApi: `);
   console.log(foldersFromApi);
+}
+
+async function getRecentActivity() {
+  if (!userRef.value.id) {
+    console.log(`no valid user id`);
+    return;
+  }
+  recentFolders.value = await api.getRecentActivity(userRef.value.id);
 }
 
 // // Make this computed?
@@ -239,6 +249,8 @@ provide('folderManager', {
   setRootFolderId,
   parentFolderId,
   gotoRootFolder,
+  recentFolders,
+  getRecentActivity,
 });
 
 // =======================================================================

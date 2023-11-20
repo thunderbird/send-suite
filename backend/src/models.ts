@@ -409,15 +409,19 @@ export async function createItem(
 export async function deleteItem(id: number, shouldDeleteUpload = false) {
   // TODO: manage user sessions on the server
   // requiring logged-in user to be owner
+
+  let containerId;
   if (shouldDeleteUpload) {
     const item = await prisma.item.findUnique({
       where: {
         id,
       },
       select: {
+        containerId: true,
         uploadId: true,
       },
     });
+    containerId = item.containerId;
     const uploadDeleteResult = await prisma.upload.delete({
       where: {
         id: item.uploadId,
@@ -435,6 +439,18 @@ export async function deleteItem(id: number, shouldDeleteUpload = false) {
       id,
     },
   });
+
+  if (containerId && result) {
+    // touch the container's `updatedAt` date
+    await prisma.container.update({
+      where: {
+        id: containerId,
+      },
+      data: {
+        updatedAt: new Date(),
+      },
+    });
+  }
 
   console.log(`deleted item ${id}`);
   return result;
@@ -557,13 +573,10 @@ export async function getItemsInContainer(id: number) {
   });
 }
 
-// TODO:
-// - move item to another container
-// - delete item
-
-export async function getAllUserGroupContainers(
+async function _whereContainer(
   userId: number,
-  type: ContainerType | null
+  type: ContainerType | null,
+  shareOnly?: boolean
 ) {
   const params = {
     where: {
@@ -587,14 +600,30 @@ export async function getAllUserGroupContainers(
     groupId: {
       in: groupIds,
     },
-    shareOnly: false,
     parentId: null,
   };
+
+  if (shareOnly !== undefined) {
+    containerWhere['shareOnly'] = shareOnly;
+  }
 
   if (type) {
     containerWhere['type'] = type;
   }
 
+  return containerWhere;
+}
+
+// TODO:
+// - move item to another container
+// - delete item
+
+// Does not include shareOnly containers.
+export async function getAllUserGroupContainers(
+  userId: number,
+  type: ContainerType | null
+) {
+  const containerWhere = await _whereContainer(userId, type, false);
   return prisma.container.findMany({
     where: containerWhere,
     // include: {
@@ -635,6 +664,44 @@ export async function getAllUserGroupContainers(
       },
     },
   });
+}
+
+export async function getRecentActivity(
+  userId: number,
+  type: ContainerType | null
+) {
+  // Get all containers
+  const containerWhere = await _whereContainer(userId, type);
+  const containers = await prisma.container.findMany({
+    take: 10,
+    where: containerWhere,
+    orderBy: [
+      {
+        updatedAt: 'desc',
+      },
+      {
+        name: 'asc',
+      },
+    ],
+    select: {
+      id: true,
+      name: true,
+      createdAt: true,
+      updatedAt: true,
+      type: true,
+      shareOnly: true,
+      items: {
+        select: {
+          id: true,
+          name: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
+    },
+  });
+
+  return containers;
 }
 
 // for a container, how many groups are there?
