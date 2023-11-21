@@ -1,5 +1,4 @@
 #!/bin/sh
-
 echo 'Generating prisma client...'
 npm run db:migrate
 npm run db:generate
