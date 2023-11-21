@@ -1,4 +1,4 @@
-FROM node:latest
+FROM node:lts-alpine
 
 # Set the working directory within the container
 RUN mkdir app

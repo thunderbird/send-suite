@@ -1,0 +1,44 @@
+version: "3.8"
+services:
+  frontend:
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+  backend:
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+      - "5555:5555" # for browsing db with prisma studio
+    # volumes:
+    #   - ./backend:/app
+      # - ./storage:/tmp
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/send-suite
+    depends_on:
+      - db
+  reverse-proxy:
+    image: nginx:latest
+    volumes:
+      - ./backend/tls-dev-proxy/nginx.conf:/etc/nginx/nginx.conf
+      - ./backend/tls-dev-proxy/certs:/etc/ssl/certs
+      - ./backend/tls-dev-proxy/logs:/var/log/nginx
+    ports:
+      - "8088:12345"
+    depends_on:
+      - backend
+  db:
+    image: "postgres:15"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "6432:5432"
+
+volumes:
+  postgres-data:
