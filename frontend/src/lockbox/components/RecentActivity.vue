@@ -39,7 +39,7 @@ const { recentFolders, gotoRootFolder } = inject('folderManager');
         <div v-if="folder.items.length > 0" @click="gotoRootFolder(folder.id)" class="cursor-pointer">
           <div class="flex gap-1.5 items-center">
             <IconFolder class="w-5 h-5 !stroke-amber-800/50 fill-amber-800/20" />
-            <span class="pb-1 text-gray-700">{{ folder.name }} {{ folder.id }}</span>
+            <span class="pb-1 text-gray-700">{{ folder.name }}</span>
           </div>
           <template v-for="file in folder.items">
             <div v-if="sameUpdatedAt(file, folder)" class="flex ml-1.5 gap-1.5 items-center">
