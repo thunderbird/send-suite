@@ -2,6 +2,8 @@
 import { ref, inject, provide, watch, toRaw } from 'vue';
 import Uploader from '@/common/upload';
 import { getContainerKeyFromChallenge } from '@/common/challenge.js';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 /*
 I need to know which one has been "selected"
 But also, selection should only be enabled when run as an extension.
@@ -527,6 +529,11 @@ provide('sharingManager', {
   acceptInvitation,
   getInvitations,
 });
+
+// =======================================================================
+// Misc
+dayjs.extend(relativeTime);
+provide('dayjs', dayjs);
 </script>
 
 <template>

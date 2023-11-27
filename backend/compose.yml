@@ -6,7 +6,7 @@ services:
       - '5555:5555' # for browsing db with prisma studio
     volumes:
       - .:/app
-      # - ./storage:/tmp
+      - ./storage:/tmp
     environment:
       - DATABASE_URL=postgres://postgres:postgres@db:5432/send-suite
     depends_on:

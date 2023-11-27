@@ -19,6 +19,8 @@ const {
 
 const { toggleItemForSharing } = inject('sharingManager');
 
+const dayjs = inject('dayjs');
+
 onMounted(getVisibleFolders);
 
 function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
@@ -54,7 +56,7 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
             </FolderTableRowCell>
             <FolderTableRowCell :selected="folder.id === currentFolderId">
               <div>{{ folder.name }}</div>
-              <div class="text-sm">Last modified</div>
+              <div class="text-sm">Last modified {{ dayjs().to(dayjs(folder.updatedAt)) }}</div>
             </FolderTableRowCell>
             <FolderTableRowCell :selected="folder.id === currentFolderId"></FolderTableRowCell>
             <FolderTableRowCell :selected="folder.id === currentFolderId"></FolderTableRowCell>
@@ -88,7 +90,7 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
             </FolderTableRowCell>
             <FolderTableRowCell>
               <div>{{ item.name }}</div>
-              <div class="text-sm">Last modified</div>
+              <div class="text-sm">Last modified {{ dayjs().to(dayjs(item.updatedAt)) }}</div>
             </FolderTableRowCell>
             <FolderTableRowCell></FolderTableRowCell>
             <FolderTableRowCell></FolderTableRowCell>

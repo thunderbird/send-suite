@@ -529,6 +529,7 @@ export async function getItemsInContainer(id: number) {
               wrappedKey: true,
               uploadId: true,
               createdAt: true,
+              updatedAt: true,
               type: true,
               upload: {
                 select: {
@@ -552,6 +553,7 @@ export async function getItemsInContainer(id: number) {
           wrappedKey: true,
           uploadId: true,
           createdAt: true,
+          updatedAt: true,
           type: true,
           upload: {
             select: {

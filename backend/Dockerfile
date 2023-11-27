@@ -4,12 +4,12 @@ FROM node:latest
 RUN mkdir app
 WORKDIR /app
 
-COPY package*.json ./
+# COPY package*.json ./
 
-RUN npm install -g pnpm
-RUN pnpm install
+# RUN npm install -g pnpm
+# RUN pnpm install
 
-COPY . .
+# COPY . .
 
 EXPOSE 8080
 

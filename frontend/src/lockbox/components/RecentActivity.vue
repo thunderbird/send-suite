@@ -10,7 +10,15 @@ import {
   IconFileText,
 } from '@tabler/icons-vue';
 
-const { recentFolders, getRecentActivity, gotoRootFolder } = inject('folderManager');
+function sameUpdatedAt(obj1, obj2) {
+  const d1 = new Date(obj1.updatedAt);
+  const d2 = new Date(obj2.updatedAt);
+
+  const isSameDate = d1.getDay() === d2.getDay() && d1.getMonth() === d2.getMonth() && d1.getYear() === d2.getYear();
+  return isSameDate;
+}
+
+const { recentFolders, gotoRootFolder } = inject('folderManager');
 </script>
 
 <template>
@@ -19,15 +27,17 @@ const { recentFolders, getRecentActivity, gotoRootFolder } = inject('folderManag
       <div class="font-semibold text-lg text-gray-900">Recent Activity</div>
     </div>
     <div class="flex flex-col gap-1 pl-3">
-      <div v-for="f in recentFolders" @click="gotoRootFolder(f.id)" class="cursor-pointer">
+      <div v-for="folder in recentFolders" @click="gotoRootFolder(folder.id)" class="cursor-pointer">
         <div class="flex gap-1.5 items-center">
           <IconFolder class="w-5 h-5 !stroke-amber-800/50 fill-amber-800/20" />
-          <span class="pb-1 text-gray-700">{{ f.name }} {{ f.id }}</span>
+          <span class="pb-1 text-gray-700">{{ folder.name }} {{ folder.id }}</span>
         </div>
-        <!-- <div v-if="f.type == 'file'" class="flex gap-1.5 items-center">
+        <template v-for="file in folder.items">
+          <div v-if="sameUpdatedAt(file, folder)" class="flex gap-1.5 items-center">
             <IconFileText class="w-5 h-5 !stroke-gray-500 fill-gray-800/20" />
-            <span class="pb-1 text-gray-700">{{ f.title }}</span>
-          </div> -->
+            <span class="pb-1 text-gray-700">{{ file.name }}</span>
+          </div>
+        </template>
       </div>
     </div>
   </section>
