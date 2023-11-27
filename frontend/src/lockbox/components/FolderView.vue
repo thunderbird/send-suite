@@ -21,9 +21,10 @@ const { toggleItemForSharing } = inject('sharingManager');
 
 onMounted(getVisibleFolders);
 
-function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
-  console.log(`user chose to show info for file ${itemId}`);
-  setCurrentFile({ itemId, uploadId, folderId, wrappedKey, filename, type });
+function showFileInfo(file) {
+  console.log(`user chose to show info for file ${file.id}`);
+  setCurrentFile(file);
+  // setCurrentFile({ itemId, uploadId, folderId, wrappedKey, filename, type });
 }
 </script>
 <template>
@@ -80,7 +81,13 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
           </tr>
 
           <!-- v-if="folder.id === currentFolderId" -->
-          <tr class="group cursor-pointer" v-if="rootFolder" v-for="item in rootFolder.items" :key="item.id">
+          <tr
+            class="group cursor-pointer"
+            v-if="rootFolder"
+            v-for="item in rootFolder.items"
+            :key="item.id"
+            @click="showFileInfo(item)"
+          >
             <FolderTableRowCell>
               <div class="flex justify-end">
                 <img src="@/assets/file.svg" class="w-8 h-8" />
