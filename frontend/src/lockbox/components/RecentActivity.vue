@@ -18,6 +18,14 @@ function sameUpdatedAt(obj1, obj2) {
   return isSameDate;
 }
 
+function truncateName(name, length = 17) {
+  if (name.length <= length) {
+    return name;
+  }
+  const shortened = name.substring(0, length);
+  return `${shortened}...`;
+}
+
 const { recentFolders, gotoRootFolder } = inject('folderManager');
 </script>
 
@@ -27,18 +35,20 @@ const { recentFolders, gotoRootFolder } = inject('folderManager');
       <div class="font-semibold text-lg text-gray-900">Recent Activity</div>
     </div>
     <div class="flex flex-col gap-1 pl-3">
-      <div v-for="folder in recentFolders" @click="gotoRootFolder(folder.id)" class="cursor-pointer">
-        <div class="flex gap-1.5 items-center">
-          <IconFolder class="w-5 h-5 !stroke-amber-800/50 fill-amber-800/20" />
-          <span class="pb-1 text-gray-700">{{ folder.name }} {{ folder.id }}</span>
-        </div>
-        <template v-for="file in folder.items">
-          <div v-if="sameUpdatedAt(file, folder)" class="flex gap-1.5 items-center">
-            <IconFileText class="w-5 h-5 !stroke-gray-500 fill-gray-800/20" />
-            <span class="pb-1 text-gray-700">{{ file.name }}</span>
+      <template v-for="folder in recentFolders">
+        <div v-if="folder.items.length > 0" @click="gotoRootFolder(folder.id)" class="cursor-pointer">
+          <div class="flex gap-1.5 items-center">
+            <IconFolder class="w-5 h-5 !stroke-amber-800/50 fill-amber-800/20" />
+            <span class="pb-1 text-gray-700">{{ folder.name }} {{ folder.id }}</span>
           </div>
-        </template>
-      </div>
+          <template v-for="file in folder.items">
+            <div v-if="sameUpdatedAt(file, folder)" class="flex ml-1.5 gap-1.5 items-center">
+              <IconFileText class="w-5 h-5 !stroke-gray-500 fill-gray-800/20" />
+              <span class="pb-1 text-gray-700">{{ truncateName(file.name) }}</span>
+            </div>
+          </template>
+        </div>
+      </template>
     </div>
   </section>
 </template>

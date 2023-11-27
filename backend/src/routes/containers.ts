@@ -251,10 +251,6 @@ router.get('/:containerId/members', getPermissions, async (req, res) => {
 // Add the folder path as a property.
 router.get('/:containerId', getPermissions, async (req, res) => {
   const { containerId } = req.params;
-  console.log(`🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄`);
-
-
-
   try {
     const container = await getItemsInContainer(parseInt(containerId));
 

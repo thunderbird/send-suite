@@ -187,6 +187,7 @@ async function uploadItem(fileBlob, folderId) {
   const itemObj = await uploader.doUpload(fileBlob, folderId);
   if (itemObj) {
     getVisibleFolders();
+    getRecentActivity();
   }
   return itemObj;
 }

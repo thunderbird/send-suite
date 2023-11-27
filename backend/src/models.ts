@@ -578,7 +578,8 @@ export async function getItemsInContainer(id: number) {
 async function _whereContainer(
   userId: number,
   type: ContainerType | null,
-  shareOnly?: boolean
+  shareOnly?: boolean,
+  topLevelOnly?: boolean
 ) {
   const params = {
     where: {
@@ -602,15 +603,19 @@ async function _whereContainer(
     groupId: {
       in: groupIds,
     },
-    parentId: null,
   };
+
+  if (type) {
+    containerWhere['type'] = type;
+  }
 
   if (shareOnly !== undefined) {
     containerWhere['shareOnly'] = shareOnly;
   }
 
-  if (type) {
-    containerWhere['type'] = type;
+  // top-level containers have a null parentId
+  if (topLevelOnly !== undefined) {
+    containerWhere['parentId'] = null;
   }
 
   return containerWhere;
@@ -625,7 +630,7 @@ export async function getAllUserGroupContainers(
   userId: number,
   type: ContainerType | null
 ) {
-  const containerWhere = await _whereContainer(userId, type, false);
+  const containerWhere = await _whereContainer(userId, type, false, true);
   return prisma.container.findMany({
     where: containerWhere,
     // include: {
