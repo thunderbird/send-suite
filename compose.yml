@@ -6,6 +6,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5173:5173"
+    volumes:
+      - ./frontend:/app
   backend:
     build:
       context: ./backend/
@@ -13,9 +15,9 @@ services:
     ports:
       - "8080:8080"
       - "5555:5555" # for browsing db with prisma studio
-    # volumes:
-    #   - ./backend:/app
-      # - ./storage:/tmp
+    volumes:
+      - ./backend:/app
+      - ./storage:/tmp
     environment:
       - DATABASE_URL=postgres://postgres:postgres@db:5432/send-suite
     depends_on:

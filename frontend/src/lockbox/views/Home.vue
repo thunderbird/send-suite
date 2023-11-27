@@ -12,7 +12,6 @@ import InvitationList from '@/lockbox/components/InvitationList.vue';
 
 const userRef = inject('userRef');
 const { currentFile, currentFolderId, rootFolderId } = inject('folderManager');
-
 </script>
 
 <template>
@@ -21,7 +20,9 @@ const { currentFile, currentFolderId, rootFolderId } = inject('folderManager');
       <FolderNavigation />
     </aside>
     <div class="flex flex-col gap-4 grow">
-      <header class="w-full sticky top-0 flex items-center justify-between px-4 py-2 bg-white/90 border-b border-gray-300">
+      <header
+        class="w-full sticky top-0 flex items-center justify-between px-4 py-2 bg-white/90 border-b border-gray-300"
+      >
         <h1>{{ userRef.email }}'s Lockbox</h1>
         <NewFolder />
         <!-- <Breadcrumbs
