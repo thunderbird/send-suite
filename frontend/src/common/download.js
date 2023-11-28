@@ -15,7 +15,7 @@ export default class Downloader {
       console.log(`no id`);
       return;
     }
-
+    debugger;
     let wrappingKey;
     try {
       wrappingKey = await this.keychain.get(folderId);
@@ -32,10 +32,7 @@ export default class Downloader {
       return;
     }
 
-    const contentKey = await this.keychain.container.unwrapContentKey(
-      wrappedKey,
-      wrappingKey
-    );
+    const contentKey = await this.keychain.container.unwrapContentKey(wrappedKey, wrappingKey);
 
     try {
       await download(id, size, contentKey, false, filename, type);

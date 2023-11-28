@@ -77,6 +77,7 @@ async function setCurrentFile(obj) {
     currentFile.value = null;
     return;
   }
+  await setCurrentFolderId(null);
   const { size, type } = await api.getUploadMetadata(obj.uploadId);
   currentFile.value = {
     ...obj,
