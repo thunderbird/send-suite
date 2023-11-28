@@ -50,11 +50,7 @@ async function doUpload() {
 </script>
 
 <template>
-  <div
-    ref="dropZoneRef"
-    class="h-full border"
-    :class="{ 'border-blue-600': !isOverDropZone, 'border-fuchsia-600': isOverDropZone }"
-  >
+  <div ref="dropZoneRef" class="h-full border">
     <slot></slot>
   </div>
 
