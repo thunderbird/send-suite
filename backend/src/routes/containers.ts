@@ -19,6 +19,7 @@ import {
   removeInvitationAndGroup,
   updateContainerName,
   getContainerWithAncestors,
+  updateItemName,
 } from '../models';
 import { getPermissions } from '../middleware';
 
@@ -138,6 +139,23 @@ router.delete(
     } catch (error) {
       console.log(`error deleting item ${itemId} in container ${containerId}`);
       console.log(error);
+      res.status(500).json({
+        message: 'Server error.',
+      });
+    }
+  }
+);
+
+router.post(
+  '/:containerId/item/:itemId/rename',
+  getPermissions,
+  async (req, res) => {
+    const { containerId, itemId } = req.params;
+    const { name } = req.body;
+    try {
+      const item = await updateItemName(parseInt(itemId), name);
+      res.status(200).json(item);
+    } catch (error) {
       res.status(500).json({
         message: 'Server error.',
       });

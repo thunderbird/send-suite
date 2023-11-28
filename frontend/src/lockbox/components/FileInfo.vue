@@ -1,7 +1,8 @@
 <script setup>
-import { ref, inject } from 'vue';
+import { ref, inject, watchEffect } from 'vue';
 // import CreateShare from './CreateShare.vue';
 import Downloader from '@/common/download';
+import FileNameForm from '@/lockbox/elements/FileNameForm.vue';
 import Tag from '@/lockbox/elements/Tag.vue';
 import Btn from '@/lockbox/elements/Btn.vue';
 import { formatBytes } from '@/lib/utils';
@@ -20,13 +21,13 @@ async function downloadContent() {
 }
 
 const showForm = ref(false);
+
 /*
 If the parent is shareOnly, then I want to show the sharing info here.
 
 But what if there are other files who have the same shareOnly parent? If I change the settings here...won't that change them for the other files?
 
 Do I want that to happen?
-
 Or do I omit sharing controls here?
 
 */
@@ -41,7 +42,7 @@ Or do I omit sharing controls here?
         <span v-if="!showForm" class="cursor- pointer" @click="showForm = true">
           {{ currentFile.name }}
         </span>
-        <!-- <FolderNameForm v-if="showForm" /> -->
+        <FileNameForm v-if="showForm" @renameComplete="showForm = false" />
       </div>
       <div class="text-xs">{{ formatBytes(currentFile.upload.size) }}</div>
     </header>

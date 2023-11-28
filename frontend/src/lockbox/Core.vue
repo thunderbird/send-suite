@@ -206,6 +206,22 @@ async function moveItems(itemIds, destinationFolderId) {
   // this.delete();
 }
 
+async function renameItem(containerId, itemId, name) {
+  const result = await api.renameItem(containerId, itemId, name);
+  if (result) {
+    console.log(`you renamed the thing`);
+    console.log(result);
+
+    // Heavy-handed, but refreshes the file name in FolderView component.
+    await getVisibleFolders();
+
+    // Get the name from the response, assign so that it updates
+    // the FileInfo component.
+    currentFile.value.name = result.name;
+  }
+  return result;
+}
+
 async function renameFolder(containerId, name) {
   const result = await api.renameFolder(containerId, name);
   if (result) {
@@ -235,6 +251,7 @@ provide('folderManager', {
   uploadItem,
   deleteItemAndContent,
   renameFolder,
+  renameItem,
   rootFolderId,
   rootFolder,
   setRootFolderId,

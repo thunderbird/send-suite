@@ -260,6 +260,19 @@ export async function updateContainerName(containerId: number, name: string) {
   return result;
 }
 
+export async function updateItemName(itemId: number, name: string) {
+  const result = await prisma.item.update({
+    where: {
+      id: itemId,
+    },
+    data: {
+      name,
+      updatedAt: new Date(),
+    },
+  });
+  return result;
+}
+
 export async function updateInvitationPermissions(
   containerId: number,
   invitationId: number,
