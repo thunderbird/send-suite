@@ -168,6 +168,8 @@ model Container {
   parentId  Int?
   parent    Container?      @relation("Nesting", fields: [parentId], references: [id])
   children  Container[]     @relation("Nesting")
+
+  tags      Tag[]
 }
 
 enum ItemType {
@@ -195,6 +197,8 @@ model Item {
   // parentId  Int?
   // parent    Item?      @relation("Nesting", fields: [parentId], references: [id])
   // children  Item[]     @relation("Nesting")
+
+  tags      Tag[]
 }
 
 model Upload {
@@ -205,4 +209,13 @@ model Upload {
   items     Item[]        // A single Upload may back multiple Items
   type      String        // mime type
   createdAt DateTime?
+}
+
+// A tag can be associated with items and containers
+// When
+model Tag {
+  id          Int     @id @default(autoincrement())
+  name        String
+  items       Item[]
+  containers  Container[]
 }

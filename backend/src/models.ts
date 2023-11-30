@@ -1200,3 +1200,56 @@ export async function burnFolder(
   // TODO: add some sort of retry mechanism.
   return deleteResp;
 }
+
+// Create a tag for an item
+export async function createTagForItem(tagName: string, itemId: number) {}
+
+// Delete a tag
+
+// Update/rename a tag
+
+// Get all items and containers (that I have access to) with a specific tag or tags
+
+export async function getContainersAndItemsWithTags(
+  userId: number,
+  tagNames: string[]
+) {
+  // First, find the group memberships for the user.
+  const memberships = await prisma.membership.findMany({
+    where: { userId },
+  });
+
+  // We then transform the memberships to just include the groupId
+  const groupIds = memberships.map((membership) => membership.groupId);
+
+  // Now get all containers with these group IDs
+  const containersWithTags = await prisma.container.findMany({
+    where: {
+      group: { id: { in: groupIds } },
+      tags: { some: { name: { in: tagNames } } }, // Looking for any of the input tags
+    },
+    include: {
+      items: true, // include related items
+      tags: true, // include related tags
+    },
+  });
+
+  // Fetching items with the tag and any parent container must be made accessible by the groups
+  const itemsWithTags = await prisma.item.findMany({
+    where: {
+      container: {
+        group: { id: { in: groupIds } },
+      },
+      tags: { some: { name: { in: tagNames } } }, // Looking for any of the input tags
+    },
+    include: {
+      container: true, // include related container
+      tags: true, // include related tags
+    },
+  });
+
+  return {
+    containers: containersWithTags,
+    items: itemsWithTags,
+  };
+}
