@@ -212,10 +212,11 @@ model Upload {
 }
 
 // A tag can be associated with items and containers
-// When
+// The tags will be visible by anyone with access to those
+// items and containers.
 model Tag {
-  id          Int     @id @default(autoincrement())
-  name        String
+  id          Int         @id @default(autoincrement())
+  name        String      @unique
   items       Item[]
   containers  Container[]
 }
