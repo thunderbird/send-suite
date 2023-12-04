@@ -266,7 +266,7 @@ router.get('/:containerId/members', getPermissions, async (req, res) => {
 });
 
 // Get a container and its items
-// Add the folder path as a property.
+// Add the ancestor folder path as a property.
 router.get('/:containerId', getPermissions, async (req, res) => {
   const { containerId } = req.params;
   try {
