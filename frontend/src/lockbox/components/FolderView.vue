@@ -24,7 +24,6 @@ onMounted(getVisibleFolders);
 function showFileInfo(file) {
   console.log(`user chose to show info for file ${file.id}`);
   setCurrentFile(file);
-  // setCurrentFile({ itemId, uploadId, folderId, wrappedKey, filename, type });
 }
 </script>
 <template>

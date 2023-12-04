@@ -23,13 +23,9 @@ async function downloadContent() {
 const showForm = ref(false);
 
 /*
-If the parent is shareOnly, then I want to show the sharing info here.
-
-But what if there are other files who have the same shareOnly parent? If I change the settings here...won't that change them for the other files?
-
-Do I want that to happen?
-Or do I omit sharing controls here?
-
+Note about shareOnly containers.
+- if this file is in a shareOnly Container, show the sharing controls here (because the Container was only created for the purpose of sharing this Item)
+- TODO: decide what to do if there were multiple Items shared via the same shareOnly Container.
 */
 </script>
 

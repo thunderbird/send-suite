@@ -15,7 +15,6 @@ export default class Downloader {
       console.log(`no id`);
       return;
     }
-    debugger;
     let wrappingKey;
     try {
       wrappingKey = await this.keychain.get(folderId);
