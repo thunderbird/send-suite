@@ -1202,12 +1202,86 @@ export async function burnFolder(
 }
 
 // Create a tag for an item
-export async function createTagForItem(tagName: string, itemId: number) {}
+export async function createTagForItem(tagName: string, itemId: number) {
+  // trim, but don't normalize the case
+  const name = tagName.trim();
+  // or should we do a case-insensitive search for an existing tag?
+
+  const items = {
+    connect: [{ id: itemId }],
+  };
+
+  // create the tag and add the container
+  const tag = await prisma.tag.upsert({
+    where: {
+      name,
+    },
+    update: {
+      items,
+    },
+    create: {
+      name,
+      items,
+    },
+  });
+
+  return tag;
+}
+
+// Create a tag for a container
+export async function createTagForContainer(
+  tagName: string,
+  containerId: number
+) {
+  // trim, but don't normalize the case
+  const name = tagName.trim();
+  // or should we do a case-insensitive search for an existing tag?
+
+  const containers = {
+    connect: [{ id: containerId }],
+  };
+
+  // create the tag and add the container
+  const tag = await prisma.tag.upsert({
+    where: {
+      name,
+    },
+    update: {
+      containers,
+    },
+    create: {
+      name,
+      containers,
+    },
+  });
+
+  return tag;
+}
 
 // Delete a tag
+export async function deleteTag(id: number) {
+  const result = await prisma.tag.delete({
+    where: {
+      id,
+    },
+  });
+
+  return result;
+}
 
 // Update/rename a tag
-
+export async function updateTagName(tagId: number, name: string) {
+  const result = await prisma.tag.update({
+    where: {
+      id: tagId,
+    },
+    data: {
+      name,
+      // updatedAt: new Date(),
+    },
+  });
+  return result;
+}
 // Get all items and containers (that I have access to) with a specific tag or tags
 
 export async function getContainersAndItemsWithTags(

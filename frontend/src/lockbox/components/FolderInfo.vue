@@ -1,11 +1,11 @@
 <script setup>
-import { inject, ref, computed, watchEffect} from 'vue';
+import { inject, ref, computed, watchEffect } from 'vue';
 import CreateAccessLink from '@/lockbox/components/CreateAccessLink.vue';
 import FolderNameForm from '@/lockbox/elements/FolderNameForm.vue';
 import Avatar from '@/lockbox/elements/Avatar.vue';
 import Tag from '@/lockbox/elements/Tag.vue';
 import Btn from '@/lockbox/elements/Btn.vue';
-import { formatBytes } from '@/lib/utils'
+import { formatBytes } from '@/lib/utils';
 import { IconDownload, IconShare } from '@tabler/icons-vue';
 
 const { currentFolder } = inject('folderManager');
@@ -13,26 +13,23 @@ const { sharedByMe } = inject('sharingManager');
 
 const recipients = computed(() => {
   const contacts = {};
-  sharedByMe.value.filter((share) => (
-    share.containerId === currentFolder.value.id
-  )).forEach((share) => {
-    console.log(`have a share`)
-    share.invitations.forEach((invitation) => {
-      contacts[invitation.recipientId] = invitation.recipient;
+  sharedByMe.value
+    .filter((share) => share.containerId === currentFolder.value.id)
+    .forEach((share) => {
+      console.log(`have a share`);
+      share.invitations.forEach((invitation) => {
+        contacts[invitation.recipientId] = invitation.recipient;
+      });
     });
-  });
   return Object.values(contacts);
 });
 
-
 const showForm = ref(false);
 
-watchEffect(
-  () => {
-    console.log(`🐓🐓🐓 ${currentFolder.value?.name}`)
-    showForm.value = false
-  }
-)
+watchEffect(() => {
+  console.log(`🐓🐓🐓 ${currentFolder.value?.name}`);
+  showForm.value = false;
+});
 </script>
 
 <template>
@@ -41,20 +38,15 @@ watchEffect(
     <header class="flex flex-col items-center gap-3 pt-6">
       <img src="@/assets/folder.svg" class="w-20 h-20" />
       <div class="font-semibold pt-4">
-        <span
-          v-if="!showForm"
-          class="cursor-pointer"
-          @click="showForm = true">
-          {{ currentFolder.name }}
+        <span v-if="!showForm" class="cursor-pointer" @click="showForm = true">
+          {{ currentFolder.name }} {{ currentFolder.id }}
         </span>
         <FolderNameForm v-if="showForm" />
       </div>
       <div class="text-xs">{{ formatBytes(currentFolder.size) }}</div>
     </header>
     <!-- sharing config -->
-    <CreateAccessLink
-      :folderId="currentFolder.id"
-    />
+    <CreateAccessLink :folderId="currentFolder.id" />
     <!-- people -->
     <section class="flex flex-col gap-2">
       <div class="font-semibold text-gray-600">Shared With</div>
