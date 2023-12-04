@@ -7,7 +7,7 @@ services:
     volumes:
       - .:/app
       - backend-node-modules:/app/node_modules
-      # - ./storage:/tmp
+      - ./storage:/tmp
     environment:
       - DATABASE_URL=postgres://postgres:postgres@db:5432/send-suite
     depends_on:

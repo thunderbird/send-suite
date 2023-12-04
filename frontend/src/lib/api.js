@@ -278,6 +278,17 @@ export class ApiConnection {
     }
   }
 
+  async getRecentActivity(userId) {
+    // TODO: shift the userId from frontend argument to backend session
+    const resp = await this.callApi(`users/${userId}/activity/`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get folders for user ${userId}`);
+      return null;
+    }
+  }
+
   async getFolderTree(userId, rootFolderId) {
     // TODO: shift the userId from frontend argument to backend session
     const resp = await this.callApi(`containers/${rootFolderId}/`);

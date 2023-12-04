@@ -2,10 +2,10 @@
 import { inject } from 'vue';
 import NewFolder from '@/lockbox/components/NewFolder.vue';
 import FolderView from '@/lockbox/components/FolderView.vue';
-import Breadcrumbs from '@/lockbox/components/Breadcrumbs.vue';
 import FileInfo from '@/lockbox/components/FileInfo.vue';
 import FolderInfo from '@/lockbox/components/FolderInfo.vue';
 import FolderNavigation from '@/lockbox/components/FolderNavigation.vue';
+import RecentActivity from '@/lockbox/components/RecentActivity.vue';
 import SharedByMe from '@/lockbox/components/SharedByMe.vue';
 import SharedWithMe from '@/lockbox/components/SharedWithMe.vue';
 import InvitationList from '@/lockbox/components/InvitationList.vue';

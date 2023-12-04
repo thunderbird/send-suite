@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@tabler/icons-vue": "^2.40.0",
+    "dayjs": "^1.11.10",
     "install": "^0.13.0",
     "vue": "^3.3.4",
     "vue-router": "4"
