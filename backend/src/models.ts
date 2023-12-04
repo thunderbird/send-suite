@@ -260,6 +260,19 @@ export async function updateContainerName(containerId: number, name: string) {
   return result;
 }
 
+export async function updateItemName(itemId: number, name: string) {
+  const result = await prisma.item.update({
+    where: {
+      id: itemId,
+    },
+    data: {
+      name,
+      updatedAt: new Date(),
+    },
+  });
+  return result;
+}
+
 export async function updateInvitationPermissions(
   containerId: number,
   invitationId: number,
@@ -532,10 +545,12 @@ export async function getItemsInContainer(id: number) {
 
       items: {
         select: {
+          id: true,
           name: true,
           wrappedKey: true,
           uploadId: true,
           createdAt: true,
+          containerId: true,
           type: true,
           upload: {
             select: {
@@ -617,6 +632,7 @@ export async function getAllUserGroupContainers(
           name: true,
           wrappedKey: true,
           uploadId: true,
+          containerId: true,
           // uploadId: true,
           // createdAt: true,
           type: true,
