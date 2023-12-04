@@ -569,6 +569,7 @@ export async function getItemsInContainer(id: number) {
           updatedAt: true,
           containerId: true,
           type: true,
+          tags: true,
           upload: {
             select: {
               size: true,
@@ -672,6 +673,7 @@ export async function getAllUserGroupContainers(
           // uploadId: true,
           // createdAt: true,
           type: true,
+          tags: true,
           upload: {
             select: {
               // type: true,

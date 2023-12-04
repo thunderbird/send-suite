@@ -5,6 +5,7 @@ import FolderTableRowCell from '@/lockbox/elements/FolderTableRowCell.vue';
 import Btn from '@/lockbox/elements/Btn.vue';
 import DragAndDropUpload from '@/lockbox/components/DragAndDropUpload.vue';
 import Breadcrumbs from '@/lockbox/components/Breadcrumbs.vue';
+import Tag from '@/lockbox/elements/Tag.vue';
 
 const {
   deleteFolder,
@@ -58,7 +59,11 @@ function showFileInfo(file) {
               <div>{{ folder.name }}</div>
               <div class="text-sm">Last modified {{ dayjs().to(dayjs(folder.updatedAt)) }}</div>
             </FolderTableRowCell>
-            <FolderTableRowCell :selected="folder.id === currentFolderId"></FolderTableRowCell>
+            <FolderTableRowCell :selected="folder.id === currentFolderId">
+              <div class="flex">
+                <Tag v-for="tag in folder.tags" :color="tag.color" />
+              </div>
+            </FolderTableRowCell>
             <FolderTableRowCell :selected="folder.id === currentFolderId"></FolderTableRowCell>
             <FolderTableRowCell :selected="folder.id === currentFolderId">
               <div class="flex justify-between">
