@@ -345,6 +345,16 @@ export class ApiConnection {
     }
   }
 
+  async renameItem(containerId, itemId, name) {
+    const resp = await this.callApi(`containers/${containerId}/item/${itemId}/rename`, { name }, 'POST');
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not update name for item ${itemId}`);
+      return null;
+    }
+  }
+
   async updateInvitationPermissions(containerId, userId, invitationId, permission) {
     const resp = await this.callApi(
       `containers/${containerId}/shares/invitation/update`,

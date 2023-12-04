@@ -6,6 +6,7 @@ services:
       - '5555:5555' # for browsing db with prisma studio
     volumes:
       - .:/app
+      - backend-node-modules:/app/node_modules
       - ./storage:/tmp
     environment:
       - DATABASE_URL=postgres://postgres:postgres@db:5432/send-suite
@@ -33,3 +34,4 @@ services:
 
 volumes:
   postgres-data:
+  backend-node-modules:

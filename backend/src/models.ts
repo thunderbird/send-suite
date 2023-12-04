@@ -260,6 +260,19 @@ export async function updateContainerName(containerId: number, name: string) {
   return result;
 }
 
+export async function updateItemName(itemId: number, name: string) {
+  const result = await prisma.item.update({
+    where: {
+      id: itemId,
+    },
+    data: {
+      name,
+      updatedAt: new Date(),
+    },
+  });
+  return result;
+}
+
 export async function updateInvitationPermissions(
   containerId: number,
   invitationId: number,
@@ -549,11 +562,13 @@ export async function getItemsInContainer(id: number) {
 
       items: {
         select: {
+          id: true,
           name: true,
           wrappedKey: true,
           uploadId: true,
           createdAt: true,
           updatedAt: true,
+          containerId: true,
           type: true,
           upload: {
             select: {
@@ -653,6 +668,7 @@ export async function getAllUserGroupContainers(
           name: true,
           wrappedKey: true,
           uploadId: true,
+          containerId: true,
           // uploadId: true,
           // createdAt: true,
           type: true,
@@ -1273,4 +1289,131 @@ export async function burnFolder(
   // Basically, if we got this far, everything was burned successfully.
   // TODO: add some sort of retry mechanism.
   return deleteResp;
+}
+
+// Create a tag for an item
+export async function createTagForItem(tagName: string, itemId: number) {
+  // trim, but don't normalize the case
+  const name = tagName.trim();
+  // or should we do a case-insensitive search for an existing tag?
+
+  const items = {
+    connect: [{ id: itemId }],
+  };
+
+  // create the tag and add the container
+  const tag = await prisma.tag.upsert({
+    where: {
+      name,
+    },
+    update: {
+      items,
+    },
+    create: {
+      name,
+      items,
+    },
+  });
+
+  return tag;
+}
+
+// Create a tag for a container
+export async function createTagForContainer(
+  tagName: string,
+  containerId: number
+) {
+  // trim, but don't normalize the case
+  const name = tagName.trim();
+  // or should we do a case-insensitive search for an existing tag?
+
+  const containers = {
+    connect: [{ id: containerId }],
+  };
+
+  // create the tag and add the container
+  const tag = await prisma.tag.upsert({
+    where: {
+      name,
+    },
+    update: {
+      containers,
+    },
+    create: {
+      name,
+      containers,
+    },
+  });
+
+  return tag;
+}
+
+// Delete a tag
+export async function deleteTag(id: number) {
+  const result = await prisma.tag.delete({
+    where: {
+      id,
+    },
+  });
+
+  return result;
+}
+
+// Update/rename a tag
+export async function updateTagName(tagId: number, name: string) {
+  const result = await prisma.tag.update({
+    where: {
+      id: tagId,
+    },
+    data: {
+      name,
+      // updatedAt: new Date(),
+    },
+  });
+  return result;
+}
+// Get all items and containers (that I have access to) with a specific tag or tags
+
+export async function getContainersAndItemsWithTags(
+  userId: number,
+  tagNames: string[]
+) {
+  // First, find the group memberships for the user.
+  const memberships = await prisma.membership.findMany({
+    where: { userId },
+  });
+
+  // We then transform the memberships to just include the groupId
+  const groupIds = memberships.map((membership) => membership.groupId);
+
+  // Now get all containers with these group IDs
+  const containersWithTags = await prisma.container.findMany({
+    where: {
+      group: { id: { in: groupIds } },
+      tags: { some: { name: { in: tagNames } } }, // Looking for any of the input tags
+    },
+    include: {
+      items: true, // include related items
+      tags: true, // include related tags
+    },
+  });
+
+  // Fetching items with the tag and any parent container must be made accessible by the groups
+  const itemsWithTags = await prisma.item.findMany({
+    where: {
+      container: {
+        group: { id: { in: groupIds } },
+      },
+      tags: { some: { name: { in: tagNames } } }, // Looking for any of the input tags
+    },
+    include: {
+      container: true, // include related container
+      tags: true, // include related tags
+    },
+  });
+
+  return {
+    containers: containersWithTags,
+    items: itemsWithTags,
+  };
 }

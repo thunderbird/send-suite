@@ -40,8 +40,8 @@ const { currentFile, currentFolderId, rootFolderId } = inject('folderManager');
       </main>
     </div>
     <aside v-if="currentFile || currentFolderId" class="w-64 border-l border-gray-300 bg-gray-50 p-2.5">
-      <FileInfo />
-      <FolderInfo />
+      <FileInfo v-if="currentFile" />
+      <FolderInfo v-if="currentFolderId" />
     </aside>
   </div>
 </template>

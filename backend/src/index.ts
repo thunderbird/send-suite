@@ -13,6 +13,7 @@ import containers from './routes/containers';
 import uploads from './routes/uploads';
 import download from './routes/download';
 import ephemeral from './routes/ephemeral';
+import tags from './routes/tags';
 // import createStreamingRouter from './routes/streamingRouter';
 
 import wsUploadHandler from './wsUploadHandler';
@@ -21,10 +22,10 @@ import { uuidv4 } from './utils';
 
 // TODO: look into moving this to src/types/index.d.ts (or more appropriate filename)
 type User = {
-  id: Number;
-  email: String;
-  publicKey: String;
-  tier: String;
+  id: number;
+  email: string;
+  publicKey: string;
+  tier: string;
   createdAt: Date;
   updatedAt: Date;
   activatedAt: Date;
@@ -90,6 +91,7 @@ app.use('/api/containers', containers);
 app.use('/api/uploads', uploads);
 app.use('/api/download', download);
 app.use('/api/ephemeral', ephemeral);
+app.use('/api/tags', tags);
 // app.use('/api/stream', streamingRouter);
 
 app.get(`*`, (req, res) => {

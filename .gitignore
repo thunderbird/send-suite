@@ -1,6 +1,7 @@
 # TODO: remove this when the db is more solid, specifically re: file ownership
 migrations
 seed.ts
+.pnpm-store
 
 docker-compose.yml
 
@@ -34,3 +35,4 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+storage
