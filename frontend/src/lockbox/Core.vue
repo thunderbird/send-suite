@@ -136,7 +136,13 @@ async function getVisibleFolders() {
   folders.value = calculateFolderSizes(foldersFromApi);
   if (currentFolderId.value) {
     currentFolder.value = folders.value.find((f) => f.id === currentFolderId.value);
+
+    // Update the currentFile, if we were already tracking one
+    if (currentFile.value) {
+      currentFile.value = currentFolder.value.items.find((f) => f.id === currentFile.value.id);
+    }
   }
+
   console.log(`got foldersFromApi: `);
   console.log(foldersFromApi);
 }
@@ -549,6 +555,21 @@ provide('sharingManager', {
   getInvitations,
 });
 
+// =======================================================================
+// Tag Manager
+async function addTagForContainer(containerId, name, color) {
+  await api.addTagForContainer(containerId, name, color);
+  await getVisibleFolders();
+}
+async function addTagForItem(itemId, name, color) {
+  await api.addTagForItem(itemId, name, color);
+  await getVisibleFolders();
+}
+
+provide('tagManager', {
+  addTagForContainer,
+  addTagForItem,
+});
 // =======================================================================
 // Misc
 dayjs.extend(relativeTime);

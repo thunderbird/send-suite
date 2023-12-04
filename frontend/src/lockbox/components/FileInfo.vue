@@ -7,6 +7,7 @@ import TagLabel from '@/lockbox/elements/TagLabel.vue';
 import Btn from '@/lockbox/elements/Btn.vue';
 import { formatBytes } from '@/lib/utils';
 import { IconDownload, IconShare } from '@tabler/icons-vue';
+import AddTag from '@/lockbox/components/AddTag.vue';
 
 const { currentFile, deleteItemAndContent } = inject('folderManager');
 
@@ -50,6 +51,8 @@ Note about shareOnly containers.
       <div class="flex flex-wrap gap-1">
         <TagLabel v-for="tag in currentFile.tags" :color="tag.color"> {{ tag.name }}</TagLabel>
       </div>
+      {{ currentFile.id }}
+      <AddTag :id="currentFile.id" type="item" />
     </section>
     <!-- meta -->
     <footer class="mt-auto flex flex-col gap-3">

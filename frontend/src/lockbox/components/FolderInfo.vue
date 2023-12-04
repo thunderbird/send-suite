@@ -7,6 +7,7 @@ import TagLabel from '@/lockbox/elements/TagLabel.vue';
 import Btn from '@/lockbox/elements/Btn.vue';
 import { formatBytes } from '@/lib/utils';
 import { IconDownload, IconShare } from '@tabler/icons-vue';
+import AddTag from '@/lockbox/components/AddTag.vue';
 
 const { currentFolder } = inject('folderManager');
 const { sharedByMe } = inject('sharingManager');
@@ -62,6 +63,7 @@ watchEffect(() => {
       <div class="flex flex-wrap gap-1">
         <TagLabel v-for="tag in currentFolder.tags" :color="tag.color"> {{ tag.name }}</TagLabel>
       </div>
+      <AddTag :id="currentFolder.id" type="container" />
     </section>
     <!-- meta -->
     <footer class="mt-auto flex flex-col gap-3">

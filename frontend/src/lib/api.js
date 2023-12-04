@@ -547,6 +547,39 @@ export class ApiConnection {
     }
   }
 
+  async addTagForContainer(containerId, name, color) {
+    const resp = await this.callApi(
+      `tags/container/${containerId}`,
+      {
+        name,
+        color,
+      },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not add tag`);
+      return null;
+    }
+  }
+  async addTagForItem(itemId, name, color) {
+    const resp = await this.callApi(
+      `tags/item/${itemId}`,
+      {
+        name,
+        color,
+      },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not add tag`);
+      return null;
+    }
+  }
+
   // getEventSource(id) {
   //   // Future improvement: use "@microsoft/fetch-event-source"
   //   // which lets you POST.
