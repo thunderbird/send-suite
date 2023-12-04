@@ -25,6 +25,11 @@ const recipients = computed(() => {
 });
 
 const showForm = ref(false);
+
+watchEffect(() => {
+  console.log(`🐓🐓🐓 ${currentFolder.value?.name}`);
+  showForm.value = false;
+});
 </script>
 
 <template>
