@@ -3,10 +3,11 @@ import { inject, ref, computed, watchEffect } from 'vue';
 import CreateAccessLink from '@/lockbox/components/CreateAccessLink.vue';
 import FolderNameForm from '@/lockbox/elements/FolderNameForm.vue';
 import Avatar from '@/lockbox/elements/Avatar.vue';
-import Tag from '@/lockbox/elements/Tag.vue';
+import TagLabel from '@/lockbox/elements/TagLabel.vue';
 import Btn from '@/lockbox/elements/Btn.vue';
 import { formatBytes } from '@/lib/utils';
 import { IconDownload, IconShare } from '@tabler/icons-vue';
+import AddTag from '@/lockbox/components/AddTag.vue';
 
 const { currentFolder } = inject('folderManager');
 const { sharedByMe } = inject('sharingManager');
@@ -60,12 +61,9 @@ watchEffect(() => {
     <section class="flex flex-col gap-2">
       <div class="font-semibold text-gray-600">Tags</div>
       <div class="flex flex-wrap gap-1">
-        <Tag class="!bg-red-500">Important</Tag>
-        <Tag class="!bg-orange-600">Work</Tag>
-        <Tag class="!bg-blue-600">Todo</Tag>
-        <Tag class="!bg-teal-600">Upgrade</Tag>
-        <Tag class="!bg-pink-600">Party 🎉</Tag>
+        <TagLabel v-for="tag in currentFolder.tags" :color="tag.color"> {{ tag.name }}</TagLabel>
       </div>
+      <AddTag :id="currentFolder.id" type="container" />
     </section>
     <!-- meta -->
     <footer class="mt-auto flex flex-col gap-3">

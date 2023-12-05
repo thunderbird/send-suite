@@ -1,5 +1,11 @@
+<script setup>
+import { IconTag } from '@tabler/icons-vue';
+import { TagColors } from '@/lockbox/const';
+defineProps({
+  color: String,
+});
+</script>
 <template>
-  <div class="px-1.5 py-0.5 rounded bg-gray-500 text-white text-xs font-semibold">
-    <slot></slot>
-  </div>
+  <IconTag :class="['w-5 h-5', `${TagColors[color]}`]" />
+  <slot></slot>
 </template>

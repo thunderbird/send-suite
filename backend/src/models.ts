@@ -559,7 +559,6 @@ export async function getItemsInContainer(id: number) {
           },
         },
       },
-
       items: {
         select: {
           id: true,
@@ -570,6 +569,7 @@ export async function getItemsInContainer(id: number) {
           updatedAt: true,
           containerId: true,
           type: true,
+          tags: true,
           upload: {
             select: {
               size: true,
@@ -583,6 +583,7 @@ export async function getItemsInContainer(id: number) {
           },
         },
       },
+      tags: true,
     },
     // include: {
     //   items: true,
@@ -672,6 +673,7 @@ export async function getAllUserGroupContainers(
           // uploadId: true,
           // createdAt: true,
           type: true,
+          tags: true,
           upload: {
             select: {
               // type: true,
@@ -685,6 +687,7 @@ export async function getAllUserGroupContainers(
           },
         },
       },
+      tags: true,
     },
   });
 }
@@ -1292,7 +1295,11 @@ export async function burnFolder(
 }
 
 // Create a tag for an item
-export async function createTagForItem(tagName: string, itemId: number) {
+export async function createTagForItem(
+  tagName: string,
+  color: string,
+  itemId: number
+) {
   // trim, but don't normalize the case
   const name = tagName.trim();
   // or should we do a case-insensitive search for an existing tag?
@@ -1311,6 +1318,7 @@ export async function createTagForItem(tagName: string, itemId: number) {
     },
     create: {
       name,
+      color,
       items,
     },
   });
@@ -1321,6 +1329,7 @@ export async function createTagForItem(tagName: string, itemId: number) {
 // Create a tag for a container
 export async function createTagForContainer(
   tagName: string,
+  color: string,
   containerId: number
 ) {
   // trim, but don't normalize the case
@@ -1341,6 +1350,7 @@ export async function createTagForContainer(
     },
     create: {
       name,
+      color,
       containers,
     },
   });

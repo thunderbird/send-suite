@@ -217,6 +217,7 @@ model Upload {
 model Tag {
   id          Int         @id @default(autoincrement())
   name        String      @unique
+  color       String      // Color values defined in front-end for flexibility
   items       Item[]
   containers  Container[]
 }
