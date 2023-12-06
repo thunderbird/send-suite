@@ -85,6 +85,9 @@ app.use(cookieParser());
 app.get('/', (req, res) => {
   res.status(200).send('echo');
 });
+app.get('/echo', (req, res) => {
+  res.status(200).send('echo');
+});
 
 app.use('/api/users', users);
 app.use('/api/containers', containers);
