@@ -19,12 +19,14 @@ enum UserTier {
 
 model User {
   id                  Int                  @id @default(autoincrement())
-  email               String?              @unique
-  publicKey           String
+  email               String?
+  publicKey           String?
   tier                UserTier
   createdAt           DateTime?
   updatedAt           DateTime?
   activatedAt         DateTime?
+
+  profile             Profile?
 
   // links            Link[]
   uploads             Upload[]
@@ -37,6 +39,16 @@ model User {
   // Invitations sent to this user
   invitations         Invitation[]         @relation("Recipient")
   // ephemeralLinks      EphemeralLink[] @relation("Ephemeral")
+}
+
+model Profile {
+  // These are sourced from the Mozilla Account
+  mozid      String  @unique
+  avatar  String?
+
+  // 1-1 relationship with User
+  user    User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId  Int     @unique
 }
 
 

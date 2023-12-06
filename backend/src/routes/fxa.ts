@@ -3,19 +3,17 @@ import passport from 'passport';
 
 const router: Router = Router();
 
+// The "login page" just sends us through the Moz Accounts auth flow.
 router.get(
   '/login',
-  passport.authenticate('openidconnect', { failureRedirect: '/login' })
+  passport.authenticate('openidconnect', { failureRedirect: './login' })
 );
 
-/* processing the redirection request */
+// handler for the callbackURL
 router.get(
   '/',
-  function (req, res, next) {
-    /*
-    checking if an error is present in the response from the OP; if it is -
-    redirecting to the Home screen and not processing the request any further
-  */
+  (req, res, next) => {
+    // If the OP sent back an error, redirect.
     console.log(`we are at ${req.originalUrl}`);
 
     console.log(`req.query coming up 🍵🍵🍵🍵`);
@@ -24,33 +22,18 @@ router.get(
     if (req.query.error) {
       return res.redirect('/?error=' + req.query.error);
     }
-
-    /*
-    if no error is encountered, proceeding to the next step,
-    in which passport.authenticate middleware is used to make the token request
-    with the configured strategy referenced by its default name
-  */
+    // Otherwise, move on to the passport.authenticate middleware,
+    // which should(?) make the token request using the `openidconnect` strategy
     next();
   },
   passport.authenticate('openidconnect', {
-    failureRedirect: '/whoops',
+    failureRedirect: './error',
     failureMessage: true,
   }),
-  function (req, res) {
-    /*
-    when the token response is received and processed in the strategy callback,
-    redirecting to a desired route, which in this case is the user profile screen
-  */
-    console.log(`you shall pass`);
-    res.redirect('/profile');
+  (req, res) => {
+    // We've received the token response and can redirect to the Vue app
+    res.redirect('./profile');
   }
 );
 
 export default router;
-
-/*
-Here's what I got back
-
-https://lockbox.thunderbird.dev/fxa?code=154e56910537251554a3ea69eb1b547dab4d8c350c8b9ccd2c18f14397ac9724&state=r0MpPp2LUxXVwABuO4MQQIT3&action=signin
-
-*/
