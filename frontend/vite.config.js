@@ -13,7 +13,7 @@ export default defineConfig({
       // secure: false,
       '/echo': 'http://localhost:8080',
       '/api': 'http://localhost:8080',
-      '/fxa': 'http://localhost:8080',
+      '/lockbox/fxa': 'http://localhost:8080',
     },
   },
   test: {

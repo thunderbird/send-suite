@@ -5,6 +5,8 @@ import WebSocket from 'ws';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import sessionFileStore from 'session-file-store';
+import passport from 'passport';
+import strategy from './OpenIdConnectStrategy';
 
 import morgan from 'morgan';
 
@@ -14,6 +16,7 @@ import uploads from './routes/uploads';
 import download from './routes/download';
 import ephemeral from './routes/ephemeral';
 import tags from './routes/tags';
+import fxa from './routes/fxa';
 // import createStreamingRouter from './routes/streamingRouter';
 
 import wsUploadHandler from './wsUploadHandler';
@@ -64,16 +67,46 @@ const expressSession = session({
   secret: process.env.SESSION_SECRET ?? 'abc123xyz',
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false, sameSite: 'strict' },
+  // cookie: { secure: false, sameSite: 'strict' },
+  cookie: {},
   store: new FileStore(fileStoreOptions),
 });
+
 app.use(expressSession);
 app.use(cookieParser());
 
-// app.use((req, res, next) => {
-//   res.header('Access-Control-Expose-Headers', 'WWW-Authenticate');
-//   next();
-// });
+passport.use(strategy);
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser((user, next) => {
+  console.log(`🐓🐓🐓 serializing user`);
+  console.log(user);
+  next(null, user);
+});
+
+passport.deserializeUser((user, next) => {
+  console.log(`🦄🦄🦄 deserializing user`);
+  console.log(user);
+  next(null, user);
+});
+
+declare module 'express-session' {
+  export interface SessionData {
+    passport: { [key: string]: any };
+    isAuthenticated: boolean;
+  }
+}
+
+app.use((req, res, next) => {
+  req.session.isAuthenticated =
+    req.session.passport && req.session.passport.user;
+
+  console.log(
+    `🍬 added isAuthenticated to req.session: ${req.session.isAuthenticated}`
+  );
+  next();
+});
 
 // app.use(
 //   (req, res: express.Response & { broadcast: (data: any) => void }, next) => {
@@ -95,6 +128,7 @@ app.use('/api/uploads', uploads);
 app.use('/api/download', download);
 app.use('/api/ephemeral', ephemeral);
 app.use('/api/tags', tags);
+app.use('/lockbox/fxa', fxa);
 // app.use('/api/stream', streamingRouter);
 
 app.get(`*`, (req, res) => {
