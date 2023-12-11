@@ -1,5 +1,6 @@
 import OpenIDConnectStrategy from 'passport-openidconnect';
 import { findOrCreateUserByProfile } from './models';
+import axios from 'axios';
 
 const strategy = new OpenIDConnectStrategy(
   {
@@ -23,20 +24,40 @@ const strategy = new OpenIDConnectStrategy(
     tokenResponse,
     done
   ) {
-    // console.log(`🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄`);
-    // console.log(`issuer: ${issuer}`);
-    // console.log(`sub:`);
-    // console.log(sub);
-    // console.log(`profile:`);
-    // console.log(mozProfile);
-    // console.log(`jwtClaims: ${jwtClaims}`);
-    // console.log(`accessToken: ${accessToken}`);
-    // console.log(`refreshToken: ${refreshToken}`);
-    // console.log(`tokenResponse:`);
-    // console.log(tokenResponse);
+    // Use the accessToken to retrieve the user's avatar
+    const profileResp = await axios.get(
+      `https://profile.stage.mozaws.net/v1/profile`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    console.log(`🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄`);
+    console.log(profileResp.data.avatar);
+    // {
+    // email: 'chris@thunderbird.net',
+    // locale: 'en-US,en;q=0.5',
+    // amrValues: [ 'pwd', 'email' ],
+    // twoFactorAuthentication: false,
+    // metricsEnabled: true,
+    // uid: '668caa503f384f999f292287c5e3af8d',
+    // avatar: 'https://mozillausercontent.com/e3137631f4e72eb63dfbc18fe216a94a',
+    // avatarDefault: false,
+    // sub: '668caa503f384f999f292287c5e3af8d'
+    // }
 
-    // MozAccountId is sub.id
-    const profile = await findOrCreateUserByProfile(sub.id);
+    // MozAccountId is sub.id, but also:
+    // - profileResp.data.sub
+    // - profileResp.data.uid
+    const profile = await findOrCreateUserByProfile(
+      sub.id,
+      profileResp.data.avatar
+    );
+    if (!profile) {
+      console.log(`🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑`);
+      console.log(`couldn't find or create profile`);
+    }
 
     // After successfully authenticating, we can save tokens, etc. to the session
     // by passing as the second argument to the `done()` function.

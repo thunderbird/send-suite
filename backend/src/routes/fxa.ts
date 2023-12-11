@@ -9,6 +9,8 @@ router.get(
   passport.authenticate('openidconnect', { failureRedirect: './login' })
 );
 
+router.get('/logout', async (req, res, next) => {});
+
 // handler for the callbackURL
 router.get(
   '/',
@@ -16,12 +18,14 @@ router.get(
     // If the OP sent back an error, redirect.
     console.log(`we are at ${req.originalUrl}`);
 
-    console.log(`req.query coming up 🍵🍵🍵🍵`);
-    console.log(req.query);
+    console.log(req.query.code); // random string of chars
+    console.log(req.query.state); //
+    console.log(req.query.action); // should be 'signin'
 
     if (req.query.error) {
       return res.redirect('/?error=' + req.query.error);
     }
+
     // Otherwise, move on to the passport.authenticate middleware,
     // which should(?) make the token request using the `openidconnect` strategy
     next();
