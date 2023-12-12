@@ -1,8 +1,40 @@
-import OpenIDConnectStrategy from 'passport-openidconnect';
+import { Strategy } from 'passport-openidconnect';
 import { findOrCreateUserByProfile } from './models';
 import axios from 'axios';
 
-const strategy = new OpenIDConnectStrategy(
+// Hit the metrics flow prior prior to requesting the Authorization URL
+Strategy.prototype.authorizationParams = (options) => {
+  const utm_campaign = `${process.env.ENTRYPOINT}_${process.env.APP_ENV}`;
+  const utm_source = 'login';
+
+  // The HTTP GET request before the authorization call
+  return axios
+    .get(process.env.FXA_METRICS_FLOW_URL, {
+      params: {
+        entrypoint: process.env.ENTRYPOINT,
+        form_type: 'email',
+        utm_campaign: utm_campaign,
+        utm_source: utm_source,
+      },
+    })
+    .then((response) => response.data)
+    .catch((err) => {
+      console.error('Could not initialize metrics flow, error occurred: ', err);
+      return {};
+    })
+    .then((flow_values) => ({
+      access_type: 'offline',
+      entrypoint: process.env.ENTRYPOINT,
+      action: 'email',
+      email: options.email, // TODO
+      flow_begin_time: flow_values.flowBeginTime,
+      flow_id: flow_values.flowId,
+      utm_campaign: utm_campaign,
+      utm_source: utm_source,
+    }));
+};
+
+const strategy = new Strategy(
   {
     issuer: `https://accounts.stage.mozaws.net`,
     authorizationURL: `https://accounts.stage.mozaws.net/authorization`,
@@ -68,6 +100,7 @@ const strategy = new OpenIDConnectStrategy(
         scope: tokenResponse.scope,
         token_type: tokenResponse.token_type,
         expires_in: tokenResponse.expires_in,
+        refreshToken,
       },
       idToken: {
         token: tokenResponse.id_token,
