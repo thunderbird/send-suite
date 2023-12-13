@@ -6,6 +6,8 @@ import { Strategy } from 'passport-openidconnect';
 const router: Router = Router();
 
 router.get('/login', async (req, res, next) => {
+  // TODO: consider moving this to its own function/middleware
+  // as it is relatively self-contained
   try {
     const utm_campaign = `${process.env.ENTRYPOINT}_${process.env.APP_ENV}`;
     const utm_source = 'login';
@@ -48,7 +50,33 @@ router.get('/login', async (req, res, next) => {
   })(req, res, next);
 });
 
-router.get('/logout', async (req, res, next) => {});
+router.post('/logout', async (req, res, next) => {
+  const destroyUrl = `https://oauth.stage.mozaws.net/v1/destroy`;
+  const accessToken = `${req.session?.passport?.user?.profile?.accessToken}`;
+  try {
+    if (accessToken) {
+      const body = {
+        token: accessToken,
+        client_id: process.env.FXA_CLIENT_ID,
+        client_secret: process.env.FXA_CLIENT_SECRET,
+      };
+      const { data } = await axios.post(destroyUrl, body, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      return res.status(200).json({
+        data,
+      });
+    } else {
+      return res.redirect('./login');
+    }
+  } catch (e) {
+    res.status(500).json({
+      message: 'Could not log out',
+    });
+  }
+});
 
 // handler for the callbackURL
 router.get(

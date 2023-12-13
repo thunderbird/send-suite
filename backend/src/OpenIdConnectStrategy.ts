@@ -1,5 +1,6 @@
 import { Strategy } from 'passport-openidconnect';
 import { findOrCreateUserByProfile } from './models';
+import axios from 'axios';
 
 const strategy = new Strategy(
   {
@@ -23,11 +24,11 @@ const strategy = new Strategy(
     params,
     done
   ) {
-    // TODO: save tokens as needed to session, profile, etc.
-
     const profile = await findOrCreateUserByProfile(
       mozProfile.id,
-      mozProfile._json.avatar
+      mozProfile._json.avatar,
+      accessToken,
+      refreshToken
       // also has mozProfile.emails[0]
     );
     if (!profile) {

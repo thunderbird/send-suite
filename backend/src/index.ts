@@ -152,9 +152,11 @@ app.get(`*`, (req, res) => {
   res.status(404);
 });
 
-const server = app.listen(PORT, HOST, () =>
-  console.log(`🚀 Server ready at: http://${HOST}:${PORT}`)
-);
+const server = app.listen(PORT, HOST, async () => {
+  // TODO: consider using `openid-client` for discovery.
+  // Then, populate a global config object.
+  console.log(`🚀 Server ready at: http://${HOST}:${PORT}`);
+});
 
 const messageClients = new Map();
 // Listen for WebSocket connections

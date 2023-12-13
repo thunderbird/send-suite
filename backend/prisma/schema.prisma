@@ -43,12 +43,15 @@ model User {
 
 model Profile {
   // These are sourced from the Mozilla Account
-  mozid      String  @unique
-  avatar  String?
+  mozid         String  @unique
+  avatar        String?
 
   // 1-1 relationship with User
-  user    User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId  Int     @unique
+  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int     @unique
+
+  accessToken   String?
+  refreshToken  String?
 }
 
 

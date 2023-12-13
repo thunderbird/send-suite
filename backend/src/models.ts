@@ -27,7 +27,9 @@ export async function createUser(
 
 export async function findOrCreateUserByProfile(
   mozid: string,
-  avatar?: string
+  avatar?: string,
+  accessToken?: string,
+  refreshToken?: string
 ) {
   /*
 Let's talk about the flow here:
@@ -47,10 +49,14 @@ Let's talk about the flow here:
     },
     update: {
       avatar,
+      accessToken,
+      refreshToken,
     },
     create: {
       mozid,
       avatar,
+      accessToken,
+      refreshToken,
       user: {
         create: {
           tier: UserTier.FREE,
