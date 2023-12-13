@@ -6,6 +6,7 @@ import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import sessionFileStore from 'session-file-store';
 import passport from 'passport';
+import refresh from 'passport-oauth2-refresh';
 import strategy from './OpenIdConnectStrategy';
 
 import morgan from 'morgan';
@@ -75,7 +76,8 @@ const expressSession = session({
 app.use(expressSession);
 app.use(cookieParser());
 
-passport.use(strategy);
+passport.use('openidconnect', strategy);
+refresh.use('openidconnect', strategy);
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -130,6 +132,21 @@ app.use('/api/ephemeral', ephemeral);
 app.use('/api/tags', tags);
 app.use('/lockbox/fxa', fxa);
 // app.use('/api/stream', streamingRouter);
+
+// Can't do this yet, no refreshToken
+// app.get('/lockbox/profile', async (req, res) => {
+//   refresh.requestNewAccessToken(
+//     'openidconnect',
+//     'some_refresh_token',
+//     function (err, accessToken, refreshToken) {
+//       // You have a new access token, store it in the user object,
+//       // or use it to make a new request.
+//       // `refreshToken` may or may not exist, depending on the strategy you are using.
+//       // You probably don't need it anyway, as according to the OAuth 2.0 spec,
+//       // it should be the same as the initial refresh token.
+//     },
+//   );
+// })
 
 app.get(`*`, (req, res) => {
   res.status(404);

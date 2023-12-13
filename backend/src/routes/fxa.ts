@@ -1,13 +1,52 @@
 import { Router } from 'express';
 import passport from 'passport';
+import axios from 'axios';
+import { Strategy } from 'passport-openidconnect';
 
 const router: Router = Router();
 
-// The "login page" just sends us through the Moz Accounts auth flow.
-router.get(
-  '/login',
-  passport.authenticate('openidconnect', { failureRedirect: './login' })
-);
+router.get('/login', async (req, res, next) => {
+  try {
+    const utm_campaign = `${process.env.ENTRYPOINT}_${process.env.APP_ENV}`;
+    const utm_source = 'login';
+
+    // Fetch the flowValues before you call the Passport middleware
+    const flow_values = await axios
+      .get(process.env.FXA_METRICS_FLOW_URL, {
+        params: {
+          entrypoint: process.env.ENTRYPOINT,
+          form_type: 'email',
+          utm_campaign: utm_campaign,
+          utm_source: utm_source,
+        },
+      })
+      .then((response) => response.data);
+
+    // Patch the `authorizationParams` so that we can include custom params.
+    Strategy.prototype.authorizationParams = function (options) {
+      return {
+        ...options,
+        access_type: 'offline',
+        entrypoint: process.env.ENTRYPOINT,
+        action: 'email',
+        email: options.email, // Where should this come from?
+        flow_begin_time: flow_values.flowBeginTime,
+        flow_id: flow_values.flowId,
+        utm_campaign: utm_campaign,
+        utm_source: utm_source,
+      };
+    };
+  } catch (err) {
+    // Log the error, but continue with passport auth
+    console.error('Could not initialize metrics flow, error occurred: ', err);
+  }
+
+  // Manually call `.authenticate()(req, res, next)`
+  // instead of using it as middleware
+  passport.authenticate('openidconnect', {
+    failureRedirect: './login',
+  })(req, res, next);
+});
 
 router.get('/logout', async (req, res, next) => {});
 
@@ -16,18 +55,11 @@ router.get(
   '/',
   (req, res, next) => {
     // If the OP sent back an error, redirect.
-    console.log(`we are at ${req.originalUrl}`);
-
-    console.log(req.query.code); // random string of chars
-    console.log(req.query.state); //
-    console.log(req.query.action); // should be 'signin'
-
     if (req.query.error) {
       return res.redirect('/?error=' + req.query.error);
     }
 
-    // Otherwise, move on to the passport.authenticate middleware,
-    // which should(?) make the token request using the `openidconnect` strategy
+    // Otherwise, move on to the passport.authenticate middleware
     next();
   },
   passport.authenticate('openidconnect', {

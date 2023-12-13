@@ -32,6 +32,9 @@ dependencies:
   passport:
     specifier: ^0.7.0
     version: 0.7.0
+  passport-oauth2-refresh:
+    specifier: ^2.2.0
+    version: 2.2.0
   passport-openidconnect:
     specifier: ^0.1.1
     version: 0.1.1
@@ -1527,6 +1530,11 @@ packages:
   /parseurl@1.3.3:
     resolution: {integrity: sha512-CiyeOxFT/JZyN5m0z9PfXw4SCBJ6Sygz1Dpl0wqjlhDEGGBP1GnsUVEL0p63hoG1fcj3fHynXi9NYO4nWOL+qQ==}
     engines: {node: '>= 0.8'}
+    dev: false
+
+  /passport-oauth2-refresh@2.2.0:
+    resolution: {integrity: sha512-yXwXHL7ZZH0s2oknnjugfvwzCB5mpJ5ZNpzkb+b/sTsHeZFbx2BXfzvwsoD4aq6gq/aWuCxBV89ef+L/cjjrjg==}
+    engines: {node: '>=10'}
     dev: false
 
   /passport-openidconnect@0.1.1:
