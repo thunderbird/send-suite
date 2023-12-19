@@ -5,25 +5,28 @@
 Lockbox is a web application and Thunderbird Extension that gives paid users the ability to:
 
 - store and manage encrypted files in Lockbox's cloud storage
-- create encrypted email attachments, either uploaded from their device or directly from Lockbox
+- create encrypted email attachments in Thunderbird, either uploaded from their filesystem or directly from Lockbox
 - send end-to-end encrypted files to other paid users or to anonymous users
 - protect access to files with a password
 - create access links that expire after a period of time
 
 ## Background
 
-Firefox Send allowed anonymous users encrypt and share files. However, it was shut down for various reasons (largely due to abuse).
+A previous Mozilla product, Firefox Send allowed anonymous users encrypt and share files. It was shut down due to abuse by cybercriminals and a lack of reporting mechanisms.
 
-Lockbox will:
+Lockbox intends to address these issues and expand to use cases beyond simple file sharing.
 
-- allow the sharing of files in a privacy-respecting way.
+## Goals
+
+- allow the storing and sharing of files in a privacy-respecting way.
 - provide true end-to-end encryption, never storing or transmitting an encryption key in plaintext.
 - deter abuse by requiring a paid account in order to upload or send files.
 - automatically submit any public links to files to trusted services that will scan for malware and exploitative material.
+- provide tools for reporting abuse.
 
 ## Non-Goals
 
-We will not guarantee that the system is secure against sophisticated attacks by governments or other parties with sufficient resources.
+We will not guarantee that the system is secure against sophisticated attacks by governments or other parties attempting to break the encryption.
 
 # System Overview
 
@@ -63,6 +66,17 @@ graph LR
 
   Client2(TB Extension) -- HTTP Request --> AuthServer[Mozilla Acct Auth]
 ```
+
+The `Client` is one of two frontend User Interfaces:
+
+- The Web interface is a Vue.js application running in any modern browser.
+- The Thunderbird Extension is the same Vue.js application, packaged as a priviledged extension that is included with the "Pro" Thunderbird offering.
+
+Mozilla Accounts (formerly Firefox Accounts) serves as the authentication mechanism.
+
+The Backend is a Express/Node.js application offering a RESTful HTTP API with WebSockets for uploads. It ensures that Users have the required permissions when attempting to access `Containers`, `Items`, and `Contents`.
+
+In addition, the Backend stores data in a SQL database and cloud-based Object Storage.
 
 # Encryption Design
 
@@ -212,25 +226,48 @@ Client ->> Client: Store plaintext Content to filesystem
 
 A Paid User can give another Paid User access to a Container in two ways:
 
-- They can create and send an Invitation within the application
-- They can generate an AccessLink and send through another means of communication (e.g., via email)
+- Create and send an Invitation within the application
+- Generate an AccessLink and send through another means of communication (e.g., via email)
 
 ### Invitations
 
+A Paid User directly invites another Paid User to a Container. The Invitation appears in the UI of the application.
+
+The Recipient can choose to accept the Invitation. Should they accept, the shared Container is now available to that User.
+
 ### Access Links
 
-#### Creation
+An Access Link can be used by a Paid User or by Anonymous Users.
 
--
+Optionally, an Access Link can be created with:
 
-#### Using an Access Link to
+- a password that must be entered before it can be used
+- an expiration date/time, after which it is no longer valid
 
-#### Password-protected
+If a Paid User uses an Access Link, that Container is available to them as if they were sent an Invitation.
 
-#### Passwordless
+If an Anonymous User uses an Access Link, that Container is visible to them in a restricted version of the Client UI.
 
-## Sharing Folder Access with Anonymous User
+#### Password protection
 
-#### Password-protected
+When using password protection, the KEK for the Container is wrapped using the password.
 
-#### Passwordless
+When visiting the URL for the Access Link, the Client prompts the User for a password.
+
+This password is used to decrypt a ciphertext string (the "challenge text"). The resulting plaintext string is sent to the backend.
+
+If the Backend determines that the plaintext matches the stored plaintext for the AccessLink, it sends the Wrapped Key to the Client.
+
+The Client then uses the same password to unwrap the KEK, allowing them to decrypt and download any Content associated in the Container.
+
+#### Passwordless Access Links
+
+Technically, "passwordless" AccessLinks also have passwords; they are just auto-generated and added to the `hash` of the URL.
+
+(show example here)
+
+The full URL is not stored in the backend (TODO: reconsider this, if we're going to submit public AccessLinks for scanning).
+
+When the URL for an AccessLink has a `hash`, the Client automatically puts this in the password field and submits the form.
+
+The reason for this is to ensure that all Content stored in Lockbox is end-to-end encrypted, even if the user has no intention of "protecting" it with a password.
