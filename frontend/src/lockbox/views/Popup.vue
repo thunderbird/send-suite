@@ -3,22 +3,15 @@ import { ref, inject, watch } from 'vue';
 import FolderView from '../components/FolderView.vue';
 import Uploader from '@/common/upload';
 import Sharer from '@/common/share';
-import {
-  EXTENSION_READY,
-  SHARE_COMPLETE,
-  SHARE_ABORTED,
-  SELECTION_COMPLETE,
-} from '@/lib/const';
+import { EXTENSION_READY, SHARE_COMPLETE, SHARE_ABORTED, SELECTION_COMPLETE } from '@/lib/const';
 
 const api = inject('api');
 const userRef = inject('userRef');
 const keychainRef = inject('keychainRef');
 
-const { getDefaultFolder, currentFolderId, folders, uploadItem } =
-  inject('folderManager');
+const { getDefaultFolder, currentFolderId, folders, uploadItem } = inject('folderManager');
 
-const { itemMap, createItemMap, selectedItemsForSharing } =
-  inject('sharingManager');
+const { itemMap, createItemMap, selectedItemsForSharing } = inject('sharingManager');
 
 const sharer = new Sharer(userRef, keychainRef, api);
 const uploader = new Uploader(userRef, keychainRef, api);
@@ -43,14 +36,13 @@ The way I've got this written now:
   - from popup, we do steps 1 and 2
   - from share-from-lockbox, we only do step 2
   */
+
   if (selectedItemsForSharing.value.length > 0) {
     // We've already got items to share
     // get the necessary info for each itemId
-    const itemsToShare = selectedItemsForSharing.value.map(
-      (id) => itemMap.value[id]
-    );
+    const itemsToShare = selectedItemsForSharing.value.map((id) => itemMap.value[id]);
 
-    const url = await sharer.shareItems(itemsToShare, password.value);
+    const url = await sharer.shareItemsWithPassword(itemsToShare, password.value);
     if (!url) {
       console.log(`cannot shareItems`);
       return;
@@ -67,7 +59,6 @@ The way I've got this written now:
     // meaning we need to upload and then share
 
     const defaultFolder = getDefaultFolder();
-    debugger;
 
     const itemObj = await uploader.doUpload(fileBlob.value, defaultFolder.id);
     if (!itemObj) {
@@ -75,7 +66,7 @@ The way I've got this written now:
       return;
     }
     fileBlob.value = null;
-    const url = await sharer.shareItems([itemObj], password.value);
+    const url = await sharer.shareItemsWithPassword([itemObj], password.value);
     if (!url) {
       shareAborted();
       return;
@@ -132,16 +123,14 @@ watch(
         type: EXTENSION_READY,
       });
     } catch (e) {
-      console.log(
-        `Cannot access browser.runtime, probably not running as an extension`
-      );
+      console.log(`Cannot access browser.runtime, probably not running as an extension`);
     }
   }
 );
 </script>
 
 <template>
-  <h1>The new new lockbox attachment</h1>
+  <h1>Attach from Lockbox</h1>
   <div>
     <h2>selected items</h2>
     <p>{{ selectedItemsForSharing }}</p>

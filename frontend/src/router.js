@@ -6,6 +6,8 @@ import EphemeralChat from '@/chat/views/EphemeralChat.vue';
 import Lockbox from '@/lockbox/pages/Web.vue';
 import Share from '@/lockbox/pages/Share.vue';
 
+import Extension from '@/lockbox/Extension.vue';
+
 const routes = [
   // Chat
   { path: '/chat', component: Chat },
@@ -14,6 +16,9 @@ const routes = [
   // Lockbox
   { path: '/lockbox', component: Lockbox },
   { path: '/share/:linkId', component: Share },
+
+  // Extension (for debugging)
+  { path: '/extension', component: Extension },
 ];
 
 const router = createRouter({

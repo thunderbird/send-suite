@@ -50,12 +50,35 @@ const app = express();
 app.use(morgan('combined'));
 
 app.use(express.json());
-app.use(
+// app.use(
+//   cors({
+//     origin: 'moz-extension://19f948ec-3c58-4af6-9ec8-f2d1d5d01044',
+//     credentials: true,
+//   })
+// );
+
+let allowedOrigins = ['http://localhost:5173'];
+
+app.use((req, res, next) => {
+  let origin = req.headers.origin;
+
+  // Check if it's a Thunderbird extension origin
+  if (origin && origin.startsWith('moz-extension://')) {
+    allowedOrigins.push(origin);
+  }
+
+  // Allow any matching origin
   cors({
-    origin: 'http://localhost:5173',
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error('Origin not allowed by CORS'));
+      }
+    },
     credentials: true,
-  })
-);
+  })(req, res, next);
+});
 
 app.set('trust proxy', 1); // trust first proxy
 const FileStore = sessionFileStore(session);

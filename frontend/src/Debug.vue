@@ -14,6 +14,8 @@ const userRef = inject('userRef');
 const messageBus = inject('messageBus');
 const storage = inject('storage');
 
+const { createFolder } = inject('folderManager');
+
 watchEffect(() => {
   email.value = userRef.value.email;
   id.value = userRef.value.id;
@@ -67,17 +69,14 @@ async function loadUser() {
 
 async function login() {
   if (!keychainRef.value.rsa.publicKey) {
-    console.log(
-      `no public key, either call keychain.value.load() or generate a new one `
-    );
+    console.log(`no public key, either call keychain.value.load() or generate a new one `);
     return;
   }
 
-  const createResp = await userRef.value.createUser(
-    email.value,
-    jwkPublicKey.value
-  );
-  if (!createResp) {
+  console.log(`jwkPublicKey.value is:`);
+  console.log(jwkPublicKey.value);
+  const createUserResp = await userRef.value.createUser(email.value, jwkPublicKey.value);
+  if (!createUserResp) {
     console.log(`could not create user, trying to log in`);
     const loginResp = await userRef.value.login(email.value);
     if (!loginResp) {
@@ -85,6 +84,12 @@ async function login() {
       return;
     }
     console.log(`logged in, user id is ${userRef.value.id}`);
+  }
+  const createFolderResp = await createFolder();
+  if (createFolderResp) {
+    console.log(`👍👍👍👍👍👍👍👍👍👍👍 created a folder`);
+  } else {
+    console.log(`could not create a folder 🐓🐓🐓🐓🐓🐓🐓🐓🐓🐓🐓`);
   }
 }
 
@@ -110,9 +115,7 @@ function clearStorage() {
 </script>
 <template>
   <div class="fixed right-1/2 z-50 translate-x-1/2 top-2 flex flex-col items-center">
-    <Btn @click.prevent="showDebug = !showDebug">
-      {{ showDebug ? 'Hide' : 'Show' }} debug panel
-    </Btn>
+    <Btn @click.prevent="showDebug = !showDebug"> {{ showDebug ? 'Hide' : 'Show' }} debug panel </Btn>
     <div v-if="showDebug" class="flex flex-col gap-2 bg-white p-1 mt-1">
       <label class="flex flex-col">
         <span>Public Key</span>
@@ -139,9 +142,7 @@ function clearStorage() {
         <Btn @click="login">Log in</Btn>
         <Btn @click="sendHeartbeat">Send heartbeat</Btn>
       </div>
-      <Btn @click="clearStorage">
-        Clear Stored User and Keys
-      </Btn>
+      <Btn @click="clearStorage"> Clear Stored User and Keys </Btn>
     </div>
   </div>
 </template>

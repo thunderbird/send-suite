@@ -9,8 +9,8 @@ import Popup from './views/Popup.vue';
 
 <template>
   <Wrapper>
-    <Debug />
     <Core>
+      <Debug />
       <Popup />
     </Core>
   </Wrapper>
