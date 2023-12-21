@@ -1,9 +1,7 @@
 console.log('hello from the extension', new Date().getTime());
 
 browser.runtime.onMessage.addListener(async (message, sender) => {
-  console.log(
-    `yo dawg, I heard you like to listen for messages from background.js`
-  );
+  console.log(`yo dawg, I heard you like to listen for messages from background.js`);
 });
 
 // function receiveFileLinkDetails() {
@@ -15,11 +13,7 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
 
 // async function handleMessage(id, name, data) {}
 
-async function insertLink(
-  tab,
-  href = 'https://some.share.link/hash-goes-here',
-  text = 'file-name-goes-here.md'
-) {
+async function insertLink(tab, href = 'https://some.share.link/hash-goes-here', text = 'file-name-goes-here.md') {
   // Get the existing message.
   let details = await browser.compose.getComposeDetails(tab.id);
   console.log(details);
@@ -53,66 +47,64 @@ async function insertLink(
   }
 }
 
-browser.cloudFile.onFileUpload.addListener(
-  async (account, { id, name, data }) => {
-    console.log(`🐈 here are account, id, name, and data`);
-    console.log(account);
-    console.log(id);
-    console.log(name);
-    console.log(data);
-    console.log('------------------------');
+browser.cloudFile.onFileUpload.addListener(async (account, { id, name, data }) => {
+  console.log(`🐈 here are account, id, name, and data`);
+  console.log(account);
+  console.log(id);
+  console.log(name);
+  console.log(data);
+  console.log('------------------------');
 
-    const popup = await browser.windows.create({
-      url: browser.runtime.getURL('index.extension.html'),
-      type: 'popup',
-      // Should not be needed: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/windows/create#parameters
-      allowScriptsToClose: true,
-    });
+  const popup = await browser.windows.create({
+    url: browser.runtime.getURL('index.extension.html'),
+    type: 'popup',
+    // Should not be needed: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/windows/create#parameters
+    allowScriptsToClose: true,
+  });
 
-    // return handleMessage(id, name, data);
-    return new Promise((resolve, reject) => {
-      async function handleMessage(message, sender) {
-        console.log(`what is sender?`);
-        console.log(sender);
-        console.log(`sending message from background.js to Popup`);
-        const { type, url, aborted } = message;
+  // return handleMessage(id, name, data);
+  return new Promise((resolve, reject) => {
+    async function handleMessage(message, sender) {
+      console.log(`what is sender?`);
+      console.log(sender);
+      console.log(`sending message from background.js to Popup`);
+      const { type, url, aborted } = message;
 
-        switch (type) {
-          case 'EXTENSION_READY':
-            console.log(`extension is ready, sending the file info`);
-            browser.runtime.sendMessage({
-              id,
-              name,
-              data,
-            });
-            break;
-          case 'SHARE_COMPLETE':
-            browser.runtime.onMessage.removeListener(handleMessage);
-            resolve({
-              url,
-              aborted,
-            });
-            break;
-          case 'SHARE_ABORTED':
-            browser.runtime.onMessage.removeListener(handleMessage);
-            // Or do I need to resolve?
-            reject({
-              url,
-              aborted,
-            });
-            break;
-          default:
-            browser.runtime.onMessage.removeListener(handleMessage);
-            console.log(`did not recognize type`);
-            reject();
-            break;
-        }
+      switch (type) {
+        case 'EXTENSION_READY':
+          console.log(`extension is ready, sending the file info`);
+          browser.runtime.sendMessage({
+            id,
+            name,
+            data,
+          });
+          break;
+        case 'SHARE_COMPLETE':
+          browser.runtime.onMessage.removeListener(handleMessage);
+          resolve({
+            url,
+            aborted,
+          });
+          break;
+        case 'SHARE_ABORTED':
+          browser.runtime.onMessage.removeListener(handleMessage);
+          // Or do I need to resolve?
+          reject({
+            url,
+            aborted,
+          });
+          break;
+        default:
+          browser.runtime.onMessage.removeListener(handleMessage);
+          console.log(`did not recognize type`);
+          reject();
+          break;
       }
-      // Listen for initial message
-      browser.runtime.onMessage.addListener(handleMessage);
-    });
-  }
-);
+    }
+    // Listen for initial message
+    browser.runtime.onMessage.addListener(handleMessage);
+  });
+});
 
 // async function handleComposeActionMessage(message, sender) {
 //   const { type, fileId } = message;

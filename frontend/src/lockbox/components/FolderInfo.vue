@@ -63,7 +63,7 @@ watchEffect(() => {
       <div class="flex flex-wrap gap-1">
         <TagLabel v-for="tag in currentFolder.tags" :color="tag.color"> {{ tag.name }}</TagLabel>
       </div>
-      <AddTag :id="currentFolder.id" type="container" />
+      <!-- <AddTag :id="currentFolder.id" type="container" /> -->
     </section>
     <!-- meta -->
     <footer class="mt-auto flex flex-col gap-3">

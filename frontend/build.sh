@@ -2,11 +2,11 @@ rm -rf dist
 mkdir dist
 mkdir dist/assets
 
-### this should get copied automatically, when compiling a page
+### this should get copied automatically when compiling a page
 cp -R public/* dist/
 
 ### Extension background.js
-# skipping for now, can't seem to build a version that doesn't leave 
+# skipping for now, can't seem to build a version that doesn't leave
 # `import` or `process` in the output
 #
 # vite build --config vite.config.background.js

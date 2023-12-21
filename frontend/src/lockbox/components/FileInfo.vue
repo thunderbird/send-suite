@@ -52,7 +52,8 @@ Note about shareOnly containers.
         <TagLabel v-for="tag in currentFile.tags" :color="tag.color"> {{ tag.name }}</TagLabel>
       </div>
       {{ currentFile.id }}
-      <AddTag :id="currentFile.id" type="item" />
+
+      <!-- <AddTag :id="currentFile.id" type="item" /> -->
     </section>
     <!-- meta -->
     <footer class="mt-auto flex flex-col gap-3">

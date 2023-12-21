@@ -130,11 +130,11 @@ watch(
 </script>
 
 <template>
-  <h1>Attach from Lockbox</h1>
-  <div>
+  <h1>Attach via Lockbox</h1>
+  <!-- <div>
     <h2>selected items</h2>
     <p>{{ selectedItemsForSharing }}</p>
-  </div>
+  </div> -->
   <FolderView v-if="!fileBlob" />
   <form @submit.prevent="uploadAndShare">
     <br />

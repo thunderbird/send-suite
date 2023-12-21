@@ -16,9 +16,6 @@
   "background": {
     "scripts": ["background.js"]
   },
-  "compose_action": {
-    "default_title": "attach from lockbox"
-  },
   "options_ui": {
     "page": "index.management.html",
     "open_in_tab": true,
@@ -39,15 +36,5 @@
     "tabHide",
     "messagesRead",
     "messagesModify"
-  ],
-  "experiment_apis": {
-    "FileSystem": {
-      "schema": "api/schema.json",
-      "parent": {
-        "scopes": ["addon_parent"],
-        "paths": [["FileSystem"]],
-        "script": "api/implementation.js"
-      }
-    }
-  }
+  ]
 }

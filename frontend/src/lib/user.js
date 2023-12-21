@@ -80,8 +80,4 @@ export class User {
     console.table({ id, tier, email });
     await this._storage.storeUser({ id, tier, email });
   }
-
-  // _addOnLoad(cb) {
-  //   this._onLoadCallbacks.push(cb);
-  // }
 }

@@ -16,6 +16,7 @@ const {
   folders,
   getVisibleFolders,
   gotoRootFolder,
+  deleteItemAndContent,
 } = inject('folderManager');
 
 const { toggleItemForSharing } = inject('sharingManager');
@@ -112,7 +113,7 @@ function showFileInfo(file) {
                     <IconDownload class="w-4 h-4" />
                   </Btn>
                   <Btn primary> <IconShare class="w-4 h-4" /> Share </Btn>
-                  <Btn danger>
+                  <Btn danger @click="deleteItemAndContent(item.id)">
                     <IconTrash class="w-4 h-4" />
                   </Btn>
                 </div>

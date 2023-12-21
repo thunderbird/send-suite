@@ -103,9 +103,7 @@ function cleanAfterBurning(conversationId) {
     alert('🗨️🔥');
     window.location.reload();
   } catch (e) {
-    console.log(
-      `not burning ${conversationId}, as this client isn't part of it`
-    );
+    console.log(`not burning ${conversationId}, as this client isn't part of it`);
   }
 }
 </script>

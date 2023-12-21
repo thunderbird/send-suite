@@ -53,4 +53,17 @@ export class Storage {
   async clear() {
     return this.adapter.clear();
   }
+
+  async export() {
+    // primarily for debugging or moving a user to another device
+    // prior to getting multiple-device login implemented
+    const user = await this.loadUser();
+    const keypair = await this.loadKeypair();
+    const keys = await this.loadKeys();
+    return {
+      user,
+      keypair,
+      keys,
+    };
+  }
 }
