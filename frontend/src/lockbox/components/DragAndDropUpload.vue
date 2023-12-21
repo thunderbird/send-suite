@@ -50,7 +50,7 @@ async function doUpload() {
 </script>
 
 <template>
-  <div ref="dropZoneRef" class="h-full">
+  <div ref="dropZoneRef" class="h-full border">
     <slot></slot>
   </div>
 

@@ -260,6 +260,19 @@ export async function updateContainerName(containerId: number, name: string) {
   return result;
 }
 
+export async function updateItemName(itemId: number, name: string) {
+  const result = await prisma.item.update({
+    where: {
+      id: itemId,
+    },
+    data: {
+      name,
+      updatedAt: new Date(),
+    },
+  });
+  return result;
+}
+
 export async function updateInvitationPermissions(
   containerId: number,
   invitationId: number,
@@ -409,15 +422,19 @@ export async function createItem(
 export async function deleteItem(id: number, shouldDeleteUpload = false) {
   // TODO: manage user sessions on the server
   // requiring logged-in user to be owner
+
+  let containerId;
   if (shouldDeleteUpload) {
     const item = await prisma.item.findUnique({
       where: {
         id,
       },
       select: {
+        containerId: true,
         uploadId: true,
       },
     });
+    containerId = item.containerId;
     const uploadDeleteResult = await prisma.upload.delete({
       where: {
         id: item.uploadId,
@@ -435,6 +452,18 @@ export async function deleteItem(id: number, shouldDeleteUpload = false) {
       id,
     },
   });
+
+  if (containerId && result) {
+    // touch the container's `updatedAt` date
+    await prisma.container.update({
+      where: {
+        id: containerId,
+      },
+      data: {
+        updatedAt: new Date(),
+      },
+    });
+  }
 
   console.log(`deleted item ${id}`);
   return result;
@@ -513,6 +542,7 @@ export async function getItemsInContainer(id: number) {
               wrappedKey: true,
               uploadId: true,
               createdAt: true,
+              updatedAt: true,
               type: true,
               upload: {
                 select: {
@@ -529,14 +559,17 @@ export async function getItemsInContainer(id: number) {
           },
         },
       },
-
       items: {
         select: {
+          id: true,
           name: true,
           wrappedKey: true,
           uploadId: true,
           createdAt: true,
+          updatedAt: true,
+          containerId: true,
           type: true,
+          tags: true,
           upload: {
             select: {
               size: true,
@@ -550,6 +583,7 @@ export async function getItemsInContainer(id: number) {
           },
         },
       },
+      tags: true,
     },
     // include: {
     //   items: true,
@@ -557,13 +591,11 @@ export async function getItemsInContainer(id: number) {
   });
 }
 
-// TODO:
-// - move item to another container
-// - delete item
-
-export async function getAllUserGroupContainers(
+async function _whereContainer(
   userId: number,
-  type: ContainerType | null
+  type: ContainerType | null,
+  shareOnly?: boolean,
+  topLevelOnly?: boolean
 ) {
   const params = {
     where: {
@@ -587,14 +619,34 @@ export async function getAllUserGroupContainers(
     groupId: {
       in: groupIds,
     },
-    shareOnly: false,
-    parentId: null,
   };
 
   if (type) {
     containerWhere['type'] = type;
   }
 
+  if (shareOnly !== undefined) {
+    containerWhere['shareOnly'] = shareOnly;
+  }
+
+  // top-level containers have a null parentId
+  if (topLevelOnly !== undefined) {
+    containerWhere['parentId'] = null;
+  }
+
+  return containerWhere;
+}
+
+// TODO:
+// - move item to another container
+// - delete item
+
+// Does not include shareOnly containers.
+export async function getAllUserGroupContainers(
+  userId: number,
+  type: ContainerType | null
+) {
+  const containerWhere = await _whereContainer(userId, type, false, true);
   return prisma.container.findMany({
     where: containerWhere,
     // include: {
@@ -617,9 +669,11 @@ export async function getAllUserGroupContainers(
           name: true,
           wrappedKey: true,
           uploadId: true,
+          containerId: true,
           // uploadId: true,
           // createdAt: true,
           type: true,
+          tags: true,
           upload: {
             select: {
               // type: true,
@@ -633,8 +687,47 @@ export async function getAllUserGroupContainers(
           },
         },
       },
+      tags: true,
     },
   });
+}
+
+export async function getRecentActivity(
+  userId: number,
+  type: ContainerType | null
+) {
+  // Get all containers
+  const containerWhere = await _whereContainer(userId, type);
+  const containers = await prisma.container.findMany({
+    take: 10,
+    where: containerWhere,
+    orderBy: [
+      {
+        updatedAt: 'desc',
+      },
+      {
+        name: 'asc',
+      },
+    ],
+    select: {
+      id: true,
+      name: true,
+      createdAt: true,
+      updatedAt: true,
+      type: true,
+      shareOnly: true,
+      items: {
+        select: {
+          id: true,
+          name: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
+    },
+  });
+
+  return containers;
 }
 
 // for a container, how many groups are there?
@@ -1199,4 +1292,138 @@ export async function burnFolder(
   // Basically, if we got this far, everything was burned successfully.
   // TODO: add some sort of retry mechanism.
   return deleteResp;
+}
+
+// Create a tag for an item
+export async function createTagForItem(
+  tagName: string,
+  color: string,
+  itemId: number
+) {
+  // trim, but don't normalize the case
+  const name = tagName.trim();
+  // or should we do a case-insensitive search for an existing tag?
+
+  const items = {
+    connect: [{ id: itemId }],
+  };
+
+  // create the tag and add the container
+  const tag = await prisma.tag.upsert({
+    where: {
+      name,
+    },
+    update: {
+      items,
+    },
+    create: {
+      name,
+      color,
+      items,
+    },
+  });
+
+  return tag;
+}
+
+// Create a tag for a container
+export async function createTagForContainer(
+  tagName: string,
+  color: string,
+  containerId: number
+) {
+  // trim, but don't normalize the case
+  const name = tagName.trim();
+  // or should we do a case-insensitive search for an existing tag?
+
+  const containers = {
+    connect: [{ id: containerId }],
+  };
+
+  // create the tag and add the container
+  const tag = await prisma.tag.upsert({
+    where: {
+      name,
+    },
+    update: {
+      containers,
+    },
+    create: {
+      name,
+      color,
+      containers,
+    },
+  });
+
+  return tag;
+}
+
+// Delete a tag
+export async function deleteTag(id: number) {
+  const result = await prisma.tag.delete({
+    where: {
+      id,
+    },
+  });
+
+  return result;
+}
+
+// Update/rename a tag
+export async function updateTagName(tagId: number, name: string) {
+  const result = await prisma.tag.update({
+    where: {
+      id: tagId,
+    },
+    data: {
+      name,
+      // updatedAt: new Date(),
+    },
+  });
+  return result;
+}
+// Get all items and containers (that I have access to) with a specific tag or tags
+
+export async function getContainersAndItemsWithTags(
+  userId: number,
+  tagNames: string[]
+) {
+  // First, find the group memberships for the user.
+  const memberships = await prisma.membership.findMany({
+    where: { userId },
+  });
+
+  // We then transform the memberships to just include the groupId
+  const groupIds = memberships.map((membership) => membership.groupId);
+
+  // Now get all containers with these group IDs
+  const containersWithTags = await prisma.container.findMany({
+    where: {
+      group: { id: { in: groupIds } },
+      tags: { some: { name: { in: tagNames } } }, // Looking for any of the input tags
+    },
+    include: {
+      items: true, // include related items
+      tags: true, // include related tags
+    },
+  });
+
+  // Fetching items with the tag and any parent container must be made accessible by the groups
+  const itemsWithTags = await prisma.item.findMany({
+    where: {
+      container: {
+        group: { id: { in: groupIds } },
+      },
+      tags: { some: { name: { in: tagNames } } }, // Looking for any of the input tags
+    },
+    include: {
+      container: true, // include related container
+      tags: true, // include related tags
+    },
+  });
+
+  return {
+    containers: containersWithTags,
+    items: itemsWithTags,
+  };
 }

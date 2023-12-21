@@ -2,6 +2,8 @@
 import { ref, inject, provide, watch, toRaw } from 'vue';
 import Uploader from '@/common/upload';
 import { getContainerKeyFromChallenge } from '@/common/challenge.js';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 /*
 I need to know which one has been "selected"
 But also, selection should only be enabled when run as an extension.
@@ -31,10 +33,12 @@ watch(
   () => userRef.value.id,
   () => {
     getVisibleFolders();
+    getRecentActivity();
   }
 );
 
 const folders = ref([]);
+const recentFolders = ref([]);
 const currentFolderId = ref(null);
 const currentFile = ref(null);
 const currentFolder = ref(null);
@@ -77,6 +81,7 @@ async function setCurrentFile(obj) {
     currentFile.value = null;
     return;
   }
+  await setCurrentFolderId(null);
   const { size, type } = await api.getUploadMetadata(obj.uploadId);
   currentFile.value = {
     ...obj,
@@ -131,9 +136,23 @@ async function getVisibleFolders() {
   folders.value = calculateFolderSizes(foldersFromApi);
   if (currentFolderId.value) {
     currentFolder.value = folders.value.find((f) => f.id === currentFolderId.value);
+
+    // Update the currentFile, if we were already tracking one
+    if (currentFile.value) {
+      currentFile.value = currentFolder.value.items.find((f) => f.id === currentFile.value.id);
+    }
   }
+
   console.log(`got foldersFromApi: `);
   console.log(foldersFromApi);
+}
+
+async function getRecentActivity() {
+  if (!userRef.value.id) {
+    console.log(`no valid user id`);
+    return;
+  }
+  recentFolders.value = await api.getRecentActivity(userRef.value.id);
 }
 
 // // Make this computed?
@@ -175,6 +194,7 @@ async function uploadItem(fileBlob, folderId) {
   const itemObj = await uploader.doUpload(fileBlob, folderId);
   if (itemObj) {
     getVisibleFolders();
+    getRecentActivity();
   }
   return itemObj;
 }
@@ -203,6 +223,22 @@ async function deleteItemAndContent(itemId, folderId) {
 async function moveItems(itemIds, destinationFolderId) {
   // this.copy();
   // this.delete();
+}
+
+async function renameItem(containerId, itemId, name) {
+  const result = await api.renameItem(containerId, itemId, name);
+  if (result) {
+    console.log(`you renamed the thing`);
+    console.log(result);
+
+    // Heavy-handed, but refreshes the file name in FolderView component.
+    await getVisibleFolders();
+
+    // Get the name from the response, assign so that it updates
+    // the FileInfo component.
+    currentFile.value.name = result.name;
+  }
+  return result;
 }
 
 async function renameFolder(containerId, name) {
@@ -234,11 +270,14 @@ provide('folderManager', {
   uploadItem,
   deleteItemAndContent,
   renameFolder,
+  renameItem,
   rootFolderId,
   rootFolder,
   setRootFolderId,
   parentFolderId,
   gotoRootFolder,
+  recentFolders,
+  getRecentActivity,
 });
 
 // =======================================================================
@@ -515,6 +554,26 @@ provide('sharingManager', {
   acceptInvitation,
   getInvitations,
 });
+
+// =======================================================================
+// Tag Manager
+async function addTagForContainer(containerId, name, color) {
+  await api.addTagForContainer(containerId, name, color);
+  await getVisibleFolders();
+}
+async function addTagForItem(itemId, name, color) {
+  await api.addTagForItem(itemId, name, color);
+  await getVisibleFolders();
+}
+
+provide('tagManager', {
+  addTagForContainer,
+  addTagForItem,
+});
+// =======================================================================
+// Misc
+dayjs.extend(relativeTime);
+provide('dayjs', dayjs);
 </script>
 
 <template>

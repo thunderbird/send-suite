@@ -19,6 +19,7 @@ import {
   removeInvitationAndGroup,
   updateContainerName,
   getContainerWithAncestors,
+  updateItemName,
 } from '../models';
 import { getPermissions } from '../middleware';
 
@@ -145,6 +146,23 @@ router.delete(
   }
 );
 
+router.post(
+  '/:containerId/item/:itemId/rename',
+  getPermissions,
+  async (req, res) => {
+    const { containerId, itemId } = req.params;
+    const { name } = req.body;
+    try {
+      const item = await updateItemName(parseInt(itemId), name);
+      res.status(200).json(item);
+    } catch (error) {
+      res.status(500).json({
+        message: 'Server error.',
+      });
+    }
+  }
+);
+
 router.post('/:containerId/member/invite', getPermissions, async (req, res) => {
   const { containerId } = req.params;
   const { senderId, recipientId, wrappedKey } = req.body;
@@ -248,7 +266,7 @@ router.get('/:containerId/members', getPermissions, async (req, res) => {
 });
 
 // Get a container and its items
-// Add the folder path as a property.
+// Add the ancestor folder path as a property.
 router.get('/:containerId', getPermissions, async (req, res) => {
   const { containerId } = req.params;
   try {

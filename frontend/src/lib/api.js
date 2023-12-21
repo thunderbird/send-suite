@@ -172,11 +172,7 @@ export class ApiConnection {
   }
 
   async getContainerGroupMembers(containerId) {
-    const resp = await this.callApi(
-      `containers/${containerId}/members`,
-      {},
-      'GET'
-    );
+    const resp = await this.callApi(`containers/${containerId}/members`, {}, 'GET');
     if (resp) {
       return resp;
     } else {
@@ -196,25 +192,17 @@ export class ApiConnection {
     if (resp) {
       return resp;
     } else {
-      console.log(
-        `Error: could not add user ${userId} to container ${containerId}`
-      );
+      console.log(`Error: could not add user ${userId} to container ${containerId}`);
       return null;
     }
   }
 
   async removeInvitationAndGroupMembership(containerId, invitationId) {
-    const resp = await this.callApi(
-      `containers/${containerId}/member/remove/${invitationId}`,
-      {},
-      'DELETE'
-    );
+    const resp = await this.callApi(`containers/${containerId}/member/remove/${invitationId}`, {}, 'DELETE');
     if (resp) {
       return resp;
     } else {
-      console.log(
-        `Error: could not remove invitation ${invitationId} from container ${containerId}`
-      );
+      console.log(`Error: could not remove invitation ${invitationId} from container ${containerId}`);
       return null;
     }
   }
@@ -232,9 +220,7 @@ export class ApiConnection {
     if (resp) {
       return resp;
     } else {
-      console.log(
-        `Error: could not share key with ${userId} for container ${containerId}`
-      );
+      console.log(`Error: could not share key with ${userId} for container ${containerId}`);
       return null;
     }
   }
@@ -251,33 +237,21 @@ export class ApiConnection {
   }
 
   async acceptInvitation(invitationId, containerId) {
-    const resp = await this.callApi(
-      `containers/${containerId}/member/accept/${invitationId}`,
-      {},
-      'POST'
-    );
+    const resp = await this.callApi(`containers/${containerId}/member/accept/${invitationId}`, {}, 'POST');
     if (resp) {
       return resp;
     } else {
-      console.log(
-        `Error: could not accept invitation ${invitationId} for container ${containerId}`
-      );
+      console.log(`Error: could not accept invitation ${invitationId} for container ${containerId}`);
       return null;
     }
   }
 
   async createInvitationForAccessLink(linkId, recipientId) {
-    const resp = await this.callApi(
-      `ephemeral/${linkId}/member/${recipientId}/accept`,
-      {},
-      'POST'
-    );
+    const resp = await this.callApi(`ephemeral/${linkId}/member/${recipientId}/accept`, {}, 'POST');
     if (resp) {
       return resp;
     } else {
-      console.log(
-        `Error: could not create invitation for accessLink ${linkId} for recipient ${recipientId}`
-      );
+      console.log(`Error: could not create invitation for accessLink ${linkId} for recipient ${recipientId}`);
       return null;
     }
   }
@@ -296,6 +270,17 @@ export class ApiConnection {
   async getUserFolders(userId) {
     // TODO: shift the userId from frontend argument to backend session
     const resp = await this.callApi(`users/${userId}/folders/`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get folders for user ${userId}`);
+      return null;
+    }
+  }
+
+  async getRecentActivity(userId) {
+    // TODO: shift the userId from frontend argument to backend session
+    const resp = await this.callApi(`users/${userId}/activity/`);
     if (resp) {
       return resp;
     } else {
@@ -351,27 +336,26 @@ export class ApiConnection {
   }
 
   async renameFolder(containerId, name) {
-    const resp = await this.callApi(
-      `containers/${containerId}/rename`,
-      { name },
-      'POST'
-    );
+    const resp = await this.callApi(`containers/${containerId}/rename`, { name }, 'POST');
     if (resp) {
       return resp;
     } else {
-      console.log(
-        `Error: could not update name for container ${containerId}`
-      );
+      console.log(`Error: could not update name for container ${containerId}`);
       return null;
     }
   }
 
-  async updateInvitationPermissions(
-    containerId,
-    userId,
-    invitationId,
-    permission
-  ) {
+  async renameItem(containerId, itemId, name) {
+    const resp = await this.callApi(`containers/${containerId}/item/${itemId}/rename`, { name }, 'POST');
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not update name for item ${itemId}`);
+      return null;
+    }
+  }
+
+  async updateInvitationPermissions(containerId, userId, invitationId, permission) {
     const resp = await this.callApi(
       `containers/${containerId}/shares/invitation/update`,
       { userId, invitationId, permission },
@@ -380,18 +364,11 @@ export class ApiConnection {
     if (resp) {
       return resp;
     } else {
-      console.log(
-        `Error: could not update permissions for invitation ${invitationId}`
-      );
+      console.log(`Error: could not update permissions for invitation ${invitationId}`);
       return null;
     }
   }
-  async updateAccessLinkPermissions(
-    containerId,
-    userId,
-    accessLinkId,
-    permission
-  ) {
+  async updateAccessLinkPermissions(containerId, userId, accessLinkId, permission) {
     const resp = await this.callApi(
       `containers/${containerId}/shares/accessLink/update`,
       { userId, accessLinkId, permission },
@@ -400,9 +377,7 @@ export class ApiConnection {
     if (resp) {
       return resp;
     } else {
-      console.log(
-        `Error: could not update permissions for accessLink ${accessLinkId}`
-      );
+      console.log(`Error: could not update permissions for accessLink ${accessLinkId}`);
       return null;
     }
   }
@@ -568,6 +543,39 @@ export class ApiConnection {
       return resp;
     } else {
       console.log(`Error: could not delete container`);
+      return null;
+    }
+  }
+
+  async addTagForContainer(containerId, name, color) {
+    const resp = await this.callApi(
+      `tags/container/${containerId}`,
+      {
+        name,
+        color,
+      },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not add tag`);
+      return null;
+    }
+  }
+  async addTagForItem(itemId, name, color) {
+    const resp = await this.callApi(
+      `tags/item/${itemId}`,
+      {
+        name,
+        color,
+      },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not add tag`);
       return null;
     }
   }

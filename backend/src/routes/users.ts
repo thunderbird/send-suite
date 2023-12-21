@@ -8,6 +8,7 @@ import {
   getUserByEmail,
   getContainersSharedByMe,
   getContainersSharedWithMe,
+  getRecentActivity,
 } from '../models';
 
 const router: Router = Router();
@@ -147,6 +148,23 @@ router.get('/:userId/folders', async (req, res) => {
   const { userId } = req.params;
   try {
     const containers = await getAllUserGroupContainers(
+      parseInt(userId),
+      ContainerType.FOLDER
+    );
+    res.status(200).json(containers);
+  } catch (error) {
+    console.log(`🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡`);
+    console.log(error);
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+router.get('/:userId/activity', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const containers = await getRecentActivity(
       parseInt(userId),
       ContainerType.FOLDER
     );

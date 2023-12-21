@@ -5,6 +5,7 @@ import FolderTableRowCell from '@/lockbox/elements/FolderTableRowCell.vue';
 import Btn from '@/lockbox/elements/Btn.vue';
 import DragAndDropUpload from '@/lockbox/components/DragAndDropUpload.vue';
 import Breadcrumbs from '@/lockbox/components/Breadcrumbs.vue';
+import Tag from '@/lockbox/elements/Tag.vue';
 
 const {
   deleteFolder,
@@ -19,11 +20,13 @@ const {
 
 const { toggleItemForSharing } = inject('sharingManager');
 
+const dayjs = inject('dayjs');
+
 onMounted(getVisibleFolders);
 
-function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
-  console.log(`user chose to show info for file ${itemId}`);
-  setCurrentFile({ itemId, uploadId, folderId, wrappedKey, filename, type });
+function showFileInfo(file) {
+  console.log(`user chose to show info for file ${file.id}`);
+  setCurrentFile(file);
 }
 </script>
 <template>
@@ -54,9 +57,13 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
             </FolderTableRowCell>
             <FolderTableRowCell :selected="folder.id === currentFolderId">
               <div>{{ folder.name }}</div>
-              <div class="text-sm">Last modified</div>
+              <div class="text-sm">Last modified {{ dayjs().to(dayjs(folder.updatedAt)) }}</div>
             </FolderTableRowCell>
-            <FolderTableRowCell :selected="folder.id === currentFolderId"></FolderTableRowCell>
+            <FolderTableRowCell :selected="folder.id === currentFolderId">
+              <div class="flex">
+                <Tag v-for="tag in folder.tags" :color="tag.color" />
+              </div>
+            </FolderTableRowCell>
             <FolderTableRowCell :selected="folder.id === currentFolderId"></FolderTableRowCell>
             <FolderTableRowCell :selected="folder.id === currentFolderId">
               <div class="flex justify-between">
@@ -80,7 +87,13 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
           </tr>
 
           <!-- v-if="folder.id === currentFolderId" -->
-          <tr class="group cursor-pointer" v-if="rootFolder" v-for="item in rootFolder.items" :key="item.id">
+          <tr
+            class="group cursor-pointer"
+            v-if="rootFolder"
+            v-for="item in rootFolder.items"
+            :key="item.id"
+            @click="showFileInfo(item)"
+          >
             <FolderTableRowCell>
               <div class="flex justify-end">
                 <img src="@/assets/file.svg" class="w-8 h-8" />
@@ -88,7 +101,7 @@ function showFileInfo(itemId, uploadId, folderId, wrappedKey, filename, type) {
             </FolderTableRowCell>
             <FolderTableRowCell>
               <div>{{ item.name }}</div>
-              <div class="text-sm">Last modified</div>
+              <div class="text-sm">Last modified {{ dayjs().to(dayjs(item.updatedAt)) }}</div>
             </FolderTableRowCell>
             <FolderTableRowCell></FolderTableRowCell>
             <FolderTableRowCell></FolderTableRowCell>
