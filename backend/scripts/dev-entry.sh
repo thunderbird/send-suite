@@ -1,5 +1,5 @@
 #!/bin/sh
-echo 'Running prisma migrations...'
+echo 'Applying prisma migrations...'
 npm run db:update
 
 echo 'Generating prisma client...'
