@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "./build.sh",
     "preview": "vite preview",
     "test": "vitest",
@@ -26,6 +26,7 @@
     "buffer": "^6.0.3",
     "eslint": "^8.7.0",
     "postcss": "^8.4.28",
+    "postcss-import": "^15.1.0",
     "prettier": "^2.5.1",
     "tailwindcss": "^3.3.3",
     "typescript": "^5.2.2",

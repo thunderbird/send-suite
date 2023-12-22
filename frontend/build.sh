@@ -6,7 +6,7 @@ mkdir dist/assets
 cp -R public/* dist/
 
 ### Extension background.js
-# skipping for now, can't seem to build a version that doesn't leave 
+# skipping for now, can't seem to build a version that doesn't leave
 # `import` or `process` in the output
 #
 # vite build --config vite.config.background.js
