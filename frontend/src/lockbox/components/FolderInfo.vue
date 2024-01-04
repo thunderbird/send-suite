@@ -49,22 +49,21 @@ watchEffect(() => {
     <!-- sharing config -->
     <CreateAccessLink :folderId="currentFolder.id" />
     <!-- people -->
-    <section class="flex flex-col gap-2">
+    <!-- <section class="flex flex-col gap-2">
       <div class="font-semibold text-gray-600">Shared With</div>
       <div class="flex flex-wrap gap-1">
         <Avatar v-for="recipient in recipients" :key="recipient.id">
           {{ recipient.email.substring(0, 1) }}
         </Avatar>
       </div>
-    </section>
+    </section> -->
     <!-- tags -->
-    <section class="flex flex-col gap-2">
+    <!-- <section class="flex flex-col gap-2">
       <div class="font-semibold text-gray-600">Tags</div>
       <div class="flex flex-wrap gap-1">
         <TagLabel v-for="tag in currentFolder.tags" :color="tag.color"> {{ tag.name }}</TagLabel>
       </div>
-      <!-- <AddTag :id="currentFolder.id" type="container" /> -->
-    </section>
+    </section> -->
     <!-- meta -->
     <footer class="mt-auto flex flex-col gap-3">
       <label class="flex flex-col gap-1" v-if="currentFolder.createdAt">

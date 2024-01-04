@@ -38,7 +38,7 @@ const { folders, parentFolderId, rootFolderId, gotoRootFolder } = inject('folder
     <!-- recent activity -->
     <RecentActivity />
     <!-- tags -->
-    <section class="flex flex-col gap-2 p-2.5 border-t border-gray-300">
+    <!-- <section class="flex flex-col gap-2 p-2.5 border-t border-gray-300">
       <div class="flex justify-between items-center">
         <div class="font-semibold text-lg text-gray-900">Tags</div>
         <Btn class="!px-1.5"><IconDotsVertical class="w-4 h-4" /></Btn>
@@ -73,6 +73,6 @@ const { folders, parentFolderId, rootFolderId, gotoRootFolder } = inject('folder
           <span class="text-gray-800 pb-1">Party 🎉</span>
         </div>
       </div>
-    </section>
+    </section> -->
   </div>
 </template>

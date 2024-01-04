@@ -31,9 +31,9 @@ const { currentFile, currentFolderId, rootFolderId } = inject('folderManager');
         /> -->
       </header>
       <main class="flex flex-col gap-4 px-4">
-        <InvitationList />
+        <!-- <InvitationList /> -->
         <template v-if="!rootFolderId">
-          <SharedWithMe />
+          <!-- <SharedWithMe /> -->
           <SharedByMe />
         </template>
         <FolderView />

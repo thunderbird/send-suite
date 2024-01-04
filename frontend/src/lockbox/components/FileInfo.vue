@@ -46,15 +46,13 @@ Note about shareOnly containers.
     <!-- sharing config -->
     <!-- <CreateAccessLink :folderId="currentFile.id" /> -->
     <!-- tags -->
-    <section class="flex flex-col gap-2">
+    <!-- <section class="flex flex-col gap-2">
       <div class="font-semibold text-gray-600">Tags</div>
       <div class="flex flex-wrap gap-1">
         <TagLabel v-for="tag in currentFile.tags" :color="tag.color"> {{ tag.name }}</TagLabel>
       </div>
       {{ currentFile.id }}
-
-      <!-- <AddTag :id="currentFile.id" type="item" /> -->
-    </section>
+    </section> -->
     <!-- meta -->
     <footer class="mt-auto flex flex-col gap-3">
       <label class="flex flex-col gap-1" v-if="currentFile.createdAt">
