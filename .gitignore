@@ -3,7 +3,6 @@ migrations
 seed.ts
 .pnpm-store
 
-docker-compose.yml
 
 # Dev droppings
 .env
@@ -14,6 +13,8 @@ dist
 dist-ssr
 *.local
 sessions
+storage
+.pnpm-store
 
 # Logs
 logs
@@ -35,4 +36,3 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
-storage

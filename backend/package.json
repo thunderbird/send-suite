@@ -8,6 +8,7 @@
     "db:generate": "prisma generate",
     "db:browse": "prisma studio",
     "db:migrate": "prisma migrate dev",
+    "db:update": "prisma migrate deploy",
     "db:reset": "prisma migrate reset"
   },
   "keywords": [],
