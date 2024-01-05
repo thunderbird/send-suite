@@ -1,4 +1,7 @@
 import { createApp } from 'vue';
 import Extension from './lockbox/Extension.vue';
-
-createApp(Extension).mount('#extension-page');
+import { createPinia } from 'pinia';
+const pinia = createPinia();
+const app = createApp(Extension);
+app.use(pinia);
+app.mount('#extension-page');

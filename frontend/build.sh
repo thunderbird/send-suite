@@ -1,6 +1,5 @@
-rm -rf dist
-mkdir dist
-mkdir dist/assets
+rm -rf dist/*
+mkdir -p dist/assets
 
 ### this should get copied automatically when compiling a page
 cp -R public/* dist/

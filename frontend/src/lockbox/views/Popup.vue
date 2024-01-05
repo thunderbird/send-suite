@@ -1,9 +1,13 @@
 <script setup>
 import { ref, inject, watch } from 'vue';
+import useConfigurationStore from '@/lockbox/stores/configuration-store';
+
 import FolderView from '../components/FolderView.vue';
 import Uploader from '@/common/upload';
 import Sharer from '@/common/share';
 import { EXTENSION_READY, SHARE_COMPLETE, SHARE_ABORTED, SELECTION_COMPLETE } from '@/lib/const';
+
+const configurationStore = useConfigurationStore();
 
 const api = inject('api');
 const userRef = inject('userRef');
@@ -135,7 +139,7 @@ watch(
     <h2>selected items</h2>
     <p>{{ selectedItemsForSharing }}</p>
   </div> -->
-  <FolderView v-if="!fileBlob" />
+  <!-- <FolderView v-if="!fileBlob" /> -->
   <form @submit.prevent="uploadAndShare">
     <br />
     <label>
