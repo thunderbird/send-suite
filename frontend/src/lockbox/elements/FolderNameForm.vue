@@ -4,12 +4,9 @@ import Btn from '@/lockbox/elements/Btn.vue';
 
 const emit = defineEmits(['renameComplete']);
 
-const {
-  renameFolder,
-  currentFolder,
-} = inject('folderManager');
+const { renameFolder, currentFolder } = inject('folderManager');
 
-const currentFolderName = ref(currentFolder.value.name)
+const currentFolderName = ref(currentFolder.value.name);
 const input = ref(null);
 
 async function updateFolderName() {
@@ -23,8 +20,8 @@ async function updateFolderName() {
 
 onMounted(() => {
   input.value.focus();
-})
-
+  input.value.select();
+});
 </script>
 
 <template>
