@@ -128,18 +128,18 @@ const server = app.listen(PORT, HOST, () =>
 const messageClients = new Map();
 // Listen for WebSocket connections
 server.on('upgrade', (req, socket, head) => {
-  console.log('got the upgrade request');
+  // console.log('got the upgrade request');
   if (req.url === WS_UPLOAD_PATH) {
-    console.log(`upgrading ${WS_UPLOAD_PATH}`);
+    // console.log(`upgrading ${WS_UPLOAD_PATH}`);
     wsUploadServer.handleUpgrade(req, socket, head, (ws) => {
-      console.log('handling upgrade for upload');
+      // console.log('handling upgrade for upload');
       wsUploadServer.emit('connection', ws, req);
       wsUploadHandler(ws, req);
     });
   } else if (req.url.startsWith(WS_MESSAGE_PATH)) {
     console.log(`upgrading ${WS_MESSAGE_PATH}`);
     wsMessageServer.handleUpgrade(req, socket, head, (ws) => {
-      console.log('handling upgrade for messages');
+      // console.log('handling upgrade for messages');
       // wsMessageServer.emit('connection', ws, req);
       // const id = uuidv4();
       const parts = req.url.split('/');
