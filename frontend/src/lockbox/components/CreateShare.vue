@@ -1,5 +1,6 @@
 <script setup>
 import { ref, inject } from 'vue';
+import useApiStore from '@/stores/api-store';
 import Sharer from '@/common/share';
 
 // shouldn't I be getting this from the sharemanager?
@@ -8,7 +9,7 @@ const props = defineProps({
   // containerId: number,
 });
 
-const api = inject('api');
+const { api } = useApiStore();
 const userRef = inject('userRef');
 const keychainRef = inject('keychainRef');
 const { getFoldersSharedByMe } = inject('sharingManager');

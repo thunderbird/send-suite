@@ -1,9 +1,14 @@
 import { timestamp } from './utils';
 import { CONTAINER_TYPE, ITEM_TYPE } from './const';
-
+const TEMP_SERVER_URL = 'https://localhost:8088';
 export class ApiConnection {
   constructor(serverUrl) {
     // using new URL() trims off excess whitespace and trailing '/'
+    console.log(`ApiConnection got passed the following serverUrl: ${serverUrl}`);
+    if (!serverUrl) {
+      console.log(`which is not a good URL, using the temp url`);
+      serverUrl = TEMP_SERVER_URL;
+    }
     const u = new URL(serverUrl);
     this.serverUrl = u.origin;
   }

@@ -18,8 +18,9 @@ import { inject, ref, onMounted } from 'vue';
 import Sharer from '@/common/share';
 import CreateAccessLink from './CreateAccessLink.vue';
 import PermissionsDropDown from '../elements/PermissionsDropDown.vue';
+import useApiStore from '@/stores/api-store';
 
-const api = inject('api');
+const { api } = useApiStore();
 const keychainRef = inject('keychainRef');
 const userRef = inject('userRef');
 const {
@@ -66,10 +67,7 @@ async function getSharingInfo() {
 }
 
 async function removeMember(invitationId) {
-  const success = await removeInvitationAndGroupMembership(
-    props.folderId,
-    invitationId
-  );
+  const success = await removeInvitationAndGroupMembership(props.folderId, invitationId);
   if (success) {
     await getSharingInfo();
   }
@@ -83,10 +81,7 @@ async function removeLink(accessLinkId) {
 }
 
 async function inviteMember(email) {
-  const result = await sharer.shareContainerWithInvitation(
-    props.folderId,
-    email
-  );
+  const result = await sharer.shareContainerWithInvitation(props.folderId, email);
   if (!result) {
     console.log(`Could not invite member`);
     return;
@@ -129,9 +124,7 @@ async function setPermission(type, containerId, id, permission) {
     member email:
     <input v-model="newMember" />
   </label>
-  <button class="btn-primary" @click.prevent="inviteMember(newMember)">
-    Invite Member
-  </button>
+  <button class="btn-primary" @click.prevent="inviteMember(newMember)">Invite Member</button>
   <br />
   <br />
   <hr />
@@ -150,16 +143,9 @@ async function setPermission(type, containerId, id, permission) {
           {{ invitation.recipient.email }}<br />
           <PermissionsDropDown
             :currentPermission="invitation.permission"
-            @setPermission="
-              (p) => setPermission(INVITATION, folderId, invitation.id, p)
-            "
+            @setPermission="(p) => setPermission(INVITATION, folderId, invitation.id, p)"
           />
-          <button
-            class="btn-primary"
-            @click.prevent="removeMember(invitation.id)"
-          >
-            ⛔
-          </button>
+          <button class="btn-primary" @click.prevent="removeMember(invitation.id)">⛔</button>
         </li>
       </ul>
     </li>
@@ -172,21 +158,12 @@ async function setPermission(type, containerId, id, permission) {
       Links:
       <ul>
         <li v-for="accessLink of share.accessLinks" :key="accessLink.id">
-          <a :href="'http://localhost:5173/share/' + accessLink.id"
-            >Access Link</a
-          ><br />
+          <a :href="'http://localhost:5173/share/' + accessLink.id">Access Link</a><br />
           <PermissionsDropDown
             :currentPermission="accessLink.permission"
-            @setPermission="
-              (p) => setPermission(ACCESSLINK, folderId, accessLink.id, p)
-            "
+            @setPermission="(p) => setPermission(ACCESSLINK, folderId, accessLink.id, p)"
           />
-          <button
-            class="btn-primary"
-            @click.prevent="removeLink(accessLink.id)"
-          >
-            ⛔
-          </button>
+          <button class="btn-primary" @click.prevent="removeLink(accessLink.id)">⛔</button>
         </li>
       </ul>
     </li>

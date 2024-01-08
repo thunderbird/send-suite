@@ -2,6 +2,15 @@
 import { ref, inject, onMounted, watchEffect } from 'vue';
 import Btn from '@/lockbox/elements/Btn.vue';
 
+import useConfigurationStore from '@/stores/configuration-store';
+
+// const configurationStore = useConfigurationStore();
+// configurationStore.$onAction((actionInfo) => {
+//   console.log(actionInfo);
+// console.log(`the serverUrl is ${configurationStore.serverUrl}`);
+// });
+// configurationStore.setServerUrl(`http://blah.com`);
+
 const email = ref('');
 const id = ref(null);
 const jwkPublicKey = ref('');
@@ -146,3 +155,4 @@ function clearStorage() {
     </div>
   </div>
 </template>
+@/stores/configuration-store

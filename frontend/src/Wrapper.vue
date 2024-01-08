@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, provide, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { ApiConnection } from '@/lib/api';
+import useApiStore from '@/stores/api-store';
 
 import { Keychain } from '@/lib/keychain';
 import { Storage } from '@/lib/storage';
@@ -11,8 +11,7 @@ const router = useRouter();
 
 const TEMP_SERVER_URL = 'https://localhost:8088';
 
-const api = new ApiConnection(TEMP_SERVER_URL);
-provide('api', api);
+const { api } = useApiStore();
 
 const messageBus = new MessageBus(TEMP_SERVER_URL);
 provide('messageBus', messageBus);

@@ -1,11 +1,12 @@
 <script setup>
 import { ref, inject } from 'vue';
+import useApiStore from '@/stores/api-store';
 import { Util } from '@/lib/keychain';
 import Sharer from '@/common/share';
 import Btn from '@/lockbox/elements/Btn.vue';
 import { IconLink, IconEye, IconEyeOff } from '@tabler/icons-vue';
 
-const api = inject('api');
+const { api } = useApiStore();
 const userRef = inject('userRef');
 const keychainRef = inject('keychainRef');
 
@@ -31,11 +32,7 @@ async function newAccessLink() {
   }
 
   console.log(`using password ${pw}`);
-  let url = await sharer.requestAccessLink(
-    props.folderId,
-    pw,
-    expiration.value
-  );
+  let url = await sharer.requestAccessLink(props.folderId, pw, expiration.value);
   if (!url) {
     // emit('createAccessLinkError');
     return;
@@ -47,7 +44,6 @@ async function newAccessLink() {
   accessUrl.value = url;
   // emit('createAccessLinkComplete', url);
 }
-
 </script>
 <template>
   <section class="flex flex-col gap-3">
@@ -65,10 +61,7 @@ async function newAccessLink() {
     <label class="flex flex-col gap-2 relative">
       <span class="text-xs font-semibold text-gray-600">Password</span>
       <input :type="showPassword ? 'text' : 'password'" v-model="password" />
-      <button
-        @click.prevent="showPassword = !showPassword"
-        class="absolute right-3 bottom-2 select-none"
-      >
+      <button @click.prevent="showPassword = !showPassword" class="absolute right-3 bottom-2 select-none">
         <IconEye v-if="showPassword" class="w-4 h-4" />
         <IconEyeOff v-else class="w-4 h-4" />
       </button>

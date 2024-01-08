@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import useConfigurationStore from '@/lockbox/stores/configuration-store';
+import useConfigurationStore from '@/stores/configuration-store';
 
 const DEBUG = true;
 const SERVER = `server`;
@@ -100,3 +100,4 @@ form {
   }
 }
 </style>
+@/stores/configuration-store

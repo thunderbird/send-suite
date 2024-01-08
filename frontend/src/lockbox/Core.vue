@@ -1,5 +1,7 @@
 <script setup>
 import { ref, inject, provide, watch, toRaw } from 'vue';
+import useApiStore from '@/stores/api-store';
+
 import Uploader from '@/common/upload';
 import { getContainerKeyFromChallenge } from '@/common/challenge.js';
 import dayjs from 'dayjs';
@@ -18,7 +20,7 @@ But...I need to figure out:
 
 */
 
-const api = inject('api');
+const { api } = useApiStore();
 const userRef = inject('userRef');
 const keychainRef = inject('keychainRef');
 

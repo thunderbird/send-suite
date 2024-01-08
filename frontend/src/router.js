@@ -7,6 +7,7 @@ import Lockbox from '@/lockbox/pages/Web.vue';
 import Share from '@/lockbox/pages/Share.vue';
 
 import Extension from '@/lockbox/Extension.vue';
+import ManagementPage from '@/lockbox/ManagementPage.vue';
 
 const routes = [
   // Chat
@@ -19,6 +20,7 @@ const routes = [
 
   // Extension (for debugging)
   { path: '/extension', component: Extension },
+  { path: '/mgmt', component: ManagementPage },
 ];
 
 const router = createRouter({

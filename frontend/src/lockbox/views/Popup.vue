@@ -1,15 +1,16 @@
 <script setup>
 import { ref, inject, watch } from 'vue';
-import useConfigurationStore from '@/lockbox/stores/configuration-store';
+import useConfigurationStore from '@/stores/configuration-store';
+import useApiStore from '@/stores/api-store';
 
 import FolderView from '../components/FolderView.vue';
 import Uploader from '@/common/upload';
 import Sharer from '@/common/share';
 import { EXTENSION_READY, SHARE_COMPLETE, SHARE_ABORTED, SELECTION_COMPLETE } from '@/lib/const';
 
-const configurationStore = useConfigurationStore();
+// const configurationStore = useConfigurationStore();
 
-const api = inject('api');
+const { api } = useApiStore();
 const userRef = inject('userRef');
 const keychainRef = inject('keychainRef');
 
@@ -150,3 +151,4 @@ watch(
     <input type="submit" value="Encrypt and Upload" />
   </form>
 </template>
+@/stores/configuration-store
