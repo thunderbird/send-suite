@@ -33,7 +33,7 @@ function showFileInfo(file) {
 <template>
   <div class="w-full flex flex-col gap-3">
     <h2 class="font-bold">Your Files</h2>
-    <Breadcrumbs v-if="rootFolder" />
+    <Breadcrumbs />
     <DragAndDropUpload>
       <table class="w-full border-separate border-spacing-x-0 border-spacing-y-1">
         <thead>
