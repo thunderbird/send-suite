@@ -2,6 +2,8 @@
 import { ref, inject, provide, watch, toRaw } from 'vue';
 import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
+import useKeychainStore from '@/stores/keychain-store';
+
 import Uploader from '@/common/upload';
 import { getContainerKeyFromChallenge } from '@/common/challenge.js';
 import dayjs from 'dayjs';
@@ -22,13 +24,12 @@ But...I need to figure out:
 
 const { api } = useApiStore();
 const { user } = useUserStore();
-
-const keychainRef = inject('keychainRef');
+const { keychain } = useKeychainStore();
 
 // =======================================================================
 // File/Folder Manager
 //
-const uploader = new Uploader(user, keychainRef, api);
+const uploader = new Uploader(user, keychain, api);
 
 // Load folders once we have a user.
 // Likely unnecessary once we have user sessions on the server.
@@ -186,8 +187,8 @@ async function createFolder(parentId = 0) {
   const response = await api.createFolder(user.id, 'Untitled', parentId);
   console.log(response);
   // await keychain.createAndAddContainerKey(1);
-  await keychainRef.value.newKeyForContainer(response.id);
-  await keychainRef.value.store();
+  await keychain.newKeyForContainer(response.id);
+  await keychain.store();
   console.log(`TODO: only reload the one folder`);
   await getVisibleFolders();
 }
@@ -369,10 +370,10 @@ async function acceptAccessLink(linkId, password) {
     // TODO: consider switching to sessionStorage
     // Generate a temporary keypair
     // for encrypting containerKey in keychain.
-    await keychainRef.value.rsa.generateKeyPair();
+    await keychain.rsa.generateKeyPair();
   }
-  await keychainRef.value.add(containerId, unwrappedKey);
-  await keychainRef.value.store();
+  await keychain.add(containerId, unwrappedKey);
+  await keychain.store();
   return true;
 }
 
@@ -513,10 +514,10 @@ async function getInvitations() {
 async function acceptInvitation(containerId, invitationId, wrappedKey) {
   // Unwrap and store key
   try {
-    const unwrappedKey = await keychainRef.value.rsa.unwrapContainerKey(wrappedKey, keychainRef.value.rsa.privateKey);
+    const unwrappedKey = await keychain.rsa.unwrapContainerKey(wrappedKey, keychain.rsa.privateKey);
 
-    await keychainRef.value.add(containerId, unwrappedKey);
-    await keychainRef.value.store();
+    await keychain.add(containerId, unwrappedKey);
+    await keychain.store();
 
     const resp = await api.acceptInvitation(invitationId, containerId);
     if (!resp) {

@@ -3,6 +3,7 @@ import { ref, onMounted, provide, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
+import useKeychainStore from '@/stores/keychain-store';
 
 import { Keychain } from '@/lib/keychain';
 import { Storage } from '@/lib/storage';
@@ -14,6 +15,7 @@ const TEMP_SERVER_URL = 'https://localhost:8088';
 
 const { api } = useApiStore();
 const { user } = useUserStore();
+const { keychain } = useKeychainStore();
 
 const messageBus = new MessageBus(TEMP_SERVER_URL);
 provide('messageBus', messageBus);
@@ -24,10 +26,6 @@ const isInitComplete = ref(true);
 const storage = new Storage();
 provide('storage', storage);
 window.storage = storage;
-
-const _keychain = new Keychain(storage);
-const reactiveKeychain = ref(_keychain);
-provide('keychainRef', reactiveKeychain);
 
 // Init the messageBus for this user
 watch(
@@ -50,13 +48,13 @@ watch(
 
 onMounted(async () => {
   try {
-    await reactiveKeychain.value.load();
+    await keychain.load();
   } catch (e) {
     console.log(`no keys`);
     return;
   }
   console.log(`keychain loaded`);
-  if (reactiveKeychain.value.rsa.privateKey) {
+  if (keychain.rsa.privateKey) {
     console.log(`we have keys, attempting to load user`);
     // user.load();
     user.load();
@@ -88,12 +86,12 @@ async function burnAfterReading(conversationId) {
 provide('clean', cleanAfterBurning);
 function cleanAfterBurning(conversationId) {
   try {
-    reactiveKeychain.value.get(conversationId);
+    keychain.get(conversationId);
     console.log(`CLEANING ${conversationId}`);
-    reactiveKeychain.value.remove(conversationId);
+    keychain.remove(conversationId);
 
     if (user.tier !== 'PRO') {
-      reactiveKeychain.value.clear();
+      keychain.clear();
       localStorage.removeItem('send-user');
       router.push('/');
     }

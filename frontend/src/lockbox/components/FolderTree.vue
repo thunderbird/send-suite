@@ -1,6 +1,8 @@
 <script setup>
 import { inject } from 'vue';
 import useApiStore from '@/stores/api-store';
+import useKeychainStore from '@/stores/keychain-store';
+
 import Downloader from '@/common/download';
 
 const props = defineProps({
@@ -9,8 +11,8 @@ const props = defineProps({
 });
 
 const { api } = useApiStore();
-const keychainRef = inject('keychainRef');
-const downloader = new Downloader(keychainRef, api);
+const { keychain } = useKeychainStore();
+const downloader = new Downloader(keychain, api);
 
 async function downloadContent(uploadId, folderId, wrappedKey, filename) {
   console.log(`Starting download`);

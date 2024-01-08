@@ -3,6 +3,7 @@ import { ref, inject, onMounted, watchEffect } from 'vue';
 import Btn from '@/lockbox/elements/Btn.vue';
 
 import useUserStore from '@/stores/user-store';
+import useKeychainStore from '@/stores/keychain-store';
 
 import useConfigurationStore from '@/stores/configuration-store';
 
@@ -19,7 +20,7 @@ const jwkPublicKey = ref('');
 const showDebug = ref(false);
 
 // const api = inject('api');
-const keychainRef = inject('keychainRef');
+const { keychain } = useKeychainStore();
 const { user } = useUserStore();
 
 // const eventSource = inject('eventSource');
@@ -37,30 +38,30 @@ watchEffect(() => {
 });
 
 watchEffect(async () => {
-  jwkPublicKey.value = await keychainRef.value.rsa.getPublicKeyJwk();
+  jwkPublicKey.value = await keychain.rsa.getPublicKeyJwk();
   console.log(`Debug.vue setting jwk version of stored public key`);
 });
 
 onMounted(async () => {
-  window.keychain = keychainRef.value;
+  window.keychain = keychain;
 });
 
 async function generateKeys() {
-  if (keychainRef.value?.rsa?.generateKeyPair) {
-    await keychainRef.value.rsa.generateKeyPair();
-    jwkPublicKey.value = await keychainRef.value.rsa.getPublicKeyJwk();
+  if (keychain?.rsa?.generateKeyPair) {
+    await keychain.rsa.generateKeyPair();
+    jwkPublicKey.value = await keychain.rsa.getPublicKeyJwk();
   }
 }
 
 async function saveKeys() {
-  if (keychainRef.value.store) {
-    await keychainRef.value.store();
+  if (keychain.store) {
+    await keychain.store();
   }
 }
 
 async function loadKeys() {
-  if (keychainRef.value.load) {
-    await keychainRef.value.load();
+  if (keychain.load) {
+    await keychain.load();
   }
 }
 
@@ -82,7 +83,7 @@ async function loadUser() {
 }
 
 async function login() {
-  if (!keychainRef.value.rsa.publicKey) {
+  if (!keychain.rsa.publicKey) {
     console.log(`no public key, either call keychain.value.load() or generate a new one `);
     return;
   }

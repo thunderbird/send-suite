@@ -2,6 +2,7 @@
 import { ref, inject } from 'vue';
 import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
+import useKeychainStore from '@/stores/keychain-store';
 
 import { Util } from '@/lib/keychain';
 import Sharer from '@/common/share';
@@ -10,8 +11,7 @@ import { IconLink, IconEye, IconEyeOff } from '@tabler/icons-vue';
 
 const { api } = useApiStore();
 const { user } = useUserStore();
-
-const keychainRef = inject('keychainRef');
+const { keychain } = useKeychainStore();
 
 const props = defineProps({
   folderId: Number,
@@ -19,7 +19,7 @@ const props = defineProps({
 
 const emit = defineEmits(['createAccessLinkComplete', 'createAccessLinkError']);
 
-const sharer = new Sharer(user, keychainRef, api);
+const sharer = new Sharer(user, keychain, api);
 const password = ref('');
 const expiration = ref(null);
 const accessUrl = ref('');

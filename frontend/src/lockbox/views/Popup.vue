@@ -3,6 +3,7 @@ import { ref, inject, watch } from 'vue';
 import useConfigurationStore from '@/stores/configuration-store';
 import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
+import useKeychainStore from '@/stores/keychain-store';
 
 import FolderView from '../components/FolderView.vue';
 import Uploader from '@/common/upload';
@@ -13,15 +14,14 @@ import { EXTENSION_READY, SHARE_COMPLETE, SHARE_ABORTED, SELECTION_COMPLETE } fr
 
 const { api } = useApiStore();
 const { user } = useUserStore();
-
-const keychainRef = inject('keychainRef');
+const { keychain } = useKeychainStore();
 
 const { getDefaultFolder, currentFolderId, folders, uploadItem } = inject('folderManager');
 
 const { itemMap, createItemMap, selectedItemsForSharing } = inject('sharingManager');
 
-const sharer = new Sharer(user, keychainRef, api);
-const uploader = new Uploader(user, keychainRef, api);
+const sharer = new Sharer(user, keychain, api);
+const uploader = new Uploader(user, keychain, api);
 
 const password = ref('');
 const fileBlob = ref(null);

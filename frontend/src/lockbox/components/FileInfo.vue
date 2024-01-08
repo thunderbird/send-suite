@@ -1,6 +1,7 @@
 <script setup>
 import { ref, inject, watchEffect } from 'vue';
 import useApiStore from '@/stores/api-store';
+import useKeychainStore from '@/stores/keychain-store';
 
 // import CreateShare from './CreateShare.vue';
 import Downloader from '@/common/download';
@@ -14,8 +15,8 @@ import AddTag from '@/lockbox/components/AddTag.vue';
 const { currentFile, deleteItemAndContent } = inject('folderManager');
 
 const { api } = useApiStore();
-const keychainRef = inject('keychainRef');
-const downloader = new Downloader(keychainRef, api);
+const { keychain } = useKeychainStore();
+const downloader = new Downloader(keychain, api);
 
 async function downloadContent() {
   console.log(`Starting download`);

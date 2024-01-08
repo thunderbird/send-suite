@@ -19,10 +19,10 @@ import Sharer from '@/common/share';
 import CreateAccessLink from './CreateAccessLink.vue';
 import PermissionsDropDown from '../elements/PermissionsDropDown.vue';
 import useApiStore from '@/stores/api-store';
-useUserStore;
+import useKeychainStore from '@/stores/keychain-store';
 
 const { api } = useApiStore();
-const keychainRef = inject('keychainRef');
+const { keychain } = useKeychainStore();
 const { user } = useUserStore();
 
 const {
@@ -39,7 +39,7 @@ const {
 const props = defineProps({
   folderId: Number,
 });
-const sharer = new Sharer(user, keychainRef, api);
+const sharer = new Sharer(user, keychain, api);
 const newMember = ref(null);
 
 /*

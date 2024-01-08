@@ -2,6 +2,7 @@
 import { ref, inject } from 'vue';
 import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
+import useKeychainStore from '@/stores/keychain-store';
 
 import Sharer from '@/common/share';
 
@@ -14,10 +15,10 @@ const props = defineProps({
 const { api } = useApiStore();
 const { user } = useUserStore();
 
-const keychainRef = inject('keychainRef');
+const { keychain } = useKeychainStore();
 const { getFoldersSharedByMe } = inject('sharingManager');
 
-const sharer = new Sharer(user, keychainRef, api);
+const sharer = new Sharer(user, keychain, api);
 
 const password = ref('abc');
 const ephemeralHash = ref('');
