@@ -13,7 +13,7 @@ export async function getPermissions(req, res, next) {
     console.log(`userId:`, req?.session?.user?.id);
     console.log(`containerId:`, req.params.containerId);
     console.log(
-      `end permissinos  ====================================================`
+      `end permissions  ====================================================`
     );
   } catch (e) {
     console.log;
