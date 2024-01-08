@@ -191,7 +191,7 @@ model Item {
   createdAt     DateTime?
   updatedAt     DateTime?
   // unique "file names" in a container
-  @@unique([name, containerId])
+  // @@unique([name, containerId])
 
   // You could make threads by uncommenting the following:
   // parentId  Int?
