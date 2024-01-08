@@ -1,7 +1,7 @@
 <script setup>
 import { ref, inject, provide, watch, toRaw } from 'vue';
 import useApiStore from '@/stores/api-store';
-
+import useUserStore from '@/stores/user-store';
 import Uploader from '@/common/upload';
 import { getContainerKeyFromChallenge } from '@/common/challenge.js';
 import dayjs from 'dayjs';
@@ -21,18 +21,19 @@ But...I need to figure out:
 */
 
 const { api } = useApiStore();
-const userRef = inject('userRef');
+const { user } = useUserStore();
+
 const keychainRef = inject('keychainRef');
 
 // =======================================================================
 // File/Folder Manager
 //
-const uploader = new Uploader(userRef, keychainRef, api);
+const uploader = new Uploader(user, keychainRef, api);
 
 // Load folders once we have a user.
 // Likely unnecessary once we have user sessions on the server.
 watch(
-  () => userRef.value.id,
+  () => user.id,
   () => {
     getVisibleFolders();
     getRecentActivity();
@@ -105,13 +106,13 @@ function calculateFolderSizes(folders) {
 
 // TODO: actually limit this to a specific folder
 async function getVisibleFolders() {
-  if (!userRef.value.id) {
+  if (!user.id) {
     console.log(`no valid user id`);
     return;
   }
   let foldersFromApi;
   if (rootFolderId.value) {
-    const tree = await api.getFolderTree(userRef.value.id, rootFolderId.value);
+    const tree = await api.getFolderTree(user.id, rootFolderId.value);
     foldersFromApi = tree.children;
 
     console.log(tree);
@@ -122,13 +123,13 @@ async function getVisibleFolders() {
     console.log(`root folder has these items 🍬🍬🍬🍬🍬🍬`);
     console.log(tree.items);
   } else {
-    // foldersFromApi = await api.getUserFolders(userRef.value.id);
+    // foldersFromApi = await api.getUserFolders(user.id);
 
     // We want:
     // - our own folders with no parent
     // - folders shared with me
-    const userFolders = await api.getUserFolders(userRef.value.id);
-    // const foldersSharedwithMe = await api.getFoldersSharedWithUser(userRef.value.id);
+    const userFolders = await api.getUserFolders(user.id);
+    // const foldersSharedwithMe = await api.getFoldersSharedWithUser(user.id);
     foldersFromApi = [
       ...userFolders,
       // ...foldersSharedwithMe.map(f => f.share.container),
@@ -150,11 +151,11 @@ async function getVisibleFolders() {
 }
 
 async function getRecentActivity() {
-  if (!userRef.value.id) {
+  if (!user.id) {
     console.log(`no valid user id`);
     return;
   }
-  recentFolders.value = await api.getRecentActivity(userRef.value.id);
+  recentFolders.value = await api.getRecentActivity(user.id);
 }
 
 // // Make this computed?
@@ -182,7 +183,7 @@ async function setDefaultFolder() {
 
 async function createFolder(parentId = 0) {
   console.log(`you want to create a folder`);
-  const response = await api.createFolder(userRef.value.id, 'Untitled', parentId);
+  const response = await api.createFolder(user.id, 'Untitled', parentId);
   console.log(response);
   // await keychain.createAndAddContainerKey(1);
   await keychainRef.value.newKeyForContainer(response.id);
@@ -294,7 +295,7 @@ const sharedByMe = ref([]);
 const invitations = ref([]);
 
 watch(
-  () => userRef.value.id,
+  () => user.id,
   () => {
     getFoldersSharedWithMe();
     getFoldersSharedByMe();
@@ -343,14 +344,14 @@ async function acceptAccessLink(linkId, password) {
 
   // let id;
 
-  if (userRef.value.id) {
+  if (user.id) {
     // TODO: if the user has already used the accessLink successfully
     // we should skip this part and just return true
     // There's no need to create a duplicate invitation and membership
     console.log(`Using existing user id`);
     // TODO: this in particular needs to be server-side
     // Create an Invitation and set it to ACCEPTED
-    const createInvitationResp = await api.createInvitationForAccessLink(linkId, userRef.value.id);
+    const createInvitationResp = await api.createInvitationForAccessLink(linkId, user.id);
     // TODO: reminder that this creates an invitation, where the value of
     // the wrappedKey is the password-wrapped one, not the publicKey wrapped one.
 
@@ -358,7 +359,7 @@ async function acceptAccessLink(linkId, password) {
       return false;
     }
 
-    const addMemberResp = await api.addMemberToContainer(userRef.value.id, containerId);
+    const addMemberResp = await api.addMemberToContainer(user.id, containerId);
     console.log(`adding user to convo`);
     console.log(addMemberResp);
     if (!addMemberResp) {
@@ -380,19 +381,19 @@ async function isAccessLinkValid(linkId) {
 }
 
 async function getFoldersSharedWithMe() {
-  if (!userRef.value.id) {
+  if (!user.id) {
     console.log(`no valid user id`);
     return;
   }
-  sharedWithMe.value = await api.getFoldersSharedWithUser(userRef.value.id);
+  sharedWithMe.value = await api.getFoldersSharedWithUser(user.id);
 }
 
 async function getFoldersSharedByMe() {
-  if (!userRef.value.id) {
+  if (!user.id) {
     console.log(`no valid user id`);
     return;
   }
-  sharedByMe.value = await api.getFoldersSharedByUser(userRef.value.id);
+  sharedByMe.value = await api.getFoldersSharedByUser(user.id);
 }
 
 async function getSharedFolder(hash) {
@@ -424,21 +425,21 @@ async function showFoldersSharedWithRecipient(userId) {
 }
 
 async function getSharesForFolder(containerId) {
-  if (!userRef.value.id) {
+  if (!user.id) {
     console.log(`no valid user id`);
     return;
   }
-  // return await api.getSharesForFolder(containerId, userRef.value.id);
+  // return await api.getSharesForFolder(containerId, user.id);
   // Changing in favor of searching the local array
   return sharedByMe.value.filter((share) => share.container.id === containerId);
 }
 
 async function updateInvitationPermissions(containerId, invitationId, permission) {
-  if (!userRef.value.id) {
+  if (!user.id) {
     console.log(`no valid user id`);
     return;
   }
-  const result = await api.updateInvitationPermissions(containerId, userRef.value.id, invitationId, permission);
+  const result = await api.updateInvitationPermissions(containerId, user.id, invitationId, permission);
 
   if (result) {
     await getFoldersSharedByMe();
@@ -446,11 +447,11 @@ async function updateInvitationPermissions(containerId, invitationId, permission
   return result;
 }
 async function updateAccessLinkPermissions(containerId, accessLinkId, permission) {
-  if (!userRef.value.id) {
+  if (!user.id) {
     console.log(`no valid user id`);
     return;
   }
-  const result = await api.updateAccessLinkPermissions(containerId, userRef.value.id, accessLinkId, permission);
+  const result = await api.updateAccessLinkPermissions(containerId, user.id, accessLinkId, permission);
 
   if (result) {
     await getFoldersSharedByMe();
@@ -506,7 +507,7 @@ async function removeInvitationAndGroupMembership(containerId, invitationId) {
 }
 
 async function getInvitations() {
-  invitations.value = await api.getInvitations(userRef.value.id);
+  invitations.value = await api.getInvitations(user.id);
 }
 
 async function acceptInvitation(containerId, invitationId, wrappedKey) {

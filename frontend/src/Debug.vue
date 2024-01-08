@@ -2,6 +2,8 @@
 import { ref, inject, onMounted, watchEffect } from 'vue';
 import Btn from '@/lockbox/elements/Btn.vue';
 
+import useUserStore from '@/stores/user-store';
+
 import useConfigurationStore from '@/stores/configuration-store';
 
 // const configurationStore = useConfigurationStore();
@@ -18,7 +20,8 @@ const showDebug = ref(false);
 
 // const api = inject('api');
 const keychainRef = inject('keychainRef');
-const userRef = inject('userRef');
+const { user } = useUserStore();
+
 // const eventSource = inject('eventSource');
 const messageBus = inject('messageBus');
 const storage = inject('storage');
@@ -26,9 +29,11 @@ const storage = inject('storage');
 const { createFolder } = inject('folderManager');
 
 watchEffect(() => {
-  email.value = userRef.value.email;
-  id.value = userRef.value.id;
   console.log(`Debug.vue using stored user id and email`);
+  console.log(`user.id: ${user.id}`);
+  console.log(`user.email: ${user.email}`);
+  email.value = user.email;
+  id.value = user.id;
 });
 
 watchEffect(async () => {
@@ -64,16 +69,16 @@ async function loadKeys() {
 // });
 
 async function storeUser() {
-  if (!userRef.value.id) {
+  if (!user.id) {
     console.log(`no user to store`);
     return;
   }
-  console.log(`storing user with id ${userRef.value.id}`);
-  await userRef.value.store();
+  console.log(`storing user with id ${user.id}`);
+  await user.store();
 }
 
 async function loadUser() {
-  await userRef.value.load();
+  await user.load();
 }
 
 async function login() {
@@ -84,15 +89,15 @@ async function login() {
 
   console.log(`jwkPublicKey.value is:`);
   console.log(jwkPublicKey.value);
-  const createUserResp = await userRef.value.createUser(email.value, jwkPublicKey.value);
+  const createUserResp = await user.createUser(email.value, jwkPublicKey.value);
   if (!createUserResp) {
     console.log(`could not create user, trying to log in`);
-    const loginResp = await userRef.value.login(email.value);
+    const loginResp = await user.login(email.value);
     if (!loginResp) {
       console.log(`could not log in either 🤷`);
       return;
     }
-    console.log(`logged in, user id is ${userRef.value.id}`);
+    console.log(`logged in, user id is ${user.id}`);
   }
   const createFolderResp = await createFolder();
   if (createFolderResp) {
@@ -107,7 +112,7 @@ async function sendHeartbeat() {
   messageBus.send(
     JSON.stringify({
       type: 'heartbeat',
-      id: userRef.value.id,
+      id: user.id,
       ts: new Date().getTime(),
     })
   );

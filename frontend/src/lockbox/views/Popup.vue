@@ -2,6 +2,7 @@
 import { ref, inject, watch } from 'vue';
 import useConfigurationStore from '@/stores/configuration-store';
 import useApiStore from '@/stores/api-store';
+import useUserStore from '@/stores/user-store';
 
 import FolderView from '../components/FolderView.vue';
 import Uploader from '@/common/upload';
@@ -11,15 +12,16 @@ import { EXTENSION_READY, SHARE_COMPLETE, SHARE_ABORTED, SELECTION_COMPLETE } fr
 // const configurationStore = useConfigurationStore();
 
 const { api } = useApiStore();
-const userRef = inject('userRef');
+const { user } = useUserStore();
+
 const keychainRef = inject('keychainRef');
 
 const { getDefaultFolder, currentFolderId, folders, uploadItem } = inject('folderManager');
 
 const { itemMap, createItemMap, selectedItemsForSharing } = inject('sharingManager');
 
-const sharer = new Sharer(userRef, keychainRef, api);
-const uploader = new Uploader(userRef, keychainRef, api);
+const sharer = new Sharer(user, keychainRef, api);
+const uploader = new Uploader(user, keychainRef, api);
 
 const password = ref('');
 const fileBlob = ref(null);
@@ -112,7 +114,7 @@ watch(
 );
 
 watch(
-  () => userRef.value.id,
+  () => user.id,
   () => {
     try {
       console.log(`adding listener in Popup for runtime messages`);

@@ -1,5 +1,7 @@
 <script setup>
 import { inject } from 'vue';
+import useUserStore from '@/stores/user-store';
+
 import NewFolder from '@/lockbox/components/NewFolder.vue';
 import FolderView from '@/lockbox/components/FolderView.vue';
 import FileInfo from '@/lockbox/components/FileInfo.vue';
@@ -10,7 +12,7 @@ import SharedByMe from '@/lockbox/components/SharedByMe.vue';
 import SharedWithMe from '@/lockbox/components/SharedWithMe.vue';
 import InvitationList from '@/lockbox/components/InvitationList.vue';
 
-const userRef = inject('userRef');
+const { user } = useUserStore();
 const { currentFile, currentFolderId, rootFolderId } = inject('folderManager');
 </script>
 
@@ -23,7 +25,7 @@ const { currentFile, currentFolderId, rootFolderId } = inject('folderManager');
       <header
         class="w-full sticky top-0 flex items-center justify-between px-4 py-2 bg-white/90 border-b border-gray-300"
       >
-        <h1>{{ userRef.email }}'s Lockbox</h1>
+        <h1>{{ user.email }}'s Lockbox</h1>
         <NewFolder />
         <!-- <Breadcrumbs
           @setCurrentFolderId="setCurrentFolderId"

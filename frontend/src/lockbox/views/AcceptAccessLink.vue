@@ -1,5 +1,7 @@
 <script setup>
 import { ref, inject, onMounted } from 'vue';
+import useUserStore from '@/stores/user-store';
+
 import { useRoute, useRouter } from 'vue-router';
 
 const emit = defineEmits(['acceptAccessLinkComplete']);
@@ -10,7 +12,7 @@ const message = ref('');
 const route = useRoute();
 const router = useRouter();
 
-const userRef = inject('userRef');
+const { user } = useUserStore();
 
 const { acceptAccessLink, isAccessLinkValid } = inject('sharingManager');
 
@@ -25,7 +27,7 @@ async function accept() {
   if (success) {
     message.value = `and this is where we add the container to the group and then redirect`;
 
-    if (userRef.value.id) {
+    if (user.id) {
       // Users will go to lockbox home
       router.push(`/lockbox`);
     } else {
@@ -47,10 +49,10 @@ onMounted(() => {
 
 <template>
   <h1>Lockbox share</h1>
-  <template v-if="userRef.email">
+  <template v-if="user.email">
     <p>
       Hello,
-      {{ userRef.email }}
+      {{ user.email }}
     </p>
   </template>
   <p>

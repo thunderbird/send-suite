@@ -1,13 +1,16 @@
 <script setup>
 import { ref, inject } from 'vue';
 import useApiStore from '@/stores/api-store';
+import useUserStore from '@/stores/user-store';
+
 import { Util } from '@/lib/keychain';
 import Sharer from '@/common/share';
 import Btn from '@/lockbox/elements/Btn.vue';
 import { IconLink, IconEye, IconEyeOff } from '@tabler/icons-vue';
 
 const { api } = useApiStore();
-const userRef = inject('userRef');
+const { user } = useUserStore();
+
 const keychainRef = inject('keychainRef');
 
 const props = defineProps({
@@ -16,7 +19,7 @@ const props = defineProps({
 
 const emit = defineEmits(['createAccessLinkComplete', 'createAccessLinkError']);
 
-const sharer = new Sharer(userRef, keychainRef, api);
+const sharer = new Sharer(user, keychainRef, api);
 const password = ref('');
 const expiration = ref(null);
 const accessUrl = ref('');
