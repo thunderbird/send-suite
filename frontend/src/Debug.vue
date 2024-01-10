@@ -30,16 +30,16 @@ const storage = inject('storage');
 const { createFolder } = inject('folderManager');
 
 watchEffect(() => {
-  console.log(`Debug.vue using stored user id and email`);
-  console.log(`user.id: ${user.id}`);
-  console.log(`user.email: ${user.email}`);
+  // console.log(`Debug.vue using stored user id and email`);
+  // console.log(`user.id: ${user.id}`);
+  // console.log(`user.email: ${user.email}`);
   email.value = user.email;
   id.value = user.id;
 });
 
 watchEffect(async () => {
   jwkPublicKey.value = await keychain.rsa.getPublicKeyJwk();
-  console.log(`Debug.vue setting jwk version of stored public key`);
+  // console.log(`Debug.vue setting jwk version of stored public key`);
 });
 
 onMounted(async () => {

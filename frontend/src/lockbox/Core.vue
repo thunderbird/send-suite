@@ -3,6 +3,7 @@ import { ref, inject, provide, watch, toRaw } from 'vue';
 import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
+import useFolderStore from '@/lockbox/stores/folder-store';
 
 import Uploader from '@/common/upload';
 import { getContainerKeyFromChallenge } from '@/common/challenge.js';
@@ -25,7 +26,49 @@ But...I need to figure out:
 const { api } = useApiStore();
 const { user } = useUserStore();
 const { keychain } = useKeychainStore();
+const { fetchUserFolders } = useFolderStore();
 
+/*
+      Previously:
+      - asked the api for:
+        - all folders (if no root folder id)
+        - sub folders of root folder (if root folder id)
+      - updated:
+        - folders
+        - parentFolderId
+        - rootFolder
+        - currentfolder
+        - currentFile
+
+      Now, we want this to just return the visible folders.
+      We'll need a separate function for retrieving folders
+      Ideally, we're not running out the API all the time, only after something has changed.
+      But, how do we know when it has changed?
+
+What things do we actually need from the folderStore?
+- current folder
+- current file
+- visible folders
+- folder path
+These are all derivable ("getters").
+
+Things I need to keep track of:
+- visible root id
+
+And, some actions:
+- create Folder
+- upload File
+- delete Folder (and content)
+- rename File
+- rename Folder
+After each of these, I will need to update my folder tree
+
+maybe we move the following:
+- recentFolders (to a history/activity store?)
+
+
+
+    */
 // =======================================================================
 // File/Folder Manager
 //
@@ -36,8 +79,9 @@ const uploader = new Uploader(user, keychain, api);
 watch(
   () => user.id,
   () => {
-    getVisibleFolders();
-    getRecentActivity();
+    fetchUserFolders();
+    // getVisibleFolders();
+    // getRecentActivity();
   }
 );
 

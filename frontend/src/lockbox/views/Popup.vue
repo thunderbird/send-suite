@@ -4,6 +4,7 @@ import useConfigurationStore from '@/stores/configuration-store';
 import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
+import useFolderStore from '@/lockbox/stores/folder-store';
 
 import FolderView from '../components/FolderView.vue';
 import Uploader from '@/common/upload';
@@ -15,8 +16,9 @@ import { EXTENSION_READY, SHARE_COMPLETE, SHARE_ABORTED, SELECTION_COMPLETE } fr
 const { api } = useApiStore();
 const { user } = useUserStore();
 const { keychain } = useKeychainStore();
+const folderStore = useFolderStore();
 
-const { getDefaultFolder, currentFolderId, folders, uploadItem } = inject('folderManager');
+// const { getDefaultFolder, currentFolderId, folders, uploadItem } = inject('folderManager');
 
 const { itemMap, createItemMap, selectedItemsForSharing } = inject('sharingManager');
 
@@ -65,9 +67,7 @@ The way I've got this written now:
     // Otherwise, we're converting,
     // meaning we need to upload and then share
 
-    const defaultFolder = getDefaultFolder();
-
-    const itemObj = await uploader.doUpload(fileBlob.value, defaultFolder.id);
+    const itemObj = await uploader.doUpload(fileBlob.value, folderStore.defaultFolder.id);
     if (!itemObj) {
       uploadAborted();
       return;
@@ -107,9 +107,9 @@ function shareAborted() {
 }
 
 watch(
-  () => folders.value,
+  () => folderStore.folders,
   () => {
-    createItemMap(folders.value);
+    createItemMap(folderStore.folders);
   }
 );
 

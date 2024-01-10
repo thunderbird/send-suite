@@ -1,6 +1,7 @@
 <script setup>
 import { inject } from 'vue';
 import useUserStore from '@/stores/user-store';
+import useFolderStore from '@/lockbox/stores/folder-store';
 
 import NewFolder from '@/lockbox/components/NewFolder.vue';
 import FolderView from '@/lockbox/components/FolderView.vue';
@@ -13,7 +14,9 @@ import SharedWithMe from '@/lockbox/components/SharedWithMe.vue';
 import InvitationList from '@/lockbox/components/InvitationList.vue';
 
 const { user } = useUserStore();
-const { currentFile, currentFolderId, rootFolderId } = inject('folderManager');
+const folderStore = useFolderStore();
+
+// const { currentFile, currentFolderId, rootFolderId } = inject('folderManager');
 </script>
 
 <template>
@@ -34,16 +37,19 @@ const { currentFile, currentFolderId, rootFolderId } = inject('folderManager');
       </header>
       <main class="flex flex-col gap-4 px-4">
         <!-- <InvitationList /> -->
-        <template v-if="!rootFolderId">
-          <!-- <SharedWithMe /> -->
-          <SharedByMe />
-        </template>
+        <!-- <template v-if="!folderStore.rootFolder.id"> -->
+        <!-- <SharedWithMe /> -->
+        <!-- <SharedByMe /> -->
+        <!-- </template> -->
         <FolderView />
       </main>
     </div>
-    <aside v-if="currentFile || currentFolderId" class="w-64 border-l border-gray-300 bg-gray-50 p-2.5">
-      <FileInfo v-if="currentFile" />
-      <FolderInfo v-if="currentFolderId" />
+    <aside
+      v-if="folderStore.selectedFile || folderStore.selectedFolder"
+      class="w-64 border-l border-gray-300 bg-gray-50 p-2.5"
+    >
+      <FileInfo v-if="folderStore.selectedFile" />
+      <FolderInfo v-if="folderStore.selectedFolder" />
     </aside>
   </div>
 </template>

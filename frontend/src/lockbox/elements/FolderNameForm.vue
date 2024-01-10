@@ -1,18 +1,20 @@
 <script setup>
 import { inject, ref, onMounted } from 'vue';
 import Btn from '@/lockbox/elements/Btn.vue';
+import useFolderStore from '@/lockbox/stores/folder-store';
 
 const emit = defineEmits(['renameComplete']);
 
-const { renameFolder, currentFolder } = inject('folderManager');
+const folderStore = useFolderStore();
+const { renameFolder } = inject('folderManager');
 
-const currentFolderName = ref(currentFolder.value.name);
+const selectedFolderName = ref(folderStore.selectedFolder.name);
 const input = ref(null);
 
 async function updateFolderName() {
-  console.log(`you want to change the name to ${currentFolderName.value}`);
+  console.log(`you want to change the name to ${selectedFolderName.value}`);
 
-  const result = await renameFolder(currentFolder.value.id, currentFolderName.value);
+  const result = await renameFolder(folderStore.selectedFolder.id, selectedFolderName.value);
   if (result) {
     emit('renameComplete');
   }
@@ -26,7 +28,7 @@ onMounted(() => {
 
 <template>
   <form @submit.prevent="updateFolderName">
-    <input type="text" v-model="currentFolderName" ref="input" />
+    <input type="text" v-model="selectedFolderName" ref="input" />
     <div class="flex flex-row justify-end">
       <Btn @click="updateFolderName">Rename</Btn>
     </div>
