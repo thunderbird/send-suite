@@ -5,7 +5,6 @@ import useKeychainStore from '@/stores/keychain-store';
 import useFolderStore from '@/lockbox/stores/folder-store';
 
 // import CreateShare from './CreateShare.vue';
-import Downloader from '@/common/download';
 import FileNameForm from '@/lockbox/elements/FileNameForm.vue';
 import TagLabel from '@/lockbox/elements/TagLabel.vue';
 import Btn from '@/lockbox/elements/Btn.vue';
@@ -16,15 +15,6 @@ import AddTag from '@/lockbox/components/AddTag.vue';
 const { api } = useApiStore();
 const { keychain } = useKeychainStore();
 const folderStore = useFolderStore();
-
-const downloader = new Downloader(keychain, api);
-
-async function downloadContent() {
-  console.log(`Starting download`);
-  debugger;
-  const { uploadId, containerId, wrappedKey, name } = folderStore.selectedFile;
-  const success = await downloader.doDownload(uploadId, containerId, wrappedKey, name);
-}
 
 const showForm = ref(false);
 
@@ -69,8 +59,19 @@ Note about shareOnly containers.
         <div class="text-xs">{{ folderStore.selectedFile.updatedAt }}</div>
       </label>
       <div class="flex justify-end gap-2">
-        <Btn><IconDownload class="w-4 h-4" @click="downloadContent" /></Btn>
-        <Btn primary><IconShare class="w-4 h-4" /> Share</Btn>
+        <Btn
+          ><IconDownload
+            class="w-4 h-4"
+            @click="
+              folderStore.downloadContent(
+                folderStore.selectedFile.uploadId,
+                folderStore.selectedFile.containerId,
+                folderStore.selectedFile.wrappedKey,
+                folderStore.selectedFile.name
+              )
+            "
+        /></Btn>
+        <!-- <Btn primary><IconShare class="w-4 h-4" /> Share</Btn> -->
       </div>
     </footer>
   </div>

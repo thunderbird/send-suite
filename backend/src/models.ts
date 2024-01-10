@@ -508,6 +508,26 @@ export async function getContainerWithAncestors(id: number) {
   return container;
 }
 
+export async function getContainerWithDescendants(id: number) {
+  const container = await prisma.container.findUnique({
+    where: { id },
+    include: {
+      children: true,
+    },
+  });
+
+  if (container.children.length > 0) {
+    for (let i = 0; i < container.children.length; i++) {
+      const children = await getContainerWithDescendants(
+        container.children[i].id
+      );
+      container.children[i]['children'] = children;
+    }
+  }
+
+  return container;
+}
+
 export async function getItemsInContainer(id: number) {
   return prisma.container.findUnique({
     where: {

@@ -29,8 +29,8 @@ const dayjs = inject('dayjs');
         <tr>
           <th class="border-r border-b border-gray-300"></th>
           <th class="border-r border-b border-gray-300">Name</th>
-          <th class="border-r border-b border-gray-300">Tags</th>
-          <th class="border-r border-b border-gray-300">Shared With</th>
+          <!-- <th class="border-r border-b border-gray-300">Tags</th> -->
+          <!-- <th class="border-r border-b border-gray-300">Shared With</th> -->
           <th class="border-b border-gray-300">Access</th>
         </tr>
       </thead>
@@ -49,23 +49,23 @@ const dayjs = inject('dayjs');
             <div>{{ folder.name }}</div>
             <div class="text-sm">Last modified {{ dayjs().to(dayjs(folder.updatedAt)) }}</div>
           </FolderTableRowCell>
-          <FolderTableRowCell :selected="folder.id === folderStore.selectedFolder?.id">
+          <!-- <FolderTableRowCell :selected="folder.id === folderStore.selectedFolder?.id">
             <div class="flex">
               <Tag v-for="tag in folder.tags" :color="tag.color" />
             </div>
-          </FolderTableRowCell>
-          <FolderTableRowCell :selected="folder.id === folderStore.selectedFolder?.id"></FolderTableRowCell>
+          </FolderTableRowCell> -->
+          <!-- <FolderTableRowCell :selected="folder.id === folderStore.selectedFolder?.id"></FolderTableRowCell> -->
           <FolderTableRowCell :selected="folder.id === folderStore.selectedFolder?.id">
             <div class="flex justify-between">
               <div
                 class="flex gap-2 opacity-0 group-hover:!opacity-100 transition-opacity"
                 :class="{ '!opacity-100': folder.id === folderStore.selectedFolder?.id }"
               >
-                <Btn secondary>
+                <!-- <Btn secondary>
                   <IconDownload class="w-4 h-4" />
-                </Btn>
-                <Btn primary> <IconShare class="w-4 h-4" /> Share </Btn>
-                <Btn danger @click="deleteFolder(folder.id)">
+                </Btn> -->
+                <!-- <Btn primary> <IconShare class="w-4 h-4" /> Share </Btn> -->
+                <Btn danger @click="folderStore.deleteFolder(folder.id)">
                   <IconTrash class="w-4 h-4" />
                 </Btn>
               </div>
@@ -75,8 +75,6 @@ const dayjs = inject('dayjs');
             </div>
           </FolderTableRowCell>
         </tr>
-
-        <!-- v-if="folder.id === folderStore.selectedFolder?.id" -->
         <tr
           class="group cursor-pointer"
           v-if="folderStore.rootFolder"
@@ -93,16 +91,20 @@ const dayjs = inject('dayjs');
             <div>{{ item.name }}</div>
             <div class="text-sm">Last modified {{ dayjs().to(dayjs(item.updatedAt)) }}</div>
           </FolderTableRowCell>
-          <FolderTableRowCell></FolderTableRowCell>
-          <FolderTableRowCell></FolderTableRowCell>
           <FolderTableRowCell>
             <div class="flex justify-between">
               <div class="flex gap-2 opacity-0 group-hover:!opacity-100 transition-opacity">
-                <Btn secondary>
+                <Btn
+                  secondary
+                  @click="folderStore.downloadContent(item.uploadId, item.containerId, item.wrappedKey, item.name)"
+                >
                   <IconDownload class="w-4 h-4" />
                 </Btn>
-                <Btn primary> <IconShare class="w-4 h-4" /> Share </Btn>
-                <Btn danger @click="deleteItemAndContent(item.id)">
+                <!-- <Btn primary>
+                  <IconShare class="w-4 h-4" />
+                  Share
+                </Btn> -->
+                <Btn danger @click="folderStore.deleteItem(item.id)">
                   <IconTrash class="w-4 h-4" />
                 </Btn>
               </div>

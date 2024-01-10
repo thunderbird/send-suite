@@ -79,8 +79,8 @@ const showForm = ref(false);
         <div class="text-xs">{{ folderStore.selectedFolder.updatedAt }}</div>
       </label>
       <div class="flex justify-end gap-2">
-        <Btn><IconDownload class="w-4 h-4" /></Btn>
-        <Btn primary><IconShare class="w-4 h-4" /> Share</Btn>
+        <!-- <Btn><IconDownload class="w-4 h-4" /></Btn> -->
+        <!-- <Btn primary><IconShare class="w-4 h-4" /> Share</Btn> -->
       </div>
     </footer>
   </div>

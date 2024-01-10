@@ -20,6 +20,7 @@ import {
   updateContainerName,
   getContainerWithAncestors,
   updateItemName,
+  getContainerWithDescendants,
 } from '../models';
 import { getPermissions } from '../middleware';
 
@@ -310,11 +311,20 @@ router.post('/:containerId/rename', getPermissions, async (req, res) => {
   }
 });
 
+export function flattenDescendants(tree) {
+  const children = tree?.children.length > 0 ? tree.children : [];
+  return [...children.flatMap((child) => flattenDescendants(child)), tree.id];
+}
+
 router.delete('/:containerId', getPermissions, async (req, res) => {
   const { containerId } = req.params;
-  console.log(`👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿👿`);
+
   try {
-    const result = await burnFolder(parseInt(containerId));
+    const root = await getContainerWithDescendants(parseInt(containerId));
+    const idArray = flattenDescendants(root);
+    const result = await Promise.all(
+      idArray.map(async (id) => await burnFolder(id))
+    );
     res.status(200).json({
       result,
     });

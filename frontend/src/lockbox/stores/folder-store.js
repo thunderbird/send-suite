@@ -4,16 +4,17 @@ import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
 import Uploader from '@/common/upload';
+import Downloader from '@/common/download';
 
 const useFolderStore = defineStore('folderManager', () => {
   const { api } = useApiStore();
   const { user } = useUserStore();
   const { keychain } = useKeychainStore();
   const uploader = new Uploader(user, keychain, api);
+  const downloader = new Downloader(keychain, api);
 
   const folders = ref([]);
   const rootFolder = ref(null);
-  const folderPath = ref([]);
 
   const selectedFolderId = ref(0);
   const selectedFileId = ref(0);
@@ -65,6 +66,7 @@ const useFolderStore = defineStore('folderManager', () => {
   }
 
   async function setSelectedFile(itemId) {
+    // Updates the computed value
     selectedFolderId.value = null;
     selectedFileId.value = itemId;
   }
@@ -108,6 +110,35 @@ const useFolderStore = defineStore('folderManager', () => {
     return newItem;
   }
 
+  async function deleteFolder(id) {
+    // remove self from group?
+    // or burn the folder?
+    const resp = await api.deleteContainer(id);
+    if (resp) {
+      folders.value = [...folders.value.filter((f) => f.id !== id)];
+    }
+  }
+
+  async function deleteItem(itemId, folderId) {
+    // `true` as the third arg means delete the Content, not just the Item
+    const result = await api.deleteItem(itemId, folderId, true);
+    if (result) {
+      if (selectedFileId === itemId) {
+        setSelectedFile(null);
+      }
+      if (rootFolder.value?.items) {
+        rootFolder.value.items = [...rootFolder.value.items.filter((i) => i.id !== itemId)];
+      }
+    }
+  }
+
+  async function downloadContent(uploadId, containerId, wrappedKey, name) {
+    // const { uploadId, containerId, wrappedKey, name } = selectedFile;
+    // debugger;
+    debugger;
+    const success = await downloader.doDownload(uploadId, containerId, wrappedKey, name);
+  }
+
   return {
     // State ====================================
     rootFolder,
@@ -126,8 +157,11 @@ const useFolderStore = defineStore('folderManager', () => {
     setSelectedFile,
     createFolder,
     renameFolder,
+    deleteFolder,
     renameItem,
     uploadItem,
+    deleteItem,
+    downloadContent,
   };
 });
 
