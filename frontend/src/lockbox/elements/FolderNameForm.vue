@@ -6,7 +6,6 @@ import useFolderStore from '@/lockbox/stores/folder-store';
 const emit = defineEmits(['renameComplete']);
 
 const folderStore = useFolderStore();
-const { renameFolder } = inject('folderManager');
 
 const selectedFolderName = ref(folderStore.selectedFolder.name);
 const input = ref(null);
@@ -14,7 +13,7 @@ const input = ref(null);
 async function updateFolderName() {
   console.log(`you want to change the name to ${selectedFolderName.value}`);
 
-  const result = await renameFolder(folderStore.selectedFolder.id, selectedFolderName.value);
+  const result = await folderStore.renameFolder(folderStore.selectedFolder.id, selectedFolderName.value);
   if (result) {
     emit('renameComplete');
   }

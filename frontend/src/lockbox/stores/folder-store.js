@@ -65,13 +65,11 @@ const useFolderStore = defineStore('folderManager', () => {
     // Updates the computed value
     selectedFolderId.value = folderId;
     selectedFileId.value = null;
-    console.log(`no really...I just selected a folder with id ${folderId}`);
   }
 
   async function setSelectedFile(itemId) {
     selectedFolderId.value = null;
     selectedFileId.value = itemId;
-    console.log(`no really...I just selected a file with id ${itemId}`);
   }
 
   async function createFolder(parentId = 0) {
@@ -82,6 +80,16 @@ const useFolderStore = defineStore('folderManager', () => {
     folders.value = [...folders.value, newFolder];
     await keychain.newKeyForContainer(newFolder.id);
     await keychain.store();
+  }
+
+  async function renameFolder(folderId, name) {
+    const result = await api.renameFolder(folderId, name);
+    if (result) {
+      // Update name locally, without re-fetching
+      const node = findNode(folderId, folders.value);
+      node.name = name;
+    }
+    return result;
   }
 
   return {
@@ -101,6 +109,7 @@ const useFolderStore = defineStore('folderManager', () => {
     setSelectedFolder,
     setSelectedFile,
     createFolder,
+    renameFolder,
   };
 });
 
@@ -112,7 +121,11 @@ function calculateFolderSizes(folders) {
   // Otherwise, we'd have to fetch all descendents in order
   // to do the full calculation.
   const foldersWithSizes = folders.map((folder) => {
-    folder.size = folder.items?.reduce((total, { upload }) => total + upload?.size || 0, 0);
+    let size = folder.items?.reduce((total, { upload }) => total + upload?.size || 0, 0);
+    if (isNaN(size)) {
+      size = 0;
+    }
+    folder.size = size;
     return folder;
   });
   return foldersWithSizes;
