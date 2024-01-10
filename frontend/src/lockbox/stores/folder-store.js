@@ -12,6 +12,7 @@ const useFolderStore = defineStore('folderManager', () => {
   const uploader = new Uploader(user, keychain, api);
 
   const folders = ref([]);
+  const items = ref([]);
   const rootFolder = ref(null);
   const folderPath = ref([]);
 
@@ -27,30 +28,23 @@ const useFolderStore = defineStore('folderManager', () => {
     if (folders.value.length === 0) {
       return [];
     }
-    let foldersTemp = [...folders.value];
-    const id = rootFolder.value?.id || 0;
-    if (id) {
-      foldersTemp = childrenOf(id, folders.value);
-    }
+    let foldersTemp = rootFolder.value?.children ?? [...folders.value];
+
+    console.log(`visibleFolders will calculate sizes for:`);
+    console.log(foldersTemp);
 
     return calculateFolderSizes(foldersTemp);
   });
 
-  const selectedFolder = computed(() => findNode(selectedFolderId.value, toRaw(folders.value)));
+  const selectedFolder = computed(() => findNode(selectedFolderId.value, folders.value));
 
-  const selectedFile = computed(() => findItem(selectedFileId.value, folders.value));
+  const selectedFile = computed(() => findNode(selectedFileId.value, items.value));
 
   async function fetchSubtree(rootId) {
     const tree = await api.getFolderTree(user.id, rootId);
     folders.value = tree.children;
-    // const parentId = tree.parentId ?? null;
-    // if (parentId) {
-    //   // Implicitly updates part of folders.value
-    //   console.log(`going to call replaceSubtree`);
-    //   replaceSubtree(parentId, folders.value, tree.children);
-    // } else {
-    //   folders.value = tree.children;
-    // }
+    items.value = tree.items;
+    rootFolder.value = tree;
   }
 
   async function fetchUserFolders() {
@@ -58,30 +52,38 @@ const useFolderStore = defineStore('folderManager', () => {
     console.log(`fetchUserFolders got these:`);
     console.log(userFolders);
     folders.value = userFolders;
+    items.value = null;
+    rootFolder.value = null;
   }
 
   async function goToRootFolder(folderId) {
     if (folderId) {
       await fetchSubtree(folderId);
-      rootFolder.value = findNode(folderId, toRaw(folders.value));
     } else {
       await fetchUserFolders();
+      selectedFolderId.value = null;
+      selectedFile.value = null;
     }
   }
 
   function setSelectedFolder(folderId) {
     // Updates the computed value
     selectedFolderId.value = folderId;
+    selectedFileId.value = null;
+    console.log(`no really...I just selected a folder with id ${folderId}`);
   }
 
   async function setSelectedFile(itemId) {
-    selectedFile.value = findItem(itemId, folders.value);
+    selectedFolderId.value = null;
+    selectedFileId.value = itemId;
+    console.log(`no really...I just selected a file with id ${itemId}`);
   }
 
   return {
     // State ====================================
     rootFolder,
     selectedFolderId,
+    selectedFileId,
 
     // Getters ==================================
     defaultFolder,
@@ -113,6 +115,8 @@ function calculateFolderSizes(folders) {
 }
 
 function findNodeInTree(id, head) {
+  console.log(`We got a 🌳 to search`);
+  debugger;
   if (head.id === id) {
     return head;
   }
@@ -130,6 +134,11 @@ function findNodeInTree(id, head) {
 }
 
 function findNode(id, collection) {
+  if (!collection) {
+    return null;
+  }
+
+  console.log(`Searching for a node with id ${id}`);
   if (!Array.isArray(collection)) {
     return findNodeInTree(id, collection);
   }
@@ -140,28 +149,8 @@ function findNode(id, collection) {
     }
   }
 
-  // Shouldn't we handle children?
-
-  return null;
-}
-
-function findItem(id, head) {
-  if (!(head.items || head.children)) {
-    return null;
-  }
-
-  for (let item of head.items) {
-    if (item.id === id) {
-      return item;
-    }
-  }
-
-  for (let child of head.children) {
-    const found = findItem(id, child);
-    if (found) {
-      return found;
-    }
-  }
+  // Shouldn't we search .children of each node?
+  // Only if we're grabbing folders recursively from the backend.
 
   return null;
 }

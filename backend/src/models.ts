@@ -676,7 +676,7 @@ export async function getAllUserGroupContainers(
           tags: true,
           upload: {
             select: {
-              // type: true,
+              type: true,
               size: true,
               owner: {
                 select: {

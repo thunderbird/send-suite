@@ -52,10 +52,7 @@ async function newAccessLink() {
   <section class="flex flex-col gap-3">
     <label class="flex flex-col gap-2">
       <span class="text-xs font-semibold text-gray-600">Share Link</span>
-      <div class="flex">
-        <input type="text" v-model="accessUrl" class="!rounded-r-none" />
-        <Btn primary class="!rounded-l-none !px-1.5"><IconLink class="w-4 h-4" /></Btn>
-      </div>
+      <input type="text" v-model="accessUrl" class="!rounded-r-none" />
     </label>
     <label class="flex flex-col gap-2">
       <span class="text-xs font-semibold text-gray-600">Link Expires</span>
@@ -70,5 +67,5 @@ async function newAccessLink() {
       </button>
     </label>
   </section>
-  <Btn class="mb-8" @click="newAccessLink">Create Share Link</Btn>
+  <Btn class="mb-8" @click="newAccessLink">Create Share Link <IconLink class="w-4 h-4" /></Btn>
 </template>

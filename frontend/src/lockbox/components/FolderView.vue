@@ -18,11 +18,6 @@ const dayjs = inject('dayjs');
 
 // onMounted(getVisibleFolders);
 // onMounted(folderStore.fetchUserFolders);
-
-function showFileInfo(file) {
-  // console.log(`user chose to show info for file ${file.id}`);
-  // setCurrentFile(file);
-}
 </script>
 <template>
   <div class="w-full flex flex-col gap-3">
@@ -87,7 +82,7 @@ function showFileInfo(file) {
           v-if="folderStore.rootFolder"
           v-for="item in folderStore.rootFolder.items"
           :key="item.id"
-          @click="showFileInfo(item)"
+          @click="folderStore.setSelectedFile(item.id)"
         >
           <FolderTableRowCell>
             <div class="flex justify-end">

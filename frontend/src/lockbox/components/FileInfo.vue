@@ -2,6 +2,7 @@
 import { ref, inject, watchEffect } from 'vue';
 import useApiStore from '@/stores/api-store';
 import useKeychainStore from '@/stores/keychain-store';
+import useFolderStore from '@/lockbox/stores/folder-store';
 
 // import CreateShare from './CreateShare.vue';
 import Downloader from '@/common/download';
@@ -12,15 +13,16 @@ import { formatBytes } from '@/lib/utils';
 import { IconDownload, IconShare } from '@tabler/icons-vue';
 import AddTag from '@/lockbox/components/AddTag.vue';
 
-const { currentFile, deleteItemAndContent } = inject('folderManager');
-
 const { api } = useApiStore();
 const { keychain } = useKeychainStore();
+const folderStore = useFolderStore();
+
 const downloader = new Downloader(keychain, api);
 
 async function downloadContent() {
   console.log(`Starting download`);
-  const { uploadId, containerId, wrappedKey, name } = currentFile.value;
+  debugger;
+  const { uploadId, containerId, wrappedKey, name } = folderStore.selectedFile;
   const success = await downloader.doDownload(uploadId, containerId, wrappedKey, name);
 }
 
@@ -34,37 +36,37 @@ Note about shareOnly containers.
 </script>
 
 <template>
-  <div v-if="currentFile" class="flex flex-col gap-6 h-full">
+  <div v-if="folderStore.selectedFile" class="flex flex-col gap-6 h-full">
     <!-- info -->
-    <header class="flex flex-col items-center gap-3 pt-6">
+    <header class="flex flex-col items-center">
       <img src="@/assets/file.svg" class="w-20 h-20" />
       <div class="font-semibold pt-4">
         <span v-if="!showForm" class="cursor- pointer" @click="showForm = true">
-          {{ currentFile.name }}
+          {{ folderStore.selectedFile.name }}
         </span>
         <FileNameForm v-if="showForm" @renameComplete="showForm = false" />
       </div>
-      <div class="text-xs">{{ formatBytes(currentFile.upload.size) }}</div>
+      <div class="text-xs">{{ formatBytes(folderStore.selectedFile.upload.size) }}</div>
     </header>
     <!-- sharing config -->
-    <!-- <CreateAccessLink :folderId="currentFile.id" /> -->
+    <!-- <CreateAccessLink :folderId="folderStore.selectedFile.id" /> -->
     <!-- tags -->
     <!-- <section class="flex flex-col gap-2">
       <div class="font-semibold text-gray-600">Tags</div>
       <div class="flex flex-wrap gap-1">
-        <TagLabel v-for="tag in currentFile.tags" :color="tag.color"> {{ tag.name }}</TagLabel>
+        <TagLabel v-for="tag in folderStore.selectedFile.tags" :color="tag.color"> {{ tag.name }}</TagLabel>
       </div>
-      {{ currentFile.id }}
+      {{ folderStore.selectedFile.id }}
     </section> -->
     <!-- meta -->
     <footer class="mt-auto flex flex-col gap-3">
-      <label class="flex flex-col gap-1" v-if="currentFile.createdAt">
+      <label class="flex flex-col gap-1" v-if="folderStore.selectedFile.createdAt">
         <span class="text-xs font-semibold text-gray-600">Created</span>
-        <div class="text-xs">{{ currentFile.createdAt }}</div>
+        <div class="text-xs">{{ folderStore.selectedFile.createdAt }}</div>
       </label>
-      <label class="flex flex-col gap-1" v-if="currentFile.updatedAt">
+      <label class="flex flex-col gap-1" v-if="folderStore.selectedFile.updatedAt">
         <span class="text-xs font-semibold text-gray-600">Modified</span>
-        <div class="text-xs">{{ currentFile.updatedAt }}</div>
+        <div class="text-xs">{{ folderStore.selectedFile.updatedAt }}</div>
       </label>
       <div class="flex justify-end gap-2">
         <Btn><IconDownload class="w-4 h-4" @click="downloadContent" /></Btn>

@@ -44,10 +44,7 @@ const folderStore = useFolderStore();
         <FolderView />
       </main>
     </div>
-    <aside
-      v-if="folderStore.selectedFile || folderStore.selectedFolder"
-      class="w-64 border-l border-gray-300 bg-gray-50 p-2.5"
-    >
+    <aside class="w-64 border border-gray-300 bg-gray-50 p-2.5">
       <FileInfo v-if="folderStore.selectedFile" />
       <FolderInfo v-if="folderStore.selectedFolder" />
     </aside>

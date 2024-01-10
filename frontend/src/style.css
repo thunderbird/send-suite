@@ -4,13 +4,13 @@
 
 @layer base {
   th {
-    @apply py-1 px-4 text-gray-600 font-semibold text-sm text-left
+    @apply py-1 px-4 text-gray-600 font-semibold text-sm text-left;
   }
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
+  input[type='text'],
+  input[type='email'],
+  input[type='password'],
   textarea,
   select {
-    @apply py-1 px-2 rounded border-gray-400 placeholder:text-gray-400
+    @apply py-1 px-2 rounded border-gray-400 placeholder:text-gray-400;
   }
 }
