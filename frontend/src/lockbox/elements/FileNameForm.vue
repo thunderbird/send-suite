@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import Btn from '@/lockbox/elements/Btn.vue';
 
 const emit = defineEmits(['renameComplete']);
@@ -26,6 +26,13 @@ function resetForm() {
   selectedFileName.value = folderStore.selectedFile.name;
   emit('renameComplete');
 }
+
+watch(
+  () => folderStore.selectedFile,
+  () => {
+    resetForm();
+  }
+);
 
 onMounted(() => {
   input.value.focus();

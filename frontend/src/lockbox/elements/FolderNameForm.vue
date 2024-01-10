@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import Btn from '@/lockbox/elements/Btn.vue';
 import useFolderStore from '@/lockbox/stores/folder-store';
 
@@ -22,6 +22,13 @@ function resetForm() {
   emit('renameComplete');
 }
 
+watch(
+  () => folderStore.selectedFolder,
+  () => {
+    resetForm();
+  }
+);
+
 onMounted(() => {
   input.value.focus();
   input.value.select();
@@ -29,10 +36,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <form @submit.prevent="updateFolderName">
-    <input type="text" v-model="selectedFolderName" ref="input" @keydown.esc="resetForm" />
-    <div class="flex flex-row justify-end">
-      <Btn @click="updateFolderName">Rename</Btn>
-    </div>
-  </form>
+  <section class="flex flex-col gap-3">
+    <form @submit.prevent="updateFolderName">
+      <label class="flex flex-col gap-2">
+        <input class="!rounded-r-none" type="text" v-model="selectedFolderName" ref="input" @keydown.esc="resetForm" />
+        <div class="flex flex-row justify-end">
+          <Btn @click="updateFolderName">Rename</Btn>
+        </div>
+      </label>
+    </form>
+  </section>
 </template>
