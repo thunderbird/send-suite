@@ -30,10 +30,7 @@ export default class Uploader {
     const key = await this.keychain.content.generateKey();
 
     // wrap the key for inclusion with the Item
-    const wrappedKeyStr = await this.keychain.container.wrapContentKey(
-      key,
-      wrappingKey
-    );
+    const wrappedKeyStr = await this.keychain.container.wrapContentKey(key, wrappingKey);
 
     const blob = fileBlob;
     const filename = blob.name;
@@ -45,12 +42,7 @@ export default class Uploader {
     }
     console.log(`🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀`);
     console.log(blob.type);
-    const uploadResp = await this.api.createContent(
-      id,
-      blob.size,
-      this.user.id,
-      blob.type
-    );
+    const uploadResp = await this.api.createContent(id, blob.size, this.user.id, blob.type);
     console.log(uploadResp);
 
     if (id !== uploadResp.id) {
@@ -67,6 +59,12 @@ export default class Uploader {
     console.log(`🎉 here it is...`);
     console.log(itemObj);
     // emit('uploadComplete', itemObj);
-    return itemObj;
+    return {
+      ...itemObj,
+      upload: {
+        size: blob.size,
+        type: blob.type,
+      },
+    };
   }
 }

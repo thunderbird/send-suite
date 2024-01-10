@@ -1,5 +1,5 @@
 <script setup>
-import { inject, onMounted } from 'vue';
+import { inject } from 'vue';
 
 import useFolderStore from '@/lockbox/stores/folder-store';
 

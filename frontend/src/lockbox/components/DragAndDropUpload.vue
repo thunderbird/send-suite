@@ -1,7 +1,10 @@
 <script setup>
-import { ref, inject } from 'vue';
+import { ref } from 'vue';
+import useFolderStore from '@/lockbox/stores/folder-store';
+
 import { useDropZone } from '@vueuse/core';
-const { rootFolderId, uploadItem } = inject('folderManager');
+const folderStore = useFolderStore();
+
 const dropZoneRef = ref();
 
 const filesMetadata = ref(null);
@@ -37,7 +40,7 @@ async function doUpload() {
   const result = await Promise.all(
     fileBlobs.value.map(async (blob) => {
       console.log(`uploading ${blob.name}`);
-      const uploadResult = await uploadItem(blob, rootFolderId.value);
+      const uploadResult = await folderStore.uploadItem(blob, folderStore.rootFolder.id);
       console.log(uploadResult);
       return uploadResult;
     })
@@ -55,7 +58,7 @@ async function doUpload() {
   </div>
 
   <button
-    v-if="rootFolderId && filesMetadata"
+    v-if="folderStore.rootFolder && filesMetadata"
     type="submit"
     class="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none"
     @click="doUpload"

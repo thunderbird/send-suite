@@ -12,7 +12,6 @@ const useFolderStore = defineStore('folderManager', () => {
   const uploader = new Uploader(user, keychain, api);
 
   const folders = ref([]);
-  const items = ref([]);
   const rootFolder = ref(null);
   const folderPath = ref([]);
 
@@ -33,12 +32,11 @@ const useFolderStore = defineStore('folderManager', () => {
 
   const selectedFolder = computed(() => findNode(selectedFolderId.value, folders.value));
 
-  const selectedFile = computed(() => findNode(selectedFileId.value, items.value));
+  const selectedFile = computed(() => findNode(selectedFileId.value, rootFolder.value?.items));
 
   async function fetchSubtree(rootId) {
     const tree = await api.getFolderTree(user.id, rootId);
     folders.value = tree.children;
-    items.value = tree.items;
     rootFolder.value = tree;
   }
 
@@ -47,7 +45,6 @@ const useFolderStore = defineStore('folderManager', () => {
     console.log(`fetchUserFolders got these:`);
     console.log(userFolders);
     folders.value = userFolders;
-    items.value = null;
     rootFolder.value = null;
   }
 
@@ -57,7 +54,7 @@ const useFolderStore = defineStore('folderManager', () => {
     } else {
       await fetchUserFolders();
       selectedFolderId.value = null;
-      selectedFile.value = null;
+      selectedFileId.value = null;
     }
   }
 
@@ -77,9 +74,11 @@ const useFolderStore = defineStore('folderManager', () => {
       parentId = rootFolder.value.id;
     }
     const newFolder = await api.createFolder(user.id, 'Untitled', parentId);
-    folders.value = [...folders.value, newFolder];
-    await keychain.newKeyForContainer(newFolder.id);
-    await keychain.store();
+    if (newFolder) {
+      folders.value = [...folders.value, newFolder];
+      await keychain.newKeyForContainer(newFolder.id);
+      await keychain.store();
+    }
   }
 
   async function renameFolder(folderId, name) {
@@ -95,10 +94,18 @@ const useFolderStore = defineStore('folderManager', () => {
   async function renameItem(folderId, itemId, name) {
     const result = await api.renameItem(folderId, itemId, name);
     if (result) {
-      const node = findNode(itemId, items.value);
+      const node = findNode(itemId, rootFolder.value.items);
       node.name = result.name;
     }
     return result;
+  }
+
+  async function uploadItem(fileBlob, folderId) {
+    const newItem = await uploader.doUpload(fileBlob, folderId);
+    if (newItem) {
+      rootFolder.value.items = [...rootFolder.value.items, newItem];
+    }
+    return newItem;
   }
 
   return {
@@ -120,6 +127,7 @@ const useFolderStore = defineStore('folderManager', () => {
     createFolder,
     renameFolder,
     renameItem,
+    uploadItem,
   };
 });
 
