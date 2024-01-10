@@ -1,18 +1,22 @@
 <script setup>
-import { inject, ref, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import Btn from '@/lockbox/elements/Btn.vue';
 
 const emit = defineEmits(['renameComplete']);
 
-const { renameItem, currentFile } = inject('folderManager');
+import useFolderStore from '@/lockbox/stores/folder-store';
 
-const currentFileName = ref(currentFile.value.name);
+const folderStore = useFolderStore();
+
+const currentFileName = ref(folderStore.selectedFile.name);
 const input = ref(null);
 
 async function updateFileName() {
-  console.log(`you want to change the name to ${currentFileName.value}`);
-
-  const result = await renameItem(currentFile.value.containerId, currentFile.value.id, currentFileName.value);
+  const result = await folderStore.renameItem(
+    folderStore.selectedFile.containerId,
+    folderStore.selectedFile.id,
+    currentFileName.value
+  );
   if (result) {
     emit('renameComplete');
   }
@@ -20,6 +24,7 @@ async function updateFileName() {
 
 onMounted(() => {
   input.value.focus();
+  input.value.select();
 });
 </script>
 

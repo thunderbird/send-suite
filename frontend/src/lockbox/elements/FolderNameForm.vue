@@ -1,5 +1,5 @@
 <script setup>
-import { inject, ref, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import Btn from '@/lockbox/elements/Btn.vue';
 import useFolderStore from '@/lockbox/stores/folder-store';
 
@@ -11,8 +11,6 @@ const selectedFolderName = ref(folderStore.selectedFolder.name);
 const input = ref(null);
 
 async function updateFolderName() {
-  console.log(`you want to change the name to ${selectedFolderName.value}`);
-
   const result = await folderStore.renameFolder(folderStore.selectedFolder.id, selectedFolderName.value);
   if (result) {
     emit('renameComplete');

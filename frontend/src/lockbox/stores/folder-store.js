@@ -87,7 +87,16 @@ const useFolderStore = defineStore('folderManager', () => {
     if (result) {
       // Update name locally, without re-fetching
       const node = findNode(folderId, folders.value);
-      node.name = name;
+      node.name = result.name;
+    }
+    return result;
+  }
+
+  async function renameItem(folderId, itemId, name) {
+    const result = await api.renameItem(folderId, itemId, name);
+    if (result) {
+      const node = findNode(itemId, items.value);
+      node.name = result.name;
     }
     return result;
   }
@@ -110,6 +119,7 @@ const useFolderStore = defineStore('folderManager', () => {
     setSelectedFile,
     createFolder,
     renameFolder,
+    renameItem,
   };
 });
 
