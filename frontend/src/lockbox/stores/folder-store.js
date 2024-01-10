@@ -28,12 +28,7 @@ const useFolderStore = defineStore('folderManager', () => {
     if (folders.value.length === 0) {
       return [];
     }
-    let foldersTemp = rootFolder.value?.children ?? [...folders.value];
-
-    console.log(`visibleFolders will calculate sizes for:`);
-    console.log(foldersTemp);
-
-    return calculateFolderSizes(foldersTemp);
+    return calculateFolderSizes(folders.value);
   });
 
   const selectedFolder = computed(() => findNode(selectedFolderId.value, folders.value));
@@ -79,11 +74,19 @@ const useFolderStore = defineStore('folderManager', () => {
     console.log(`no really...I just selected a file with id ${itemId}`);
   }
 
+  async function createFolder(parentId = 0) {
+    if (rootFolder.value) {
+      parentId = rootFolder.value.id;
+    }
+    const newFolder = await api.createFolder(user.id, 'Untitled', parentId);
+    folders.value = [...folders.value, newFolder];
+    await keychain.newKeyForContainer(newFolder.id);
+    await keychain.store();
+  }
+
   return {
     // State ====================================
     rootFolder,
-    selectedFolderId,
-    selectedFileId,
 
     // Getters ==================================
     defaultFolder,
@@ -97,6 +100,7 @@ const useFolderStore = defineStore('folderManager', () => {
     goToRootFolder,
     setSelectedFolder,
     setSelectedFile,
+    createFolder,
   };
 });
 
@@ -114,33 +118,9 @@ function calculateFolderSizes(folders) {
   return foldersWithSizes;
 }
 
-function findNodeInTree(id, head) {
-  console.log(`We got a 🌳 to search`);
-  debugger;
-  if (head.id === id) {
-    return head;
-  }
-  if (!head.children) {
-    return null;
-  }
-
-  for (let child of head.children) {
-    const found = findNode(id, child);
-    if (found) {
-      return found;
-    }
-  }
-  return null;
-}
-
 function findNode(id, collection) {
   if (!collection) {
     return null;
-  }
-
-  console.log(`Searching for a node with id ${id}`);
-  if (!Array.isArray(collection)) {
-    return findNodeInTree(id, collection);
   }
 
   for (let node of collection) {
@@ -153,18 +133,4 @@ function findNode(id, collection) {
   // Only if we're grabbing folders recursively from the backend.
 
   return null;
-}
-
-// TODO: move to computed() in store definition
-function childrenOf(id, tree) {
-  const node = findNode(id, tree);
-  return node?.children;
-}
-
-// Destructive.
-function replaceSubtree(id, tree, subtree) {
-  const node = findNode(id, tree);
-  if (node) {
-    node.children = subtree;
-  }
 }

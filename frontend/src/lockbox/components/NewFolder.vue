@@ -1,13 +1,13 @@
 <script setup>
-import { inject } from 'vue';
+import useFolderStore from '@/lockbox/stores/folder-store';
+
 import Btn from '@/lockbox/elements/Btn.vue';
 import { IconPlus } from '@tabler/icons-vue';
 
-// Assume that the folder should be created as a child of the currentFolderId
-const { createFolder, rootFolderId } = inject('folderManager');
+const folderStore = useFolderStore();
 </script>
 <template>
-  <Btn primary @click="createFolder(rootFolderId)">
+  <Btn primary @click="folderStore.createFolder()">
     <IconPlus class="w-5 h-5 stroke-2" />
     New Folder
   </Btn>
