@@ -24,9 +24,9 @@ const folderStore = useFolderStore();
   <div class="flex flex-col gap-6 h-full">
     <!-- actions -->
     <header class="flex items-center justify-between pt-2 px-2.5">
-      <Btn class="!px-1.5"><IconRefresh class="w-4 h-4" /></Btn>
-      <Btn primary><IconPlus class="w-4 h-4" /> New Upload</Btn>
-      <Btn class="!px-1.5"><IconDots class="w-4 h-4" /></Btn>
+      <!-- <Btn class="!px-1.5"><IconRefresh class="w-4 h-4" /></Btn> -->
+      <!-- <Btn primary><IconPlus class="w-4 h-4" /> New Upload</Btn> -->
+      <!-- <Btn class="!px-1.5"><IconDots class="w-4 h-4" /></Btn> -->
     </header>
     <!-- upload zone -->
     <section class="px-2.5">
@@ -40,7 +40,7 @@ const folderStore = useFolderStore();
       </DragAndDropUpload>
     </section>
     <!-- recent activity -->
-    <RecentActivity />
+    <!-- <RecentActivity /> -->
     <!-- tags -->
     <!-- <section class="flex flex-col gap-2 p-2.5 border-t border-gray-300">
       <div class="flex justify-between items-center">

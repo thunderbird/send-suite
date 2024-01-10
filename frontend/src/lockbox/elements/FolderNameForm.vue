@@ -17,6 +17,11 @@ async function updateFolderName() {
   }
 }
 
+function resetForm() {
+  selectedFolderName.value = folderStore.selectedFolder.name;
+  emit('renameComplete');
+}
+
 onMounted(() => {
   input.value.focus();
   input.value.select();
@@ -25,7 +30,7 @@ onMounted(() => {
 
 <template>
   <form @submit.prevent="updateFolderName">
-    <input type="text" v-model="selectedFolderName" ref="input" />
+    <input type="text" v-model="selectedFolderName" ref="input" @keydown.esc="resetForm" />
     <div class="flex flex-row justify-end">
       <Btn @click="updateFolderName">Rename</Btn>
     </div>

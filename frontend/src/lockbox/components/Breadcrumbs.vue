@@ -29,3 +29,10 @@ watchEffect(() => {
     </li>
   </ul>
 </template>
+
+<style scoped>
+li,
+button {
+  user-select: none;
+}
+</style>
