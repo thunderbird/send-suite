@@ -21,6 +21,7 @@ import {
   getContainerWithAncestors,
   updateItemName,
   getContainerWithDescendants,
+  getAccessLinksForContainer,
 } from '../models';
 import { getPermissions } from '../middleware';
 
@@ -406,5 +407,21 @@ router.post(
     }
   }
 );
+
+// Get all access links for a container
+router.get('/:containerId/links', getPermissions, async (req, res) => {
+  // getContainerWithMembers
+  const { containerId } = req.params;
+  try {
+    // TODO: get the userId from the session
+    // pass that to `getAccessLinksForContainer`
+    const links = await getAccessLinksForContainer(parseInt(containerId));
+    res.status(200).json(links);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
 
 export default router;

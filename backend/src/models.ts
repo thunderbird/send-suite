@@ -1101,6 +1101,22 @@ export async function getContainerForAccessLink(linkId: string) {
   });
 }
 
+export async function getAccessLinksForContainer(containerId: number) {
+  return await prisma.share.findMany({
+    where: {
+      containerId,
+    },
+    select: {
+      accessLinks: {
+        select: {
+          id: true,
+          expiryDate: true,
+        },
+      },
+    },
+  });
+}
+
 export async function createInvitationForAccessLink(
   linkId: string,
   recipientId: number

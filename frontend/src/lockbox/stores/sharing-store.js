@@ -94,6 +94,11 @@ const useSharingStore = defineStore('sharingManager', () => {
   async function isAccessLinkValid(linkId) {
     return await api.isAccessLinkValid(linkId);
   }
+
+  async function accessLinksForFolder(folderId) {
+    return await api.getAccessLinksForContainer(folderId);
+  }
+
   return {
     // Getters ==================================
 
@@ -101,6 +106,7 @@ const useSharingStore = defineStore('sharingManager', () => {
     createAccessLink,
     isAccessLinkValid,
     acceptAccessLink,
+    accessLinksForFolder,
   };
 });
 
