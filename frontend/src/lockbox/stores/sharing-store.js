@@ -31,6 +31,12 @@ const useSharingStore = defineStore('sharingManager', () => {
 
   const sharer = new Sharer(user, keychain, api);
 
+  const _links = ref([]);
+
+  const links = computed(() => {
+    return [..._links.value];
+  });
+
   async function createAccessLink(folderId, password, expiration) {
     let shouldAddPasswordAsHash = false;
 
@@ -49,6 +55,9 @@ const useSharingStore = defineStore('sharingManager', () => {
       url = `${url}#${password}`;
     }
 
+    // refetch access links
+    // TODO: consider just adding updating sharer.requestAccessLink so that it returns the whole link and then pushing it to _links
+    await fetchAccessLinks(folderId);
     return url;
   }
 
@@ -95,18 +104,19 @@ const useSharingStore = defineStore('sharingManager', () => {
     return await api.isAccessLinkValid(linkId);
   }
 
-  async function accessLinksForFolder(folderId) {
-    return await api.getAccessLinksForContainer(folderId);
+  async function fetchAccessLinks(folderId) {
+    _links.value = await api.getAccessLinksForContainer(folderId);
   }
 
   return {
     // Getters ==================================
+    links,
 
     // Actions ==================================
     createAccessLink,
     isAccessLinkValid,
     acceptAccessLink,
-    accessLinksForFolder,
+    fetchAccessLinks,
   };
 });
 

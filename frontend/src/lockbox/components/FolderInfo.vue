@@ -10,6 +10,7 @@ import Btn from '@/lockbox/elements/Btn.vue';
 import { formatBytes } from '@/lib/utils';
 import { IconDownload, IconShare } from '@tabler/icons-vue';
 import AddTag from '@/lockbox/components/AddTag.vue';
+import AccessLinksList from './AccessLinksList.vue';
 
 const folderStore = useFolderStore();
 
@@ -52,6 +53,7 @@ const showForm = ref(false);
     </header>
     <!-- sharing config -->
     <CreateAccessLink :folderId="folderStore.selectedFolder.id" />
+    <AccessLinksList :folderId="folderStore.selectedFolder.id" />
     <!-- people -->
     <!-- <section class="flex flex-col gap-2">
       <div class="font-semibold text-gray-600">Shared With</div>

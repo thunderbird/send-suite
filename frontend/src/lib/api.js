@@ -519,8 +519,6 @@ export class ApiConnection {
   async getAccessLinksForContainer(containerId) {
     const resp = await this.callApi(`containers/${containerId}/links`);
     if (resp) {
-      console.log(`yep. we got a rsponse for access links`);
-      console.log(resp);
       return resp;
     } else {
       console.log(`Error: could not get links for container ${containerId}`);
