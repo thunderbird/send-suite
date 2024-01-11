@@ -133,9 +133,6 @@ const useFolderStore = defineStore('folderManager', () => {
   }
 
   async function downloadContent(uploadId, containerId, wrappedKey, name) {
-    // const { uploadId, containerId, wrappedKey, name } = selectedFile;
-    // debugger;
-    debugger;
     const success = await downloader.doDownload(uploadId, containerId, wrappedKey, name);
   }
 

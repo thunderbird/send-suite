@@ -31,7 +31,7 @@ const dayjs = inject('dayjs');
           <th class="border-r border-b border-gray-300">Name</th>
           <!-- <th class="border-r border-b border-gray-300">Tags</th> -->
           <!-- <th class="border-r border-b border-gray-300">Shared With</th> -->
-          <th class="border-b border-gray-300">Access</th>
+          <th class="border-b border-gray-300"></th>
         </tr>
       </thead>
       <tbody>
