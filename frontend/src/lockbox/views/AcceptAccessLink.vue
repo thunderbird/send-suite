@@ -1,6 +1,7 @@
 <script setup>
 import { ref, inject, onMounted } from 'vue';
 import useUserStore from '@/stores/user-store';
+import useSharingStore from '@/lockbox/stores/sharing-store';
 
 import { useRoute, useRouter } from 'vue-router';
 
@@ -13,17 +14,16 @@ const route = useRoute();
 const router = useRouter();
 
 const { user } = useUserStore();
-
-const { acceptAccessLink, isAccessLinkValid } = inject('sharingManager');
+const sharingStore = useSharingStore();
 
 async function accept() {
-  const isValid = await isAccessLinkValid(route.params.linkId);
+  const isValid = await sharingStore.isAccessLinkValid(route.params.linkId);
   if (!isValid) {
     message.value = 'Access Link is no longer valid';
     return;
   }
 
-  const success = await acceptAccessLink(route.params.linkId, password.value);
+  const success = await sharingStore.acceptAccessLink(route.params.linkId, password.value);
   if (success) {
     message.value = `and this is where we add the container to the group and then redirect`;
 
