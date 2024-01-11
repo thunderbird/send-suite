@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed, toRaw } from 'vue';
+import { ref, computed } from 'vue';
 import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';

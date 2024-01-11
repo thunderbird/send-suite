@@ -1,17 +1,11 @@
 <script setup>
 import { ref, inject } from 'vue';
-import useApiStore from '@/stores/api-store';
-import useUserStore from '@/stores/user-store';
-import useKeychainStore from '@/stores/keychain-store';
+import useSharingStore from '@/lockbox/stores/sharing-store';
 
-import { Util } from '@/lib/keychain';
-import Sharer from '@/common/share';
 import Btn from '@/lockbox/elements/Btn.vue';
 import { IconLink, IconEye, IconEyeOff } from '@tabler/icons-vue';
 
-const { api } = useApiStore();
-const { user } = useUserStore();
-const { keychain } = useKeychainStore();
+const sharingStore = useSharingStore();
 
 const props = defineProps({
   folderId: Number,
@@ -19,33 +13,20 @@ const props = defineProps({
 
 const emit = defineEmits(['createAccessLinkComplete', 'createAccessLinkError']);
 
-const sharer = new Sharer(user, keychain, api);
 const password = ref('');
 const expiration = ref(null);
 const accessUrl = ref('');
 const showPassword = ref(false);
 
 async function newAccessLink() {
-  let pw = password.value;
-  let shouldAddPasswordAsHash = false;
+  const url = await sharingStore.createAccessLink(props.folderId, password.value, expiration.value);
 
-  if (pw.length === 0) {
-    pw = Util.generateRandomPassword();
-    shouldAddPasswordAsHash = true;
-  }
-
-  console.log(`using password ${pw}`);
-  let url = await sharer.requestAccessLink(props.folderId, pw, expiration.value);
   if (!url) {
     // emit('createAccessLinkError');
     return;
   }
-  if (shouldAddPasswordAsHash) {
-    url = `${url}#${pw}`;
-  }
 
   accessUrl.value = url;
-  // emit('createAccessLinkComplete', url);
 }
 </script>
 <template>
