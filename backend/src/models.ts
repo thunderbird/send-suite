@@ -1102,7 +1102,7 @@ export async function getContainerForAccessLink(linkId: string) {
 }
 
 export async function getAccessLinksForContainer(containerId: number) {
-  return await prisma.share.findMany({
+  const shares = await prisma.share.findMany({
     where: {
       containerId,
     },
@@ -1115,6 +1115,8 @@ export async function getAccessLinksForContainer(containerId: number) {
       },
     },
   });
+
+  return shares.flatMap((share) => share.accessLinks.map((link) => link));
 }
 
 export async function createInvitationForAccessLink(

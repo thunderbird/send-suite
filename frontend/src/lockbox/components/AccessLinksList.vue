@@ -18,13 +18,18 @@ and the user can delete the link.
 But, there's no way to change the password, yet.
 Theoretically, they can generate a new access link (and delete this one).
 
-I think I should do that and put the option here.
-
-
+TODO: implement "regeneration" of links
 */
 </script>
 <template>
-  {{ props.folderId }}
-  <br />
-  {{ sharingStore.links }}
+  <span v-if="sharingStore.links.length > 0" class="text-xs font-semibold text-gray-600">Existing Links</span>
+  <section class="flex flex-col gap-3" v-for="link in sharingStore.links">
+    <label class="flex flex-col gap-2">
+      <input type="text" class="!rounded-r-none" :value="link.id" />
+    </label>
+    <label class="flex flex-col gap-2 hidden">
+      <span class="text-xs font-semibold text-gray-600">Link Expires</span>
+      <input :value="link.expiryDate" type="datetime-local" />
+    </label>
+  </section>
 </template>
