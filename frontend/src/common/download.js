@@ -2,7 +2,7 @@ import { download } from '@/lib/filesync';
 
 export default class Downloader {
   constructor(keychain, api) {
-    this.keychain = keychain.value ?? keychain;
+    this.keychain = keychain;
     this.api = api;
   }
 

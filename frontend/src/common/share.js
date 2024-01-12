@@ -9,11 +9,7 @@ export default class Sharer {
 
   // Creates AccessLink
   async shareItemsWithPassword(items, password) {
-    const containerId = await this.createShareOnlyContainer(
-      items,
-      null,
-      this.user.id
-    );
+    const containerId = await this.createShareOnlyContainer(items, null, this.user.id);
     return await this.requestAccessLink(containerId, password);
   }
 
@@ -51,22 +47,14 @@ export default class Sharer {
       );
 
       const key = await this.keychain.get(containerId);
-      const wrappedKey = await this.keychain.rsa.wrapContainerKey(
-        key,
-        importedPublicKey
-      );
+      const wrappedKey = await this.keychain.rsa.wrapContainerKey(key, importedPublicKey);
 
       if (!wrappedKey) {
         console.log(`no wrapped key for the invitation`);
         return null;
       }
 
-      const resp = await this.api.inviteGroupMember(
-        containerId,
-        wrappedKey,
-        recipientId,
-        this.user.id
-      );
+      const resp = await this.api.inviteGroupMember(containerId, wrappedKey, recipientId, this.user.id);
       console.log(`Invitation creation response:`);
       console.log(resp);
       return resp;
@@ -84,11 +72,7 @@ export default class Sharer {
   }
 
   */
-  async createShareOnlyContainer(
-    items = [],
-    containerId = null,
-    userId = null
-  ) {
+  async createShareOnlyContainer(items = [], containerId = null, userId = null) {
     if (!userId) {
       console.log(`User ID is required`);
       return;
@@ -123,12 +107,7 @@ export default class Sharer {
     // have a parentId
     const parentId = 0;
     const shareOnly = true;
-    const response = await this.api.createFolder(
-      userId,
-      currentContainer.name,
-      parentId,
-      shareOnly
-    );
+    const response = await this.api.createFolder(userId, currentContainer.name, parentId, shareOnly);
     if (!(response || response.id)) {
       console.log(`could not create a new container for items`);
       return null;
@@ -148,28 +127,16 @@ export default class Sharer {
         const filename = item.name ?? item.filename;
         const currentWrappingKey = await this.keychain.get(containerId);
         const { uploadId, wrappedKey, type } = item;
-        const contentKey = await this.keychain.container.unwrapContentKey(
-          wrappedKey,
-          currentWrappingKey
-        );
+        const contentKey = await this.keychain.container.unwrapContentKey(wrappedKey, currentWrappingKey);
 
         // wrap the content key with the new container key
         const newWrappingKey = await this.keychain.get(newContainerId);
 
-        const wrappedKeyStr = await this.keychain.container.wrapContentKey(
-          contentKey,
-          newWrappingKey
-        );
+        const wrappedKeyStr = await this.keychain.container.wrapContentKey(contentKey, newWrappingKey);
 
         // create the new item with the existing uploadId
         // in the newContainer
-        const itemResp = await this.api.createItemInContainer(
-          uploadId,
-          newContainerId,
-          filename,
-          type,
-          wrappedKeyStr
-        );
+        const itemResp = await this.api.createItemInContainer(uploadId, newContainerId, filename, type, wrappedKeyStr);
 
         console.log(`🎉 here it is...`);
         console.log(itemResp);
@@ -187,21 +154,16 @@ export default class Sharer {
 
     // and password protect it
     const salt = Util.generateSalt();
-    const passwordWrappedKeyStr = await this.keychain.password.wrapContainerKey(
-      unwrappedKey,
-      password,
-      salt
-    );
+    const passwordWrappedKeyStr = await this.keychain.password.wrapContainerKey(unwrappedKey, password, salt);
 
     const challengeKey = await this.keychain.challenge.generateKey();
     const challengeSalt = Util.generateSalt();
 
-    const passwordWrappedChallengeKeyStr =
-      await this.keychain.password.wrapContentKey(
-        challengeKey,
-        password,
-        challengeSalt
-      );
+    const passwordWrappedChallengeKeyStr = await this.keychain.password.wrapContentKey(
+      challengeKey,
+      password,
+      challengeSalt
+    );
 
     const challengePlaintext = this.keychain.challenge.createChallenge();
 
@@ -233,6 +195,7 @@ export default class Sharer {
 
     console.log(`created share link for container ${containerId}`);
     const accessLink = resp.id;
+    console.log(resp);
     const { origin } = new URL(window.location.href);
     // const url = `${origin}/share/${accessLink}`;
     // TODO: need the server url from...elsewhere

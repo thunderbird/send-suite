@@ -67,11 +67,6 @@ function shareAborted() {
   <div v-if="ephemeralHash">
     <a :href="ephemeralHash" @click.prevent>{{ ephemeralHash }}</a>
   </div>
-  <!-- <hr />
-  <br /> -->
-  <!-- <template v-if="isShareReady">
-    <Share :items="props.items" :password="password" @shareComplete="shareComplete" @shareAborted="shareAborted" />
-  </template> -->
 </template>
 
 <style scoped>

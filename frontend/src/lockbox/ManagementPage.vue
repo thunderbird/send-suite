@@ -100,4 +100,3 @@ form {
   }
 }
 </style>
-@/stores/configuration-store

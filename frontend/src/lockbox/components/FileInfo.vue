@@ -1,7 +1,5 @@
 <script setup>
-import { ref, inject, watchEffect } from 'vue';
-import useApiStore from '@/stores/api-store';
-import useKeychainStore from '@/stores/keychain-store';
+import { ref } from 'vue';
 import useFolderStore from '@/lockbox/stores/folder-store';
 
 // import CreateShare from './CreateShare.vue';
@@ -12,8 +10,6 @@ import { formatBytes } from '@/lib/utils';
 import { IconDownload, IconShare } from '@tabler/icons-vue';
 import AddTag from '@/lockbox/components/AddTag.vue';
 
-const { api } = useApiStore();
-const { keychain } = useKeychainStore();
 const folderStore = useFolderStore();
 
 const showForm = ref(false);

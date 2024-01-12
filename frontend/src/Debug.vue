@@ -1,12 +1,14 @@
 <script setup>
-import { ref, inject, onMounted, watchEffect } from 'vue';
+import { ref, watchEffect } from 'vue';
 import Btn from '@/lockbox/elements/Btn.vue';
+
+import { Storage } from '@/lib/storage';
 
 import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
+import useFolderStore from '@/lockbox/stores/folder-store';
 
-import useConfigurationStore from '@/stores/configuration-store';
-
+// import useConfigurationStore from '@/stores/configuration-store';
 // const configurationStore = useConfigurationStore();
 // configurationStore.$onAction((actionInfo) => {
 //   console.log(actionInfo);
@@ -19,55 +21,29 @@ const id = ref(null);
 const jwkPublicKey = ref('');
 const showDebug = ref(false);
 
-// const api = inject('api');
 const { keychain } = useKeychainStore();
 const { user } = useUserStore();
-
-// const eventSource = inject('eventSource');
-const messageBus = inject('messageBus');
-const storage = inject('storage');
-
-const { createFolder } = inject('folderManager');
-
-watchEffect(() => {
-  // console.log(`Debug.vue using stored user id and email`);
-  // console.log(`user.id: ${user.id}`);
-  // console.log(`user.email: ${user.email}`);
-  email.value = user.email;
-  id.value = user.id;
-});
+const folderStore = useFolderStore();
+const storage = new Storage();
 
 watchEffect(async () => {
-  jwkPublicKey.value = await keychain.rsa.getPublicKeyJwk();
-  // console.log(`Debug.vue setting jwk version of stored public key`);
-});
-
-onMounted(async () => {
-  window.keychain = keychain;
+  email.value = user.email;
+  id.value = user.id;
+  jwkPublicKey.value = JSON.stringify(await keychain.rsa.getPublicKeyJwk());
 });
 
 async function generateKeys() {
-  if (keychain?.rsa?.generateKeyPair) {
-    await keychain.rsa.generateKeyPair();
-    jwkPublicKey.value = await keychain.rsa.getPublicKeyJwk();
-  }
+  await keychain.rsa.generateKeyPair();
+  jwkPublicKey.value = JSON.stringify(await keychain.rsa.getPublicKeyJwk());
 }
 
 async function saveKeys() {
-  if (keychain.store) {
-    await keychain.store();
-  }
+  await keychain.store();
 }
 
 async function loadKeys() {
-  if (keychain.load) {
-    await keychain.load();
-  }
+  await keychain.load();
 }
-
-// keychain.addOnload(async () => {
-//   jwkPublicKey.value = JSON.stringify(await keychain.rsa.getPublicKeyJwk());
-// });
 
 async function storeUser() {
   if (!user.id) {
@@ -88,8 +64,6 @@ async function login() {
     return;
   }
 
-  console.log(`jwkPublicKey.value is:`);
-  console.log(jwkPublicKey.value);
   const createUserResp = await user.createUser(email.value, jwkPublicKey.value);
   if (!createUserResp) {
     console.log(`could not create user, trying to log in`);
@@ -100,28 +74,17 @@ async function login() {
     }
     console.log(`logged in, user id is ${user.id}`);
   }
-  const createFolderResp = await createFolder();
-  if (createFolderResp) {
-    console.log(`👍👍👍👍👍👍👍👍👍👍👍 created a folder`);
-  } else {
-    console.log(`could not create a folder 🐓🐓🐓🐓🐓🐓🐓🐓🐓🐓🐓`);
+
+  if (!folderStore.defaultFolder) {
+    // Creating a default folder
+    const createFolderResp = await folderStore.createFolder();
+    if (createFolderResp) {
+      console.log(`👍👍👍👍👍👍👍👍👍👍👍 created a folder`);
+    } else {
+      console.log(`could not create a folder 🐓🐓🐓🐓🐓🐓🐓🐓🐓🐓🐓`);
+    }
   }
 }
-
-async function sendHeartbeat() {
-  console.log(`sending heartbeat`);
-  messageBus.send(
-    JSON.stringify({
-      type: 'heartbeat',
-      id: user.id,
-      ts: new Date().getTime(),
-    })
-  );
-}
-
-messageBus.addCallback('heartbeat', ({ id, ts }) => {
-  console.log(`Received heartbeat from user ${id} at ${ts}`);
-});
 
 function clearStorage() {
   storage.clear();
@@ -155,10 +118,8 @@ function clearStorage() {
         <Btn @click="storeUser">Store User</Btn>
         <Btn @click="loadUser">Load User</Btn>
         <Btn @click="login">Log in</Btn>
-        <Btn @click="sendHeartbeat">Send heartbeat</Btn>
       </div>
       <Btn @click="clearStorage"> Clear Stored User and Keys </Btn>
     </div>
   </div>
 </template>
-@/stores/configuration-store

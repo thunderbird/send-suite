@@ -58,6 +58,7 @@ router.post('/', async (req, res) => {
 
     res.status(200).json({
       id: accessLink.id,
+      expiryDate: accessLink.expiryDate,
     });
   } catch (e) {
     res.status(500).json({

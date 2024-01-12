@@ -108,6 +108,11 @@ const useSharingStore = defineStore('sharingManager', () => {
     _links.value = await api.getAccessLinksForContainer(folderId);
   }
 
+  async function shareItems(itemsArray, password) {
+    const url = await sharer.shareItemsWithPassword(itemsArray, password);
+    return url;
+  }
+
   return {
     // Getters ==================================
     links,
@@ -117,6 +122,7 @@ const useSharingStore = defineStore('sharingManager', () => {
     isAccessLinkValid,
     acceptAccessLink,
     fetchAccessLinks,
+    shareItems,
   };
 });
 

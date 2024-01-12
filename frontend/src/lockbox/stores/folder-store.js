@@ -80,6 +80,7 @@ const useFolderStore = defineStore('folderManager', () => {
       folders.value = [...folders.value, newFolder];
       await keychain.newKeyForContainer(newFolder.id);
       await keychain.store();
+      return newFolder;
     }
   }
 
@@ -104,7 +105,7 @@ const useFolderStore = defineStore('folderManager', () => {
 
   async function uploadItem(fileBlob, folderId) {
     const newItem = await uploader.doUpload(fileBlob, folderId);
-    if (newItem) {
+    if (newItem && rootFolder.value) {
       rootFolder.value.items = [...rootFolder.value.items, newItem];
     }
     return newItem;
