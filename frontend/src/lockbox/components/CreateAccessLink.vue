@@ -26,14 +26,14 @@ async function newAccessLink() {
     return;
   }
 
-  // accessUrl.value = url;
+  accessUrl.value = url;
 }
 </script>
 <template>
   <section class="flex flex-col gap-3">
     <label class="flex flex-col gap-2">
       <span class="text-xs font-semibold text-gray-600">Create Share Link</span>
-      <!-- <input type="text" v-model="accessUrl" class="!rounded-r-none" /> -->
+      <input type="text" v-model="accessUrl" class="!rounded-r-none" />
     </label>
     <label class="flex flex-col gap-2">
       <span class="text-xs font-semibold text-gray-600">Link Expires</span>

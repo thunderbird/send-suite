@@ -40,7 +40,9 @@ const useSharingStore = defineStore('sharingManager', () => {
   async function createAccessLink(folderId, password, expiration) {
     let shouldAddPasswordAsHash = false;
 
+    console.log(`password is: ${password}`);
     if (password.length === 0) {
+      console.log(`no password, generating one`);
       password = Util.generateRandomPassword();
       shouldAddPasswordAsHash = true;
     }
@@ -109,7 +111,25 @@ const useSharingStore = defineStore('sharingManager', () => {
   }
 
   async function shareItems(itemsArray, password) {
-    const url = await sharer.shareItemsWithPassword(itemsArray, password);
+    let shouldAddPasswordAsHash = false;
+
+    console.log(`password is: ${password}`);
+    if (password.length === 0) {
+      console.log(`no password, generating one`);
+      password = Util.generateRandomPassword();
+      shouldAddPasswordAsHash = true;
+    }
+
+    let url = await sharer.shareItemsWithPassword(itemsArray, password);
+
+    if (!url) {
+      return null;
+    }
+
+    if (shouldAddPasswordAsHash) {
+      url = `${url}#${password}`;
+    }
+
     return url;
   }
 
