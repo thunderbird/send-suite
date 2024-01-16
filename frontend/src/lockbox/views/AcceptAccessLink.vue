@@ -1,5 +1,5 @@
 <script setup>
-import { ref, inject, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import useUserStore from '@/stores/user-store';
 import useSharingStore from '@/lockbox/stores/sharing-store';
 

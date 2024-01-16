@@ -133,6 +133,10 @@ const useSharingStore = defineStore('sharingManager', () => {
     return url;
   }
 
+  async function getSharedFolder(hash) {
+    return await api.getContainerWithItemsForAccessLink(hash);
+  }
+
   return {
     // Getters ==================================
     links,
@@ -143,6 +147,7 @@ const useSharingStore = defineStore('sharingManager', () => {
     acceptAccessLink,
     fetchAccessLinks,
     shareItems,
+    getSharedFolder,
   };
 });
 

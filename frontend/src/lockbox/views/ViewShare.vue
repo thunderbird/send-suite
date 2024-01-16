@@ -1,10 +1,11 @@
 <script setup>
-import { ref, onMounted, inject } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import useSharingStore from '@/lockbox/stores/sharing-store';
 import FolderTree from '../components/FolderTree.vue';
 
 const route = useRoute();
-const { getSharedFolder } = inject('sharingManager');
+const sharingStore = useSharingStore();
 
 const folder = ref(null);
 const containerId = ref(null);
@@ -12,7 +13,7 @@ const containerId = ref(null);
 onMounted(async () => {
   console.log(`ViewShare ready to get folder for hash`);
   // Using route.params.linkId, get the folder contents
-  const { share } = await getSharedFolder(route.params.linkId);
+  const { share } = await sharingStore.getSharedFolder(route.params.linkId);
   folder.value = share.container;
   containerId.value = share.container.id;
 });

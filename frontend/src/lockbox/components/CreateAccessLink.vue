@@ -1,5 +1,5 @@
 <script setup>
-import { ref, inject } from 'vue';
+import { ref, watch } from 'vue';
 import useSharingStore from '@/lockbox/stores/sharing-store';
 
 import Btn from '@/lockbox/elements/Btn.vue';
@@ -28,6 +28,16 @@ async function newAccessLink() {
 
   accessUrl.value = url;
 }
+
+watch(
+  () => props.folderId,
+  () => {
+    password.value = '';
+    expiration.value = null;
+    accessUrl.value = '';
+    showPassword.value = false;
+  }
+);
 </script>
 <template>
   <section class="flex flex-col gap-3">
