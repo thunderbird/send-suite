@@ -8,8 +8,8 @@ async function checkServerUrl(url) {
 }
 
 const useConfigurationStore = defineStore('configuration', () => {
-  const _serverUrl = ref('');
-
+  const _serverUrl = ref(import.meta.env.VITE_SEND_SERVER_URL);
+  // console.log(`configurationStore has the following server url: ${_serverUrl.value}`);
   const serverUrl = computed(() => _serverUrl.value);
 
   function setServerUrl(url) {
