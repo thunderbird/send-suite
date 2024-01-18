@@ -10,15 +10,16 @@ const DEBUG = true;
 (async () => {
   const allAccounts = await browser.cloudFile.getAllAccounts();
   for (let { id } of allAccounts) {
-    console.log(id);
+    console.log(`found an account with id ${id}`);
     if (await checkAccountStorage(id)) {
+      debugger;
       setAccountConfigured(id);
     }
   }
 })();
 
 async function checkAccountStorage(accountId) {
-  const accountInfo = await browser.storage.local.get([accountId]);
+  const accountInfo = await browser.storage.local.get(accountId);
   return accountInfo[accountId] && SERVER in accountInfo[accountId];
 }
 

@@ -31,7 +31,7 @@ function setAccountConfigured(accountId) {
 // Initialize the settings
 (function init() {
   try {
-    browser.storage.local.get([accountId]).then((accountInfo) => {
+    browser.storage.local.get(accountId).then((accountInfo) => {
       if (accountInfo[accountId] && SERVER in accountInfo[accountId]) {
         configurationStore.setServerUrl(accountInfo[accountId][SERVER]);
         setAccountConfigured(accountId);
@@ -58,7 +58,7 @@ async function configureExtension() {
       setAccountConfigured(accountId);
       configurationStore.setServerUrl(currentServerUrl.value);
       DEBUG &&
-        browser.storage.local.get([accountId]).then((accountInfo) => {
+        browser.storage.local.get(accountId).then((accountInfo) => {
           if (accountInfo[accountId] && SERVER in accountInfo[accountId]) {
             const isSame = currentServerUrl.value == accountInfo[accountId][SERVER];
             console.log(`Saved is same as current?? e.g., did we update? ${isSame}`);
