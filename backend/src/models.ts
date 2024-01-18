@@ -50,20 +50,30 @@ export async function getBackup(id: number) {
       id,
     },
     select: {
-      backupKeys: true,
-      backupCredentials: true,
+      backupContainerKeys: true,
+      backupKeypair: true,
+      backupKeystring: true,
+      backupSalt: true,
     },
   });
 }
 
-export async function setBackup(id: number, keys: string, credentials: string) {
+export async function setBackup(
+  id: number,
+  keys: string,
+  keypair: string,
+  keystring: string,
+  salt: string
+) {
   return prisma.user.update({
     where: {
       id,
     },
     data: {
-      backupKeys: keys,
-      backupCredentials: credentials,
+      backupContainerKeys: keys,
+      backupKeypair: keypair,
+      backupKeystring: keystring,
+      backupSalt: salt,
     },
   });
 }

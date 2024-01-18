@@ -229,13 +229,14 @@ router.get('/:userId/invitations', async (req, res) => {
 
 router.post('/:id/backup', async (req, res) => {
   const { id } = req.params;
-  const { keys, credentials } = req.body;
+  const { keys, keypair, keystring, salt } = req.body;
   try {
-    const user = await setBackup(parseInt(id), keys, credentials);
+    const user = await setBackup(parseInt(id), keys, keypair, keystring, salt);
     res.status(200).json({
       message: 'backup complete',
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({
       message: 'Server error.',
     });

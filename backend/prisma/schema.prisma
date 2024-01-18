@@ -38,8 +38,10 @@ model User {
   invitations         Invitation[]         @relation("Recipient")
   // ephemeralLinks      EphemeralLink[] @relation("Ephemeral")
 
-  backupCredentials   String?
-  backupKeys          String?
+  backupKeypair       String?
+  backupContainerKeys String?
+  backupKeystring     String?
+  backupSalt          String?
 }
 
 

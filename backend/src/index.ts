@@ -49,7 +49,7 @@ const app = express();
 
 app.use(morgan('combined'));
 
-app.use(express.json());
+app.use(express.json({ limit: '5mb' }));
 // app.use(
 //   cors({
 //     origin: 'moz-extension://19f948ec-3c58-4af6-9ec8-f2d1d5d01044',
