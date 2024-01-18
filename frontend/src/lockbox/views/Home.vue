@@ -12,8 +12,9 @@ import RecentActivity from '@/lockbox/components/RecentActivity.vue';
 import SharedByMe from '@/lockbox/components/SharedByMe.vue';
 import SharedWithMe from '@/lockbox/components/SharedWithMe.vue';
 import InvitationList from '@/lockbox/components/InvitationList.vue';
+import BackupAndRestore from '@/BackupAndRestore.vue';
 
-const { user } = useUserStore();
+const user = useUserStore();
 const folderStore = useFolderStore();
 
 // const { currentFile, currentFolderId, rootFolderId } = inject('folderManager');
@@ -41,6 +42,7 @@ const folderStore = useFolderStore();
         <!-- <SharedWithMe /> -->
         <!-- <SharedByMe /> -->
         <!-- </template> -->
+        <BackupAndRestore />
         <FolderView />
       </main>
     </div>
