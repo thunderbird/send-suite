@@ -44,6 +44,30 @@ export async function getUserPublicKey(id: number) {
   });
 }
 
+export async function getBackup(id: number) {
+  return prisma.user.findUnique({
+    where: {
+      id,
+    },
+    select: {
+      backupKeys: true,
+      backupCredentials: true,
+    },
+  });
+}
+
+export async function setBackup(id: number, keys: string, credentials: string) {
+  return prisma.user.update({
+    where: {
+      id,
+    },
+    data: {
+      backupKeys: keys,
+      backupCredentials: credentials,
+    },
+  });
+}
+
 export async function createUpload(
   id: string,
   size: number,

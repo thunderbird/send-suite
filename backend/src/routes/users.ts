@@ -9,6 +9,8 @@ import {
   getContainersSharedByMe,
   getContainersSharedWithMe,
   getRecentActivity,
+  getBackup,
+  setBackup,
 } from '../models';
 
 const router: Router = Router();
@@ -218,6 +220,32 @@ router.get('/:userId/invitations', async (req, res) => {
   try {
     const invitations = await getAllInvitations(parseInt(userId));
     res.status(200).json(invitations);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+
+router.post('/:id/backup', async (req, res) => {
+  const { id } = req.params;
+  const { keys, credentials } = req.body;
+  try {
+    const user = await setBackup(parseInt(id), keys, credentials);
+    res.status(200).json({
+      message: 'backup complete',
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
+  }
+});
+router.get('/:id/backup', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const backup = await getBackup(parseInt(id));
+    res.status(200).json(backup);
   } catch (error) {
     res.status(500).json({
       message: 'Server error.',
