@@ -2,8 +2,8 @@ import { Util } from '@/lib/keychain';
 
 export default class Sharer {
   constructor(user, keychain, api) {
-    this.user = user.value ?? user;
-    this.keychain = keychain.value ?? keychain;
+    this.user = user;
+    this.keychain = keychain;
     this.api = api;
   }
 

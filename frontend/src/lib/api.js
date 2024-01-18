@@ -594,6 +594,25 @@ export class ApiConnection {
     }
   }
 
+  async createBackup(userId, keys, keypair, keystring, salt) {
+    const resp = await this.callApi(
+      `users/${userId}/backup`,
+      {
+        keys,
+        keypair,
+        keystring,
+        salt,
+      },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not create backup`);
+      return null;
+    }
+  }
+
   // getEventSource(id) {
   //   // Future improvement: use "@microsoft/fetch-event-source"
   //   // which lets you POST.
