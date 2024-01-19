@@ -70,8 +70,12 @@ export class User {
     // this._onLoadCallbacks.forEach(async (cb) => await cb());
   }
 
-  async store() {
-    const { id, tier, email } = this;
+  async store(newId, newTier, newEmail) {
+    let { id, tier, email } = this;
+    id = newId ?? id;
+    tier = newTier ?? tier;
+    email = newEmail ?? email;
+
     if (!id) {
       console.log(`cannot store user`);
       return;

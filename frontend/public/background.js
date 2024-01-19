@@ -12,7 +12,6 @@ const DEBUG = true;
   for (let { id } of allAccounts) {
     console.log(`found an account with id ${id}`);
     if (await checkAccountStorage(id)) {
-      debugger;
       setAccountConfigured(id);
     }
   }

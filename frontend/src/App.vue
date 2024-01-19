@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted } from 'vue';
+import init from '@/lib/init';
 import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
 import useFolderStore from '@/lockbox/stores/folder-store';
@@ -12,26 +13,7 @@ const { keychain } = useKeychainStore();
 const folderStore = useFolderStore();
 
 onMounted(async () => {
-  try {
-    await user.load();
-  } catch (e) {
-    console.log(e);
-    console.log(`could not load user`);
-    return;
-  }
-  if (user.id) {
-    console.log(`we have a user, attempting to log in`);
-    await user.login();
-    await folderStore.fetchUserFolders();
-  }
-  try {
-    await keychain.load();
-  } catch (e) {
-    console.log(e);
-    console.log(`could not load keys`);
-    return;
-  }
-  console.log(`keychain loaded`);
+  await init(user, keychain, folderStore);
 });
 </script>
 
