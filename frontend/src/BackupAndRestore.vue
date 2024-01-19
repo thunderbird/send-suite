@@ -7,30 +7,32 @@ import useApiStore from '@/stores/api-store';
 // move the following imports elsewhere
 import { Util } from '@/lib/keychain';
 
-const passphrase = ref('abc');
+const MSG_NOT_COMPLEX = 'Please enter a pass phrase with 10 or more different words';
+const passphrase = ref('');
+const msg = ref('');
 const { user } = useUserStore();
 const { keychain } = useKeychainStore();
 const { api } = useApiStore();
 
-/*
-ok, what do I need?
-let's start with a static password.
-then, let's get the keys and keypair
-  */
+async function makeBackup() {
+  if (!passphraseIsComplex(passphrase.value)) {
+    msg.value = MSG_NOT_COMPLEX;
+    return;
+  }
 
-async function doIt() {
+  msg.value = '';
+
   const keypair = await keychain.exportKeypair();
   const containerKeys = await keychain.exportKeys();
 
-  // they should be strings
-  if (typeof keypair.publicKey !== 'string') {
-    throw Error(`whoops. that's not a string`);
-  }
-  if (typeof keypair.privateKey !== 'string') {
-    throw Error(`whoops. that's not a string`);
-  }
   // let's encrypt them with a password
   await createBackup(keypair.publicKey, keypair.privateKey, containerKeys, passphrase.value);
+  msg.value = 'Backup complete';
+}
+
+function passphraseIsComplex(words) {
+  const wordSet = new Set(words.split(' '));
+  return wordSet.size >= 10;
 }
 
 async function encryptKeys(containerKeysObj, key, salt) {
@@ -77,6 +79,8 @@ async function createBackup(publicKeyJwk, privateKeyJwk, containerKeys, password
 </script>
 
 <template>
-  <p>Hi I'm the backup and restore component</p>
-  <button @click.prevent="doIt">do it</button>
+  <h1>Backup and Restore</h1>
+  <textarea v-model="passphrase"></textarea>
+  <p v-if="msg">{{ msg }}</p>
+  <button @click.prevent="makeBackup">Create Backup</button>
 </template>
