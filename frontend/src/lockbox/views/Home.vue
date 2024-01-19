@@ -1,5 +1,4 @@
 <script setup>
-import { watch } from 'vue';
 import useUserStore from '@/stores/user-store';
 import useFolderStore from '@/lockbox/stores/folder-store';
 
