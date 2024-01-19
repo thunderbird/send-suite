@@ -1,5 +1,5 @@
 <script setup>
-import { inject } from 'vue';
+import { watch } from 'vue';
 import useUserStore from '@/stores/user-store';
 import useFolderStore from '@/lockbox/stores/folder-store';
 
@@ -18,6 +18,13 @@ const user = useUserStore();
 const folderStore = useFolderStore();
 
 // const { currentFile, currentFolderId, rootFolderId } = inject('folderManager');
+watch(
+  () => user.id,
+  () => {
+    debugger;
+    folderStore.fetchUserFolders();
+  }
+);
 </script>
 
 <template>
