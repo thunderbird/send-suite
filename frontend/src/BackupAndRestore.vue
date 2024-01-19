@@ -26,7 +26,21 @@ async function makeBackup() {
   const containerKeys = await keychain.exportKeys();
 
   // let's encrypt them with a password
-  await createBackup(keypair.publicKey, keypair.privateKey, containerKeys, passphrase.value);
+  const { protectedContainerKeysStr, protectedKeypairStr, passwordWrappedKeyStr, saltStr } = await encryptAll(
+    keypair.publicKey,
+    keypair.privateKey,
+    containerKeys,
+    passphrase.value
+  );
+  const resp = await api.createBackup(
+    user.id,
+    protectedContainerKeysStr,
+    protectedKeypairStr,
+    passwordWrappedKeyStr,
+    saltStr
+  );
+  console.log(`POSTing to backup`);
+  console.log(resp);
   msg.value = 'Backup complete';
 }
 
@@ -47,7 +61,7 @@ async function encryptKeys(containerKeysObj, key, salt) {
   return obj;
 }
 
-async function createBackup(publicKeyJwk, privateKeyJwk, containerKeys, password) {
+async function encryptAll(publicKeyJwk, privateKeyJwk, containerKeys, password) {
   const key = await keychain.generateBackupKey();
   const salt = Util.generateSalt();
 
@@ -65,16 +79,12 @@ async function createBackup(publicKeyJwk, privateKeyJwk, containerKeys, password
 
   const passwordWrappedKeyStr = await keychain.password.wrapContentKey(key, password, salt);
   const saltStr = Util.arrayBufferToBase64(salt);
-
-  const resp = await api.createBackup(
-    user.id,
+  return {
     protectedContainerKeysStr,
     protectedKeypairStr,
     passwordWrappedKeyStr,
-    saltStr
-  );
-  console.log(`POSTing to backup`);
-  console.log(resp);
+    saltStr,
+  };
 }
 </script>
 
