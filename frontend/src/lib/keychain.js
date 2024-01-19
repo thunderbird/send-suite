@@ -319,10 +319,10 @@ export class Keychain {
 
   async store() {
     // store public/private keys
-    await this._storage.storeKeypair(this.exportKeypair());
+    await this._storage.storeKeypair(await this.exportKeypair());
 
     // store other keys
-    await this._storage.storeKeys(this.exportKeys());
+    await this._storage.storeKeys(await this.exportKeys());
   }
 
   async importKeypair(keypair) {

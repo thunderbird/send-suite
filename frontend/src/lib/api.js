@@ -613,6 +613,16 @@ export class ApiConnection {
     }
   }
 
+  async getBackup(userId) {
+    const resp = await this.callApi(`users/${userId}/backup`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not retrieve backup`);
+      return null;
+    }
+  }
+
   // getEventSource(id) {
   //   // Future improvement: use "@microsoft/fetch-event-source"
   //   // which lets you POST.
