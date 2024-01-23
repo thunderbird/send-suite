@@ -1,5 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue';
+import Btn from '@/lockbox/elements/Btn.vue';
+
 import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
 import useApiStore from '@/stores/api-store';
@@ -41,12 +43,15 @@ async function makeBackup() {
     passwordWrappedKeyStr,
     saltStr
   );
-  console.log(`POSTing to backup`);
-  console.log(resp);
+
   msg.value = 'Backup complete';
 }
 
 async function restoreFromBackup() {
+  if (!confirm('Replace all your local keys with your backup?')) {
+    return;
+  }
+
   const resp = await api.getBackup(user.id);
   if (!resp) {
     msg.value = MSG_COULD_NOT_RETRIEVE;
@@ -64,13 +69,6 @@ async function restoreFromBackup() {
       backupSalt,
       passphrase.value
     );
-
-    // TODO:
-    // 1. put publicKeyJwk, privateKeyJwk, and containerKeys back in the keychain.
-    // 2. confirm you can still download previous stuff and upload new stuff
-    // 3. if so, store to localStorage.
-    console.log(`🐷🐷🐷🐷🐷🐷🐷🐷🐷🐷🐷🐷🐷🐷🐷🐷🐷🐷`);
-    console.log(publicKeyJwk, privateKeyJwk, containerKeys);
 
     const keypair = {
       publicKey: publicKeyJwk,
@@ -178,9 +176,19 @@ async function decryptAll(protectedContainerKeysStr, protectedKeypairStr, passwo
 </script>
 
 <template>
-  <h1>Backup and Restore</h1>
-  <textarea v-model="passphrase"></textarea>
-  <p v-if="msg">{{ msg }}</p>
-  <button @click.prevent="makeBackup">Backup</button>
-  <button @click.prevent="restoreFromBackup">Restore</button>
+  <div class="flex min-h-screen">
+    <div class="flex flex-col gap-4 grow">
+      <header
+        class="w-full sticky top-0 flex items-center justify-between px-4 py-2 bg-white/90 border-b border-gray-300"
+      >
+        <h1>Backup and Restore</h1>
+      </header>
+      <div class="w-full flex flex-col gap-3 px-4">
+        <textarea v-model="passphrase"></textarea>
+        <p v-if="msg">{{ msg }}</p>
+        <Btn primary @click.prevent="makeBackup">Backup</Btn>
+        <Btn primary @click.prevent="restoreFromBackup">Restore</Btn>
+      </div>
+    </div>
+  </div>
 </template>

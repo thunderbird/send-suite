@@ -8,8 +8,6 @@ import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
 import useFolderStore from '@/lockbox/stores/folder-store';
 
-import BackupAndRestore from '@/lockbox/components/BackupAndRestore.vue';
-
 // import useConfigurationStore from '@/stores/configuration-store';
 // const configurationStore = useConfigurationStore();
 // configurationStore.$onAction((actionInfo) => {
@@ -125,7 +123,6 @@ function clearStorage() {
         <Btn @click="login">Log in</Btn>
       </div>
       <Btn @click="clearStorage"> Clear Stored User and Keys </Btn>
-      <BackupAndRestore />
     </div>
   </div>
 </template>

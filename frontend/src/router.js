@@ -9,6 +9,8 @@ import Share from '@/lockbox/pages/Share.vue';
 import Extension from '@/lockbox/Extension.vue';
 import ManagementPage from '@/lockbox/ManagementPage.vue';
 
+import Recovery from '@/Recovery.vue';
+
 const routes = [
   // Chat
   { path: '/chat', component: Chat },
@@ -21,6 +23,9 @@ const routes = [
   // Extension (for debugging)
   { path: '/extension', component: Extension },
   { path: '/mgmt', component: ManagementPage },
+
+  // Backup and Recovery for keypair and keys
+  { path: '/recovery', component: Recovery },
 ];
 
 const router = createRouter({
