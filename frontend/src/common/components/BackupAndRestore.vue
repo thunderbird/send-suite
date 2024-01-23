@@ -12,7 +12,7 @@ import { Util } from '@/lib/keychain';
 const MSG_NOT_COMPLEX = 'Please enter a pass phrase with 10 or more different words';
 const MSG_INCORRECT_PASSPHRASE = 'Passphrase is incorrect';
 const MSG_COULD_NOT_RETRIEVE = 'Could not retrieve backup from the server.';
-const passphrase = ref('one two three four five six seven eight nine ten');
+const passphrase = ref('');
 const msg = ref('');
 const { user } = useUserStore();
 const { keychain } = useKeychainStore();
@@ -184,10 +184,10 @@ async function decryptAll(protectedContainerKeysStr, protectedKeypairStr, passwo
         <h1>Backup and Restore</h1>
       </header>
       <div class="w-full flex flex-col gap-3 px-4">
-        <textarea v-model="passphrase"></textarea>
+        <textarea v-model="passphrase" :placeholder="'Enter your 10 word pass phrase'"></textarea>
         <p v-if="msg">{{ msg }}</p>
         <Btn primary @click.prevent="makeBackup">Backup</Btn>
-        <Btn primary @click.prevent="restoreFromBackup">Restore</Btn>
+        <Btn danger @click.prevent="restoreFromBackup">Restore</Btn>
       </div>
     </div>
   </div>
