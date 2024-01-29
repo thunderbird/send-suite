@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, computed } from 'vue';
 import Btn from '@/lockbox/elements/Btn.vue';
 
 import useUserStore from '@/stores/user-store';
@@ -9,22 +9,29 @@ import useApiStore from '@/stores/api-store';
 // move the following imports elsewhere
 import { Util } from '@/lib/keychain';
 
-const MSG_NOT_COMPLEX = 'Please enter a pass phrase with 10 or more different words';
+const PHRASE_SIZE = 12;
+const MIN_WORD_LENGTH = 5;
+const MSG_NOT_COMPLEX = `Please enter ${PHRASE_SIZE} different words. Each word must be at least 5 letters long.`;
 const MSG_INCORRECT_PASSPHRASE = 'Passphrase is incorrect';
 const MSG_COULD_NOT_RETRIEVE = 'Could not retrieve backup from the server.';
-const passphrase = ref('');
+const words = ref(['']);
+const passphrase = computed(() => {
+  return words.value.join(' ');
+});
+
 const msg = ref('');
 const { user } = useUserStore();
 const { keychain } = useKeychainStore();
 const { api } = useApiStore();
 
 async function makeBackup() {
+  msg.value = '';
+  console.log(passphrase.value);
+
   if (!passphraseIsComplex(passphrase.value)) {
     msg.value = MSG_NOT_COMPLEX;
     return;
   }
-
-  msg.value = '';
 
   const keypair = await keychain.exportKeypair();
   const containerKeys = await keychain.exportKeys();
@@ -85,9 +92,12 @@ async function restoreFromBackup() {
   }
 }
 
-function passphraseIsComplex(words) {
-  const wordSet = new Set(words.split(' '));
-  return wordSet.size >= 10;
+function passphraseIsComplex(phrase) {
+  const wordArr = phrase.split(' ');
+  const wordSet = new Set(wordArr);
+  const wordsAreLong = wordArr.every((word) => word.length >= MIN_WORD_LENGTH);
+  const wordsAreUnique = wordSet.size >= PHRASE_SIZE;
+  return wordsAreLong && wordsAreUnique;
 }
 
 async function encryptKeys(containerKeysObj, key, salt) {
@@ -178,16 +188,22 @@ async function decryptAll(protectedContainerKeysStr, protectedKeypairStr, passwo
 <template>
   <div class="flex min-h-screen">
     <div class="flex flex-col gap-4 grow">
-      <header
-        class="w-full sticky top-0 flex items-center justify-between px-4 py-2 bg-white/90 border-b border-gray-300"
-      >
-        <h1>Backup and Restore</h1>
+      <header class="flex flex-col gap-4 px-4 py-4">
+        <h1>Key Recovery</h1>
+        <p>
+          Need informative text telling the user that they need to type in a long passphrase. We'll use that passphrase
+          to encrypt their backup. When logging into another device, they'll visit this page to "install" their keys
+          onto the new device.
+        </p>
       </header>
       <div class="w-full flex flex-col gap-3 px-4">
-        <textarea v-model="passphrase" :placeholder="'Enter your 10 word pass phrase'"></textarea>
+        <p>Enter your {{ PHRASE_SIZE }} word pass phrase:</p>
+        <div>
+          <input v-for="(n, index) in PHRASE_SIZE" :key="index" v-model="words[index]" />
+        </div>
         <p v-if="msg">{{ msg }}</p>
-        <Btn primary @click.prevent="makeBackup">Backup</Btn>
-        <Btn danger @click.prevent="restoreFromBackup">Restore</Btn>
+        <Btn primary @click.prevent="makeBackup">Encrypt and backup keys</Btn>
+        <Btn danger @click.prevent="restoreFromBackup">Restore keys from backup</Btn>
       </div>
     </div>
   </div>
