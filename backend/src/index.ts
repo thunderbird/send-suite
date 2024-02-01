@@ -5,6 +5,9 @@ import WebSocket from 'ws';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import sessionFileStore from 'session-file-store';
+import passport from 'passport';
+import refresh from 'passport-oauth2-refresh';
+import strategy from './OpenIdConnectStrategy';
 
 import morgan from 'morgan';
 
@@ -14,6 +17,7 @@ import uploads from './routes/uploads';
 import download from './routes/download';
 import ephemeral from './routes/ephemeral';
 import tags from './routes/tags';
+import fxa from './routes/fxa';
 // import createStreamingRouter from './routes/streamingRouter';
 
 import wsUploadHandler from './wsUploadHandler';
@@ -87,16 +91,47 @@ const expressSession = session({
   secret: process.env.SESSION_SECRET ?? 'abc123xyz',
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false, sameSite: 'strict' },
+  // cookie: { secure: false, sameSite: 'strict' },
+  cookie: {},
   store: new FileStore(fileStoreOptions),
 });
+
 app.use(expressSession);
 app.use(cookieParser());
 
-// app.use((req, res, next) => {
-//   res.header('Access-Control-Expose-Headers', 'WWW-Authenticate');
-//   next();
-// });
+passport.use('openidconnect', strategy);
+refresh.use('openidconnect', strategy);
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser((user, next) => {
+  console.log(`🐓🐓🐓 serializing user`);
+  console.log(user);
+  next(null, user);
+});
+
+passport.deserializeUser((user, next) => {
+  console.log(`🦄🦄🦄 deserializing user`);
+  console.log(user);
+  next(null, user);
+});
+
+declare module 'express-session' {
+  export interface SessionData {
+    passport: { [key: string]: any };
+    isAuthenticated: boolean;
+  }
+}
+
+app.use((req, res, next) => {
+  req.session.isAuthenticated =
+    req.session.passport && req.session.passport.user;
+
+  console.log(
+    `🍬 added isAuthenticated to req.session: ${req.session.isAuthenticated}`
+  );
+  next();
+});
 
 // app.use(
 //   (req, res: express.Response & { broadcast: (data: any) => void }, next) => {
@@ -108,6 +143,9 @@ app.use(cookieParser());
 app.get('/', (req, res) => {
   res.status(200).send('echo');
 });
+app.get('/echo', (req, res) => {
+  res.status(200).send('echo');
+});
 
 app.use('/api/users', users);
 app.use('/api/containers', containers);
@@ -115,15 +153,33 @@ app.use('/api/uploads', uploads);
 app.use('/api/download', download);
 app.use('/api/ephemeral', ephemeral);
 app.use('/api/tags', tags);
+app.use('/lockbox/fxa', fxa);
 // app.use('/api/stream', streamingRouter);
+
+// Can't do this yet, no refreshToken
+// app.get('/lockbox/profile', async (req, res) => {
+//   refresh.requestNewAccessToken(
+//     'openidconnect',
+//     'some_refresh_token',
+//     function (err, accessToken, refreshToken) {
+//       // You have a new access token, store it in the user object,
+//       // or use it to make a new request.
+//       // `refreshToken` may or may not exist, depending on the strategy you are using.
+//       // You probably don't need it anyway, as according to the OAuth 2.0 spec,
+//       // it should be the same as the initial refresh token.
+//     },
+//   );
+// })
 
 app.get(`*`, (req, res) => {
   res.status(404);
 });
 
-const server = app.listen(PORT, HOST, () =>
-  console.log(`🚀 Server ready at: http://${HOST}:${PORT}`)
-);
+const server = app.listen(PORT, HOST, async () => {
+  // TODO: consider using `openid-client` for discovery.
+  // Then, populate a global config object.
+  console.log(`🚀 Server ready at: http://${HOST}:${PORT}`);
+});
 
 const messageClients = new Map();
 // Listen for WebSocket connections
