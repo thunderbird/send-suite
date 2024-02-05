@@ -219,6 +219,22 @@ export async function createContainer(
   return container;
 }
 
+/*
+
+ok, I think I need to rewrite these:
+- getOwnedContainers
+- getContainersSharedByMe
+- getContainersSharedWithMe
+
+definitely those last two.
+I should be using the `_whereContainer()` to get the `shareOnly:true` ones.
+
+though, the `getContainersSharedWithMe` is also looking for accepted invitations.
+...which makes me wonder, do I have a query for pending invitations?
+
+
+
+*/
 export async function getOwnedContainers(ownerId: number) {
   return prisma.container.findMany({
     where: {
@@ -859,6 +875,18 @@ export async function addGroupMember(containerId: number, userId: number) {
     return null;
   }
 
+  console.log(`Checking for existing membership`);
+  const membership = await prisma.membership.findFirst({
+    where: {
+      groupId: group.id,
+      userId,
+    },
+  });
+  if (membership) {
+    console.log(`membership found. no need to create`);
+    return membership;
+  }
+
   return prisma.membership.create({
     data: {
       groupId: group.id,
@@ -905,6 +933,19 @@ export async function createInvitation(
     console.log(`Could not create share before creating invitation.`);
     return null;
   }
+
+  console.log(`Checking for existing invitation`);
+  const invitation = await prisma.invitation.findFirst({
+    where: {
+      shareId: share.id,
+      recipientId,
+    },
+  });
+  if (invitation) {
+    console.log(`invitation found. no need to create duplicate`);
+    return invitation;
+  }
+
   console.log(`Creating invitation`);
 
   return prisma.invitation.create({
@@ -1225,7 +1266,10 @@ export async function createInvitationForAccessLink(
 
   // NOTE: we're just copying over the password-wrapped key
   // we *are not* wrapping the key with the user's publicKey
-  // that's what's supposed to be in that field
+  // that's what's supposed to be in that field.
+  // TODO: figure out whether this is important.
+  // Invitations normally have a publicKey wrapped key.
+  // But this is just for record keeping.
   const invitation = await createInvitation(
     accessLink.share.containerId,
     accessLink.wrappedKey,

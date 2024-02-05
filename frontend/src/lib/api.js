@@ -31,7 +31,14 @@ export class ApiConnection {
       });
     }
 
-    const resp = await fetch(url, opts);
+    let resp;
+    try {
+      resp = await fetch(url, opts);
+    } catch (e) {
+      // debugger;
+      console.log(e);
+      return null;
+    }
 
     if (!resp.ok) {
       return null;

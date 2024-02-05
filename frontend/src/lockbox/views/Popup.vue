@@ -67,7 +67,7 @@ watch(
     try {
       console.log(`adding listener in Popup for runtime messages`);
       browser.runtime.onMessage.addListener(async (message, sender) => {
-        // console.log(message);
+        console.log(message);
         const { data } = message;
         fileBlob.value = data;
         console.log(`We set the fileBlob to:`);
