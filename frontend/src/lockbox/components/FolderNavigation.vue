@@ -39,6 +39,19 @@ const folderStore = useFolderStore();
         </div>
       </DragAndDropUpload>
     </section>
+    <section class="flex flex-col gap-2 p-2.5">
+      <ul>
+        <li>
+          <a href="#">My Files</a>
+        </li>
+        <li>
+          <a href="#">Sent</a>
+        </li>
+        <li>
+          <a href="#">Received</a>
+        </li>
+      </ul>
+    </section>
     <!-- recent activity -->
     <!-- <RecentActivity /> -->
     <!-- tags -->
