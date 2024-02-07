@@ -245,7 +245,10 @@ class Backup {
 // Should I rename this to KeyManager?
 export class Keychain {
   constructor(storage) {
-    //
+    this._init(storage);
+  }
+
+  _init(storage) {
     this.content = new Content();
     this.container = new Container();
     this.password = new Password();
@@ -255,8 +258,6 @@ export class Keychain {
 
     this._keys = {};
     this._storage = storage ?? new Storage();
-
-    // this._onLoadCallbacks = [];
   }
 
   get keys() {

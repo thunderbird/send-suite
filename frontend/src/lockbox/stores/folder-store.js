@@ -35,6 +35,15 @@ const useFolderStore = defineStore('folderManager', () => {
 
   const selectedFile = computed(() => findNode(selectedFileId.value, rootFolder.value?.items));
 
+  async function init() {
+    console.log(`initializing the folderStore`);
+    folders.value = [];
+    rootFolder.value = null;
+
+    selectedFolderId.value = 0;
+    selectedFileId.value = 0;
+  }
+
   async function fetchSubtree(rootId) {
     const tree = await api.getFolderTree(user.id, rootId);
     folders.value = tree.children;
@@ -137,6 +146,14 @@ const useFolderStore = defineStore('folderManager', () => {
     const success = await downloader.doDownload(uploadId, containerId, wrappedKey, name);
   }
 
+  function print() {
+    console.log(`rootFolder: ${rootFolder.value}`);
+    console.log(`defaultFolder: ${defaultFolder.value}`);
+    console.log(`visibleFolders: ${visibleFolders.value}`);
+    console.log(`selectedFolder: ${selectedFolder.value}`);
+    console.log(`selectedFile: ${selectedFile.value}`);
+  }
+
   return {
     // State ====================================
     rootFolder,
@@ -146,8 +163,10 @@ const useFolderStore = defineStore('folderManager', () => {
     visibleFolders,
     selectedFolder,
     selectedFile,
+    print,
 
     // Actions ==================================
+    init,
     fetchSubtree,
     fetchUserFolders,
     goToRootFolder,

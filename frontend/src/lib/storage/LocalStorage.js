@@ -28,6 +28,7 @@ export default class LocalStorageAdapter {
   }
 
   clear() {
+    console.log(`clearing localStorage`);
     localStorage.clear();
   }
 }

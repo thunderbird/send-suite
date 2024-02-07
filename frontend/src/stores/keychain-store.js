@@ -10,9 +10,15 @@ pros: (more) reactivity?
 */
 const useKeychainStore = defineStore('keychain', () => {
   const storage = new Storage();
-  const keychain = new Keychain(storage);
+  let keychain = new Keychain(storage);
+
+  function resetKeychain() {
+    keychain._init();
+  }
+
   return {
     keychain,
+    resetKeychain,
   };
 });
 

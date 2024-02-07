@@ -58,7 +58,6 @@ export class User {
     try {
       const { id, tier, email } = await this._storage.loadUser();
 
-      console.log(`loading user`);
       console.table({ id, tier, email });
       this.id = id;
       this.tier = tier;

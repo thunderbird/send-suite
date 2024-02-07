@@ -1,10 +1,19 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import init from '@/lib/init';
+import { Storage } from '@/lib/storage';
+import useUserStore from '@/stores/user-store';
+import useKeychainStore from '@/stores/keychain-store';
+import useFolderStore from '@/lockbox/stores/folder-store';
 import useConfigurationStore from '@/stores/configuration-store';
 
 const DEBUG = true;
 const SERVER = `server`;
 
+const storage = new Storage();
+const { user } = useUserStore();
+const { keychain, resetKeychain } = useKeychainStore();
+const folderStore = useFolderStore();
 const configurationStore = useConfigurationStore();
 configurationStore.$onAction((actionInfo) => {
   // console.log(actionInfo);
@@ -12,6 +21,9 @@ configurationStore.$onAction((actionInfo) => {
 });
 
 const currentServerUrl = ref(configurationStore.serverUrl);
+const email = ref(null);
+const userId = ref(null);
+const jwkPublicKey = ref('');
 
 // This specifies the id of the provider chosen in the
 // "Composition > Attachments" window.
@@ -29,8 +41,14 @@ function setAccountConfigured(accountId) {
 }
 
 // Initialize the settings
-(function init() {
+onMounted(async () => {
   try {
+    // app-sepcific initialization
+    await init(user, keychain, folderStore);
+    email.value = user.email;
+    userId.value = user.id;
+
+    // extension-specific initialization
     browser.storage.local.get(accountId).then((accountInfo) => {
       if (accountInfo[accountId] && SERVER in accountInfo[accountId]) {
         configurationStore.setServerUrl(accountInfo[accountId][SERVER]);
@@ -38,9 +56,9 @@ function setAccountConfigured(accountId) {
       }
     });
   } catch (e) {
-    console.log(`init: You're probably running this outside of Thundebird`);
+    console.log(`extension init: You're probably running this outside of Thundebird`);
   }
-})();
+});
 
 async function configureExtension() {
   // TODO: disable the input and submit button
@@ -69,8 +87,69 @@ async function configureExtension() {
     });
 }
 
+async function clean() {
+  storage.clear();
+  resetKeychain();
+  await folderStore.init();
+  folderStore.print();
+}
+
+async function logout() {
+  await clean();
+  email.value = '';
+  userId.value = '';
+  jwkPublicKey.value = '';
+}
+
+async function login() {
+  if (!email.value) {
+    alert('email address is required for login');
+    return;
+  }
+
+  if (email.value !== user.email) {
+    console.log(`we're logging in as a different user. cleaning up and starting fresh`);
+    await clean();
+    await keychain.rsa.generateKeyPair();
+    await keychain.store();
+  }
+
+  jwkPublicKey.value = JSON.stringify(await keychain.rsa.getPublicKeyJwk());
+  const createUserResp = await user.createUser(email.value, jwkPublicKey.value);
+
+  if (createUserResp) {
+    user.id = createUserResp.user.id;
+    user.email = createUserResp.user.email;
+
+    // save user to storage
+    console.log(`storing new user with id ${user.id}`);
+    await user.store();
+
+    // then do the normal init (which should also log us in)
+    await init(user, keychain, folderStore);
+
+    // put our results in the form
+    email.value = user.email;
+    userId.value = user.id;
+  } else {
+    console.log(`could not create user, trying to log in`);
+    const loginResp = await user.login(email.value);
+    if (!loginResp) {
+      console.log(`could not log in either 🤷`);
+      return;
+    }
+    console.log(`logged in, user id is ${user.id}`);
+  }
+
+  console.log(`finished login on ManagementPage.vue`);
+}
+
 async function save() {
   try {
+    // app-specific config
+    await login();
+
+    // extension-specific config
     await configureExtension();
   } catch (e) {
     console.log(`save: You're probably running this outside of Thundebird`);
@@ -82,13 +161,23 @@ async function save() {
   <h1>Settings</h1>
   <form>
     <label>
-      Server URL
+      Server URL:
       <input type="url" v-model="currentServerUrl" />
+    </label>
+    <label>
+      User ID:
+      <input type="url" v-model="userId" />
+    </label>
+    <label>
+      Email:
+      <input type="url" v-model="email" />
     </label>
     <div style="text-align: right">
       <button type="submit" @click.prevent="save">Save</button>
     </div>
   </form>
+  <button @click="logout">log out</button>
+  <p>don't we need the backup/restore here? (seprate from the form)</p>
 </template>
 
 <style scoped>

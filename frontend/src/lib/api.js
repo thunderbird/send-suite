@@ -326,6 +326,7 @@ export class ApiConnection {
 
   async getFoldersSharedWithUser(userId) {
     // TODO: shift the userId from frontend argument to backend session
+    console.log(`🐓🐓🐓🐓🐓🐓🐓calling users/${userId}/folders/sharedWithMe`);
     const resp = await this.callApi(`users/${userId}/folders/sharedWithMe`);
     if (resp) {
       return resp;
