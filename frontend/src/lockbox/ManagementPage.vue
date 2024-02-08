@@ -6,6 +6,7 @@ import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
 import useFolderStore from '@/lockbox/stores/folder-store';
 import useConfigurationStore from '@/stores/configuration-store';
+import BackupAndRestore from '@/common/components/BackupAndRestore.vue';
 
 const DEBUG = true;
 const SERVER = `server`;
@@ -106,7 +107,6 @@ async function login() {
     alert('email address is required for login');
     return;
   }
-
   if (email.value !== user.email) {
     console.log(`we're logging in as a different user. cleaning up and starting fresh`);
     await clean();
@@ -114,33 +114,30 @@ async function login() {
     await keychain.store();
   }
 
-  jwkPublicKey.value = JSON.stringify(await keychain.rsa.getPublicKeyJwk());
-  const createUserResp = await user.createUser(email.value, jwkPublicKey.value);
+  const loginResp = await user.login(email.value);
+  if (!loginResp) {
+    console.log(`could not log in, trying to create`);
 
-  if (createUserResp) {
-    user.id = createUserResp.user.id;
-    user.email = createUserResp.user.email;
-
-    // save user to storage
-    console.log(`storing new user with id ${user.id}`);
-    await user.store();
-
-    // then do the normal init (which should also log us in)
-    await init(user, keychain, folderStore);
-
-    // put our results in the form
-    email.value = user.email;
-    userId.value = user.id;
-  } else {
-    console.log(`could not create user, trying to log in`);
-    const loginResp = await user.login(email.value);
-    if (!loginResp) {
-      console.log(`could not log in either 🤷`);
+    jwkPublicKey.value = JSON.stringify(await keychain.rsa.getPublicKeyJwk());
+    const createUserResp = await user.createUser(email.value, jwkPublicKey.value);
+    if (!createUserResp) {
+      console.log(`could not create user either. that's pretty bad`);
+      alert(`could neither log in nor create user`);
       return;
     }
-    console.log(`logged in, user id is ${user.id}`);
-  }
 
+    user.id = createUserResp.user.id;
+    user.email = createUserResp.user.email;
+  }
+  // save user to storage
+  console.log(`storing new user with id ${user.id}`);
+  await user.store();
+  // then do the normal init (which should also log us in, possibly for a second time)
+  await init(user, keychain, folderStore);
+
+  // put our results in the form
+  email.value = user.email;
+  userId.value = user.id;
   console.log(`finished login on ManagementPage.vue`);
 }
 
@@ -165,19 +162,17 @@ async function save() {
       <input type="url" v-model="currentServerUrl" />
     </label>
     <label>
-      User ID:
-      <input type="url" v-model="userId" />
-    </label>
-    <label>
       Email:
       <input type="url" v-model="email" />
     </label>
+    <p v-if="userId">User ID: {{ userId }}</p>
     <div style="text-align: right">
       <button type="submit" @click.prevent="save">Save</button>
     </div>
   </form>
   <button @click="logout">log out</button>
-  <p>don't we need the backup/restore here? (seprate from the form)</p>
+
+  <BackupAndRestore />
 </template>
 
 <style scoped>

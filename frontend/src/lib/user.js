@@ -36,20 +36,18 @@ export class User {
     return resp;
   }
 
-  async login() {
-    // Do I have an endpoint for this yet?
-    // pretty sure that I do...
-    console.log(`logging in as ${this.email}`);
-    const resp = await this._api.login(this.email);
+  async login(loginEmail = this.email) {
+    console.log(`logging in as ${loginEmail}`);
+    const resp = await this._api.login(loginEmail);
     if (!resp) {
       return null;
     }
 
-    const { id, tier } = resp;
+    const { id, tier, email } = resp;
 
     this.id = id;
     this.tier = tier;
-    // this.email = email;
+    this.email = email; // why did I comment this out before?
 
     return resp;
   }

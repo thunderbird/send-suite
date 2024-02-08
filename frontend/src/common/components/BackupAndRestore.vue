@@ -11,7 +11,7 @@ import { Util } from '@/lib/keychain';
 
 const PHRASE_SIZE = 12;
 const MIN_WORD_LENGTH = 5;
-const MSG_NOT_COMPLEX = `Please enter ${PHRASE_SIZE} different words. Each word must be at least 5 letters long.`;
+const MSG_NOT_COMPLEX = `Please enter ${PHRASE_SIZE} different words. Each word must be at least ${MIN_WORD_LENGTH} letters long.`;
 const MSG_INCORRECT_PASSPHRASE = 'Passphrase is incorrect';
 const MSG_COULD_NOT_RETRIEVE = 'Could not retrieve backup from the server.';
 const words = ref(['']);

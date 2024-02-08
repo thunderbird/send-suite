@@ -248,6 +248,8 @@ export class Keychain {
     this._init(storage);
   }
 
+  // A separate _init() allows us to scrub the current keychain
+  // and start with a fresh one.
   _init(storage) {
     this.content = new Content();
     this.container = new Container();
