@@ -50,9 +50,15 @@ router.get('/login', async (req, res, next) => {
   })(req, res, next);
 });
 
-router.post('/logout', async (req, res, next) => {
+router.get('/logout', async (req, res, next) => {
   const destroyUrl = `https://oauth.stage.mozaws.net/v1/destroy`;
   const accessToken = `${req.session?.passport?.user?.profile?.accessToken}`;
+  console.log(`
+
+  🛑🛑🛑🛑🛑🛑🛑 logging out of fxa
+
+
+  `);
   try {
     if (accessToken) {
       const body = {
@@ -72,8 +78,10 @@ router.post('/logout', async (req, res, next) => {
       return res.redirect('./login');
     }
   } catch (e) {
+    console.log(e);
     res.status(500).json({
       message: 'Could not log out',
+      error: e,
     });
   }
 });
@@ -95,8 +103,10 @@ router.get(
     failureMessage: true,
   }),
   (req, res) => {
+    const sessionId = req.session.id;
+
     // We've received the token response and can redirect to the Vue app
-    res.redirect('./profile');
+    res.redirect(`./profile?sessionId=${sessionId}`);
   }
 );
 

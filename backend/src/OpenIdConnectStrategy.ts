@@ -24,16 +24,19 @@ const strategy = new Strategy(
     params,
     done
   ) {
+    console.log(`🐷🐷🐷🐷🐷🐷🐷 here is what I got back for the moz acct`);
+    console.log(mozProfile);
+
     const profile = await findOrCreateUserByProfile(
       mozProfile.id,
       mozProfile._json.avatar,
       accessToken,
       refreshToken
       // also has mozProfile.emails[0]
+      // or for the email used for login: mozProfile._json.email
     );
-    if (!profile) {
-      console.log(`couldn't find or create profile`);
-    }
+    console.log(`the profile we found or created:`);
+    console.log(profile);
 
     // After successfully authenticating, we can save tokens, etc. to the session
     // by passing as the second argument to the `done()` function.

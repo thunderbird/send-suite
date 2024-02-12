@@ -37,6 +37,8 @@ type User = {
 declare module 'express-session' {
   interface SessionData {
     user: User;
+    passport: { [key: string]: any };
+    isAuthenticated: boolean;
   }
 }
 
@@ -92,6 +94,7 @@ const expressSession = session({
   resave: false,
   saveUninitialized: true,
   // cookie: { secure: false, sameSite: 'strict' },
+  // I think I blanked these out to make moz accounts work?
   cookie: {},
   store: new FileStore(fileStoreOptions),
 });
@@ -116,20 +119,46 @@ passport.deserializeUser((user, next) => {
   next(null, user);
 });
 
-declare module 'express-session' {
-  export interface SessionData {
-    passport: { [key: string]: any };
-    isAuthenticated: boolean;
-  }
-}
-
+// get the session from somewhere other than the cookie
+// trick express into using this value instead of the actual cookie.
 app.use((req, res, next) => {
-  req.session.isAuthenticated =
-    req.session.passport && req.session.passport.user;
+  const sessionId = req.get('sessionId');
+  if (sessionId) {
+    console.log(`🐕🐕🐕 got a sessionId`);
+    console.log(sessionId);
+    req.sessionStore.get(sessionId as string, function (err, session) {
+      // This attaches the session to the req.
+      console.log(`🦎🦎🦎🦎🦎🦎 found a session`);
+      console.log(session);
+      req.sessionStore.createSession(req, session);
+      next();
+    });
+  } else {
+    // No session, just continue
+    console.log(`no session header, proceed as usual`);
+    next();
+  }
+});
 
-  console.log(
-    `🍬 added isAuthenticated to req.session: ${req.session.isAuthenticated}`
-  );
+// use the session?
+app.use((req, res, next) => {
+  console.log(`ok, we should be using the session from the querystring`);
+  console.log(`here's req.cookies['connect.sid'] `);
+  console.log(req.cookies['connect.sid']);
+  console.log(`and here's the current req.session.id`);
+  console.log(req.session.id);
+  console.log(`just the req.session:`);
+  console.log(req.session);
+  console.log(`req.session.passport:`);
+  console.log(req.session.passport);
+  console.log(`req.session.passport.user:`);
+  console.log(req.session.passport?.user);
+  // req.session.isAuthenticated =
+  //   req.session.passport && req.session.passport.user;
+
+  // console.log(
+  //   `🍬 added isAuthenticated to req.session: ${req.session.isAuthenticated}`
+  // );
   next();
 });
 
@@ -145,6 +174,12 @@ app.get('/', (req, res) => {
 });
 app.get('/echo', (req, res) => {
   res.status(200).send('echo');
+});
+
+app.get('/api/debug-session', (req, res) => {
+  res.status(200).json({
+    session: req.session,
+  });
 });
 
 app.use('/api/users', users);

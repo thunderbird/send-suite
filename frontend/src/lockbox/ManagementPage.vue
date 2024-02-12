@@ -171,7 +171,8 @@ async function save() {
     </div>
   </form>
   <button @click="logout">log out</button>
-
+  <br />
+  <a href="fxa/login">FXA Login</a>
   <BackupAndRestore />
 </template>
 

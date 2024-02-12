@@ -10,6 +10,7 @@ import Extension from '@/lockbox/Extension.vue';
 import ManagementPage from '@/lockbox/ManagementPage.vue';
 
 import Recovery from '@/Recovery.vue';
+import Profile from '@/Profile.vue';
 
 const routes = [
   // Chat
@@ -17,6 +18,9 @@ const routes = [
   { path: '/ephemeral', component: EphemeralChat },
   { path: '/ephemeral/:hash', component: EphemeralChat },
   // Lockbox
+
+  //
+  { path: '/lockbox/profile', component: Profile },
   { path: '/lockbox', component: Lockbox },
   { path: '/share/:linkId', component: Share },
 

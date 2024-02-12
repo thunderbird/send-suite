@@ -16,13 +16,13 @@ export class ApiConnection {
     return this.serverUrl;
   }
 
-  async callApi(path, body = {}, method = 'GET') {
+  async callApi(path, body = {}, method = 'GET', headers = {}) {
     const url = `${this.serverUrl}/api/${path}`;
     const opts = {
       mode: 'cors',
       credentials: 'include',
       method,
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', ...headers },
     };
 
     if (method.trim().toUpperCase() === 'POST') {
