@@ -16,7 +16,18 @@ export class ApiConnection {
     return this.serverUrl;
   }
 
+  setSessionId(sessionId) {
+    this.sessionId = sessionId;
+  }
+
   async callApi(path, body = {}, method = 'GET', headers = {}) {
+    if (this.sessionId) {
+      headers = {
+        ...headers,
+        sessionId: this.sessionId,
+      };
+    }
+
     const url = `${this.serverUrl}/api/${path}`;
     const opts = {
       mode: 'cors',

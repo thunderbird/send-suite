@@ -128,9 +128,11 @@ app.use((req, res, next) => {
     console.log(sessionId);
     req.sessionStore.get(sessionId as string, function (err, session) {
       // This attaches the session to the req.
-      console.log(`🦎🦎🦎🦎🦎🦎 found a session`);
-      console.log(session);
-      req.sessionStore.createSession(req, session);
+      if (session) {
+        console.log(`🦎🦎🦎🦎🦎🦎 found a session`);
+        console.log(session);
+        req.sessionStore.createSession(req, session);
+      }
       next();
     });
   } else {
