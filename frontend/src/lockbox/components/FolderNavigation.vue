@@ -42,13 +42,16 @@ const folderStore = useFolderStore();
     <section class="flex flex-col gap-2 p-2.5">
       <ul>
         <li>
-          <a href="#">My Files</a>
+          <router-link to="/lockbox">My Files</router-link>
+        </li>
+        <!-- <li>
+          <router-link to="/lockbox/sent">Sent</router-link>
         </li>
         <li>
-          <a href="#">Sent</a>
-        </li>
+          <router-link to="/lockbox/received">Received</router-link>
+        </li> -->
         <li>
-          <a href="#">Received</a>
+          <router-link to="/lockbox/profile">Profile</router-link>
         </li>
       </ul>
     </section>

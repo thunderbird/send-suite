@@ -124,8 +124,15 @@ passport.deserializeUser((user, next) => {
 app.use((req, res, next) => {
   const sessionId = req.get('sessionId');
   if (sessionId) {
-    console.log(`🐕🐕🐕 got a sessionId`);
-    console.log(sessionId);
+    console.log(`
+
+
+    🐕🐕🐕 got a sessionId: ${sessionId}
+
+
+
+
+    `);
     req.sessionStore.get(sessionId as string, function (err, session) {
       // This attaches the session to the req.
       if (session) {

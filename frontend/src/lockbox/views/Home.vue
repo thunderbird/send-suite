@@ -3,7 +3,6 @@ import useUserStore from '@/stores/user-store';
 import useFolderStore from '@/lockbox/stores/folder-store';
 
 import NewFolder from '@/lockbox/components/NewFolder.vue';
-import FolderView from '@/lockbox/components/FolderView.vue';
 import FileInfo from '@/lockbox/components/FileInfo.vue';
 import FolderInfo from '@/lockbox/components/FolderInfo.vue';
 import FolderNavigation from '@/lockbox/components/FolderNavigation.vue';
@@ -11,8 +10,6 @@ import RecentActivity from '@/lockbox/components/RecentActivity.vue';
 import SharedByMe from '@/lockbox/components/SharedByMe.vue';
 import SharedWithMe from '@/lockbox/components/SharedWithMe.vue';
 import InvitationList from '@/lockbox/components/InvitationList.vue';
-import Shared from '@/lockbox/components/Shared.vue';
-import Received from '@/lockbox/components/Received.vue';
 
 const { user } = useUserStore();
 const folderStore = useFolderStore();
@@ -37,14 +34,7 @@ const folderStore = useFolderStore();
         /> -->
       </header>
       <main class="flex flex-col gap-4 px-4">
-        <!-- <InvitationList /> -->
-        <!-- <template v-if="!folderStore.rootFolder.id"> -->
-        <!-- <SharedWithMe /> -->
-        <!-- <SharedByMe /> -->
-        <!-- </template> -->
-        <!-- <Received /> -->
-        <Shared />
-        <FolderView />
+        <router-view></router-view>
       </main>
     </div>
     <aside class="w-64 border border-gray-300 bg-gray-50 p-2.5">
