@@ -93,9 +93,9 @@ const expressSession = session({
   secret: process.env.SESSION_SECRET ?? 'abc123xyz',
   resave: false,
   saveUninitialized: true,
-  // cookie: { secure: false, sameSite: 'strict' },
-  // I think I blanked these out to make moz accounts work?
   cookie: {},
+  // TODO: revisit these settings when in a staging env with a TLS cert
+  // cookie: { secure: false, sameSite: 'strict' },
   store: new FileStore(fileStoreOptions),
 });
 
