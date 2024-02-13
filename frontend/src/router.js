@@ -9,7 +9,7 @@ import ManagementPage from '@/lockbox/ManagementPage.vue';
 import Lockbox from '@/lockbox/pages/Web.vue';
 import FolderView from '@/lockbox/components/FolderView.vue';
 import Profile from '@/Profile.vue';
-import Shared from '@/lockbox/components/Shared.vue';
+import Sent from '@/lockbox/components/Sent.vue';
 import Received from '@/lockbox/components/Received.vue';
 
 import Share from '@/lockbox/pages/Share.vue';
@@ -32,7 +32,7 @@ const routes = [
     children: [
       { path: '', component: FolderView },
       { path: 'profile', component: Profile },
-      { path: 'sent', component: Shared },
+      { path: 'sent', component: Sent },
       { path: 'received', component: Received },
     ],
   },
