@@ -5,10 +5,6 @@ import WebSocket from 'ws';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import sessionFileStore from 'session-file-store';
-import passport from 'passport';
-import refresh from 'passport-oauth2-refresh';
-import strategy from './OpenIdConnectStrategy';
-
 import morgan from 'morgan';
 
 import users from './routes/users';
@@ -93,7 +89,7 @@ const expressSession = session({
   secret: process.env.SESSION_SECRET ?? 'abc123xyz',
   resave: false,
   saveUninitialized: true,
-  cookie: {},
+  // cookie: {},
   // TODO: revisit these settings when in a staging env with a TLS cert
   // cookie: { secure: false, sameSite: 'strict' },
   store: new FileStore(fileStoreOptions),
@@ -102,82 +98,23 @@ const expressSession = session({
 app.use(expressSession);
 app.use(cookieParser());
 
-passport.use('openidconnect', strategy);
-refresh.use('openidconnect', strategy);
-app.use(passport.initialize());
-app.use(passport.session());
+// passport.use('openidconnect', strategy);
+// // refresh.use('openidconnect', strategy);
+// app.use(passport.initialize());
+// app.use(passport.session());
 
-passport.serializeUser((user, next) => {
-  console.log(`🐓🐓🐓 serializing user`);
-  console.log(user);
-  next(null, user);
-});
+// passport.serializeUser((user, next) => {
+//   console.log(`🐓🐓🐓 serializing user`);
+//   console.log(user);
+//   next(null, user);
+// });
 
-passport.deserializeUser((user, next) => {
-  console.log(`🦄🦄🦄 deserializing user`);
-  console.log(user);
-  next(null, user);
-});
+// passport.deserializeUser((user, next) => {
+//   console.log(`🦄🦄🦄 deserializing user`);
+//   console.log(user);
+//   next(null, user);
+// });
 
-// get the session from somewhere other than the cookie
-// trick express into using this value instead of the actual cookie.
-app.use((req, res, next) => {
-  const sessionId = req.get('sessionId');
-  if (sessionId) {
-    console.log(`
-
-
-    🐕🐕🐕 got a sessionId: ${sessionId}
-
-
-
-
-    `);
-    req.sessionStore.get(sessionId as string, function (err, session) {
-      // This attaches the session to the req.
-      if (session) {
-        console.log(`🦎🦎🦎🦎🦎🦎 found a session`);
-        console.log(session);
-        req.sessionStore.createSession(req, session);
-      }
-      next();
-    });
-  } else {
-    // No session, just continue
-    console.log(`no session header, proceed as usual`);
-    next();
-  }
-});
-
-// use the session?
-app.use((req, res, next) => {
-  console.log(`ok, we should be using the session from the querystring`);
-  console.log(`here's req.cookies['connect.sid'] `);
-  console.log(req.cookies['connect.sid']);
-  console.log(`and here's the current req.session.id`);
-  console.log(req.session.id);
-  console.log(`just the req.session:`);
-  console.log(req.session);
-  console.log(`req.session.passport:`);
-  console.log(req.session.passport);
-  console.log(`req.session.passport.user:`);
-  console.log(req.session.passport?.user);
-  // req.session.isAuthenticated =
-  //   req.session.passport && req.session.passport.user;
-
-  // console.log(
-  //   `🍬 added isAuthenticated to req.session: ${req.session.isAuthenticated}`
-  // );
-  next();
-});
-
-// app.use(
-//   (req, res: express.Response & { broadcast: (data: any) => void }, next) => {
-//     // attach streamingBroadcast to all response objects
-//     res.broadcast = streamingBroadcast;
-//     next();
-//   }
-// );
 app.get('/', (req, res) => {
   res.status(200).send('echo');
 });
@@ -220,8 +157,6 @@ app.get(`*`, (req, res) => {
 });
 
 const server = app.listen(PORT, HOST, async () => {
-  // TODO: consider using `openid-client` for discovery.
-  // Then, populate a global config object.
   console.log(`🚀 Server ready at: http://${HOST}:${PORT}`);
 });
 
