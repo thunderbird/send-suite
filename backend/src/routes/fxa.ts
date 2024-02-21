@@ -91,7 +91,7 @@ router.get(
     const { code, state } = req.query;
     const originalState = req.session['fxa_state'];
 
-    if (!code || state !== originalState) {
+    if (!code || (state as string) !== originalState) {
       res.status(403).json({
         msg: 'Could not authenticate',
       });
@@ -111,12 +111,13 @@ router.get(
       const mozIssuer = await getIssuer();
       const client = getClient(mozIssuer);
 
-      // The `params` will
+      // The `params` gives us the string equivalents of req.query.*
+      // Here, params == { code, string }
       const params = client.callbackParams(req);
       const tokenSet = await client.callback(
         process.env.FXA_REDIRECT_URI,
         params,
-        { state: state as string }
+        { state: params.state }
       );
       const {
         access_token: accessToken,
