@@ -18,7 +18,7 @@ export function getClient(issuer: Issuer) {
   const client = new issuer.Client({
     client_id: process.env.FXA_CLIENT_ID,
     client_secret: process.env.FXA_CLIENT_SECRET,
-    redirect_uris: ['http://localhost:5173/lockbox/fxa'],
+    redirect_uris: [process.env.FXA_REDIRECT_URI],
     response_types: ['code'],
     scopes: ['openid', 'profile'],
   });

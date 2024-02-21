@@ -111,14 +111,31 @@ router.get(
       const mozIssuer = await getIssuer();
       const client = getClient(mozIssuer);
 
+      // The `params` will
       const params = client.callbackParams(req);
       const tokenSet = await client.callback(
-        'http://localhost:5173/lockbox/fxa',
+        process.env.FXA_REDIRECT_URI,
         params,
         { state: state as string }
       );
+      const {
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        id_token: idToken,
+      } = tokenSet;
+
       console.log('received and validated tokens %j', tokenSet);
       console.log('validated ID Token claims %j', tokenSet.claims());
+
+      const userinfo = await client.userinfo(accessToken);
+      console.log('userinfo %j', userinfo);
+
+      // Ready to put into profile:
+      // - use our findOrCreate
+      // - put the found/created user in the session
+      /*
+          {"email":"chris@thunderbird.net","locale":"en-US,en;q=0.5","amrValues":["pwd","email"],"twoFactorAuthentication":false,"metricsEnabled":true,"atLeast18AtReg":null,"uid":"668caa503f384f999f292287c5e3af8d","avatar":"https://mozillausercontent.com/e3137631f4e72eb63dfbc18fe216a94a","avatarDefault":false,"sub":"668caa503f384f999f292287c5e3af8d"}
+      */
 
       res.status(200).json({
         ok: 'not really, just placeholder',
