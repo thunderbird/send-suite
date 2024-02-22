@@ -171,6 +171,20 @@ async function loginToMozAccount() {
     // window.location = resp.url;
   }
 }
+
+async function openPopup() {
+  try {
+    await browser.windows.create({
+      // url: browser.runtime.getURL(`${serverUrl.value}/lockbox/fxa/login?from=${window.location}`),
+      url: authUrl.value,
+      type: 'popup',
+      allowScriptsToClose: true,
+    });
+  } catch (e) {
+    console.log(`popup failed`);
+    console.log(e);
+  }
+}
 </script>
 
 <template>
@@ -192,7 +206,7 @@ async function loginToMozAccount() {
   <h1>Hi.</h1>
   <button @click.prevent="loginToMozAccount">Get Moz Acct Auth URL</button>
   <br />
-  <a v-if="authUrl" :href="authUrl">Log in to Moz Acct with {{ authUrl }}</a>
+  <button v-if="authUrl" @click.prevent="openPopup">Click this button Moz Acct with {{ authUrl }}</button>
   <br />
   <BackupAndRestore />
 </template>
