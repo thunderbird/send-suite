@@ -167,6 +167,7 @@ async function loginToMozAccount() {
   const resp = await api.callApi(`lockbox/fxa/login`);
   if (resp.url) {
     authUrl.value = resp.url;
+    openPopup();
     // redirect (can't open popup: you get a different session)
     // window.location = resp.url;
   }
@@ -180,6 +181,16 @@ async function openPopup() {
       type: 'popup',
       allowScriptsToClose: true,
     });
+
+    /*
+
+TODO: I need to start an interval that pings the server.
+It should ask if the current code has just been used to successfully log in.
+If so, we should grab the login information from the server and popuplate the local user-store.
+
+And, we should show that information here instead of showing the login button.
+
+    */
   } catch (e) {
     console.log(`popup failed`);
     console.log(e);
@@ -205,8 +216,8 @@ async function openPopup() {
   </form>
   <h1>Hi.</h1>
   <button @click.prevent="loginToMozAccount">Get Moz Acct Auth URL</button>
-  <br />
-  <button v-if="authUrl" @click.prevent="openPopup">Click this button Moz Acct with {{ authUrl }}</button>
+  <!-- <br />
+  <button v-if="authUrl" @click.prevent="openPopup">Click this button Moz Acct with {{ authUrl }}</button> -->
   <br />
   <BackupAndRestore />
 </template>

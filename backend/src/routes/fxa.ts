@@ -164,9 +164,25 @@ router.get('/', async (req, res) => {
     // But first, let's confirm that it exists for the user as they float around.
     req.session['user'] = profile.user;
 
-    res.status(200).json({
-      ok: 'not really, just placeholder',
-    });
+    res.status(200).send(`
+    <h1>Login successful</h1>
+    <a onclick="window.close()">
+      Click here if window does not close by itself in <span id="count"></span> seconds.
+    </a>
+    <script>
+      const domCount = document.querySelector('#count');
+      let countdown = 5;
+      domCount.textContent = countdown;
+      setInterval(() => {
+        countdown--;
+        domCount.textContent = countdown;
+        if (countdown === 0) {
+          window.close();
+        }
+      }, 1000)
+    </script>
+
+    `);
   });
 });
 
