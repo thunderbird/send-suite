@@ -6,6 +6,8 @@ import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
 import useFolderStore from '@/lockbox/stores/folder-store';
 import useConfigurationStore from '@/stores/configuration-store';
+import useApiStore from '@/stores/api-store';
+
 import BackupAndRestore from '@/common/components/BackupAndRestore.vue';
 
 const DEBUG = true;
@@ -14,8 +16,13 @@ const SERVER = `server`;
 const storage = new Storage();
 const { user } = useUserStore();
 const { keychain, resetKeychain } = useKeychainStore();
+const { api } = useApiStore();
 const folderStore = useFolderStore();
 const configurationStore = useConfigurationStore();
+
+const resp = ref(null);
+const authUrl = ref('');
+
 configurationStore.$onAction((actionInfo) => {
   // console.log(actionInfo);
   console.log(`the serverUrl is ${configurationStore.serverUrl}`);
@@ -152,6 +159,18 @@ async function save() {
     console.log(`save: You're probably running this outside of Thundebird`);
   }
 }
+
+async function loginToMozAccount() {
+  // waitaminit...do I get a different session or the same if I open a new window?
+  // Let's find out!
+  // Get the auth url
+  const resp = await api.callApi(`lockbox/fxa/login`);
+  if (resp.url) {
+    authUrl.value = resp.url;
+    // redirect (can't open popup: you get a different session)
+    // window.location = resp.url;
+  }
+}
 </script>
 
 <template>
@@ -170,9 +189,11 @@ async function save() {
       <button type="submit" @click.prevent="save">Save</button>
     </div>
   </form>
-  <button @click="logout">log out</button>
+  <h1>Hi.</h1>
+  <button @click.prevent="loginToMozAccount">Get Moz Acct Auth URL</button>
   <br />
-  <a href="fxa/login">FXA Login</a>
+  <a v-if="authUrl" :href="authUrl">Log in to Moz Acct with {{ authUrl }}</a>
+  <br />
   <BackupAndRestore />
 </template>
 

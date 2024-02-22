@@ -92,6 +92,10 @@ const expressSession = session({
   // cookie: {},
   // TODO: revisit these settings when in a staging env with a TLS cert
   // cookie: { secure: false, sameSite: 'strict' },
+  cookie: {
+    secure: process.env.APP_ENV === 'production',
+    sameSite: 'none', // Cannot use 'lax' or 'strict' for local dev.
+  },
   store: new FileStore(fileStoreOptions),
 });
 
@@ -135,6 +139,7 @@ app.use('/api/download', download);
 app.use('/api/ephemeral', ephemeral);
 app.use('/api/tags', tags);
 app.use('/lockbox/fxa', fxa);
+app.use('/api/lockbox/fxa', fxa);
 // app.use('/api/stream', streamingRouter);
 
 // Can't do this yet, no refreshToken

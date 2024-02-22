@@ -31,7 +31,7 @@ export class ApiConnection {
     const url = `${this.serverUrl}/api/${path}`;
     const opts = {
       mode: 'cors',
-      credentials: 'include',
+      credentials: 'include', // include cookies
       method,
       headers: { 'content-type': 'application/json', ...headers },
     };
