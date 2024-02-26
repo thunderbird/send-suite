@@ -161,8 +161,11 @@ router.get('/', async (req, res) => {
 
     // ok, this expects the user, but I think what we really want is the profile.
     // so, I need to flip this around.
-    // But first, let's confirm that it exists for the user as they float around.
+    // In the meantime, I'll do it manually:
     req.session['user'] = profile.user;
+
+    delete profile.user;
+    req.session['user']['profile'] = profile;
 
     res.status(200).send(`
     <h1>Login successful</h1>

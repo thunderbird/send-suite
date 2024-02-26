@@ -2,6 +2,8 @@
 import { ref, onMounted } from 'vue';
 import Debug from '@/Debug.vue';
 import useApiStore from '@/stores/api-store';
+import Btn from '@/lockbox/elements/Btn.vue';
+
 const { api } = useApiStore();
 
 const resp = ref(null);
@@ -19,45 +21,41 @@ async function pingSession() {
 }
 
 async function loginToMozAccount() {
-  // waitaminit...do I get a different session or the same if I open a new window?
-  // Let's find out!
-  // Get the auth url
   const resp = await api.callApi(`lockbox/fxa/login`);
   if (resp.url) {
     authUrl.value = resp.url;
-    // redirect (can't open popup: you get a different session)
-    // window.location = resp.url;
-  }
-}
 
-async function openPopup() {
-  try {
-    await browser.windows.create({
-      // url: browser.runtime.getURL(`${serverUrl.value}/lockbox/fxa/login?from=${window.location}`),
-      url: authUrl.value,
-      type: 'popup',
-      allowScriptsToClose: true,
-    });
-  } catch (e) {
-    console.log(`popup failed`);
-    console.log(e);
+    const win = window.open(resp.url);
+    const timer = setInterval(() => {
+      if (win.closed) {
+        clearInterval(timer);
+
+        // show fresh login info
+        pingSession();
+
+        /*
+TODO: follow same post-login flow:
+- see if this is a first-time user
+- if so, they need a keychain and a default folder
+- then, you can do things like retrieve their folders
+*/
+      }
+    }, 1000);
   }
 }
 </script>
 <template>
   <Debug />
   <h1>Hi.</h1>
-  <button @click.prevent="loginToMozAccount">Get Moz Acct Auth URL</button>
+  <Btn @click.prevent="loginToMozAccount">Log into Moz Acct</Btn>
   <br />
-  <button v-if="authUrl" @click.prevent="openPopup">Click this button Moz Acct with {{ authUrl }}</button>
-  <br />
-  <a href="/lockbox/fxa/logout">Log out of FXA</a>
-  <br />
-  <button @click.prevent="pingSession">ping session</button>
+  <!-- <a href="/lockbox/fxa/logout">Log out of FXA</a> -->
+  <!-- <br /> -->
+  <Btn @click.prevent="pingSession">ping session</Btn>
   <br />
   <br />
   <br />
-  <code v-if="resp">
-    {{ resp }}
-  </code>
+  <pre v-if="resp">
+    {{ JSON.stringify(resp, null, 4) }}
+  </pre>
 </template>
