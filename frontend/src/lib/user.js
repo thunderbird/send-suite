@@ -60,11 +60,11 @@ export class User {
       this.id = id;
       this.tier = tier;
       this.email = email;
+
+      return true;
     } catch (e) {
       console.log(`No user in storage`);
     }
-
-    // this._onLoadCallbacks.forEach(async (cb) => await cb());
   }
 
   async store(newId, newTier, newEmail) {

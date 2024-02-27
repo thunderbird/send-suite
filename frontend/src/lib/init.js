@@ -1,24 +1,12 @@
 async function init(user, keychain, folderStore) {
-  try {
-    await user.load();
-  } catch (e) {
-    console.log(e);
-    console.log(`could not load user`);
+  let hasUser = await user.load();
+  let hasKeychain = await keychain.load();
+
+  if (!hasUser || !hasKeychain) {
+    console.log(`Need to log in or create a user`);
     return;
   }
 
-  if (user.id) {
-    console.log(`we have user with id ${user.id}, attempting to log in`);
-    await user.login();
-    await folderStore.fetchUserFolders();
-  }
-  try {
-    await keychain.load();
-  } catch (e) {
-    console.log(e);
-    console.log(`could not load keychain`);
-    return;
-  }
   if (!folderStore.defaultFolder) {
     // Creating a default folder
     console.log(`creating default folder`);

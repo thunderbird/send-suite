@@ -1,17 +1,15 @@
 import { Router } from 'express';
 import axios from 'axios';
 import { getIssuer, getClient, generateState } from '../auth/client';
-import { findOrCreateUserByProfile } from '../models';
+import { findOrCreateUserProfileByMozillaId } from '../models/users';
 
 const FXA_STATE = 'fxa_state';
 
 const router: Router = Router();
 
-// Route for obtaining an authorization URL
+// Route for obtaining an authorization URL for Mozilla account.
 router.get('/login', async (req, res, next) => {
-  console.log(`1. get auth url route sees session id ${req.session.id}`);
-
-  // Additional params to include when we request an authorization url
+  // Params to include when we request an authorization url
   let additionalParams: Record<string, any> = {
     access_type: 'offline',
     action: 'email',
@@ -44,7 +42,7 @@ router.get('/login', async (req, res, next) => {
       utm_source,
     };
   } catch (err) {
-    // Log the error, but continue with passport auth
+    // Log the error, but continue with OIDC auth
     console.error('Could not initialize metrics flow, error occurred: ', err);
   }
 
@@ -59,18 +57,15 @@ router.get('/login', async (req, res, next) => {
     scope: 'openid email profile',
     state,
   });
-  console.log(`authorization url is`);
-  console.log(url);
 
-  // Do session setup.
+  // Add state code to session.
+  // We'll attempt to match this in the callback.
   req.session[FXA_STATE] = state;
-  // TODO: get & put user's email in session?
 
-  // Save session and send the auth url to the front end so they
-  // can do the redirect.
+  // Save session and send the auth url to the front end
+  // so they can do the redirect.
   req.session.save((err) => {
     if (err) {
-      console.log(`💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣`);
       console.log(`couldn't save session`);
       res.status(500).json(err);
       return;
@@ -82,28 +77,20 @@ router.get('/login', async (req, res, next) => {
   });
 });
 
-// OIDC callback handler
+// Mozilla account OIDC callback handler
 router.get('/', async (req, res) => {
-  console.log(`2. callback url route sees session id ${req.session.id}`);
+  // If provider sends an error, immediately redirect
+  // to error page.
   if (req.query.error) {
     return res.redirect('/?error=' + req.query.error);
   }
 
-  // Confirm that we received a code and compare
-  // received state to the original
+  // Confirm that we received a state code and compare
+  // it to the original we set in `/login`
   const { code, state } = req.query;
   const originalState = req.session[FXA_STATE];
 
   if (!code || (state as string) !== originalState) {
-    if (!code) {
-      console.log(`no code`);
-    }
-    if ((state as string) !== originalState) {
-      console.log(`state does not match`);
-      console.log(`state: ${state}`);
-      console.log(`originalState: ${originalState}`);
-    }
-
     res.status(403).json({
       msg: 'Could not authenticate',
     });
@@ -114,7 +101,6 @@ router.get('/', async (req, res) => {
   delete req.session[FXA_STATE];
   req.session.save(async (err) => {
     if (err) {
-      console.log(`💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣`);
       console.log(`couldn't save session`);
       res.status(500).json(err);
       return;
@@ -123,8 +109,8 @@ router.get('/', async (req, res) => {
     const mozIssuer = await getIssuer();
     const client = getClient(mozIssuer);
 
-    // The `params` gives us the string equivalents of req.query.*
-    // Here, params == { code, string }
+    // The `params` contains the string equivalents of req.query.*
+    // Here, params == { code, state }
     const params = client.callbackParams(req);
     const tokenSet = await client.callback(
       process.env.FXA_REDIRECT_URI,
@@ -137,31 +123,20 @@ router.get('/', async (req, res) => {
       id_token: idToken,
     } = tokenSet;
 
-    console.log('received and validated tokens %j', tokenSet);
-    console.log('validated ID Token claims %j', tokenSet.claims());
-
     const userinfo: Record<string, any> = await client.userinfo(accessToken);
-    console.log('userinfo %j', userinfo);
-
-    // Ready to put into profile:
-    // - use our findOrCreate
-    // - put the found/created user in the session
-    /*
-          {"email":"chris@thunderbird.net","locale":"en-US,en;q=0.5","amrValues":["pwd","email"],"twoFactorAuthentication":false,"metricsEnabled":true,"atLeast18AtReg":null,"uid":"668caa503f384f999f292287c5e3af8d","avatar":"https://mozillausercontent.com/e3137631f4e72eb63dfbc18fe216a94a","avatarDefault":false,"sub":"668caa503f384f999f292287c5e3af8d"}
-      */
 
     const { uid, avatar, email } = userinfo;
-    const profile = await findOrCreateUserByProfile(
+    const profile = await findOrCreateUserProfileByMozillaId(
       uid,
       avatar,
+      email,
       accessToken,
       refreshToken
-      // TODO: decide if/how to use email
     );
 
-    // ok, this expects the user, but I think what we really want is the profile.
-    // so, I need to flip this around.
-    // In the meantime, I'll do it manually:
+    // My db query returns a profile, but what we really want
+    // in the session is the user. Reversing the nesting while
+    // we save into the session.
     req.session['user'] = profile.user;
 
     delete profile.user;

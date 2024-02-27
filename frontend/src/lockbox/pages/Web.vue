@@ -1,6 +1,5 @@
 <script setup>
 import { provide } from 'vue';
-import Core from '@/lockbox/Core.vue';
 import Home from '@/lockbox/views/Home.vue';
 import Debug from '@/Debug.vue';
 import dayjs from 'dayjs';

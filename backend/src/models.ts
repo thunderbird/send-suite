@@ -25,53 +25,6 @@ export async function createUser(
   });
 }
 
-export async function findOrCreateUserByProfile(
-  mozid: string,
-  avatar?: string,
-  accessToken?: string,
-  refreshToken?: string
-) {
-  /*
-Let's talk about the flow here:
-- A user wants to use lockbox and comes clicks the login button or otherwise enters their moz account info on the mozilla accounts oauth login page
-- They enter their info and my OpenIdConnectStrategy callback is called.
-- we look in the database with a profile and associated user
-- if they exist, we pass that to the `done()` function
-- if they don't, we create:
-  - an empty user (that they'll fill out on a subsequent screen)
-  - a profile, linked to that user, capturing things like the avatar
-- we pass the user, profile, token, etc. to the `done()` function
-*/
-
-  const profile = await prisma.profile.upsert({
-    where: {
-      mozid,
-    },
-    update: {
-      avatar,
-      accessToken,
-      refreshToken,
-    },
-    create: {
-      mozid,
-      avatar,
-      accessToken,
-      refreshToken,
-      user: {
-        create: {
-          tier: UserTier.FREE,
-        },
-      },
-    },
-    include: {
-      user: true,
-    },
-  });
-  console.log(`🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎`);
-  console.log(profile);
-  return profile;
-}
-
 export async function getUserByEmail(email: string) {
   const users = await prisma.user.findMany({
     where: {
