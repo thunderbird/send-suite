@@ -36,6 +36,8 @@ export class User {
     return resp;
   }
 
+  // TODO: delete this in favor of using the user store's populate()
+  // which retrieves the user from the backend session.
   async login(loginEmail = this.email) {
     console.log(`logging in as ${loginEmail}`);
     const resp = await this._api.login(loginEmail);

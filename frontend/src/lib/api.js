@@ -172,13 +172,12 @@ export class ApiConnection {
     }
   }
 
-  async createFolder(ownerId, name, parentId = 0, shareOnly = false) {
+  async createFolder(name, parentId = 0, shareOnly = false) {
     // TODO: shift the userId from frontend argument to backend session
     const resp = await this.callApi(
       `containers`,
       {
         name: name ?? timestamp(),
-        ownerId,
         type: CONTAINER_TYPE.FOLDER,
         parentId,
         shareOnly,
@@ -188,7 +187,7 @@ export class ApiConnection {
     if (resp) {
       return resp.container;
     } else {
-      console.log(`Error: could not create folder for user ${ownerId}`);
+      console.log(`Error: could not create folder`);
       return null;
     }
   }

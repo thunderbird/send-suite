@@ -27,22 +27,21 @@ import { getPermissions } from '../middleware';
 
 const router: Router = Router();
 
-router.get('/', (req, res) => {
-  res.status(200).send('hey from container router');
-});
-
 router.post('/', async (req, res) => {
   const {
     name,
-    // publicKey,
-    ownerId,
     type,
   }: {
     name: string;
-    // publicKey: string;
-    ownerId: number;
     type: ContainerType;
   } = req.body;
+
+  const ownerId = req.session?.user.id;
+  if (!ownerId) {
+    res.status(500).json({
+      message: 'no logged in user',
+    });
+  }
 
   let shareOnly = false;
   if (req.body.shareOnly) {
@@ -90,6 +89,13 @@ router.post('/', async (req, res) => {
       });
     }
   }
+});
+
+// everything above this line is confirmed for q1-dogfood use
+// ==================================================================================
+
+router.get('/', (req, res) => {
+  res.status(200).send('hey from container router');
 });
 
 router.get('/owner/:userId', async (req, res) => {

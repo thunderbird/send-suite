@@ -32,9 +32,45 @@ export async function findOrCreateUserProfileByMozillaId(
       },
     },
     include: {
-      user: true,
+      user: {
+        select: {
+          id: true,
+          email: true,
+          tier: true,
+          createdAt: true,
+          updatedAt: true,
+          activatedAt: true,
+        },
+      },
     },
   });
 
-  return profile;
+  // Flip the nesting of the user and the profile.
+  const { user } = profile;
+  delete profile.user;
+  user['profile'] = profile;
+
+  return user;
+}
+
+export async function getUserPublicKey(id: number) {
+  return prisma.user.findUnique({
+    where: {
+      id,
+    },
+    select: {
+      publicKey: true,
+    },
+  });
+}
+
+export async function updateUserPublicKey(id: number, publicKey: string) {
+  return prisma.user.update({
+    where: {
+      id,
+    },
+    data: {
+      publicKey,
+    },
+  });
 }

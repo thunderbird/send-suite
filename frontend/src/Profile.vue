@@ -2,9 +2,15 @@
 import { ref, onMounted } from 'vue';
 import Debug from '@/Debug.vue';
 import useApiStore from '@/stores/api-store';
+import useUserStore from '@/stores/user-store';
+import useKeychainStore from '@/stores/keychain-store';
+import useFolderStore from '@/lockbox/stores/folder-store';
 import Btn from '@/lockbox/elements/Btn.vue';
 
 const { api } = useApiStore();
+const userStore = useUserStore();
+const { keychain, resetKeychain } = useKeychainStore();
+const folderStore = useFolderStore();
 
 const resp = ref(null);
 const authUrl = ref('');
@@ -15,12 +21,48 @@ onMounted(() => {
 });
 
 async function pingSession() {
-  resp.value = await api.callApi(`debug-session`, {}, 'GET');
-  console.log(`session from backend:`);
-  console.log(resp.value);
+  resp.value = await api.callApi(`debug-session`);
 }
 
-async function loginToMozAccount() {
+async function userLogin() {
+  // Populate the user if they exist
+  const didPopulate = await userStore.populate();
+  if (!didPopulate) {
+    alert(`DEBUG: could not retrieve user; did mozilla login fail?`);
+    return;
+  }
+
+  // Check if the user has a public key.
+  // If not, this is almost certainly a new user.
+  // Explicitly passing user id, since no implicit route returns pubkey
+  const pubkeyResp = await api.callApi(`users/publickey/${userStore.user.id}`);
+  if (!pubkeyResp.publicKey) {
+    await keychain.rsa.generateKeyPair();
+    await keychain.store();
+    const jwkPublicKey = await keychain.rsa.getPublicKeyJwk();
+    const updateResp = await api.callApi(
+      `users/publickey`,
+      {
+        publicKey: jwkPublicKey,
+      },
+      'POST'
+    );
+    if (!updateResp.update?.publicKey) {
+      alert(`DEBUG: could not update user's public key`);
+    }
+  }
+
+  // Create a default folder if it doesn't exist
+  await folderStore.sync();
+  if (!folderStore.defaultFolder) {
+    const createFolderResp = await folderStore.createFolder('Default Folder');
+    if (!createFolderResp?.id) {
+      alert(`DEBUG: could not create a default`);
+    }
+  }
+}
+
+async function mozAcctLogin() {
   const resp = await api.callApi(`lockbox/fxa/login`);
   if (resp.url) {
     authUrl.value = resp.url;
@@ -29,16 +71,9 @@ async function loginToMozAccount() {
     const timer = setInterval(() => {
       if (win.closed) {
         clearInterval(timer);
-
-        // show fresh login info
+        // debug: show fresh login info from session
         pingSession();
-
-        /*
-TODO: follow same post-login flow:
-- see if this is a first-time user
-- if so, they need a keychain and a default folder
-- then, you can do things like retrieve their folders
-*/
+        userLogin();
       }
     }, 1000);
   }
@@ -47,7 +82,7 @@ TODO: follow same post-login flow:
 <template>
   <Debug />
   <h1>Hi.</h1>
-  <Btn @click.prevent="loginToMozAccount">Log into Moz Acct</Btn>
+  <Btn @click.prevent="mozAcctLogin">Log into Moz Acct</Btn>
   <br />
   <!-- <a href="/lockbox/fxa/logout">Log out of FXA</a> -->
   <!-- <br /> -->

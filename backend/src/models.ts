@@ -35,17 +35,6 @@ export async function getUserByEmail(email: string) {
   return users[0];
 }
 
-export async function getUserPublicKey(id: number) {
-  return prisma.user.findUnique({
-    where: {
-      id,
-    },
-    select: {
-      publicKey: true,
-    },
-  });
-}
-
 export async function getBackup(id: number) {
   return prisma.user.findUnique({
     where: {

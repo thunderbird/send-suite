@@ -21,19 +21,25 @@ import wsMsgHandler from './wsMsgHandler';
 import { uuidv4 } from './utils';
 
 // TODO: look into moving this to src/types/index.d.ts (or more appropriate filename)
+type Profile = {
+  mozid: string;
+  avatar: string;
+  userId: number;
+  accessToken: string;
+  refreshToken: string;
+};
 type User = {
   id: number;
   email: string;
-  publicKey: string;
   tier: string;
   createdAt: Date;
   updatedAt: Date;
   activatedAt: Date;
+  profile?: Profile;
 };
 declare module 'express-session' {
   interface SessionData {
     user: User;
-    passport: { [key: string]: any };
     isAuthenticated: boolean;
   }
 }

@@ -126,7 +126,7 @@ router.get('/', async (req, res) => {
     const userinfo: Record<string, any> = await client.userinfo(accessToken);
 
     const { uid, avatar, email } = userinfo;
-    const profile = await findOrCreateUserProfileByMozillaId(
+    const user = await findOrCreateUserProfileByMozillaId(
       uid,
       avatar,
       email,
@@ -134,13 +134,7 @@ router.get('/', async (req, res) => {
       refreshToken
     );
 
-    // My db query returns a profile, but what we really want
-    // in the session is the user. Reversing the nesting while
-    // we save into the session.
-    req.session['user'] = profile.user;
-
-    delete profile.user;
-    req.session['user']['profile'] = profile;
+    req.session['user'] = user;
 
     res.status(200).send(`
     <h1>Login successful</h1>
@@ -182,7 +176,7 @@ TODO:
   */
 
   const destroyUrl = `https://oauth.stage.mozaws.net/v1/destroy`;
-  const accessToken = `${req.session?.passport?.user?.profile?.accessToken}`;
+  const accessToken = `${req.session?.user?.profile?.accessToken}`;
   console.log(`
 
   🛑🛑🛑🛑🛑🛑🛑 logging out of fxa

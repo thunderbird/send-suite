@@ -1,9 +1,9 @@
 import { Prisma, ContainerType, UserTier } from '@prisma/client';
+
 import { Router } from 'express';
 import {
   createUser,
   getAllUserGroupContainers,
-  getUserPublicKey,
   getAllInvitations,
   getUserByEmail,
   getContainersSharedByMe,
@@ -13,15 +13,23 @@ import {
   setBackup,
 } from '../models';
 
+import { getUserPublicKey, updateUserPublicKey } from '../models/users';
+
 const router: Router = Router();
 
-// TODO: shift userId to session and out of req.params
+router.get('/me', async (req, res) => {
+  // Retrieves the logged-in user from the current session
+  const user = req.session.user;
+  if (!user) {
+    return res.status(404).json({});
+  }
 
-router.get('/', (req, res) => {
-  res.status(200).send('hey from user router');
+  res.status(200).json({
+    user,
+  });
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/publickey/:id', async (req, res) => {
   const { id } = req.params;
   try {
     const user = await getUserPublicKey(parseInt(id));
@@ -31,6 +39,46 @@ router.get('/:id', async (req, res) => {
       message: 'Server error.',
     });
   }
+});
+
+// shouldn't I have a general update?
+router.post('/publickey', async (req, res) => {
+  const {
+    publicKey,
+  }: {
+    publicKey: string;
+  } = req.body;
+
+  const id = req.session?.user.id;
+  if (!id) {
+    res.status(400).json({
+      message: 'no user currently logged in',
+    });
+  }
+
+  try {
+    const update = await updateUserPublicKey(
+      id,
+      JSON.stringify(publicKey).trim()
+    );
+    res.status(200).json({
+      update,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: 'Could not update user public key',
+    });
+  }
+});
+
+// everything above this line is confirmed for q1-dogfood use
+// ==================================================================================
+
+// TODO: shift userId to session and out of req.params
+
+router.get('/', (req, res) => {
+  res.status(200).send('hey from user router');
 });
 
 router.get('/lookup/:email', async (req, res) => {

@@ -6,16 +6,11 @@ async function init(user, keychain, folderStore) {
     console.log(`Need to log in or create a user`);
     return;
   }
-
+  await folderStore.sync();
   if (!folderStore.defaultFolder) {
-    // Creating a default folder
-    console.log(`creating default folder`);
     const createFolderResp = await folderStore.createFolder();
-    console.log(createFolderResp);
-    if (createFolderResp) {
-      console.log(`👍👍👍👍👍👍👍👍👍👍👍 created a folder`);
-    } else {
-      console.log(`could not create a folder 🐓🐓🐓🐓🐓🐓🐓🐓🐓🐓🐓`);
+    if (!createFolderResp?.id) {
+      alert(`DEBUG: could not create a default`);
     }
   }
 }

@@ -80,11 +80,11 @@ const useFolderStore = defineStore('folderManager', () => {
     selectedFileId.value = itemId;
   }
 
-  async function createFolder(parentId = 0) {
+  async function createFolder(name = 'Untitled', parentId = 0) {
     if (rootFolder.value) {
       parentId = rootFolder.value.id;
     }
-    const newFolder = await api.createFolder(user.id, 'Untitled', parentId);
+    const newFolder = await api.createFolder(name, parentId);
     if (newFolder) {
       folders.value = [...folders.value, newFolder];
       await keychain.newKeyForContainer(newFolder.id);
@@ -170,6 +170,7 @@ const useFolderStore = defineStore('folderManager', () => {
     fetchSubtree,
     fetchUserFolders,
     goToRootFolder,
+    sync: async () => await goToRootFolder(null),
     setSelectedFolder,
     setSelectedFile,
     createFolder,

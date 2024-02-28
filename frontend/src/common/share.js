@@ -72,12 +72,7 @@ export default class Sharer {
   }
 
   */
-  async createShareOnlyContainer(items = [], containerId = null, userId = null) {
-    if (!userId) {
-      console.log(`User ID is required`);
-      return;
-    }
-
+  async createShareOnlyContainer(items = [], containerId = null) {
     if (items.length === 0 && !containerId) {
       console.log(`Nothing is being shared`);
       return;
@@ -107,7 +102,7 @@ export default class Sharer {
     // have a parentId
     const parentId = 0;
     const shareOnly = true;
-    const response = await this.api.createFolder(userId, currentContainer.name, parentId, shareOnly);
+    const response = await this.api.createFolder(currentContainer.name, parentId, shareOnly);
     if (!(response || response.id)) {
       console.log(`could not create a new container for items`);
       return null;
