@@ -1,14 +1,40 @@
 import { PrismaClient } from '@prisma/client';
 
-import { PermissionType } from './types/custom';
+import { hasWrite, hasAdmin, hasRead, hasShare } from './types/custom';
 const prisma = new PrismaClient();
 
+function extractUserId(req) {
+  try {
+    const userId = parseInt(req.session?.user?.id, 10);
+    return userId;
+  } catch (e) {
+    return null;
+  }
+}
+
+function extractContainerId(req) {
+  try {
+    const containerId = parseInt(
+      req.params.containerId ?? req.body.containerId,
+      10
+    );
+    return containerId;
+  } catch (e) {
+    return null;
+  }
+}
+
+export function reject(res, status = 403, message = `Not authorized`) {
+  res.send(403).json({
+    message,
+  });
+  return;
+}
+
 export async function requireLogin(req, res, next) {
-  const id = req.session?.user.id;
+  const id = extractUserId(req);
   if (!id) {
-    res.status(400).json({
-      message: 'no user currently logged in',
-    });
+    reject(res);
     return;
   }
   next();
@@ -16,45 +42,27 @@ export async function requireLogin(req, res, next) {
 
 // Middleware that attaches the permissions, if any
 export async function getPermissions(req, res, next) {
-  try {
-    console.log(
-      `begin permissions ====================================================`
-    );
-    console.log(`route: ${req.method} ${req.originalUrl}`);
-    console.log(`userId:`, req?.session?.user?.id);
-    console.log(`containerId:`, req.params.containerId);
-    console.log(
-      `end permissions  ====================================================`
-    );
-  } catch (e) {
-    console.log;
-    console.log(e);
-    console.log(
-      `exception checking permissions  ====================================================`
-    );
-  }
-  next();
-  return;
+  const userId = extractUserId(req);
+  const containerId = extractContainerId(req);
 
-  // TODO: shift this to sessions
-  const { userId } = req.body;
-  const { containerId } = req.params;
-
-  if (!userId) {
-    next();
-    console.log(`👿 No userId in req.body`);
+  if (!userId || !containerId) {
+    reject(res);
     return;
   }
 
-  if (!containerId) {
-    next();
-    console.log(`👿 No containerId in req.params`);
-    return;
-  }
+  console.log(
+    `begin permissions ====================================================`
+  );
+  console.log(`route: ${req.method} ${req.originalUrl}`);
+  console.log(`userId:`, userId);
+  console.log(`containerId:`, containerId);
+  console.log(
+    `end permissions  ====================================================`
+  );
 
   // TODO: write a better, more correct version of this.
-  // This code works off of the assumption that there
-  // is a one-to-one correspondence between groups and containers.
+  // This code assumes that there is a one-to-one
+  // correspondence between groups and containers.
   // This seems to be true, but it isn't guaranteed.
   const group = await prisma.group.findFirst({
     where: {
@@ -64,21 +72,52 @@ export async function getPermissions(req, res, next) {
     },
   });
 
-  if (group) {
-    // Find the GroupUser row
-    const membership = await prisma.membership.findUnique({
-      where: {
-        groupId_userId: { groupId: group.id, userId },
-      },
-    });
+  if (!group) {
+    reject(res);
+    return;
+  }
+  // Find the GroupUser
+  const membership = await prisma.membership.findUnique({
+    where: {
+      groupId_userId: { groupId: group.id, userId },
+    },
+  });
 
-    if (membership) {
-      // Attach it to the route, if it exists
-      req.permission = membership.permission;
-      console.log(`😻 Found permission for user`);
-      console.log(req.permission);
-    }
+  if (!membership) {
+    reject(res);
+    return;
   }
 
+  // Attach it to the request
+  req['permission'] = membership.permission;
+  next();
+}
+
+export function canRead(req, res, next) {
+  if (!hasRead(req['permission'])) {
+    reject(res);
+    return;
+  }
+  next();
+}
+export function canWrite(req, res, next) {
+  if (!hasWrite(req['permission'])) {
+    reject(res);
+    return;
+  }
+  next();
+}
+export function canAdmin(req, res, next) {
+  if (!hasAdmin(req['permission'])) {
+    reject(res);
+    return;
+  }
+  next();
+}
+export function canShare(req, res, next) {
+  if (!hasShare(req['permission'])) {
+    reject(res);
+    return;
+  }
   next();
 }
