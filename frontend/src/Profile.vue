@@ -18,7 +18,10 @@ async function pingSession() {
   sessionInfo.value = await api.callApi(`debug-session`);
 }
 
-// This
+// After mozilla account login, confirm that
+// - we have a db user
+// - the user has a public key
+// - the user has a default folder for email attachments
 async function dbUserSetup() {
   // Populate the user if they exist
   const didPopulate = await userStore.populateFromSession();
