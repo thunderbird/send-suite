@@ -108,7 +108,7 @@ const useSharingStore = defineStore('sharingManager', () => {
   }
 
   async function fetchAccessLinks(folderId) {
-    _links.value = await api.getAccessLinksForContainer(folderId);
+    _links.value = await api.callApi(`containers/${folderId}/links`);
   }
 
   async function shareItems(itemsArray, password) {

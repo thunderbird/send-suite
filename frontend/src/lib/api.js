@@ -533,16 +533,6 @@ export class ApiConnection {
     }
   }
 
-  async getAccessLinksForContainer(containerId) {
-    const resp = await this.callApi(`containers/${containerId}/links`);
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: could not get links for container ${containerId}`);
-      return null;
-    }
-  }
-
   async getContainerWithItemsForAccessLink(linkId) {
     const resp = await this.callApi(`ephemeral/${linkId}/`);
     if (resp) {

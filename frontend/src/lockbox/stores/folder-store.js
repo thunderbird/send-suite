@@ -51,7 +51,7 @@ const useFolderStore = defineStore('folderManager', () => {
   }
 
   async function fetchUserFolders() {
-    const userFolders = await api.getUserFolders(user.id);
+    const userFolders = await api.callApi(`users/folders`);
     console.log(`fetchUserFolders got these:`);
     console.log(userFolders);
     folders.value = userFolders;

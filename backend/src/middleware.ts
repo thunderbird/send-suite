@@ -3,6 +3,17 @@ import { PrismaClient } from '@prisma/client';
 import { PermissionType } from './types/custom';
 const prisma = new PrismaClient();
 
+export async function requireLogin(req, res, next) {
+  const id = req.session?.user.id;
+  if (!id) {
+    res.status(400).json({
+      message: 'no user currently logged in',
+    });
+    return;
+  }
+  next();
+}
+
 // Middleware that attaches the permissions, if any
 export async function getPermissions(req, res, next) {
   try {

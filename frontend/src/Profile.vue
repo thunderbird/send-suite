@@ -5,6 +5,7 @@ import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
 import useFolderStore from '@/lockbox/stores/folder-store';
+import init from '@/lib/init';
 import Btn from '@/lockbox/elements/Btn.vue';
 
 const { api } = useApiStore();
@@ -29,6 +30,7 @@ async function dbUserSetup() {
     alert(`DEBUG: could not retrieve user; did mozilla login fail?`);
     return;
   }
+  userStore.user.store();
 
   // Check if the user has a public key.
   // If not, this is almost certainly a new user.
@@ -44,14 +46,8 @@ async function dbUserSetup() {
     }
   }
 
-  // Create a default folder if it doesn't exist
-  await folderStore.sync();
-  if (!folderStore.defaultFolder) {
-    const createFolderResp = await folderStore.createFolder('Default Folder');
-    if (!createFolderResp.id) {
-      alert(`DEBUG: could not create a default`);
-    }
-  }
+  // Existing init() handles
+  await init(userStore.user, keychain, folderStore);
 }
 
 async function mozAcctLogin() {

@@ -135,26 +135,32 @@ router.get('/', async (req, res) => {
     );
 
     req.session['user'] = user;
-
-    res.status(200).send(`
-    <h1>Login successful</h1>
-    <a onclick="window.close()">
-      Click here if window does not close by itself in <span id="count"></span> seconds.
-    </a>
-    <script>
-      const domCount = document.querySelector('#count');
-      let countdown = 5;
-      domCount.textContent = countdown;
-      setInterval(() => {
-        countdown--;
+    req.session.save((err) => {
+      if (err) {
+        console.log(`couldn't save session`);
+        res.status(500).json(err);
+        return;
+      }
+      res.status(200).send(`
+      <h1>Login successful</h1>
+      <a onclick="window.close()">
+        Click here if window does not close by itself in <span id="count"></span> seconds.
+      </a>
+      <script>
+        const domCount = document.querySelector('#count');
+        let countdown = 5;
         domCount.textContent = countdown;
-        if (countdown === 0) {
-          window.close();
-        }
-      }, 1000)
-    </script>
+        setInterval(() => {
+          countdown--;
+          domCount.textContent = countdown;
+          if (countdown === 0) {
+            window.close();
+          }
+        }, 1000)
+      </script>
 
-    `);
+      `);
+    });
   });
 });
 
