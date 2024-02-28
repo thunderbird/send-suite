@@ -100,7 +100,7 @@ export class ApiConnection {
 
   async createItemInContainer(contentId, containerId, name, type, wrappedKey) {
     const resp = await this.callApi(
-      `containers/${containerId}`,
+      `containers/${containerId}/item`,
       {
         uploadId: contentId,
         name,

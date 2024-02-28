@@ -16,32 +16,41 @@ export enum PermissionType {
   ADMIN = 1 << 4, // 16
 }
 
-function hasPermission(userPermission, pType) {
+export function allPermissions() {
+  return (
+    PermissionType.READ |
+    PermissionType.WRITE |
+    PermissionType.SHARE |
+    PermissionType.ADMIN
+  );
+}
+
+function hasPermission(userPermission: PermissionType, pType: PermissionType) {
   return userPermission & pType;
 }
 
-export function hasWrite(userPermission) {
+export function hasWrite(userPermission: PermissionType) {
   return (
     hasPermission(userPermission, PermissionType.WRITE) ||
     hasPermission(userPermission, PermissionType.ADMIN)
   );
 }
 
-export function hasRead(userPermission) {
+export function hasRead(userPermission: PermissionType) {
   return (
     hasPermission(userPermission, PermissionType.READ) ||
     hasPermission(userPermission, PermissionType.ADMIN)
   );
 }
 
-export function hasAdmin(userPermission) {
+export function hasAdmin(userPermission: PermissionType) {
   return (
     hasPermission(userPermission, PermissionType.READ) ||
     hasPermission(userPermission, PermissionType.ADMIN)
   );
 }
 
-export function hasShare(userPermission) {
+export function hasShare(userPermission: PermissionType) {
   return (
     hasPermission(userPermission, PermissionType.SHARE) ||
     hasPermission(userPermission, PermissionType.ADMIN)

@@ -1,13 +1,26 @@
 import { PrismaClient } from '@prisma/client';
 
-import { hasWrite, hasAdmin, hasRead, hasShare } from './types/custom';
+import {
+  hasWrite,
+  hasAdmin,
+  hasRead,
+  hasShare,
+  allPermissions,
+} from './types/custom';
 const prisma = new PrismaClient();
+
+function extractMethodAndRoute(req) {
+  return `${req.method} ${req.originalUrl}`;
+}
 
 function extractUserId(req) {
   try {
     const userId = parseInt(req.session?.user?.id, 10);
     return userId;
   } catch (e) {
+    console.error(
+      `Could not find user in session for ${extractMethodAndRoute(req)}`
+    );
     return null;
   }
 }
@@ -20,12 +33,15 @@ function extractContainerId(req) {
     );
     return containerId;
   } catch (e) {
+    console.error(
+      `Could not find containerId for ${extractMethodAndRoute(req)}`
+    );
     return null;
   }
 }
 
 export function reject(res, status = 403, message = `Not authorized`) {
-  res.send(403).json({
+  res.status(403).json({
     message,
   });
   return;
@@ -40,25 +56,45 @@ export async function requireLogin(req, res, next) {
   next();
 }
 
+export function renameBodyProperty(from: string, to: string) {
+  return (req, res, next) => {
+    req.body[to] = req.body[from];
+    delete req.body[from];
+    next();
+  };
+}
+
 // Middleware that attaches the permissions, if any
 export async function getPermissions(req, res, next) {
   const userId = extractUserId(req);
   const containerId = extractContainerId(req);
-
-  if (!userId || !containerId) {
-    reject(res);
-    return;
-  }
-
   console.log(
     `begin permissions ====================================================`
   );
-  console.log(`route: ${req.method} ${req.originalUrl}`);
+  console.log(`route: ${extractMethodAndRoute(req)}`);
   console.log(`userId:`, userId);
   console.log(`containerId:`, containerId);
   console.log(
     `end permissions  ====================================================`
   );
+
+  if (userId && containerId === 0) {
+    // Users have full permissions to their own top-level
+    console.log(`
+**************************************************************************
+WARNING: this check needs to be more robust (in middleware.getPermissions
+Adding full permissions assuming user is operating on their own top-level
+**************************************************************************
+    `);
+    req['permission'] = allPermissions();
+    next();
+    return;
+  }
+
+  if (!userId || !containerId) {
+    reject(res);
+    return;
+  }
 
   // TODO: write a better, more correct version of this.
   // This code assumes that there is a one-to-one
@@ -95,6 +131,7 @@ export async function getPermissions(req, res, next) {
 
 export function canRead(req, res, next) {
   if (!hasRead(req['permission'])) {
+    console.warn(`Missing read permission`);
     reject(res);
     return;
   }
@@ -102,6 +139,7 @@ export function canRead(req, res, next) {
 }
 export function canWrite(req, res, next) {
   if (!hasWrite(req['permission'])) {
+    console.warn(`Missing write permission`);
     reject(res);
     return;
   }
@@ -109,6 +147,7 @@ export function canWrite(req, res, next) {
 }
 export function canAdmin(req, res, next) {
   if (!hasAdmin(req['permission'])) {
+    console.warn(`Missing admin permission`);
     reject(res);
     return;
   }
@@ -116,6 +155,7 @@ export function canAdmin(req, res, next) {
 }
 export function canShare(req, res, next) {
   if (!hasShare(req['permission'])) {
+    console.warn(`Missing share permission`);
     reject(res);
     return;
   }

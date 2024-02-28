@@ -23,9 +23,17 @@ import {
   getContainerWithDescendants,
   getAccessLinksForContainer,
 } from '../models';
-import { getPermissions, requireLogin, canWrite, canRead } from '../middleware';
+import {
+  getPermissions,
+  requireLogin,
+  canWrite,
+  canRead,
+  renameBodyProperty,
+} from '../middleware';
 
 const router: Router = Router();
+
+// router.use([requireLogin, getPermissions]);
 
 router.post(
   '/:containerId/rename',
@@ -47,70 +55,127 @@ router.post(
   }
 );
 
-// TODO: right now, make sure this uses the user in the session
-router.post('/', async (req, res) => {
-  const {
-    name,
-    type,
-  }: {
-    name: string;
-    type: ContainerType;
-  } = req.body;
+// Get a container and its items
+// Add the ancestor folder path as a property.
+router.get(
+  '/:containerId',
+  requireLogin,
+  getPermissions,
+  canRead,
+  async (req, res) => {
+    const { containerId } = req.params;
+    try {
+      const container = await getItemsInContainer(parseInt(containerId));
 
-  const ownerId = req.session?.user.id;
-  if (!ownerId) {
-    res.status(500).json({
-      message: 'no logged in user',
-    });
-  }
+      if (container.parentId) {
+        container['parent'] = await getContainerWithAncestors(
+          container.parentId
+        );
+      }
 
-  let shareOnly = false;
-  if (req.body.shareOnly) {
-    shareOnly = req.body.shareOnly;
-  }
-
-  let parentId = 0;
-  if (req.body.parentId) {
-    parentId = req.body.parentId;
-  }
-
-  const messagesByCode: Record<string, string> = {
-    P2002: 'Container already exists',
-    // P2003: 'User does not exist',
-    // Can't use P2003, it's a generic foreign-key error
-  };
-
-  const defaultMessage = 'Bad request';
-
-  try {
-    const container = await createContainer(
-      name.trim().toLowerCase(),
-      // publicKey.trim(),
-      ownerId,
-      type,
-      parentId,
-      shareOnly
-    );
-    res.status(201).json({
-      message: 'Container created',
-      container,
-    });
-  } catch (error) {
-    console.log(`🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎`);
-    console.log(error);
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      res.status(400).json({
-        message: messagesByCode[error.code] || defaultMessage,
-      });
-    } else {
-      console.log(error);
+      res.status(200).json(container);
+    } catch (error) {
       res.status(500).json({
         message: 'Server error.',
-        // error: error.message,
       });
     }
   }
-});
+);
+
+// Get all access links for a container
+router.get(
+  '/:containerId/links',
+  requireLogin,
+  getPermissions,
+  canRead,
+  async (req, res) => {
+    // getContainerWithMembers
+    const { containerId } = req.params;
+    try {
+      // TODO: get the userId from the session
+      // pass that to `getAccessLinksForContainer`
+      const links = await getAccessLinksForContainer(parseInt(containerId));
+      res.status(200).json(links);
+    } catch (error) {
+      res.status(500).json({
+        message: 'Server error.',
+      });
+    }
+  }
+);
+
+// Nope. Can't pass in the containerId in the params
+// Sometimes, I'm making a container at the top level.
+// Other times, I'm making a sub-folder.
+// Yes, I need to specify the parent Id some how
+// and see if I have permission to write to it.
+// So this one is in fact interesting:
+// I need to check for req.body.parentId
+router.post(
+  '/',
+  requireLogin,
+  renameBodyProperty('parentId', 'containerId'),
+  getPermissions,
+  canWrite,
+  async (req, res) => {
+    const {
+      name,
+      type,
+    }: {
+      name: string;
+      type: ContainerType;
+    } = req.body;
+
+    const ownerId = req.session.user.id;
+
+    let shareOnly = false;
+    if (req.body.shareOnly) {
+      shareOnly = req.body.shareOnly;
+    }
+
+    let parentId = 0;
+    if (req.body.containerId) {
+      parentId = req.body.containerId;
+    }
+
+    const messagesByCode: Record<string, string> = {
+      P2002: 'Container already exists',
+      // P2003: 'User does not exist',
+      // Can't use P2003, it's a generic foreign-key error
+    };
+
+    const defaultMessage = 'Bad request';
+
+    try {
+      const container = await createContainer(
+        name.trim().toLowerCase(),
+        // publicKey.trim(),
+        ownerId,
+        type,
+        parentId,
+        shareOnly
+      );
+      res.status(201).json({
+        message: 'Container created',
+        container,
+      });
+    } catch (error) {
+      console.log(`🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎🦎`);
+      console.log(error);
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        res.status(400).json({
+          message: messagesByCode[error.code] || defaultMessage,
+        });
+      } else {
+        console.log(error);
+        res.status(500).json({
+          message: 'Server error.',
+          // error: error.message,
+        });
+      }
+    }
+  }
+);
 
 // everything above this line is confirmed for q1-dogfood use
 // ==================================================================================
@@ -132,7 +197,7 @@ router.get('/owner/:userId', async (req, res) => {
 });
 
 // Add an Item
-router.post('/:containerId', getPermissions, async (req, res) => {
+router.post('/:containerId/item', getPermissions, async (req, res) => {
   const { containerId } = req.params;
   const { name, uploadId, type, wrappedKey } = req.body;
   try {
@@ -294,25 +359,6 @@ router.get('/:containerId/members', getPermissions, async (req, res) => {
   }
 });
 
-// Get a container and its items
-// Add the ancestor folder path as a property.
-router.get('/:containerId', getPermissions, async (req, res) => {
-  const { containerId } = req.params;
-  try {
-    const container = await getItemsInContainer(parseInt(containerId));
-
-    if (container.parentId) {
-      container['parent'] = await getContainerWithAncestors(container.parentId);
-    }
-
-    res.status(200).json(container);
-  } catch (error) {
-    res.status(500).json({
-      message: 'Server error.',
-    });
-  }
-});
-
 // Get container info
 router.get('/:containerId/info', getPermissions, async (req, res) => {
   const { containerId } = req.params;
@@ -421,21 +467,5 @@ router.post(
     }
   }
 );
-
-// Get all access links for a container
-router.get('/:containerId/links', getPermissions, async (req, res) => {
-  // getContainerWithMembers
-  const { containerId } = req.params;
-  try {
-    // TODO: get the userId from the session
-    // pass that to `getAccessLinksForContainer`
-    const links = await getAccessLinksForContainer(parseInt(containerId));
-    res.status(200).json(links);
-  } catch (error) {
-    res.status(500).json({
-      message: 'Server error.',
-    });
-  }
-});
 
 export default router;
