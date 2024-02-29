@@ -57,78 +57,12 @@ export class ApiConnection {
     return resp.json();
   }
 
-  async createContent(id, size, ownerId, type) {
-    // TODO: remove ownerId as arg
-    // the backend should get this from session
-    const resp = await this.callApi(
-      'uploads',
-      {
-        id,
-        size,
-        ownerId,
-        type,
-      },
-      'POST'
-    );
-    if (resp) {
-      return resp.upload;
-    } else {
-      console.log(`Error: Unable to create Upload.`);
-      return null;
-    }
-  }
-
   async getUploadSize(id) {
     const resp = await this.callApi(`uploads/${id}/size`);
     if (resp) {
       return resp.size;
     } else {
       console.log(`Error: Could not get size of ${id}.`);
-      return null;
-    }
-  }
-
-  async getUploadMetadata(id) {
-    const resp = await this.callApi(`uploads/${id}/metadata`);
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: Could not get size of ${id}.`);
-      return null;
-    }
-  }
-
-  async createItemInContainer(contentId, containerId, name, type, wrappedKey) {
-    const resp = await this.callApi(
-      `containers/${containerId}/item`,
-      {
-        uploadId: contentId,
-        name,
-        type, // this is 'FILE' or 'MESSAGE'
-        wrappedKey,
-      },
-      'POST'
-    );
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: Unable to create Item.`);
-      return null;
-    }
-  }
-
-  async deleteItem(itemId, containerId, shouldDeleteContent) {
-    const resp = await this.callApi(
-      `containers/${containerId}/item/${itemId}`,
-      {
-        shouldDeleteContent,
-      },
-      'DELETE'
-    );
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: Unable to delete Item.`);
       return null;
     }
   }
@@ -168,26 +102,6 @@ export class ApiConnection {
       return resp.container;
     } else {
       console.log(`Error: could not create conversations for user ${ownerId}`);
-      return null;
-    }
-  }
-
-  async createFolder(name, parentId = 0, shareOnly = false) {
-    // TODO: shift the userId from frontend argument to backend session
-    const resp = await this.callApi(
-      `containers`,
-      {
-        name: name ?? timestamp(),
-        type: CONTAINER_TYPE.FOLDER,
-        parentId,
-        shareOnly,
-      },
-      'POST'
-    );
-    if (resp) {
-      return resp.container;
-    } else {
-      console.log(`Error: could not create folder`);
       return null;
     }
   }
@@ -310,17 +224,6 @@ export class ApiConnection {
     }
   }
 
-  async getFolderTree(userId, rootFolderId) {
-    // TODO: shift the userId from frontend argument to backend session
-    const resp = await this.callApi(`containers/${rootFolderId}/`);
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: could not get folders for user ${userId}`);
-      return null;
-    }
-  }
-
   async getSharesForFolder(containerId, userId) {
     // TODO: shift the userId from frontend argument to backend session
     const resp = await this.callApi(`containers/${containerId}/shares`, {
@@ -357,26 +260,6 @@ export class ApiConnection {
     }
   }
 
-  async renameFolder(containerId, name) {
-    const resp = await this.callApi(`containers/${containerId}/rename`, { name }, 'POST');
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: could not update name for container ${containerId}`);
-      return null;
-    }
-  }
-
-  async renameItem(containerId, itemId, name) {
-    const resp = await this.callApi(`containers/${containerId}/item/${itemId}/rename`, { name }, 'POST');
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: could not update name for item ${itemId}`);
-      return null;
-    }
-  }
-
   async updateInvitationPermissions(containerId, userId, invitationId, permission) {
     const resp = await this.callApi(
       `containers/${containerId}/shares/invitation/update`,
@@ -400,17 +283,6 @@ export class ApiConnection {
       return resp;
     } else {
       console.log(`Error: could not update permissions for accessLink ${accessLinkId}`);
-      return null;
-    }
-  }
-
-  async getUserPublicKey(userId) {
-    console.log(`getting user public key`);
-    const resp = await this.callApi(`users/${userId}/`);
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: could not get public key for user ${userId}`);
       return null;
     }
   }
@@ -555,16 +427,6 @@ export class ApiConnection {
       return resp;
     } else {
       console.log(`Error: could not burn ephemeral conversation`);
-      return null;
-    }
-  }
-
-  async deleteContainer(containerId) {
-    const resp = await this.callApi(`containers/${containerId}`, {}, 'DELETE');
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: could not delete container`);
       return null;
     }
   }

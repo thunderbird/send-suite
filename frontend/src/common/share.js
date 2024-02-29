@@ -1,4 +1,5 @@
 import { Util } from '@/lib/keychain';
+import { CONTAINER_TYPE } from '@/lib/const';
 
 export default class Sharer {
   constructor(user, keychain, api) {
@@ -102,7 +103,17 @@ export default class Sharer {
     // have a parentId
     const parentId = 0;
     const shareOnly = true;
-    const response = await this.api.createFolder(currentContainer.name, parentId, shareOnly);
+
+    const response = await api.callApi(
+      `containers`,
+      {
+        name: currentContainer.name,
+        type: CONTAINER_TYPE.FOLDER,
+        parentId,
+        shareOnly,
+      },
+      'POST'
+    );
     if (!(response || response.id)) {
       console.log(`could not create a new container for items`);
       return null;
@@ -131,8 +142,17 @@ export default class Sharer {
 
         // create the new item with the existing uploadId
         // in the newContainer
-        const itemResp = await this.api.createItemInContainer(uploadId, newContainerId, filename, type, wrappedKeyStr);
 
+        const itemResp = await this.api.callApi(
+          `containers/${newContainerId}/item`,
+          {
+            uploadId,
+            name: filename,
+            type,
+            wrappedKey: wrappedKeyStr,
+          },
+          'POST'
+        );
         console.log(`🎉 here it is...`);
         console.log(itemResp);
         return itemResp;

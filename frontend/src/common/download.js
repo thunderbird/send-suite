@@ -23,9 +23,9 @@ export default class Downloader {
       return;
     }
 
-    // could use this so I can display the file size...
-    // I'd need to move it
-    const { size, type } = await this.api.getUploadMetadata(id);
+    // Need the size for download.
+    // Need the type for saving the file.
+    const { size, type } = await this.api.callApi(`uploads/${id}/metadata`);
     if (!size) {
       console.log(`no size`);
       return;
@@ -41,7 +41,3 @@ export default class Downloader {
     }
   }
 }
-
-// export default async (id, folderId, wrappedKey, filename) => {
-//   return await doDownload(id, folderId, wrappedKey, filename);
-// };

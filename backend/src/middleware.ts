@@ -41,6 +41,7 @@ function extractContainerId(req) {
 }
 
 export function reject(res, status = 403, message = `Not authorized`) {
+  console.trace();
   res.status(403).json({
     message,
   });
@@ -56,10 +57,13 @@ export async function requireLogin(req, res, next) {
   next();
 }
 
+// Returns a middleware function that renames a property in req.body
 export function renameBodyProperty(from: string, to: string) {
   return (req, res, next) => {
-    req.body[to] = req.body[from];
-    delete req.body[from];
+    if (req.body[from] !== undefined) {
+      req.body[to] = req.body[from];
+      delete req.body[from];
+    }
     next();
   };
 }
