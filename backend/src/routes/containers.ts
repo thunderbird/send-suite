@@ -1,11 +1,9 @@
-import { Prisma, ContainerType } from '@prisma/client';
+import { Prisma, ContainerType, Container } from '@prisma/client';
 import { Router } from 'express';
 import {
-  createContainer,
   getOwnedContainers,
   createItem,
   deleteItem,
-  getItemsInContainer,
   addGroupMember,
   removeGroupMember,
   createInvitation,
@@ -17,43 +15,40 @@ import {
   updateInvitationPermissions,
   updateAccessLinkPermissions,
   removeInvitationAndGroup,
-  updateContainerName,
-  getContainerWithAncestors,
   updateItemName,
   getContainerWithDescendants,
-  getAccessLinksForContainer,
 } from '../models';
 import {
-  getPermissions,
   requireLogin,
+  renameBodyProperty,
+  getPermissions,
   canWrite,
   canRead,
-  renameBodyProperty,
+  canAdmin,
 } from '../middleware';
+
+import {
+  createContainer,
+  updateContainerName,
+  getItemsInContainer,
+  getContainerWithAncestors,
+  getAccessLinksForContainer,
+} from '../models/containers';
 
 const router: Router = Router();
 
-// router.use([requireLogin, getPermissions]);
+type TreeNode = {
+  id: number;
+  children: Record<string, any>[];
+};
 
-router.post(
-  '/:containerId/rename',
-  requireLogin,
-  getPermissions,
-  canWrite,
-  async (req, res) => {
-    const { containerId } = req.params;
-    const { name } = req.body;
-
-    try {
-      const container = await updateContainerName(parseInt(containerId), name);
-      res.status(200).json(container);
-    } catch (error) {
-      res.status(500).json({
-        message: 'Server error.',
-      });
-    }
-  }
-);
+function flattenDescendants(tree: TreeNode) {
+  const children = tree?.children.length > 0 ? tree.children : [];
+  return [
+    ...children.flatMap((child: TreeNode) => flattenDescendants(child)),
+    tree.id,
+  ];
+}
 
 // Get a container and its items
 // Add the ancestor folder path as a property.
@@ -82,18 +77,15 @@ router.get(
   }
 );
 
-// Get all access links for a container
+// Get all Access Links for a container
 router.get(
   '/:containerId/links',
   requireLogin,
   getPermissions,
   canRead,
   async (req, res) => {
-    // getContainerWithMembers
     const { containerId } = req.params;
     try {
-      // TODO: get the userId from the session
-      // pass that to `getAccessLinksForContainer`
       const links = await getAccessLinksForContainer(parseInt(containerId));
       res.status(200).json(links);
     } catch (error) {
@@ -104,13 +96,11 @@ router.get(
   }
 );
 
-// Nope. Can't pass in the containerId in the params
-// Sometimes, I'm making a container at the top level.
-// Other times, I'm making a sub-folder.
-// Yes, I need to specify the parent Id some how
-// and see if I have permission to write to it.
-// So this one is in fact interesting:
-// I need to check for req.body.parentId
+// Create a container
+// When creating a subfolder in Lockbox, the front-end will pass in the parent folder id
+// as `req.body.parentId`. But, to use `getPermissions`, we need to rename that property
+// to `req.body.containerId`.
+// `renameBodyProperty` is a no-op when creating a top-level folder in Lockbox.
 router.post(
   '/',
   requireLogin,
@@ -149,7 +139,6 @@ router.post(
     try {
       const container = await createContainer(
         name.trim().toLowerCase(),
-        // publicKey.trim(),
         ownerId,
         type,
         parentId,
@@ -170,13 +159,58 @@ router.post(
         console.log(error);
         res.status(500).json({
           message: 'Server error.',
-          // error: error.message,
         });
       }
     }
   }
 );
 
+// Rename a container
+router.post(
+  '/:containerId/rename',
+  requireLogin,
+  getPermissions,
+  canWrite,
+  async (req, res) => {
+    const { containerId } = req.params;
+    const { name } = req.body;
+
+    try {
+      const container = await updateContainerName(parseInt(containerId), name);
+      res.status(200).json(container);
+    } catch (error) {
+      res.status(500).json({
+        message: 'Server error.',
+      });
+    }
+  }
+);
+
+// TODO: think about whether we can be admin of a folder that contains folders we don't own.
+router.delete(
+  '/:containerId',
+  requireLogin,
+  getPermissions,
+  canAdmin,
+  async (req, res) => {
+    const { containerId } = req.params;
+    try {
+      const root = await getContainerWithDescendants(parseInt(containerId));
+      const idArray = flattenDescendants(root);
+      const result = await Promise.all(
+        idArray.map(async (id: number) => await burnFolder(id))
+      );
+      res.status(200).json({
+        result,
+      });
+    } catch (e) {
+      console.log(e);
+      res.status(500).json({
+        message: 'Server error',
+      });
+    }
+  }
+);
 // everything above this line is confirmed for q1-dogfood use
 // ==================================================================================
 
@@ -368,31 +402,6 @@ router.get('/:containerId/info', getPermissions, async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: 'Server error.',
-    });
-  }
-});
-
-export function flattenDescendants(tree) {
-  const children = tree?.children.length > 0 ? tree.children : [];
-  return [...children.flatMap((child) => flattenDescendants(child)), tree.id];
-}
-
-router.delete('/:containerId', getPermissions, async (req, res) => {
-  const { containerId } = req.params;
-
-  try {
-    const root = await getContainerWithDescendants(parseInt(containerId));
-    const idArray = flattenDescendants(root);
-    const result = await Promise.all(
-      idArray.map(async (id) => await burnFolder(id))
-    );
-    res.status(200).json({
-      result,
-    });
-  } catch (e) {
-    console.log(e);
-    res.status(500).json({
-      message: 'Server error',
     });
   }
 });

@@ -3,6 +3,9 @@ import { sendBlob } from '@/lib/filesync';
 export default class Uploader {
   constructor(user, keychain, api) {
     this.user = user;
+    // Even though we only need the user.id, we must receive the entire,
+    // reactive `user` object. This gives enough time for it to "hydrate"
+    // from an existing session or to populate from an initial login.
     this.keychain = keychain;
     this.api = api;
   }
@@ -10,13 +13,11 @@ export default class Uploader {
   async doUpload(fileBlob, containerId, isText = true) {
     if (!containerId) {
       console.log(`cannot upload - no folder selected`);
-      // emit('uploadAborted');
       return null;
     }
 
     if (!fileBlob) {
       console.log(`cannot upload - no file blob provided`);
-      // emit('uploadAborted');
       return null;
     }
 
@@ -35,30 +36,45 @@ export default class Uploader {
     const blob = fileBlob;
     const filename = blob.name;
 
+    // Blob is encrypted as it is uploaded through a websocket connection
     const id = await sendBlob(blob, key);
     if (!id) {
-      console.log(`could not upload`);
+      console.log(`could not upload Content`);
       return;
     }
     console.log(`🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀`);
     console.log(blob.type);
-    const uploadResp = await this.api.createContent(id, blob.size, this.user.id, blob.type);
-    console.log(uploadResp);
 
-    if (id !== uploadResp.id) {
-      debugger;
+    // Create a Content entry in the database
+    const { upload } = await this.api.callApi(
+      'uploads',
+      {
+        id: id,
+        size: blob.size,
+        ownerId: this.user.id,
+        type: blob.type,
+      },
+      'POST'
+    );
+
+    if (!upload) {
+      console.log(`could not create Content entity in database`);
+      return;
     }
 
-    const itemObj = await this.api.createItemInContainer(
-      id,
-      containerId,
-      filename,
-      isText ? 'MESSAGE' : 'FILE',
-      wrappedKeyStr
+    // For the Content entry, create the corresponding Item in the Container
+    const itemObj = await this.api.callApi(
+      `containers/${containerId}/item`,
+      {
+        uploadId: upload.id,
+        name: filename,
+        type: isText ? 'MESSAGE' : 'FILE',
+        wrappedKey: wrappedKeyStr,
+      },
+      'POST'
     );
     console.log(`🎉 here it is...`);
     console.log(itemObj);
-    // emit('uploadComplete', itemObj);
     return {
       ...itemObj,
       upload: {

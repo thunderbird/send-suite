@@ -69,98 +69,6 @@ export async function setBackup(
   });
 }
 
-export async function createUpload(
-  id: string,
-  size: number,
-  ownerId: number,
-  type: string
-) {
-  const upload = await prisma.upload.create({
-    data: {
-      id,
-      size,
-      ownerId,
-      createdAt: new Date(),
-      type,
-    },
-  });
-  return upload;
-}
-
-export async function getUploadSize(id: string) {
-  const upload = await prisma.upload.findUnique({
-    where: {
-      id,
-    },
-    select: {
-      size: true,
-    },
-  });
-  return upload.size;
-}
-
-export async function getUploadMetadata(id: string) {
-  const upload = await prisma.upload.findUnique({
-    where: {
-      id,
-    },
-    select: {
-      size: true,
-      type: true,
-    },
-  });
-  const { size, type } = upload;
-  return { size, type };
-}
-
-// Automatically creates a group for container
-// owner is added to new group
-export async function createContainer(
-  name: string,
-  // publicKey: string,
-  ownerId: number,
-  type: ContainerType,
-  parentId: number,
-  shareOnly: boolean
-) {
-  // TODO: figure out the nested create syntax:
-  // https://www.prisma.io/docs/reference/api-reference/prisma-client-reference#create-1
-  const group = await prisma.group.create({
-    data: {},
-  });
-
-  console.log(`👿 just created group`);
-  await prisma.membership.create({
-    data: {
-      groupId: group.id,
-      userId: ownerId,
-      permission: PermissionType.ADMIN, // Owner has full permissions
-    },
-  });
-  console.log(`👿 just added owner to group`);
-
-  const createArgs = {
-    data: {
-      name,
-      // publicKey,
-      ownerId,
-      groupId: group.id,
-      type,
-      shareOnly,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  };
-  if (parentId !== 0) {
-    createArgs.data['parentId'] = parentId;
-  }
-
-  const container = await prisma.container.create(createArgs);
-  console.log(`👿 just created container, connected to group`);
-
-  return container;
-}
-
 /*
 
 ok, I think I need to rewrite these:
@@ -286,19 +194,6 @@ export async function getSharesForContainer(
       },
     },
   });
-}
-
-export async function updateContainerName(containerId: number, name: string) {
-  const result = await prisma.container.update({
-    where: {
-      id: containerId,
-    },
-    data: {
-      name,
-      updatedAt: new Date(),
-    },
-  });
-  return result;
 }
 
 export async function updateItemName(itemId: number, name: string) {
@@ -537,18 +432,6 @@ export async function getContainerInfo(id: number) {
   });
 }
 
-export async function getContainerWithAncestors(id: number) {
-  const container = await prisma.container.findUnique({
-    where: {
-      id,
-    },
-  });
-  if (container.parentId) {
-    container['parent'] = await getContainerWithAncestors(container.parentId);
-  }
-  return container;
-}
-
 export async function getContainerWithDescendants(id: number) {
   const container = await prisma.container.findUnique({
     where: { id },
@@ -567,89 +450,6 @@ export async function getContainerWithDescendants(id: number) {
   }
 
   return container;
-}
-
-export async function getItemsInContainer(id: number) {
-  return prisma.container.findUnique({
-    where: {
-      id,
-    },
-    select: {
-      id: true,
-      name: true,
-      createdAt: true,
-      updatedAt: true,
-      type: true,
-      shareOnly: true,
-      ownerId: true,
-      groupId: true,
-      wrappedKey: true,
-      parentId: true,
-      children: {
-        select: {
-          id: true,
-          name: true,
-          createdAt: true,
-          updatedAt: true,
-          type: true,
-          shareOnly: true,
-          ownerId: true,
-          groupId: true,
-          wrappedKey: true,
-          parentId: true,
-          items: {
-            select: {
-              name: true,
-              wrappedKey: true,
-              uploadId: true,
-              createdAt: true,
-              updatedAt: true,
-              type: true,
-              upload: {
-                select: {
-                  size: true,
-                  type: true,
-                  owner: {
-                    select: {
-                      email: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      items: {
-        select: {
-          id: true,
-          name: true,
-          wrappedKey: true,
-          uploadId: true,
-          createdAt: true,
-          updatedAt: true,
-          containerId: true,
-          type: true,
-          tags: true,
-          upload: {
-            select: {
-              size: true,
-              type: true,
-              owner: {
-                select: {
-                  email: true,
-                },
-              },
-            },
-          },
-        },
-      },
-      tags: true,
-    },
-    // include: {
-    //   items: true,
-    // },
-  });
 }
 
 async function _whereContainer(
@@ -1165,24 +965,6 @@ export async function getContainerForAccessLink(linkId: string) {
       },
     },
   });
-}
-
-export async function getAccessLinksForContainer(containerId: number) {
-  const shares = await prisma.share.findMany({
-    where: {
-      containerId,
-    },
-    select: {
-      accessLinks: {
-        select: {
-          id: true,
-          expiryDate: true,
-        },
-      },
-    },
-  });
-
-  return shares.flatMap((share) => share.accessLinks.map((link) => link));
 }
 
 export async function createInvitationForAccessLink(

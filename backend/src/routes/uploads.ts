@@ -1,10 +1,22 @@
 import { Router } from 'express';
-import { createUpload, getUploadSize, getUploadMetadata } from '../models';
+import {
+  requireLogin,
+  renameBodyProperty,
+  getPermissions,
+  canWrite,
+  canRead,
+  canAdmin,
+} from '../middleware';
+import {
+  createUpload,
+  getUploadSize,
+  getUploadMetadata,
+} from '../models/uploads';
 import storage from '../storage';
 
 const router: Router = Router();
 
-router.post('/', async (req, res) => {
+router.post('/', requireLogin, getPermissions, canWrite, async (req, res) => {
   const { id, size, ownerId, type } = req.body;
 
   try {
@@ -35,6 +47,9 @@ router.post('/', async (req, res) => {
   }
 });
 
+// TODO: decide whether it's a security risk not to protect this route.
+// I feel like it is, but it doesn't pertain to anything "perimssion-able".
+// i.e., permissions are applied to containers, not to uploads.
 router.get('/:id/size', async (req, res) => {
   const { id } = req.params;
   try {
@@ -50,6 +65,9 @@ router.get('/:id/size', async (req, res) => {
   }
 });
 
+// TODO: decide whether it's a security risk not to protect this route.
+// I feel like it is, but it doesn't pertain to anything "perimssion-able".
+// i.e., permissions are applied to containers, not to uploads.
 router.get('/:id/metadata', async (req, res) => {
   const { id } = req.params;
   try {

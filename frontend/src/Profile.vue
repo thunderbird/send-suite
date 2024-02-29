@@ -16,7 +16,7 @@ const folderStore = useFolderStore();
 const sessionInfo = ref(null);
 
 async function pingSession() {
-  sessionInfo.value = await api.callApi(`debug-session`);
+  sessionInfo.value = await api.callApi(`users/me`);
 }
 
 // After mozilla account login, confirm that

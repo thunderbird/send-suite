@@ -18,7 +18,7 @@ import { requireLogin } from '../middleware';
 
 const router: Router = Router();
 
-router.get('/me', async (req, res) => {
+router.get('/me', requireLogin, async (req, res) => {
   // Retrieves the logged-in user from the current session
   // ok, I need to persist the user to the session, don't I?
   // am I not doing that already?
