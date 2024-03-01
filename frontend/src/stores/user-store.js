@@ -13,7 +13,7 @@ const useUserStore = defineStore('user', () => {
   // Returns a boolean signaling whether successfully populated the user.
   async function populateFromSession() {
     const userResp = await api.callApi(`users/me`);
-    if (!userResp.user) {
+    if (!userResp?.user) {
       return;
     }
 

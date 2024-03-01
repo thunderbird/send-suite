@@ -14,12 +14,12 @@ const folderStore = useFolderStore();
 
 onMounted(async () => {
   const didInit = await init(userStore.user, keychain, folderStore);
-
+  console.log(``);
   if (!didInit) {
     // Load from backend session and retry init()
     const didPopulate = await userStore.populateFromSession();
     if (!didPopulate) {
-      alert(`DEBUG: could not retrieve user; did mozilla login fail?`);
+      console.warn(`DEBUG: could not retrieve user; did mozilla login fail?`);
       return;
     }
     userStore.user.store();

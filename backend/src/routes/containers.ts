@@ -1,4 +1,4 @@
-import { Prisma, ContainerType, Container } from '@prisma/client';
+import { Prisma, ContainerType } from '@prisma/client';
 import { Router } from 'express';
 import {
   getOwnedContainers,
@@ -18,6 +18,7 @@ import {
   updateItemName,
   getContainerWithDescendants,
 } from '../models';
+
 import {
   requireLogin,
   renameBodyProperty,

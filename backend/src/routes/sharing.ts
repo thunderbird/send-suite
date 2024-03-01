@@ -10,13 +10,21 @@ import {
   removeAccessLink,
   isAccessLinkValid,
 } from '../models';
-import { getPermissions } from '../middleware';
+import {
+  requireLogin,
+  renameBodyProperty,
+  getPermissions,
+  canWrite,
+  canRead,
+  canAdmin,
+  canShare,
+} from '../middleware';
 
 const router: Router = Router();
 
 // Request a new hash for a shared container,
 // previously only used for "ephemeral chat"
-router.post('/', async (req, res) => {
+router.post('/', requireLogin, getPermissions, canShare, async (req, res) => {
   const {
     containerId,
     senderId,
@@ -139,7 +147,13 @@ router.get('/exists/:linkId', async (req, res) => {
 });
 
 // Get an AccessLink's container and items
-router.get('/:linkId', getPermissions, async (req, res) => {
+/*
+If I want to protect this with permissions, I'd need to:
+- not require a login
+- get the permissions off of the access link (which points to a share, which points to a container)
+- confirm it canRead
+*/
+router.get('/:linkId', async (req, res) => {
   const { linkId } = req.params;
 
   try {

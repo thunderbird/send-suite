@@ -27,7 +27,7 @@ async function dbUserSetup() {
   // Populate the user if they exist
   const didPopulate = await userStore.populateFromSession();
   if (!didPopulate) {
-    alert(`DEBUG: could not retrieve user; did mozilla login fail?`);
+    console.warn(`DEBUG: could not retrieve user; did mozilla login fail?`);
     return;
   }
   userStore.user.store();
