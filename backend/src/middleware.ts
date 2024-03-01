@@ -13,29 +13,44 @@ function extractMethodAndRoute(req) {
   return `${req.method} ${req.originalUrl}`;
 }
 
+function extractSessionValue(req, path) {
+  let val = req.session;
+  for (let item of path) {
+    if (!val[item]) {
+      console.error(
+        `Could not find ${path} in session for ${extractMethodAndRoute(req)}`
+      );
+
+      return null;
+    }
+    val = val[item];
+  }
+  return val;
+}
+
+function extractParamOrBody(req, prop: string) {
+  return req.params[prop] ?? req.body[prop];
+}
+
 function extractUserId(req) {
+  const path = ['user', 'id'];
+  const val = extractSessionValue(req, path);
   try {
-    const userId = parseInt(req.session?.user?.id, 10);
+    const userId = parseInt(val, 10);
     return userId;
   } catch (e) {
-    console.error(
-      `Could not find user in session for ${extractMethodAndRoute(req)}`
-    );
+    console.error(`Could  ${path} for ${extractMethodAndRoute(req)}`);
     return null;
   }
 }
 
 function extractContainerId(req) {
+  const prop = `containerId`;
+  const val = extractParamOrBody(req, prop);
   try {
-    const containerId = parseInt(
-      req.params.containerId ?? req.body.containerId,
-      10
-    );
-    return containerId;
+    return parseInt(val, 10);
   } catch (e) {
-    console.error(
-      `Could not find containerId for ${extractMethodAndRoute(req)}`
-    );
+    console.error(`Could not find ${prop} for ${extractMethodAndRoute(req)}`);
     return null;
   }
 }
