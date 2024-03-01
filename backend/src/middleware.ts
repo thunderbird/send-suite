@@ -9,6 +9,8 @@ import {
 } from './types/custom';
 const prisma = new PrismaClient();
 
+const PERMISSION_REQUEST_KEY = '_permission';
+
 function extractMethodAndRoute(req) {
   return `${req.method} ${req.originalUrl}`;
 }
@@ -86,8 +88,8 @@ export function renameBodyProperty(from: string, to: string) {
   };
 }
 
-// Middleware that attaches the permissions, if any
-export async function getPermissions(req, res, next) {
+// Gets a user's permissions for a container and adds it to the request.
+export async function getGroupMemberPermissions(req, res, next) {
   const userId = extractUserId(req);
   const containerId = extractContainerId(req);
   console.log(
@@ -103,12 +105,13 @@ export async function getPermissions(req, res, next) {
   if (userId && containerId === 0) {
     // Users have full permissions to their own top-level
     console.log(`
-**************************************************************************
-WARNING: this check needs to be more robust (in middleware.getPermissions
-Adding full permissions assuming user is operating on their own top-level
-**************************************************************************
+*************************************************************************************
+WARNING: this check needs to be more robust (in middleware.getGroupMemberPermissions)
+Adding full permissions assuming user is operating on their own top-level, when there
+is a user and containerId === 0
+*************************************************************************************
     `);
-    req['permission'] = allPermissions();
+    req[PERMISSION_REQUEST_KEY] = allPermissions();
     next();
     return;
   }
@@ -147,12 +150,12 @@ Adding full permissions assuming user is operating on their own top-level
   }
 
   // Attach it to the request
-  req['permission'] = membership.permission;
+  req[PERMISSION_REQUEST_KEY] = membership.permission;
   next();
 }
 
 export function canRead(req, res, next) {
-  if (!hasRead(req['permission'])) {
+  if (!hasRead(req[PERMISSION_REQUEST_KEY])) {
     console.warn(`Missing read permission`);
     reject(res);
     return;
@@ -160,7 +163,7 @@ export function canRead(req, res, next) {
   next();
 }
 export function canWrite(req, res, next) {
-  if (!hasWrite(req['permission'])) {
+  if (!hasWrite(req[PERMISSION_REQUEST_KEY])) {
     console.warn(`Missing write permission`);
     reject(res);
     return;
@@ -168,7 +171,7 @@ export function canWrite(req, res, next) {
   next();
 }
 export function canAdmin(req, res, next) {
-  if (!hasAdmin(req['permission'])) {
+  if (!hasAdmin(req[PERMISSION_REQUEST_KEY])) {
     console.warn(`Missing admin permission`);
     reject(res);
     return;
@@ -176,7 +179,7 @@ export function canAdmin(req, res, next) {
   next();
 }
 export function canShare(req, res, next) {
-  if (!hasShare(req['permission'])) {
+  if (!hasShare(req[PERMISSION_REQUEST_KEY])) {
     console.warn(`Missing share permission`);
     reject(res);
     return;

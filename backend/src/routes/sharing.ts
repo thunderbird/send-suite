@@ -11,40 +11,23 @@ import {
   isAccessLinkValid,
 } from '../models/sharing';
 
-import { requireLogin, getPermissions, canShare } from '../middleware';
+import {
+  requireLogin,
+  getGroupMemberPermissions,
+  canShare,
+} from '../middleware';
 
 const router: Router = Router();
 
 // Request a new hash for a shared container,
 // previously only used for "ephemeral chat"
-router.post('/', requireLogin, getPermissions, canShare, async (req, res) => {
-  const {
-    containerId,
-    senderId,
-    wrappedKey,
-    salt,
-    challengeKey,
-    challengeSalt,
-    challengeCiphertext,
-    challengePlaintext,
-    expiration,
-  }: {
-    containerId: number;
-    senderId: number;
-    wrappedKey: string;
-    salt: string;
-    challengeKey: string;
-    challengeSalt: string;
-    challengeCiphertext: string;
-    challengePlaintext: string;
-    expiration: string;
-  } = req.body;
-  let permission = '0';
-  if (req.body.permission) {
-    permission = req.body.permission;
-  }
-  try {
-    const accessLink = await createAccessLink(
+router.post(
+  '/',
+  requireLogin,
+  getGroupMemberPermissions,
+  canShare,
+  async (req, res) => {
+    const {
       containerId,
       senderId,
       wrappedKey,
@@ -53,20 +36,47 @@ router.post('/', requireLogin, getPermissions, canShare, async (req, res) => {
       challengeSalt,
       challengeCiphertext,
       challengePlaintext,
-      parseInt(permission),
-      expiration
-    );
+      expiration,
+    }: {
+      containerId: number;
+      senderId: number;
+      wrappedKey: string;
+      salt: string;
+      challengeKey: string;
+      challengeSalt: string;
+      challengeCiphertext: string;
+      challengePlaintext: string;
+      expiration: string;
+    } = req.body;
+    let permission = '0';
+    if (req.body.permission) {
+      permission = req.body.permission;
+    }
+    try {
+      const accessLink = await createAccessLink(
+        containerId,
+        senderId,
+        wrappedKey,
+        salt,
+        challengeKey,
+        challengeSalt,
+        challengeCiphertext,
+        challengePlaintext,
+        parseInt(permission),
+        expiration
+      );
 
-    res.status(200).json({
-      id: accessLink.id,
-      expiryDate: accessLink.expiryDate,
-    });
-  } catch (e) {
-    res.status(500).json({
-      message: 'Server error',
-    });
+      res.status(200).json({
+        id: accessLink.id,
+        expiryDate: accessLink.expiryDate,
+      });
+    } catch (e) {
+      res.status(500).json({
+        message: 'Server error',
+      });
+    }
   }
-});
+);
 
 // Get the challenge for this hash
 router.get('/:linkId/challenge', async (req, res) => {
@@ -178,7 +188,7 @@ router.delete('/:linkId', async (req, res) => {
 // For record keeping purposes, create a corresponding invitation
 router.post(
   '/:linkId/member/:recipientId/accept',
-  getPermissions,
+  getGroupMemberPermissions,
   async (req, res) => {
     const { linkId, recipientId } = req.params;
 
