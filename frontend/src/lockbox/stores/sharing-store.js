@@ -78,7 +78,7 @@ const useSharingStore = defineStore('sharingManager', () => {
       // TODO: this in particular needs to be server-side
       // Create an Invitation and set it to ACCEPTED
       console.log(`creating invitation for access link`);
-      const createInvitationResp = await api.createInvitationForAccessLink(linkId, user.id);
+      const createInvitationResp = await api.callApi(`sharing/${linkId}/member/${user.id}/accept`, {}, 'POST');
       // Reminder that this api call creates an invitation, where the value of
       // the wrappedKey is the password-wrapped one, not the publicKey wrapped one.
 
@@ -104,7 +104,7 @@ const useSharingStore = defineStore('sharingManager', () => {
   }
 
   async function isAccessLinkValid(linkId) {
-    return await api.isAccessLinkValid(linkId);
+    return await api.callApi(`sharing/exists/${linkId}`);
   }
 
   async function fetchAccessLinks(folderId) {
@@ -135,7 +135,7 @@ const useSharingStore = defineStore('sharingManager', () => {
   }
 
   async function getSharedFolder(hash) {
-    return await api.getContainerWithItemsForAccessLink(hash);
+    return await api.callApi(`sharing/${hash}/`);
   }
 
   return {

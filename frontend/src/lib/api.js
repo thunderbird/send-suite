@@ -181,16 +181,6 @@ export class ApiConnection {
     }
   }
 
-  async createInvitationForAccessLink(linkId, recipientId) {
-    const resp = await this.callApi(`ephemeral/${linkId}/member/${recipientId}/accept`, {}, 'POST');
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: could not create invitation for accessLink ${linkId} for recipient ${recipientId}`);
-      return null;
-    }
-  }
-
   async getAllConversations(userId) {
     // TODO: shift the userId from frontend argument to backend session
     const resp = await this.callApi(`users/${userId}/conversations/`);
@@ -298,24 +288,6 @@ export class ApiConnection {
     }
   }
 
-  async createUser(email, publicKey, isEphemeral = false) {
-    const resp = await this.callApi(
-      `users`,
-      {
-        email,
-        publicKey,
-        tier: isEphemeral ? 'EPHEMERAL' : 'PRO',
-      },
-      'POST'
-    );
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: could not create user`);
-      return null;
-    }
-  }
-
   async login(email) {
     const resp = await this.callApi(`users/login`, { email }, 'POST');
     if (resp) {
@@ -326,98 +298,9 @@ export class ApiConnection {
     }
   }
 
-  async createAccessLink(
-    containerId,
-    wrappedKey,
-    salt,
-    challengeKey,
-    challengeSalt,
-    senderId,
-    challengePlaintext,
-    challengeCiphertext,
-    expiration
-  ) {
-    const resp = await this.callApi(
-      `ephemeral`,
-      {
-        containerId,
-        wrappedKey,
-        salt,
-        challengeKey,
-        challengeSalt,
-        senderId,
-        challengePlaintext,
-        challengeCiphertext,
-        expiration,
-      },
-      'POST'
-    );
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: could not create ephemeral link`);
-      return null;
-    }
-  }
-
-  async isAccessLinkValid(linkId) {
-    const resp = await this.callApi(`ephemeral/exists/${linkId}`);
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: could not query access link`);
-      return null;
-    }
-  }
-  async deleteAccessLink(linkId) {
-    const resp = await this.callApi(`ephemeral/${linkId}`, {}, 'DELETE');
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: could not delete accessLink`);
-      return null;
-    }
-  }
-
-  async getEphemeralLinkChallenge(linkId) {
-    const resp = await this.callApi(`ephemeral/${linkId}/challenge`);
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: could not get ephemeral challenge data`);
-      return null;
-    }
-  }
-
-  async acceptEphemeralLink(linkId, challengePlaintext) {
-    const resp = await this.callApi(
-      `ephemeral/${linkId}/challenge`,
-      {
-        challengePlaintext,
-      },
-      'POST'
-    );
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: could not get ephemeral challenge data`);
-      return null;
-    }
-  }
-
-  async getContainerWithItemsForAccessLink(linkId) {
-    const resp = await this.callApi(`ephemeral/${linkId}/`);
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: could not get container for share ${linkId}`);
-      return null;
-    }
-  }
-
   async burnAfterReading(containerId) {
     const resp = await this.callApi(
-      `ephemeral/burn`,
+      `sharing/burn`,
       {
         containerId,
       },

@@ -21,8 +21,16 @@ export class User {
       email: this.email,
     };
   }
-  async createUser(email, jwkPublicKey) {
-    const resp = await this._api.createUser(email, jwkPublicKey);
+  async createUser(email, jwkPublicKey, isEphemeral = false) {
+    const resp = await this._api.callApi(
+      `users`,
+      {
+        email,
+        publicKey: jwkPublicKey,
+        tier: isEphemeral ? 'EPHEMERAL' : 'PRO',
+      },
+      'POST'
+    );
     if (!resp) {
       return null;
     }

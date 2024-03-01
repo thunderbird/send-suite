@@ -192,16 +192,20 @@ export default class Sharer {
     const saltStr = Util.arrayBufferToBase64(salt);
     const challengeSaltStr = Util.arrayBufferToBase64(challengeSalt);
 
-    const resp = await this.api.createAccessLink(
-      containerId,
-      passwordWrappedKeyStr,
-      saltStr,
-      passwordWrappedChallengeKeyStr,
-      challengeSaltStr,
-      this.user.id,
-      challengePlaintext,
-      challengeCiphertext,
-      expiration
+    const resp = await this.api.callApi(
+      `sharing`,
+      {
+        containerId,
+        wrappedKey: passwordWrappedKeyStr,
+        salt: saltStr,
+        challengeKey: passwordWrappedChallengeKeyStr,
+        challengeSalt: challengeSaltStr,
+        senderId: this.user.id,
+        challengePlaintext,
+        challengeCiphertext,
+        expiration,
+      },
+      'POST'
     );
 
     if (!resp.id) {

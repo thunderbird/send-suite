@@ -51,6 +51,9 @@ export function reject(res, status = 403, message = `Not authorized`) {
 export async function requireLogin(req, res, next) {
   const id = extractUserId(req);
   if (!id) {
+    console.log(`requireLogin: no req.session.user.id`);
+    console.log(`current session:`);
+    console.log(req.session);
     reject(res);
     return;
   }
