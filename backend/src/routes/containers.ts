@@ -6,10 +6,8 @@ import {
   deleteItem,
   addGroupMember,
   removeGroupMember,
-  createInvitation,
   acceptInvitation,
   getContainerInfo,
-  burnFolder,
   getContainerWithMembers,
   getSharesForContainer,
   updateInvitationPermissions,
@@ -27,6 +25,8 @@ import {
   canRead,
   canAdmin,
 } from '../middleware';
+
+import { createInvitation, burnFolder } from '../models/sharing';
 
 import {
   createContainer,

@@ -1,5 +1,5 @@
-import { Prisma, ContainerType } from '@prisma/client';
 import { Router } from 'express';
+
 import {
   burnEphemeralConversation,
   createAccessLink,
@@ -9,16 +9,9 @@ import {
   createInvitationForAccessLink,
   removeAccessLink,
   isAccessLinkValid,
-} from '../models';
-import {
-  requireLogin,
-  renameBodyProperty,
-  getPermissions,
-  canWrite,
-  canRead,
-  canAdmin,
-  canShare,
-} from '../middleware';
+} from '../models/sharing';
+
+import { requireLogin, getPermissions, canShare } from '../middleware';
 
 const router: Router = Router();
 

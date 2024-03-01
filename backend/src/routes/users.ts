@@ -1,19 +1,24 @@
 import { Prisma, ContainerType, UserTier } from '@prisma/client';
 
 import { Router } from 'express';
+
 import {
-  createUser,
-  getAllUserGroupContainers,
   getAllInvitations,
-  getUserByEmail,
   getContainersSharedByMe,
   getContainersSharedWithMe,
-  getRecentActivity,
-  getBackup,
-  setBackup,
-} from '../models';
+} from '../models/sharing';
 
-import { getUserPublicKey, updateUserPublicKey } from '../models/users';
+import {
+  createUser,
+  getUserByEmail,
+  getUserPublicKey,
+  updateUserPublicKey,
+  getAllUserGroupContainers,
+  getRecentActivity,
+  setBackup,
+  getBackup,
+} from '../models/users';
+
 import { requireLogin } from '../middleware';
 
 const router: Router = Router();

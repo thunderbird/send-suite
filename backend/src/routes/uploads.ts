@@ -1,4 +1,13 @@
 import { Router } from 'express';
+
+import storage from '../storage';
+
+import {
+  createUpload,
+  getUploadSize,
+  getUploadMetadata,
+} from '../models/uploads';
+
 import {
   requireLogin,
   renameBodyProperty,
@@ -7,12 +16,6 @@ import {
   canRead,
   canAdmin,
 } from '../middleware';
-import {
-  createUpload,
-  getUploadSize,
-  getUploadMetadata,
-} from '../models/uploads';
-import storage from '../storage';
 
 const router: Router = Router();
 

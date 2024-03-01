@@ -42,7 +42,7 @@ async function dbUserSetup() {
     const jwkPublicKey = await keychain.rsa.getPublicKeyJwk();
     const didUpdate = await userStore.updatePublicKey(jwkPublicKey);
     if (!didUpdate) {
-      alert(`DEBUG: could not update user's public key`);
+      console.warn(`DEBUG: could not update user's public key`);
     }
   }
 
@@ -53,7 +53,7 @@ async function dbUserSetup() {
 async function mozAcctLogin() {
   const url = await userStore.getMozAccountAuthUrl();
   if (!url) {
-    alert(`DEBUG: couldn't get a mozilla auth url`);
+    console.warn(`DEBUG: couldn't get a mozilla auth url`);
   }
   const win = window.open(url);
   const timer = setInterval(() => {

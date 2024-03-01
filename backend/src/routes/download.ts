@@ -1,12 +1,5 @@
 import { Router } from 'express';
-// import {
-//   createFolder,
-//   getOwnedFolders,
-//   createItem,
-//   getItemsInFolder,
-//   addGroupMember,
-//   removeGroupMember,
-// } from '../models';
+
 import storage from '../storage';
 
 const router: Router = Router();
