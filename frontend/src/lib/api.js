@@ -4,6 +4,10 @@ import { CONTAINER_TYPE, ITEM_TYPE } from './const';
 export class ApiConnection {
   constructor(serverUrl) {
     // using new URL() trims off excess whitespace and trailing '/'
+    console.log(`ApiConnection got passed the following serverUrl: ${serverUrl}`);
+    if (!serverUrl) {
+      throw Error('No Server URL provided.');
+    }
     const u = new URL(serverUrl);
     this.serverUrl = u.origin;
   }
@@ -12,12 +16,24 @@ export class ApiConnection {
     return this.serverUrl;
   }
 
-  async callApi(path, body = {}, method = 'GET') {
+  setSessionId(sessionId) {
+    this.sessionId = sessionId;
+  }
+
+  async callApi(path, body = {}, method = 'GET', headers = {}) {
+    if (this.sessionId) {
+      headers = {
+        ...headers,
+        sessionId: this.sessionId,
+      };
+    }
+
     const url = `${this.serverUrl}/api/${path}`;
     const opts = {
       mode: 'cors',
+      credentials: 'include', // include cookies
       method,
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', ...headers },
     };
 
     if (method.trim().toUpperCase() === 'POST') {
@@ -26,33 +42,19 @@ export class ApiConnection {
       });
     }
 
-    const resp = await fetch(url, opts);
+    let resp;
+    try {
+      resp = await fetch(url, opts);
+    } catch (e) {
+      // debugger;
+      console.log(e);
+      return null;
+    }
 
     if (!resp.ok) {
       return null;
     }
     return resp.json();
-  }
-
-  async createContent(id, size, ownerId, type) {
-    // TODO: remove ownerId as arg
-    // the backend should get this from session
-    const resp = await this.callApi(
-      'uploads',
-      {
-        id,
-        size,
-        ownerId,
-        type,
-      },
-      'POST'
-    );
-    if (resp) {
-      return resp.upload;
-    } else {
-      console.log(`Error: Unable to create Upload.`);
-      return null;
-    }
   }
 
   async getUploadSize(id) {
@@ -65,37 +67,18 @@ export class ApiConnection {
     }
   }
 
-  async getUploadMetadata(id) {
-    const resp = await this.callApi(`uploads/${id}/metadata`);
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: Could not get size of ${id}.`);
-      return null;
-    }
-  }
-
-  async createItemInContainer(contentId, containerId, name, type, wrappedKey) {
-    const resp = await this.callApi(
-      `containers/${containerId}`,
-      {
-        uploadId: contentId,
-        name,
-        type, // this is 'FILE' or 'MESSAGE'
-        wrappedKey,
-      },
-      'POST'
-    );
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: Unable to create Item.`);
-      return null;
-    }
-  }
-
   async getContainerWithItems(containerId) {
     const resp = await this.callApi(`containers/${containerId}`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get container ${containerId}`);
+      return null;
+    }
+  }
+
+  async getContainerInfo(containerId) {
+    const resp = await this.callApi(`containers/${containerId}/info`);
     if (resp) {
       return resp;
     } else {
@@ -123,21 +106,12 @@ export class ApiConnection {
     }
   }
 
-  async createFolder(ownerId, name) {
-    // TODO: shift the userId from frontend argument to backend session
-    const resp = await this.callApi(
-      `containers`,
-      {
-        name: name ?? timestamp(),
-        ownerId,
-        type: CONTAINER_TYPE.FOLDER,
-      },
-      'POST'
-    );
+  async getContainerGroupMembers(containerId) {
+    const resp = await this.callApi(`containers/${containerId}/members`, {}, 'GET');
     if (resp) {
-      return resp.container;
+      return resp;
     } else {
-      console.log(`Error: could not create folder for user ${ownerId}`);
+      console.log(`Error: could not list members for container ${containerId}`);
       return null;
     }
   }
@@ -153,38 +127,27 @@ export class ApiConnection {
     if (resp) {
       return resp;
     } else {
-      console.log(
-        `Error: could not add user ${ownerId} to container ${containerId}`
-      );
+      console.log(`Error: could not add user ${userId} to container ${containerId}`);
       return null;
     }
   }
 
-  async removeMemberFromContainer(userId, containerId) {
-    const resp = await this.callApi(
-      `containers/${containerId}/member`,
-      {
-        userId,
-      },
-      'DELETE'
-    );
+  async removeInvitationAndGroupMembership(containerId, invitationId) {
+    const resp = await this.callApi(`containers/${containerId}/member/remove/${invitationId}`, {}, 'DELETE');
     if (resp) {
       return resp;
     } else {
-      console.log(
-        `Error: could not remove user ${ownerId} from container ${containerId}`
-      );
+      console.log(`Error: could not remove invitation ${invitationId} from container ${containerId}`);
       return null;
     }
   }
 
-  async inviteGroupMember(containerId, wrappedKey, userId, senderId) {
+  async inviteGroupMember(containerId, wrappedKey, recipientId, senderId) {
     const resp = await this.callApi(
-      `containers/${containerId}/member/sharekey`,
+      `containers/${containerId}/member/invite`,
       {
-        containerId,
         wrappedKey,
-        userId,
+        recipientId,
         senderId,
       },
       'POST'
@@ -192,9 +155,7 @@ export class ApiConnection {
     if (resp) {
       return resp;
     } else {
-      console.log(
-        `Error: could not share key with ${userId} for container ${containerId}`
-      );
+      console.log(`Error: could not share key with ${userId} for container ${containerId}`);
       return null;
     }
   }
@@ -211,17 +172,11 @@ export class ApiConnection {
   }
 
   async acceptInvitation(invitationId, containerId) {
-    const resp = await this.callApi(
-      `containers/${containerId}/member/accept/${invitationId}`,
-      {},
-      'POST'
-    );
+    const resp = await this.callApi(`containers/${containerId}/member/accept/${invitationId}`, {}, 'POST');
     if (resp) {
       return resp;
     } else {
-      console.log(
-        `Error: could not accept invitation ${invitationId} for container ${containerId}`
-      );
+      console.log(`Error: could not accept invitation ${invitationId} for container ${containerId}`);
       return null;
     }
   }
@@ -237,7 +192,7 @@ export class ApiConnection {
     }
   }
 
-  async getAllFolders(userId) {
+  async getUserFolders(userId) {
     // TODO: shift the userId from frontend argument to backend session
     const resp = await this.callApi(`users/${userId}/folders/`);
     if (resp) {
@@ -248,96 +203,104 @@ export class ApiConnection {
     }
   }
 
-  async getUserPublicKey(userId) {
+  async getRecentActivity(userId) {
+    // TODO: shift the userId from frontend argument to backend session
+    const resp = await this.callApi(`users/${userId}/activity/`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get folders for user ${userId}`);
+      return null;
+    }
+  }
+
+  async getSharesForFolder(containerId, userId) {
+    // TODO: shift the userId from frontend argument to backend session
+    const resp = await this.callApi(`containers/${containerId}/shares`, {
+      userId,
+    });
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get sharing info for ${containerId}`);
+      return null;
+    }
+  }
+
+  async getFoldersSharedWithUser(userId) {
+    // TODO: shift the userId from frontend argument to backend session
+    console.log(`🐓🐓🐓🐓🐓🐓🐓calling users/${userId}/folders/sharedWithMe`);
+    const resp = await this.callApi(`users/${userId}/folders/sharedWithMe`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get folders shared with user ${userId}`);
+      return null;
+    }
+  }
+
+  async getFoldersSharedByUser(userId) {
+    // TODO: shift the userId from frontend argument to backend session
+    const resp = await this.callApi(`users/${userId}/folders/sharedByMe`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not get folders shared by user ${userId}`);
+      return null;
+    }
+  }
+
+  async updateInvitationPermissions(containerId, userId, invitationId, permission) {
+    const resp = await this.callApi(
+      `containers/${containerId}/shares/invitation/update`,
+      { userId, invitationId, permission },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not update permissions for invitation ${invitationId}`);
+      return null;
+    }
+  }
+  async updateAccessLinkPermissions(containerId, userId, accessLinkId, permission) {
+    const resp = await this.callApi(
+      `containers/${containerId}/shares/accessLink/update`,
+      { userId, accessLinkId, permission },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not update permissions for accessLink ${accessLinkId}`);
+      return null;
+    }
+  }
+
+  async getUserByEmail(email) {
     console.log(`getting user public key`);
-    const resp = await this.callApi(`users/${userId}/`);
+    const resp = await this.callApi(`users/lookup/${email}/`);
     if (resp) {
       return resp;
     } else {
-      console.log(`Error: could not get public key for user ${userId}`);
+      console.log(`Error: could not get user ${email}`);
       return null;
     }
   }
 
-  async createUser(email, publicKey, isEphemeral = false) {
-    const resp = await this.callApi(
-      `users`,
-      {
-        email,
-        publicKey,
-        tier: isEphemeral ? 'EPHEMERAL' : 'PRO',
-      },
-      'POST'
-    );
+  async login(email) {
+    const resp = await this.callApi(`users/login`, { email }, 'POST');
     if (resp) {
       return resp;
     } else {
-      console.log(`Error: could not create user`);
-      return null;
-    }
-  }
-
-  async createEphemeralLink(
-    containerId,
-    wrappedKey,
-    salt,
-    challengeKey,
-    challengeSalt,
-    senderId,
-    challengePlaintext,
-    challengeCiphertext
-  ) {
-    const resp = await this.callApi(
-      `ephemeral`,
-      {
-        containerId,
-        wrappedKey,
-        salt,
-        challengeKey,
-        challengeSalt,
-        senderId,
-        challengePlaintext,
-        challengeCiphertext,
-      },
-      'POST'
-    );
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: could not create ephemeral link`);
-      return null;
-    }
-  }
-
-  async getEphemeralLinkChallenge(hash) {
-    const resp = await this.callApi(`ephemeral/${hash}/challenge`);
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: could not get ephemeral challenge data`);
-      return null;
-    }
-  }
-
-  async acceptEphemeralLink(hash, challengePlaintext) {
-    const resp = await this.callApi(
-      `ephemeral/${hash}/challenge`,
-      {
-        challengePlaintext,
-      },
-      'POST'
-    );
-    if (resp) {
-      return resp;
-    } else {
-      console.log(`Error: could not get ephemeral challenge data`);
+      console.log(`Error: could not log user in`);
       return null;
     }
   }
 
   async burnAfterReading(containerId) {
     const resp = await this.callApi(
-      `ephemeral/burn`,
+      `sharing/burn`,
       {
         containerId,
       },
@@ -347,6 +310,68 @@ export class ApiConnection {
       return resp;
     } else {
       console.log(`Error: could not burn ephemeral conversation`);
+      return null;
+    }
+  }
+
+  async addTagForContainer(containerId, name, color) {
+    const resp = await this.callApi(
+      `tags/container/${containerId}`,
+      {
+        name,
+        color,
+      },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not add tag`);
+      return null;
+    }
+  }
+  async addTagForItem(itemId, name, color) {
+    const resp = await this.callApi(
+      `tags/item/${itemId}`,
+      {
+        name,
+        color,
+      },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not add tag`);
+      return null;
+    }
+  }
+
+  async createBackup(userId, keys, keypair, keystring, salt) {
+    const resp = await this.callApi(
+      `users/${userId}/backup`,
+      {
+        keys,
+        keypair,
+        keystring,
+        salt,
+      },
+      'POST'
+    );
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not create backup`);
+      return null;
+    }
+  }
+
+  async getBackup(userId) {
+    const resp = await this.callApi(`users/${userId}/backup`);
+    if (resp) {
+      return resp;
+    } else {
+      console.log(`Error: could not retrieve backup`);
       return null;
     }
   }

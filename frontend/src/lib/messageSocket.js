@@ -1,16 +1,16 @@
 import { connectToWebSocketServer } from './utils';
 
-export async function createMessageSocket(id) {
-  const endpoint = `wss://localhost:8088/api/messagebus/${id}`;
+export async function createMessageSocket(endpoint) {
   const connection = await connectToWebSocketServer(endpoint);
 
   connection.onclose = function (e) {
-    console.log(
-      'Socket is closed. Reconnect will be attempted in 1 second.',
-      e.reason
-    );
+    // Uncomment this when you start debugging the disconnection issues.
+    // console.log(
+    //   'Socket is closed. Reconnect will be attempted in 1 second.',
+    //   e.reason
+    // );
     setTimeout(function () {
-      createMessageSocket();
+      createMessageSocket(endpoint);
     }, 1000);
   };
 

@@ -1,7 +1,7 @@
 import config from '../config';
 // import Metadata from "../lib/metadata";
 import FSStorage from './filesystem';
-import { Config } from '../types';
+import { Config } from '../types/custom';
 // import { createUpload, getUpload, updateUpload } from "../models";
 
 // function getPrefix(seconds) {

@@ -1,0 +1,59 @@
+[
+  {
+    "namespace": "FileSystem",
+    "functions": [
+      {
+        "name": "writeFile",
+        "type": "function",
+        "async": true,
+        "description": "Write a text file with UTF-8 encoding into the user's profile directory (inside a directory named like the id of the add-on).",
+        "parameters": [
+          {
+            "name": "filename",
+            "type": "string"
+          },
+          {
+            "name": "data",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "readFile",
+        "type": "function",
+        "async": true,
+        "description": "Read a text file with UTF-8 encoding from the user's profile directory (inside a directory named like the id of the add-on).",
+        "parameters": [
+          {
+            "name": "filename",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "listContents",
+        "type": "function",
+        "async": true,
+        "description": "Get contents of a directory in the user's profile directory (inside a directory named like the id of the add-on).",
+        "parameters": [
+          {
+            "name": "dirpath",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "stat",
+        "type": "function",
+        "async": true,
+        "description": "Get file information about a file in the user's profile directory (inside a directory named like the id of the add-on).",
+        "parameters": [
+          {
+            "name": "filename",
+            "type": "string"
+          }
+        ]
+      }
+    ]
+  }
+]

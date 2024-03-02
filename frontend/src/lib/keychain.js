@@ -1,6 +1,7 @@
+import { Storage } from './storage';
+
 // When running automated tests, use crypto module instead of `window.crypto`
 import nodeCrypto from 'crypto';
-
 let crypto = nodeCrypto;
 try {
   crypto = window.crypto;
@@ -49,12 +50,7 @@ class Container {
 
   // Wrap an AES-GCM (content) key
   async wrapContentKey(key, wrappingKey) {
-    const wrappedKey = await crypto.subtle.wrapKey(
-      'raw',
-      key,
-      wrappingKey,
-      'AES-KW'
-    );
+    const wrappedKey = await crypto.subtle.wrapKey('raw', key, wrappingKey, 'AES-KW');
     // Transferring buffer to string to ease the storage
     const wrappedKeyStr = Util.arrayBufferToBase64(wrappedKey);
     return wrappedKeyStr;
@@ -62,15 +58,8 @@ class Container {
 
   // Unwrap an AES-GCM (content) key
   async unwrapContentKey(wrappedKeyStr, wrappingKey) {
-    return await crypto.subtle.unwrapKey(
-      'raw',
-      Util.base64ToArrayBuffer(wrappedKeyStr),
-      wrappingKey,
-      'AES-KW',
-      'AES-GCM',
-      true,
-      ['encrypt', 'decrypt']
-    );
+    const buf = Util.base64ToArrayBuffer(wrappedKeyStr);
+    return await crypto.subtle.unwrapKey('raw', buf, wrappingKey, 'AES-KW', 'AES-GCM', true, ['encrypt', 'decrypt']);
   }
 }
 
@@ -80,12 +69,7 @@ class Password {
     const keyMaterial = await getKeyMaterial(password);
     const wrappingKey = await getKey(keyMaterial, salt);
 
-    const wrappedKey = await crypto.subtle.wrapKey(
-      'raw',
-      keyToWrap,
-      wrappingKey,
-      'AES-KW'
-    );
+    const wrappedKey = await crypto.subtle.wrapKey('raw', keyToWrap, wrappingKey, 'AES-KW');
     // Transferring buffer to string to ease the storage
     const wrappedKeyStr = Util.arrayBufferToBase64(wrappedKey);
 
@@ -110,20 +94,14 @@ class Password {
   }
 
   async unwrapContainerKey(wrappedKeyStr, password, salt) {
-    return await this._unwrap(wrappedKeyStr, password, salt, 'AES-KW', [
-      'wrapKey',
-      'unwrapKey',
-    ]);
+    return await this._unwrap(wrappedKeyStr, password, salt, 'AES-KW', ['wrapKey', 'unwrapKey']);
   }
   async wrapContentKey(keyToWrap, password, salt) {
     return await this._wrap(keyToWrap, password, salt);
   }
 
   async unwrapContentKey(wrappedKeyStr, password, salt) {
-    return await this._unwrap(wrappedKeyStr, password, salt, 'AES-GCM', [
-      'encrypt',
-      'decrypt',
-    ]);
+    return await this._unwrap(wrappedKeyStr, password, salt, 'AES-GCM', ['encrypt', 'decrypt']);
   }
 }
 
@@ -150,8 +128,25 @@ class Rsa {
     if (!this.publicKey) {
       return null;
     }
-    const publicKeyJwk = await rsaToJwk(this.publicKey);
-    return publicKeyJwk;
+    const jwk = await rsaToJwk(this.publicKey);
+    return JSON.stringify(jwk);
+    // return jwk;
+  }
+
+  async getPrivateKeyJwk() {
+    if (!this.privateKey) {
+      return null;
+    }
+    const jwk = await rsaToJwk(this.privateKey);
+    return JSON.stringify(jwk);
+  }
+
+  async setPrivateKeyFromJwk(jwk) {
+    this.privateKey = await jwkToRsa(jwk);
+  }
+
+  async setPublicKeyFromJwk(jwk) {
+    this.publicKey = await jwkToRsa(jwk);
   }
 
   // Wraps an AES-KW (container) key
@@ -206,11 +201,7 @@ class Challenge {
     const textEncoder = new TextEncoder();
     const arrayBuffer = textEncoder.encode(challengePlaintext);
 
-    const ciphertextBuffer = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv: salt },
-      key,
-      arrayBuffer
-    );
+    const ciphertextBuffer = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: salt }, key, arrayBuffer);
 
     return Util.arrayBufferToBase64(ciphertextBuffer);
   }
@@ -226,18 +217,49 @@ class Challenge {
   }
 }
 
+class Backup {
+  async generateKey() {
+    return await generateAesGcmKey();
+  }
+
+  async encryptBackup(plaintext, key, salt) {
+    const textEncoder = new TextEncoder();
+    const arrayBuffer = textEncoder.encode(plaintext);
+
+    const ciphertextBuffer = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: salt }, key, arrayBuffer);
+
+    return Util.arrayBufferToBase64(ciphertextBuffer);
+  }
+
+  async decryptBackup(ciphertext, key, salt) {
+    const arrayBuffer = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: salt },
+      key,
+      Util.base64ToArrayBuffer(ciphertext)
+    );
+    const textDecoder = new TextDecoder();
+    return textDecoder.decode(arrayBuffer);
+  }
+}
+
 // Should I rename this to KeyManager?
 export class Keychain {
-  constructor() {
-    //
+  constructor(storage) {
+    this._init(storage);
+  }
+
+  // A separate _init() allows us to scrub the current keychain
+  // and start with a fresh one.
+  _init(storage) {
     this.content = new Content();
     this.container = new Container();
     this.password = new Password();
     this.rsa = new Rsa();
     this.challenge = new Challenge();
+    this.backup = new Backup();
 
     this._keys = {};
-    this._onloadArray = [];
+    this._storage = storage ?? new Storage();
   }
 
   get keys() {
@@ -246,15 +268,20 @@ export class Keychain {
     };
   }
 
+  set keys(keyObj) {
+    this._keys = keyObj;
+  }
+
+  count() {
+    return Object.keys(this._keys).length;
+  }
+
   async add(id, key) {
     if (!this.rsa.publicKey) {
       throw Error('Missing public key, required for wrapping AES key');
     }
 
-    const wrappedKeyStr = await this.rsa.wrapContainerKey(
-      key,
-      this.rsa.publicKey
-    );
+    const wrappedKeyStr = await this.rsa.wrapContainerKey(key, this.rsa.publicKey);
     this._keys[id] = wrappedKeyStr;
   }
 
@@ -263,10 +290,7 @@ export class Keychain {
     if (!wrappedKeyStr) {
       throw Error('Key does not exist');
     }
-    const unwrappedKey = await this.rsa.unwrapContainerKey(
-      wrappedKeyStr,
-      this.rsa.privateKey
-    );
+    const unwrappedKey = await this.rsa.unwrapContainerKey(wrappedKeyStr, this.rsa.privateKey);
     return unwrappedKey;
   }
 
@@ -278,7 +302,67 @@ export class Keychain {
 
   async newKeyForContainer(id) {
     const key = await this.container.generateContainerKey();
+    console.log(`adding key for container id ${id}`);
     await this.add(id, key);
+  }
+
+  async exportKeypair() {
+    // these need conversion to jwk (JSON strings)
+    const keysObj = {
+      publicKey: await this.rsa.getPublicKeyJwk(),
+      privateKey: await this.rsa.getPrivateKeyJwk(),
+    };
+
+    return { ...keysObj };
+  }
+
+  async exportKeys() {
+    return { ...this.keys };
+  }
+
+  async store() {
+    // store public/private keys
+    await this._storage.storeKeypair(await this.exportKeypair());
+
+    // store other keys
+    await this._storage.storeKeys(await this.exportKeys());
+  }
+
+  async importKeypair(keypair) {
+    // load public/private keys
+    if (!keypair) {
+      keypair = await this._storage.loadKeypair();
+    }
+
+    return keypair;
+  }
+
+  async importKeys(keys) {
+    if (!keys) {
+      keys = await this._storage.loadKeys();
+    }
+    return keys;
+  }
+
+  async load(keypair, keys) {
+    try {
+      // load keypair jwk
+      const { publicKey, privateKey } = await this.importKeypair(keypair);
+
+      // set from jwk
+      await this.rsa.setPrivateKeyFromJwk(privateKey);
+      await this.rsa.setPublicKeyFromJwk(publicKey);
+
+      // load other keys
+      this.keys = await this.importKeys(keys);
+      return true;
+    } catch (e) {
+      console.log(`No keychain in storage`);
+    }
+  }
+
+  async generateBackupKey() {
+    return await generateAesGcmKey();
   }
 }
 
@@ -287,6 +371,10 @@ export class Util {
     let salt = crypto.getRandomValues(new Uint8Array(size));
 
     return salt;
+  }
+
+  static generateRandomPassword() {
+    return this.arrayBufferToBase64(this.generateSalt(16));
   }
 
   static async compareKeys(k1, k2) {
@@ -319,13 +407,7 @@ The key material is a password supplied by the user.
 */
 function getKeyMaterial(password) {
   const enc = new TextEncoder();
-  return crypto.subtle.importKey(
-    'raw',
-    enc.encode(password),
-    { name: 'PBKDF2' },
-    false,
-    ['deriveBits', 'deriveKey']
-  );
+  return crypto.subtle.importKey('raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveBits', 'deriveKey']);
 }
 
 /*
@@ -384,6 +466,20 @@ function bytesToArrayBuffer(bytes) {
 
 async function rsaToJwk(key) {
   return await crypto.subtle.exportKey('jwk', key);
+}
+
+async function jwkToRsa(jwk) {
+  jwk = typeof jwk === 'string' ? JSON.parse(jwk) : jwk;
+  return await crypto.subtle.importKey(
+    'jwk',
+    jwk,
+    {
+      name: 'RSA-OAEP',
+      hash: 'SHA-256',
+    },
+    true,
+    jwk.key_ops
+  );
 }
 
 // Used for Util.compareKeys()

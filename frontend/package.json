@@ -4,26 +4,38 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "vite --host",
+    "build": "./build.sh",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "test-debug": "vitest --inspect-brk --single-thread"
   },
   "dependencies": {
+    "@tabler/icons-vue": "^2.40.0",
+    "dayjs": "^1.11.10",
     "install": "^0.13.0",
+    "pinia": "^2.1.7",
     "vue": "^3.3.4",
     "vue-router": "4"
   },
   "devDependencies": {
+    "@tailwindcss/forms": "^0.5.6",
     "@types/ws": "^8.5.5",
     "@vitejs/plugin-vue": "^4.2.3",
+    "@vueuse/core": "^10.5.0",
     "autoprefixer": "^10.4.15",
     "buffer": "^6.0.3",
     "eslint": "^8.7.0",
     "postcss": "^8.4.28",
+    "postcss-import": "^15.1.0",
     "prettier": "^2.5.1",
     "tailwindcss": "^3.3.3",
+    "tsx": "^4.7.0",
+    "typescript": "^5.2.2",
+    "typescript-language-server": "^3.3.2",
     "vite": "^4.4.5",
+    "vitest": "^0.34.5",
+    "vitest-localstorage-mock": "^0.0.1",
     "vue-eslint-parser": "^8.0.0"
   }
 }

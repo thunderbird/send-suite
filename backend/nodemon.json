@@ -1,0 +1,4 @@
+{
+  "verbose": true,
+  "ignore": ["./tls-dev-proxy/**", "./sessions/**"]
+}

@@ -173,7 +173,7 @@ watch(
       <div class="flex items-center space-x-2">
         <!-- <button
           type="button"
-          class="inline-flex items-center justify-center rounded-lg border h-10 w-10 transition duration-500 ease-in-out text-gray-500 hover:bg-gray-300 focus:outline-none"
+          class="btn-primary"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -192,7 +192,7 @@ watch(
         </button> -->
         <!-- <button
           type="button"
-          class="inline-flex items-center justify-center rounded-lg border h-10 w-10 transition duration-500 ease-in-out text-gray-500 hover:bg-gray-300 focus:outline-none"
+          class="btn-primary"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

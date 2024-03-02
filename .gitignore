@@ -1,8 +1,8 @@
 # TODO: remove this when the db is more solid, specifically re: file ownership
 migrations
 seed.ts
+.pnpm-store
 
-docker-compose.yml
 
 # Dev droppings
 .env
@@ -12,6 +12,9 @@ node_modules
 dist
 dist-ssr
 *.local
+sessions
+storage
+.pnpm-store
 
 # Logs
 logs

@@ -2,15 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-/* html,
-body,
-#app {
-  height: 100%;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-} */
-
-input {
-  outline: 1px solid grey;
+@layer base {
+  th {
+    @apply py-1 px-4 text-gray-600 font-semibold text-sm text-left;
+  }
+  input[type='text'],
+  input[type='email'],
+  input[type='password'],
+  textarea,
+  select {
+    @apply py-1 px-2 rounded border-gray-400 placeholder:text-gray-400;
+  }
 }

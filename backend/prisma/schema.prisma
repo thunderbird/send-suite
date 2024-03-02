@@ -14,62 +14,146 @@ datasource db {
 enum UserTier {
   PRO
   EPHEMERAL
+  FREE
 }
 
 model User {
-  id                  Int           @id @default(autoincrement())
-  email               String?        @unique
-  publicKey           String
-  // links            Link[]
-  uploads             Upload[]
-  groups              GroupUser[]
-  containers          Container[]
-  sentInvitations     Invitation[]    @relation("Sender")
-  receivedInvitations Invitation[]    @relation("Recipient")
-  ephemeralLinks      EphemeralLink[] @relation("Ephemeral")
+  id                  Int                  @id @default(autoincrement())
+  email               String?
+  publicKey           String?
   tier                UserTier
   createdAt           DateTime?
   updatedAt           DateTime?
   activatedAt         DateTime?
+
+  profile             Profile?
+
+  // links            Link[]
+  uploads             Upload[]
+  groups              Membership[]
+  containers          Container[]
+
+  // Shares created by this user
+  shares              Share[]              @relation("Sender")
+
+  // Invitations sent to this user
+  invitations         Invitation[]         @relation("Recipient")
+  // ephemeralLinks      EphemeralLink[] @relation("Ephemeral")
+
+  backupKeypair       String?
+  backupContainerKeys String?
+  backupKeystring     String?
+  backupSalt          String?
 }
+
+model Profile {
+  // These are sourced from the Mozilla Account
+  mozid         String  @unique
+  avatar        String?
+
+  // 1-1 relationship with User
+  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int     @unique
+
+  accessToken   String?
+  refreshToken  String?
+}
+
 
 model Group {
   id          Int     @id @default(autoincrement())
-  members     GroupUser[]
+  members     Membership[]
   container   Container?
 }
 
-model GroupUser {
-  groupId Int
-  group   Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  userId  Int
-  user    User  @relation(fields: [userId], references: [id])
+model Membership {
+  groupId     Int
+  group       Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId      Int
+  user        User  @relation(fields: [userId], references: [id])
+  permission  Int   @default(0)
+                    // Modeled as a bitfield, i.e., 0b00000110
+                    // See src/types/custom.ts for values
+                    // Prisma's enums don't allow specify values.
+                    // Need an expandable way to represent permissions.
+                    // Postgres (for example) gives us a 32 bit Int.
 
   @@id([groupId, userId])
 }
 
-model Invitation {
+// Any user with sufficient permissions can create a Share
+// for a Container.
+// See the PermissionType enum in src/types/custom.ts
+model Share {
   id              Int     @id @default(autoincrement())
-  senderId        Int
-  sender          User    @relation("Sender", fields: [senderId], references: [id])
-  recipientId     Int
-  recipient       User    @relation("Recipient", fields: [recipientId], references: [id])
-  wrappedKey      String
   containerId     Int
+  container       Container @relation("SharedFolder", fields: [containerId], references: [id], onDelete: Cascade)
+
+  senderId        Int   // Not necessarily the owner of the container
+  sender          User    @relation("Sender", fields: [senderId], references: [id])
+
+  // There are two ways to access a Share.
+  // A User can accept an Invitation.
+  // A non-user uses an AccessLink.
+  invitations     Invitation[]
+  accessLinks     AccessLink[]
 }
 
-model EphemeralLink {
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  DECLINED
+}
+
+// Invitations are from user-to-user.
+model Invitation {
+  id            Int     @id @default(autoincrement())
+  shareId       Int
+  share         Share   @relation(fields: [shareId], references: [id], onDelete: Cascade)
+  wrappedKey    String  // Container key wrapped with recipient publicKey
+
+  recipientId   Int
+  recipient     User    @relation("Recipient", fields: [recipientId], references: [id])
+  status        InvitationStatus @default(PENDING)
+
+  // Will be copied over to the resulting Membership
+  permission  Int   @default(0)
+  // Modeled as a bitfield, i.e., 0b00000110
+  // See src/types/custom.ts for values
+  // Prisma's enums don't allow specify values.
+  // Need an expandable way to represent permissions.
+  // Postgres (for example) gives us a 32 bit Int.
+}
+
+// AccessLink can be sent to non-users or users.
+// For non-users, it gives them one-time access to a Share.
+// For users, it gives them Membership to the Shared Container
+model AccessLink {
   id                  String @unique
-  containerId         Int
-  wrappedKey          String
+  shareId             Int
+  share               Share   @relation(fields: [shareId], references: [id], onDelete: Cascade)
+  wrappedKey          String  // Container key wrapped with password
+
+  // Confirms that password can unwrap challenge key without
+  // storing the password in the database.
+  // Password + salt + key can decrypt ciphertext to plaintext.
   salt                String
   challengeKey        String
   challengeSalt       String
-  senderId            Int
-  sender              User    @relation("Ephemeral", fields: [senderId], references: [id])
   challengeCiphertext String
   challengePlaintext  String
+
+  permission          Int     @default(0)
+  // Modeled as a bitfield, i.e., 0b00000110
+  // See src/types/custom.ts for values
+  // Prisma's enums don't allow specify values.
+  // Need an expandable way to represent permissions.
+  // Postgres (for example) gives us a 32 bit Int.
+
+  expiryDate        DateTime?
 }
+
 
 enum ContainerType {
   CONVERSATION
@@ -79,35 +163,31 @@ enum ContainerType {
 model Container {
   id        Int             @id @default(autoincrement())
   name      String
-  // publicKey String
+  createdAt DateTime?
+  updatedAt DateTime?
+
+  type      ContainerType
+  shareOnly Boolean         @default(false)
+  shares    Share[]         @relation("SharedFolder")
+
   ownerId   Int
   owner     User            @relation(fields: [ownerId], references: [id])
   groupId   Int             @unique
   group     Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
   items     Item[]
+  wrappedKey  String? // this container's key, wrapped using the parent's key
   parentId  Int?
   parent    Container?      @relation("Nesting", fields: [parentId], references: [id])
   children  Container[]     @relation("Nesting")
-  createdAt DateTime?
-  updatedAt DateTime?
-  type      ContainerType
-  // unique container names in the same parent
-  @@unique([name, parentId])
+
+  tags      Tag[]
 }
-
-// model GroupFolder {
-//   groupId   Int
-//   group     Group @relation(fields: [groupId], references: [id])
-//   folderId  Int
-//   folder    Folder  @relation(fields: [folderId], references: [id])
-
-//   @@id([groupId, folderId])
-// }
 
 enum ItemType {
   MESSAGE
   FILE
 }
+
 model Item {
   id            Int           @id @default(autoincrement())
   name          String
@@ -115,45 +195,23 @@ model Item {
   containerId   Int
   container     Container     @relation(fields: [containerId], references: [id], onDelete: Cascade)
   uploadId      String
-  upload        Upload          @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+  // Do not cascade, since uploads can exist in different Containers as
+  // different Items
+  upload        Upload          @relation(fields: [uploadId], references: [id] )
   type          ItemType
   createdAt     DateTime?
+  updatedAt     DateTime?
   // unique "file names" in a container
-  @@unique([name, containerId])
+  // @@unique([name, containerId])
 
   // You could make threads by uncommenting the following:
   // parentId  Int?
   // parent    Item?      @relation("Nesting", fields: [parentId], references: [id])
   // children  Item[]     @relation("Nesting")
+
+  tags      Tag[]
 }
 
-// This is how we facilitate links to encrypted items
-// A dummy user is created who has access to an individual file
-// one problem: folders have keys, not items
-// and we want the user to be able to share anything that already exists
-// in their lockbox to users and non-users...
-// options:
-// - create a "virtual/invisible" subfolder and make it so an Item can be in multiple containers
-//    - the dummy user gets access to the invisible folder, not the parent
-//    - or, we create a copy of the folder (db entity), copy the key, and copy the item
-//    - that way, there's no way to determine where original folder/item are in order to try to use the key
-// model ItemLink {
-//   id              Int           @id @default(autoincrement())
-//   hash            String
-//   expiresAt       DateTime?
-//   downloadLimit   Int?
-//   downloadCount   Int?
-//   createdAt       DateTime?
-// }
-
-// An upload is just a file or other piece of content that resides in storage.
-// It belongs to a User.
-// A user can share anything they've uploaded
-// Are users aware of their Uploads?
-// Aren't they only looking at Items in a folder?
-// are Uploads just the "backing data" for an Item?
-// (allowing them to create ItemLinks from existing items)
-// where ItemLinks have expirations and throwaway containers
 model Upload {
   id        String        @unique
   size      Int
@@ -162,4 +220,15 @@ model Upload {
   items     Item[]        // A single Upload may back multiple Items
   type      String        // mime type
   createdAt DateTime?
+}
+
+// A tag can be associated with items and containers
+// The tags will be visible by anyone with access to those
+// items and containers.
+model Tag {
+  id          Int         @id @default(autoincrement())
+  name        String      @unique
+  color       String      // Color values defined in front-end for flexibility
+  items       Item[]
+  containers  Container[]
 }

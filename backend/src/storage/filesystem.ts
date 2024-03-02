@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
-import { Config, Logger } from '../types';
+import { Config, Logger } from '../types/custom';
 
 const stat = promisify(fs.stat);
 

@@ -1,4 +1,10 @@
-# Work in Progress: Thunderbird Send Suite
+# Lockbox dev
+
+See the `docs/` folder for a draft of the current documentation.
+
+---
+
+# (OUTDATED) Work in Progress: Thunderbird Send Suite
 
 Provides (or will provide) the following features for Thunderbird:
 
