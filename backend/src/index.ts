@@ -20,7 +20,6 @@ import wsUploadHandler from './wsUploadHandler';
 import wsMsgHandler from './wsMsgHandler';
 import { uuidv4 } from './utils';
 
-// TODO: look into moving this to src/types/index.d.ts (or more appropriate filename)
 type Profile = {
   mozid: string;
   avatar: string;
@@ -95,9 +94,6 @@ const expressSession = session({
   secret: process.env.SESSION_SECRET ?? 'abc123xyz',
   resave: false,
   saveUninitialized: true,
-  // cookie: {},
-  // TODO: revisit these settings when in a staging env with a TLS cert
-  // cookie: { secure: false, sameSite: 'strict' },
   cookie: {
     secure: process.env.APP_ENV === 'production',
     sameSite: 'none', // Cannot use 'lax' or 'strict' for local dev.

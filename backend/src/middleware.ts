@@ -121,10 +121,6 @@ is a user and containerId === 0
     return;
   }
 
-  // TODO: write a better, more correct version of this.
-  // This code assumes that there is a one-to-one
-  // correspondence between groups and containers.
-  // This seems to be true, but it isn't guaranteed.
   const group = await prisma.group.findFirst({
     where: {
       container: {

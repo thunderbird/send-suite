@@ -60,9 +60,6 @@ model Profile {
 }
 
 
-// TODO: Consider getting rid of Group table
-// May be redundant, as we could just add a relation to Container
-// to the Membership table.
 model Group {
   id          Int     @id @default(autoincrement())
   members     Membership[]
@@ -153,12 +150,6 @@ model AccessLink {
   // Prisma's enums don't allow specify values.
   // Need an expandable way to represent permissions.
   // Postgres (for example) gives us a 32 bit Int.
-
-  // TODO: count how many times used?
-  // accessCount      Int
-  // It increments each time it's unlocked?
-  // This should only increment on a specific API route,
-  // not one that is hit several times while being used.
 
   expiryDate        DateTime?
 }

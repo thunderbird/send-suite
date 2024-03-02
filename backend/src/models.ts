@@ -41,9 +41,6 @@ export async function getSharesForContainer(
 ) {
   return await prisma.share.findMany({
     where: {
-      // Removing senderId for now
-      // TODO: determine when other users should see/control sharing
-      // senderId: userId,
       containerId,
     },
     include: {
@@ -84,9 +81,6 @@ export async function updateInvitationPermissions(
   userId: number,
   permission: PermissionType
 ) {
-  // TODO: confirm that the userId matches the senderId of the share
-  // or if the user is the owner of the container
-
   const result = await prisma.invitation.update({
     where: {
       id: invitationId,
@@ -103,8 +97,6 @@ export async function updateAccessLinkPermissions(
   userId: number,
   permission: PermissionType
 ) {
-  // TODO: confirm that the userId matches the senderId of the share
-  // or if the user is the owner of the container
   const result = await prisma.accessLink.update({
     where: {
       id: accessLinkId,
@@ -225,9 +217,6 @@ export async function createItem(
 }
 
 export async function deleteItem(id: number, shouldDeleteUpload = false) {
-  // TODO: manage user sessions on the server
-  // requiring logged-in user to be owner
-
   let containerId;
   if (shouldDeleteUpload) {
     const item = await prisma.item.findUnique({
@@ -321,12 +310,6 @@ export async function getContainerWithDescendants(id: number) {
   return container;
 }
 
-// TODO:
-// - move item to another container
-// - delete item
-
-// for a container, how many groups are there?
-// should there be only one?
 export async function addGroupMember(containerId: number, userId: number) {
   const container = await prisma.container.findUnique({
     where: {
@@ -463,10 +446,6 @@ export async function removeInvitationAndGroup(invitationId: number) {
 }
 
 export async function removeGroupMember(containerId: number, userId: number) {
-  // TODO: write a better, more correct version of this.
-  // This code works off of the assumption that there
-  // is a one-to-one correspondence between groups and containers.
-  // This seems to be true, but it isn't guaranteed.
   const group = await prisma.group.findFirst({
     where: {
       container: {

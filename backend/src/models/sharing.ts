@@ -233,9 +233,6 @@ export async function createInvitationForAccessLink(
   // NOTE: we're just copying over the password-wrapped key
   // we *are not* wrapping the key with the user's publicKey
   // that's what's supposed to be in that field.
-  // TODO: figure out whether this is important.
-  // Invitations normally have a publicKey wrapped key.
-  // But this is just for record keeping.
   const invitation = await createInvitation(
     accessLink.share.containerId,
     accessLink.wrappedKey,
@@ -505,7 +502,6 @@ export async function burnFolder(
   console.log(`✅ deleted group user ${container.group.id}`);
 
   // Basically, if we got this far, everything was burned successfully.
-  // TODO: add some sort of retry mechanism.
   return deleteResp;
 }
 
