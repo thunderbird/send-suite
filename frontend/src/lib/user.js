@@ -21,8 +21,16 @@ export class User {
       email: this.email,
     };
   }
-  async createUser(email, jwkPublicKey) {
-    const resp = await this._api.createUser(email, jwkPublicKey);
+  async createUser(email, jwkPublicKey, isEphemeral = false) {
+    const resp = await this._api.callApi(
+      `users`,
+      {
+        email,
+        publicKey: jwkPublicKey,
+        tier: isEphemeral ? 'EPHEMERAL' : 'PRO',
+      },
+      'POST'
+    );
     if (!resp) {
       return null;
     }
@@ -36,20 +44,20 @@ export class User {
     return resp;
   }
 
-  async login() {
-    // Do I have an endpoint for this yet?
-    // pretty sure that I do...
-    console.log(`logging in as ${this.email}`);
-    const resp = await this._api.login(this.email);
+  // TODO: delete this in favor of using the user store's populate()
+  // which retrieves the user from the backend session.
+  async login(loginEmail = this.email) {
+    console.log(`logging in as ${loginEmail}`);
+    const resp = await this._api.login(loginEmail);
     if (!resp) {
       return null;
     }
 
-    const { id, tier } = resp;
+    const { id, tier, email } = resp;
 
     this.id = id;
     this.tier = tier;
-    // this.email = email;
+    this.email = email; // why did I comment this out before?
 
     return resp;
   }
@@ -58,16 +66,15 @@ export class User {
     try {
       const { id, tier, email } = await this._storage.loadUser();
 
-      console.log(`loading user`);
       console.table({ id, tier, email });
       this.id = id;
       this.tier = tier;
       this.email = email;
+
+      return true;
     } catch (e) {
       console.log(`No user in storage`);
     }
-
-    // this._onLoadCallbacks.forEach(async (cb) => await cb());
   }
 
   async store(newId, newTier, newEmail) {

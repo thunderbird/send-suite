@@ -39,6 +39,22 @@ const folderStore = useFolderStore();
         </div>
       </DragAndDropUpload>
     </section>
+    <section class="flex flex-col gap-2 p-2.5">
+      <ul>
+        <li>
+          <router-link to="/lockbox">My Files</router-link>
+        </li>
+        <!-- <li>
+          <router-link to="/lockbox/sent">Sent</router-link>
+        </li>
+        <li>
+          <router-link to="/lockbox/received">Received</router-link>
+        </li> -->
+        <li>
+          <router-link to="/lockbox/profile">Profile</router-link>
+        </li>
+      </ul>
+    </section>
     <!-- recent activity -->
     <!-- <RecentActivity /> -->
     <!-- tags -->

@@ -7,7 +7,7 @@ import {
   updateTagName,
   getContainersAndItemsWithTags,
 } from '../models';
-import { getPermissions } from '../middleware';
+import { getGroupMemberPermissions } from '../middleware';
 
 const router: Router = Router();
 
@@ -64,7 +64,7 @@ router.post('/:tagId/rename', async (req, res) => {
 });
 
 // Get all the items and containers with a particular tag
-router.get('/:tagName', getPermissions, async (req, res) => {
+router.get('/:tagName', getGroupMemberPermissions, async (req, res) => {
   const { tagName } = req.params;
   // const userId = req?.session?.user?.id;
   const { userId } = req.body;

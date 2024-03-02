@@ -41,32 +41,8 @@ class Limiter extends Transform {
 
 async function handleUpload(ws, message, fileStream) {
   const uploadId = crypto.randomBytes(24).toString('hex');
-  // const owner = crypto.randomBytes(10).toString('hex');
-
   const fileInfo = JSON.parse(message);
-  // const timeLimit = fileInfo.timeLimit || config.default_expire_seconds;
-  // const dlimit = fileInfo.dlimit || config.default_downloads;
-  // const metadata = fileInfo.fileMetadata;
-  // const auth = fileInfo.authorization;
 
-  // const meta = {
-  //   owner,
-  //   // `fxa` key is omitted here
-  //   metadata,
-  //   dlimit,
-  //   auth: auth.split(' ')[1],
-  //   nonce: crypto.randomBytes(16).toString('base64'),
-  // };
-
-  // const url = `${deriveBaseUrl(req)}/download/${newId}/`;
-
-  // ws.send(
-  //   JSON.stringify({
-  //     url,
-  //     ownerToken: meta.owner,
-  //     id: newId,
-  //   })
-  // );
   console.log(fileInfo);
   ws.send(
     JSON.stringify({
@@ -99,11 +75,11 @@ async function handleUpload(ws, message, fileStream) {
   // which hands off to the underlying storage mechanism.
   await storage.set(uploadId, fileStream);
   if (ws.readyState === 1) {
-    // if the socket is closed by a cancelled upload the stream
+    // if the socket is closed by a canceled upload the stream
     // ends without an error so we need to check the state
     // before sending a reply.
 
-    // TODO: we should handle cancelled uploads differently
+    // TODO: we should handle canceled uploads differently
     // in order to avoid having to check socket state and clean
     // up storage, possibly with an exception that we can catch.
     ws.send(
@@ -112,21 +88,10 @@ async function handleUpload(ws, message, fileStream) {
         id: uploadId,
       })
     );
-    // Omits the entire `statUploadEvent`
-    // I wonder if that's mozilla metrics? (looks like it)
+    // Note: we omit the entire `statUploadEvent` found in the
+    // original code. That was likely for usage metrics.
   }
 }
-
-// async function handleDownload(ws, message) {
-//   const fileInfo = JSON.parse(message);
-//   const { id } = fileInfo;
-//   console.log(`they want to download ${id}`);
-//   const contentLength = await storage.length(id);
-//   const fileStream = await storage.get(id);
-
-//   const wsStream = ws.constructor.createWebSocketStream(ws);
-//   fileStream.pipe(wsStream);
-// }
 
 export default function (ws, req) {
   console.log(`wsHandler initialized`);
@@ -141,10 +106,6 @@ export default function (ws, req) {
   ws.once('message', async function (message) {
     try {
       await handleUpload(ws, message, fileStream);
-      // Could I create the Upload db item here?
-      // I'd need the user's id, which I could get from the `req`.
-      // But I need the auth middleware, first
-      // In addition, I'd need the size of the original file
     } catch (e) {
       console.error('upload', e);
       if (ws.readyState === 1) {

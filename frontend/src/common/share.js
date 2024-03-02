@@ -1,4 +1,5 @@
 import { Util } from '@/lib/keychain';
+import { CONTAINER_TYPE } from '@/lib/const';
 
 export default class Sharer {
   constructor(user, keychain, api) {
@@ -72,12 +73,7 @@ export default class Sharer {
   }
 
   */
-  async createShareOnlyContainer(items = [], containerId = null, userId = null) {
-    if (!userId) {
-      console.log(`User ID is required`);
-      return;
-    }
-
+  async createShareOnlyContainer(items = [], containerId = null) {
     if (items.length === 0 && !containerId) {
       console.log(`Nothing is being shared`);
       return;
@@ -107,7 +103,17 @@ export default class Sharer {
     // have a parentId
     const parentId = 0;
     const shareOnly = true;
-    const response = await this.api.createFolder(userId, currentContainer.name, parentId, shareOnly);
+
+    const response = await api.callApi(
+      `containers`,
+      {
+        name: currentContainer.name,
+        type: CONTAINER_TYPE.FOLDER,
+        parentId,
+        shareOnly,
+      },
+      'POST'
+    );
     if (!(response || response.id)) {
       console.log(`could not create a new container for items`);
       return null;
@@ -136,8 +142,17 @@ export default class Sharer {
 
         // create the new item with the existing uploadId
         // in the newContainer
-        const itemResp = await this.api.createItemInContainer(uploadId, newContainerId, filename, type, wrappedKeyStr);
 
+        const itemResp = await this.api.callApi(
+          `containers/${newContainerId}/item`,
+          {
+            uploadId,
+            name: filename,
+            type,
+            wrappedKey: wrappedKeyStr,
+          },
+          'POST'
+        );
         console.log(`🎉 here it is...`);
         console.log(itemResp);
         return itemResp;
@@ -177,16 +192,20 @@ export default class Sharer {
     const saltStr = Util.arrayBufferToBase64(salt);
     const challengeSaltStr = Util.arrayBufferToBase64(challengeSalt);
 
-    const resp = await this.api.createAccessLink(
-      containerId,
-      passwordWrappedKeyStr,
-      saltStr,
-      passwordWrappedChallengeKeyStr,
-      challengeSaltStr,
-      this.user.id,
-      challengePlaintext,
-      challengeCiphertext,
-      expiration
+    const resp = await this.api.callApi(
+      `sharing`,
+      {
+        containerId,
+        wrappedKey: passwordWrappedKeyStr,
+        salt: saltStr,
+        challengeKey: passwordWrappedChallengeKeyStr,
+        challengeSalt: challengeSaltStr,
+        senderId: this.user.id,
+        challengePlaintext,
+        challengeCiphertext,
+        expiration,
+      },
+      'POST'
     );
 
     if (!resp.id) {

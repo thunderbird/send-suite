@@ -5,7 +5,17 @@ import path from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [vue()],
-
+  server: {
+    // `https: true` gives `Error code: SSL_ERROR_NO_CYPHER_OVERLAP`
+    // https: true,
+    proxy: {
+      // `secure: false` seems to do nothing
+      // secure: false,
+      '/echo': 'http://localhost:8080',
+      '/api': 'http://localhost:8080',
+      '/lockbox/fxa': 'http://backend:8080', // Using `backend` per the docker network name
+    },
+  },
   test: {
     include: ['**/*.test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     // don't use jsdom - it doesn't implement webcrypto

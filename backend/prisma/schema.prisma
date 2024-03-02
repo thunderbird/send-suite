@@ -19,12 +19,14 @@ enum UserTier {
 
 model User {
   id                  Int                  @id @default(autoincrement())
-  email               String?              @unique
-  publicKey           String
+  email               String?
+  publicKey           String?
   tier                UserTier
   createdAt           DateTime?
   updatedAt           DateTime?
   activatedAt         DateTime?
+
+  profile             Profile?
 
   // links            Link[]
   uploads             Upload[]
@@ -44,10 +46,20 @@ model User {
   backupSalt          String?
 }
 
+model Profile {
+  // These are sourced from the Mozilla Account
+  mozid         String  @unique
+  avatar        String?
 
-// TODO: Consider getting rid of Group table
-// May be redundant, as we could just add a relation to Container
-// to the Membership table.
+  // 1-1 relationship with User
+  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int     @unique
+
+  accessToken   String?
+  refreshToken  String?
+}
+
+
 model Group {
   id          Int     @id @default(autoincrement())
   members     Membership[]
@@ -138,12 +150,6 @@ model AccessLink {
   // Prisma's enums don't allow specify values.
   // Need an expandable way to represent permissions.
   // Postgres (for example) gives us a 32 bit Int.
-
-  // TODO: count how many times used?
-  // accessCount      Int
-  // It increments each time it's unlocked?
-  // This should only increment on a specific API route,
-  // not one that is hit several times while being used.
 
   expiryDate        DateTime?
 }

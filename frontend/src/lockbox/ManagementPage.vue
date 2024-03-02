@@ -1,17 +1,37 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import init from '@/lib/init';
+import { Storage } from '@/lib/storage';
+import useUserStore from '@/stores/user-store';
+import useKeychainStore from '@/stores/keychain-store';
+import useFolderStore from '@/lockbox/stores/folder-store';
 import useConfigurationStore from '@/stores/configuration-store';
+import useApiStore from '@/stores/api-store';
+
+import BackupAndRestore from '@/common/components/BackupAndRestore.vue';
 
 const DEBUG = true;
 const SERVER = `server`;
 
+const storage = new Storage();
+const { user } = useUserStore();
+const { keychain, resetKeychain } = useKeychainStore();
+const { api } = useApiStore();
+const folderStore = useFolderStore();
 const configurationStore = useConfigurationStore();
+
+const resp = ref(null);
+const authUrl = ref('');
+
 configurationStore.$onAction((actionInfo) => {
   // console.log(actionInfo);
   console.log(`the serverUrl is ${configurationStore.serverUrl}`);
 });
 
 const currentServerUrl = ref(configurationStore.serverUrl);
+const email = ref(null);
+const userId = ref(null);
+const jwkPublicKey = ref('');
 
 // This specifies the id of the provider chosen in the
 // "Composition > Attachments" window.
@@ -29,8 +49,14 @@ function setAccountConfigured(accountId) {
 }
 
 // Initialize the settings
-(function init() {
+onMounted(async () => {
   try {
+    // app-sepcific initialization
+    await init(user, keychain, folderStore);
+    email.value = user.email;
+    userId.value = user.id;
+
+    // extension-specific initialization
     browser.storage.local.get(accountId).then((accountInfo) => {
       if (accountInfo[accountId] && SERVER in accountInfo[accountId]) {
         configurationStore.setServerUrl(accountInfo[accountId][SERVER]);
@@ -38,9 +64,9 @@ function setAccountConfigured(accountId) {
       }
     });
   } catch (e) {
-    console.log(`init: You're probably running this outside of Thundebird`);
+    console.log(`extension init: You're probably running this outside of Thundebird`);
   }
-})();
+});
 
 async function configureExtension() {
   // TODO: disable the input and submit button
@@ -69,11 +95,105 @@ async function configureExtension() {
     });
 }
 
+async function clean() {
+  storage.clear();
+  resetKeychain();
+  await folderStore.init();
+  folderStore.print();
+}
+
+async function logout() {
+  await clean();
+  email.value = '';
+  userId.value = '';
+  jwkPublicKey.value = '';
+}
+
+async function login() {
+  if (!email.value) {
+    alert('email address is required for login');
+    return;
+  }
+  if (email.value !== user.email) {
+    console.log(`we're logging in as a different user. cleaning up and starting fresh`);
+    await clean();
+    await keychain.rsa.generateKeyPair();
+    await keychain.store();
+  }
+
+  const loginResp = await user.login(email.value);
+  if (!loginResp) {
+    console.log(`could not log in, trying to create`);
+
+    jwkPublicKey.value = JSON.stringify(await keychain.rsa.getPublicKeyJwk());
+    const createUserResp = await user.createUser(email.value, jwkPublicKey.value);
+    if (!createUserResp) {
+      console.log(`could not create user either. that's pretty bad`);
+      alert(`could neither log in nor create user`);
+      return;
+    }
+
+    user.id = createUserResp.user.id;
+    user.email = createUserResp.user.email;
+  }
+  // save user to storage
+  console.log(`storing new user with id ${user.id}`);
+  await user.store();
+  // then do the normal init (which should also log us in, possibly for a second time)
+  await init(user, keychain, folderStore);
+
+  // put our results in the form
+  email.value = user.email;
+  userId.value = user.id;
+  console.log(`finished login on ManagementPage.vue`);
+}
+
 async function save() {
   try {
+    // app-specific config
+    await login();
+
+    // extension-specific config
     await configureExtension();
   } catch (e) {
     console.log(`save: You're probably running this outside of Thundebird`);
+  }
+}
+
+async function loginToMozAccount() {
+  // waitaminit...do I get a different session or the same if I open a new window?
+  // Let's find out!
+  // Get the auth url
+  const resp = await api.callApi(`lockbox/fxa/login`);
+  if (resp.url) {
+    authUrl.value = resp.url;
+    openPopup();
+    // redirect (can't open popup: you get a different session)
+    // window.location = resp.url;
+  }
+}
+
+async function openPopup() {
+  try {
+    await browser.windows.create({
+      // url: browser.runtime.getURL(`${serverUrl.value}/lockbox/fxa/login?from=${window.location}`),
+      url: authUrl.value,
+      type: 'popup',
+      allowScriptsToClose: true,
+    });
+
+    /*
+
+TODO: I need to start an interval that pings the server.
+It should ask if the current code has just been used to successfully log in.
+If so, we should grab the login information from the server and popuplate the local user-store.
+
+And, we should show that information here instead of showing the login button.
+
+    */
+  } catch (e) {
+    console.log(`popup failed`);
+    console.log(e);
   }
 }
 </script>
@@ -82,13 +202,24 @@ async function save() {
   <h1>Settings</h1>
   <form>
     <label>
-      Server URL
+      Server URL:
       <input type="url" v-model="currentServerUrl" />
     </label>
+    <label>
+      Email:
+      <input type="url" v-model="email" />
+    </label>
+    <p v-if="userId">User ID: {{ userId }}</p>
     <div style="text-align: right">
       <button type="submit" @click.prevent="save">Save</button>
     </div>
   </form>
+  <h1>Hi.</h1>
+  <button @click.prevent="loginToMozAccount">Get Moz Acct Auth URL</button>
+  <!-- <br />
+  <button v-if="authUrl" @click.prevent="openPopup">Click this button Moz Acct with {{ authUrl }}</button> -->
+  <br />
+  <BackupAndRestore />
 </template>
 
 <style scoped>

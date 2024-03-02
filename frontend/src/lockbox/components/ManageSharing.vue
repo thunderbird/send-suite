@@ -33,7 +33,6 @@ const {
   updateInvitationPermissions,
   updateAccessLinkPermissions,
   getFoldersSharedByMe,
-  deleteAccessLink,
 } = inject('sharingManager');
 
 const props = defineProps({
@@ -76,7 +75,7 @@ async function removeMember(invitationId) {
 }
 
 async function removeLink(accessLinkId) {
-  const success = await deleteAccessLink(accessLinkId);
+  const success = await callApi(`sharing/${accessLinkId}`, {}, 'DELETE');
   if (success) {
     await getSharingInfo();
   }

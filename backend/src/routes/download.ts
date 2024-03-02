@@ -1,21 +1,17 @@
 import { Router } from 'express';
-// import {
-//   createFolder,
-//   getOwnedFolders,
-//   createItem,
-//   getItemsInFolder,
-//   addGroupMember,
-//   removeGroupMember,
-// } from '../models';
+
 import storage from '../storage';
 
 const router: Router = Router();
 
-// We should:
-// - find the item, given the file id
+// TODO: For more security:
+// - find the item(s), given the file id
 // - find the parent folder
 // - find the group for the folder
 // - confirm the user is a member of the group
+// However, that prevents anonymous downloading.
+// But, we could possibly trace it back to the
+// permissions attached to an Access Link
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -36,18 +32,6 @@ router.get('/:id', async (req, res) => {
       if (cancelled) {
         return;
       }
-
-      //   const dl = meta.dl + 1;
-      //   const dlimit = meta.dlimit;
-      //   try {
-      //     if (dl >= dlimit) {
-      //       await storage.del(id);
-      //     } else {
-      //       await storage.incrementField(id, "dl");
-      //     }
-      //   } catch (e) {
-      //     log.info("StorageError:", id);
-      //   }
     });
   } catch (e) {
     res.sendStatus(404);

@@ -245,7 +245,12 @@ class Backup {
 // Should I rename this to KeyManager?
 export class Keychain {
   constructor(storage) {
-    //
+    this._init(storage);
+  }
+
+  // A separate _init() allows us to scrub the current keychain
+  // and start with a fresh one.
+  _init(storage) {
     this.content = new Content();
     this.container = new Container();
     this.password = new Password();
@@ -255,8 +260,6 @@ export class Keychain {
 
     this._keys = {};
     this._storage = storage ?? new Storage();
-
-    // this._onLoadCallbacks = [];
   }
 
   get keys() {
@@ -342,15 +345,20 @@ export class Keychain {
   }
 
   async load(keypair, keys) {
-    // load keypair jwk
-    const { publicKey, privateKey } = await this.importKeypair(keypair);
+    try {
+      // load keypair jwk
+      const { publicKey, privateKey } = await this.importKeypair(keypair);
 
-    // set from jwk
-    await this.rsa.setPrivateKeyFromJwk(privateKey);
-    await this.rsa.setPublicKeyFromJwk(publicKey);
+      // set from jwk
+      await this.rsa.setPrivateKeyFromJwk(privateKey);
+      await this.rsa.setPublicKeyFromJwk(publicKey);
 
-    // load other keys
-    this.keys = await this.importKeys(keys);
+      // load other keys
+      this.keys = await this.importKeys(keys);
+      return true;
+    } catch (e) {
+      console.log(`No keychain in storage`);
+    }
   }
 
   async generateBackupKey() {

@@ -5,6 +5,8 @@ import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
 import Uploader from '@/common/upload';
 import Downloader from '@/common/download';
+import { timestamp } from '@/lib/utils';
+import { CONTAINER_TYPE } from '@/lib/const';
 
 const useFolderStore = defineStore('folderManager', () => {
   const { api } = useApiStore();
@@ -35,14 +37,23 @@ const useFolderStore = defineStore('folderManager', () => {
 
   const selectedFile = computed(() => findNode(selectedFileId.value, rootFolder.value?.items));
 
-  async function fetchSubtree(rootId) {
-    const tree = await api.getFolderTree(user.id, rootId);
+  async function init() {
+    console.log(`initializing the folderStore`);
+    folders.value = [];
+    rootFolder.value = null;
+
+    selectedFolderId.value = 0;
+    selectedFileId.value = 0;
+  }
+
+  async function fetchSubtree(rootFolderId) {
+    const tree = await api.callApi(`containers/${rootFolderId}/`);
     folders.value = tree.children;
     rootFolder.value = tree;
   }
 
   async function fetchUserFolders() {
-    const userFolders = await api.getUserFolders(user.id);
+    const userFolders = await api.callApi(`users/folders`);
     console.log(`fetchUserFolders got these:`);
     console.log(userFolders);
     folders.value = userFolders;
@@ -71,21 +82,30 @@ const useFolderStore = defineStore('folderManager', () => {
     selectedFileId.value = itemId;
   }
 
-  async function createFolder(parentId = 0) {
+  async function createFolder(name = 'Untitled', parentId = 0, shareOnly = false) {
     if (rootFolder.value) {
       parentId = rootFolder.value.id;
     }
-    const newFolder = await api.createFolder(user.id, 'Untitled', parentId);
-    if (newFolder) {
-      folders.value = [...folders.value, newFolder];
-      await keychain.newKeyForContainer(newFolder.id);
+    const { container } = await api.callApi(
+      `containers`,
+      {
+        name: name, // ?? timestamp(),
+        type: CONTAINER_TYPE.FOLDER,
+        parentId,
+        shareOnly,
+      },
+      'POST'
+    );
+    if (container) {
+      folders.value = [...folders.value, container];
+      await keychain.newKeyForContainer(container.id);
       await keychain.store();
-      return newFolder;
+      return container;
     }
   }
 
   async function renameFolder(folderId, name) {
-    const result = await api.renameFolder(folderId, name);
+    const result = await api.callApi(`containers/${folderId}/rename`, { name }, 'POST');
     if (result) {
       // Update name locally, without re-fetching
       const node = findNode(folderId, folders.value);
@@ -95,7 +115,7 @@ const useFolderStore = defineStore('folderManager', () => {
   }
 
   async function renameItem(folderId, itemId, name) {
-    const result = await api.renameItem(folderId, itemId, name);
+    const result = await api.callApi(`containers/${folderId}/item/${itemId}/rename`, { name }, 'POST');
     if (result) {
       const node = findNode(itemId, rootFolder.value.items);
       node.name = result.name;
@@ -111,18 +131,24 @@ const useFolderStore = defineStore('folderManager', () => {
     return newItem;
   }
 
-  async function deleteFolder(id) {
-    // remove self from group?
-    // or burn the folder?
-    const resp = await api.deleteContainer(id);
+  async function deleteFolder(folderId) {
+    // TODO: decide whether to:
+    // - remove self from group?
+    // - or burn the folder?
+    const resp = await api.callApi(`containers/${folderId}`, {}, 'DELETE');
     if (resp) {
-      folders.value = [...folders.value.filter((f) => f.id !== id)];
+      folders.value = [...folders.value.filter((f) => f.id !== folderId)];
     }
   }
 
   async function deleteItem(itemId, folderId) {
-    // `true` as the third arg means delete the Content, not just the Item
-    const result = await api.deleteItem(itemId, folderId, true);
+    const result = await api.callApi(
+      `containers/${folderId}/item/${itemId}`,
+      {
+        shouldDeleteContent: true,
+      },
+      'DELETE'
+    );
     if (result) {
       if (selectedFileId === itemId) {
         setSelectedFile(null);
@@ -137,6 +163,14 @@ const useFolderStore = defineStore('folderManager', () => {
     const success = await downloader.doDownload(uploadId, containerId, wrappedKey, name);
   }
 
+  function print() {
+    console.log(`rootFolder: ${rootFolder.value}`);
+    console.log(`defaultFolder: ${defaultFolder.value}`);
+    console.log(`visibleFolders: ${visibleFolders.value}`);
+    console.log(`selectedFolder: ${selectedFolder.value}`);
+    console.log(`selectedFile: ${selectedFile.value}`);
+  }
+
   return {
     // State ====================================
     rootFolder,
@@ -146,11 +180,14 @@ const useFolderStore = defineStore('folderManager', () => {
     visibleFolders,
     selectedFolder,
     selectedFile,
+    print,
 
     // Actions ==================================
+    init,
     fetchSubtree,
     fetchUserFolders,
     goToRootFolder,
+    sync: async () => await goToRootFolder(null),
     setSelectedFolder,
     setSelectedFile,
     createFolder,

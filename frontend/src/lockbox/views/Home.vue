@@ -3,7 +3,6 @@ import useUserStore from '@/stores/user-store';
 import useFolderStore from '@/lockbox/stores/folder-store';
 
 import NewFolder from '@/lockbox/components/NewFolder.vue';
-import FolderView from '@/lockbox/components/FolderView.vue';
 import FileInfo from '@/lockbox/components/FileInfo.vue';
 import FolderInfo from '@/lockbox/components/FolderInfo.vue';
 import FolderNavigation from '@/lockbox/components/FolderNavigation.vue';
@@ -12,7 +11,7 @@ import SharedByMe from '@/lockbox/components/SharedByMe.vue';
 import SharedWithMe from '@/lockbox/components/SharedWithMe.vue';
 import InvitationList from '@/lockbox/components/InvitationList.vue';
 
-const user = useUserStore();
+const { user } = useUserStore();
 const folderStore = useFolderStore();
 
 // const { currentFile, currentFolderId, rootFolderId } = inject('folderManager');
@@ -27,7 +26,7 @@ const folderStore = useFolderStore();
       <header
         class="w-full sticky top-0 flex items-center justify-between px-4 py-2 bg-white/90 border-b border-gray-300"
       >
-        <h1>{{ user.email }}'s Lockbox</h1>
+        <h1>{{ user.email }} Lockbox</h1>
         <NewFolder />
         <!-- <Breadcrumbs
           @setCurrentFolderId="setCurrentFolderId"
@@ -35,12 +34,7 @@ const folderStore = useFolderStore();
         /> -->
       </header>
       <main class="flex flex-col gap-4 px-4">
-        <!-- <InvitationList /> -->
-        <!-- <template v-if="!folderStore.rootFolder.id"> -->
-        <!-- <SharedWithMe /> -->
-        <!-- <SharedByMe /> -->
-        <!-- </template> -->
-        <FolderView />
+        <router-view></router-view>
       </main>
     </div>
     <aside class="w-64 border border-gray-300 bg-gray-50 p-2.5">

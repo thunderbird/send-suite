@@ -11,7 +11,7 @@ import { Util } from '@/lib/keychain';
 
 const PHRASE_SIZE = 12;
 const MIN_WORD_LENGTH = 5;
-const MSG_NOT_COMPLEX = `Please enter ${PHRASE_SIZE} different words. Each word must be at least 5 letters long.`;
+const MSG_NOT_COMPLEX = `Please enter ${PHRASE_SIZE} different words. Each word must be at least ${MIN_WORD_LENGTH} letters long.`;
 const MSG_INCORRECT_PASSPHRASE = 'Passphrase is incorrect';
 const MSG_COULD_NOT_RETRIEVE = 'Could not retrieve backup from the server.';
 const words = ref(['']);
@@ -197,7 +197,7 @@ async function decryptAll(protectedContainerKeysStr, protectedKeypairStr, passwo
         </p>
       </header>
       <div class="w-full flex flex-col gap-3 px-4">
-        <p>Enter your {{ PHRASE_SIZE }} word pass phrase</p>
+        <p>Enter your {{ PHRASE_SIZE }} word pass phrase:</p>
         <div>
           <input v-for="(n, index) in PHRASE_SIZE" :key="index" v-model="words[index]" />
         </div>

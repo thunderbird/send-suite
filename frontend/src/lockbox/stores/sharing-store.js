@@ -71,20 +71,21 @@ const useSharingStore = defineStore('sharingManager', () => {
     console.log(`containerId: ${containerId}`);
 
     if (user.id) {
-      // TODO: if the user has already used the accessLink successfully
-      // we should skip this part and just return true
-      // There's no need to create a duplicate invitation and membership
+      // If the user is already has an invitation and is a member of the container,
+      // these two API calls are a no-op
+
       console.log(`Using existing user id`);
       // TODO: this in particular needs to be server-side
       // Create an Invitation and set it to ACCEPTED
-      const createInvitationResp = await api.createInvitationForAccessLink(linkId, user.id);
-      // TODO: reminder that this creates an invitation, where the value of
+      console.log(`creating invitation for access link`);
+      const createInvitationResp = await api.callApi(`sharing/${linkId}/member/${user.id}/accept`, {}, 'POST');
+      // Reminder that this api call creates an invitation, where the value of
       // the wrappedKey is the password-wrapped one, not the publicKey wrapped one.
 
       if (!createInvitationResp) {
         return false;
       }
-
+      console.log(`adding member to container`);
       const addMemberResp = await api.addMemberToContainer(user.id, containerId);
       console.log(`adding user to convo`);
       console.log(addMemberResp);
@@ -103,11 +104,11 @@ const useSharingStore = defineStore('sharingManager', () => {
   }
 
   async function isAccessLinkValid(linkId) {
-    return await api.isAccessLinkValid(linkId);
+    return await api.callApi(`sharing/exists/${linkId}`);
   }
 
   async function fetchAccessLinks(folderId) {
-    _links.value = await api.getAccessLinksForContainer(folderId);
+    _links.value = await api.callApi(`containers/${folderId}/links`);
   }
 
   async function shareItems(itemsArray, password) {
@@ -134,7 +135,7 @@ const useSharingStore = defineStore('sharingManager', () => {
   }
 
   async function getSharedFolder(hash) {
-    return await api.getContainerWithItemsForAccessLink(hash);
+    return await api.callApi(`sharing/${hash}/`);
   }
 
   return {
