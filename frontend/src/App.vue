@@ -10,12 +10,7 @@ const { keychain } = useKeychainStore();
 const folderStore = useFolderStore();
 
 onMounted(async () => {
-  /**
-   * Non-zero values indicate a specific error has occurred.
-   * All initialization error codes enumerated by`INIT_ERROR` in '@/lockbox/const'.
-   * @readonly
-   * @const {number}
-   */
+  // Non-zero values indicate a specific error has occurred.
   const errorCode = await init(userStore.user, keychain, folderStore);
 
   if (errorCode) {

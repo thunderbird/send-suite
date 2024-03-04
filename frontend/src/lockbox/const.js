@@ -22,7 +22,7 @@ export const TagLabelColors = {
  * @readonly
  * @enum {number}
  */
-export const INIT_ERROR = {
+export const INIT_ERRORS = {
   NONE: 0,
   NO_USER: 1,
   NO_KEYCHAIN: 2,
