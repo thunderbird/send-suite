@@ -16,3 +16,15 @@ export const TagLabelColors = {
   teal: '!bg-teal-500',
   pink: '!bg-pink-500',
 };
+
+/**
+ * Enum for Initialization codes. Non-zero values indicate an error.
+ * @readonly
+ * @enum {number}
+ */
+export const INIT_ERRORS = {
+  NONE: 0,
+  NO_USER: 1,
+  NO_KEYCHAIN: 2,
+  COULD_NOT_CREATE_DEFAULT_FOLDER: 3,
+};
