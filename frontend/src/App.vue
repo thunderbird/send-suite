@@ -15,7 +15,7 @@ const folderStore = useFolderStore();
 onMounted(async () => {
   const initErr = await init(userStore.user, keychain, folderStore);
 
-  if (!initErr) {
+  if (initErr) {
     // Load from backend session and retry init()
     const didPopulate = await userStore.populateFromSession();
     if (!didPopulate) {
