@@ -54,6 +54,7 @@ const wsUploadServer = new WebSocket.Server({ noServer: true });
 const wsMessageServer = new WebSocket.Server({ noServer: true });
 const app = express();
 
+app.use(express.static('public'));
 app.use(morgan('combined'));
 
 app.use(express.json({ limit: '5mb' }));
