@@ -70,8 +70,6 @@ async function mozAcctLogin() {
 <template>
   <Btn @click.prevent="mozAcctLogin">Log into Moz Acct</Btn>
   <br />
-  <!-- <a href="/lockbox/fxa/logout">Log out of FXA</a> -->
-  <!-- <br /> -->
   <Btn @click.prevent="pingSession">ping session</Btn>
   <br />
   <br />
