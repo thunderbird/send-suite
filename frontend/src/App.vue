@@ -5,17 +5,20 @@ import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
 import useFolderStore from '@/lockbox/stores/folder-store';
 
-import { useRouter } from 'vue-router';
-const router = useRouter();
-
 const userStore = useUserStore();
 const { keychain } = useKeychainStore();
 const folderStore = useFolderStore();
 
 onMounted(async () => {
-  const initErr = await init(userStore.user, keychain, folderStore);
+  /**
+   * Non-zero values indicate a specific error has occurred.
+   * All initialization error codes enumerated by`INIT_ERROR` in '@/lockbox/const'.
+   * @readonly
+   * @const {number}
+   */
+  const errorCode = await init(userStore.user, keychain, folderStore);
 
-  if (initErr) {
+  if (errorCode) {
     // Load from backend session and retry init()
     const didPopulate = await userStore.populateFromSession();
     if (!didPopulate) {
@@ -24,9 +27,6 @@ onMounted(async () => {
     }
     userStore.user.store();
     await init(userStore.user, keychain, folderStore);
-
-    // TODO: decide whether we need to check return value from init()
-    // At this point, it would indicate that we don't have a keychain
   }
 });
 </script>

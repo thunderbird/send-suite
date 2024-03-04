@@ -17,6 +17,11 @@ export const TagLabelColors = {
   pink: '!bg-pink-500',
 };
 
+/**
+ * Enum for Initialization codes. Non-zero values indicate an error.
+ * @readonly
+ * @enum {number}
+ */
 export const INIT_ERROR = {
   NONE: 0,
   NO_USER: 1,

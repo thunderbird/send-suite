@@ -1,9 +1,16 @@
 import { INIT_ERROR } from '@/lockbox/const';
+import { User } from '@/lib/user';
+import { Keychain } from '@/lib/keychain';
 
-// Returns true if init finished, otherwise false
+/**
+ * Loads user and keychain from storage; creates default folder if necessary.
+ * @param {User} user - Instance of User class.
+ * @param {Keychain} keychain - Instance of Keychain class.
+ * @param {import('pinia').StoreDefinition} folderStore - Pinia store for managing folders.
+ */
 async function init(user, keychain, folderStore) {
-  let hasUser = await user.load();
-  let hasKeychain = await keychain.load();
+  const hasUser = await user.load();
+  const hasKeychain = await keychain.load();
 
   if (!hasUser) {
     return INIT_ERROR.NO_USER;
