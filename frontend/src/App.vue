@@ -13,9 +13,9 @@ const { keychain } = useKeychainStore();
 const folderStore = useFolderStore();
 
 onMounted(async () => {
-  const didInit = await init(userStore.user, keychain, folderStore);
-  console.log(``);
-  if (!didInit) {
+  const initErr = await init(userStore.user, keychain, folderStore);
+
+  if (!initErr) {
     // Load from backend session and retry init()
     const didPopulate = await userStore.populateFromSession();
     if (!didPopulate) {

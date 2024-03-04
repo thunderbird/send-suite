@@ -16,3 +16,10 @@ export const TagLabelColors = {
   teal: '!bg-teal-500',
   pink: '!bg-pink-500',
 };
+
+export const INIT_ERROR = {
+  NONE: 0,
+  NO_USER: 1,
+  NO_KEYCHAIN: 2,
+  ERR_COULD_NOT_CREATE_DEFAULT_FOLDER: 3,
+};
