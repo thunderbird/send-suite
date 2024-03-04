@@ -7,7 +7,7 @@ import { Keychain } from '@/lib/keychain';
  * @param {User} user - Instance of User class.
  * @param {Keychain} keychain - Instance of Keychain class.
  * @param {import('pinia').StoreDefinition} folderStore - Pinia store for managing folders.
- * @return {INIT_ERRORS} - Returns 0 (success) or an error code typed by INIT_ERRORS.
+ * @return {Promise<INIT_ERRORS>} - Returns Promise of 0 (success) or an error code typed by INIT_ERRORS.
  */
 async function init(user, keychain, folderStore) {
   const hasUser = await user.load();
