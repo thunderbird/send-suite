@@ -6,7 +6,6 @@ import {
   deleteItem,
   addGroupMember,
   removeGroupMember,
-  acceptInvitation,
   getContainerInfo,
   getContainerWithMembers,
   getSharesForContainer,
@@ -324,18 +323,6 @@ router.post(
     }
   }
 );
-
-router.post('/:containerId/member/accept/:invitationId', async (req, res) => {
-  const { invitationId } = req.params;
-  try {
-    const result = await acceptInvitation(parseInt(invitationId));
-    res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({
-      message: 'Server error.',
-    });
-  }
-});
 
 // Remove invitation and group membership
 router.delete('/:containerId/member/remove/:invitationId', async (req, res) => {

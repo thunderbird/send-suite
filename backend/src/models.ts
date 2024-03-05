@@ -355,62 +355,6 @@ export async function addGroupMember(containerId: number, userId: number) {
   });
 }
 
-export async function acceptInvitation(invitationId: number) {
-  console.log(`accepting invitation for ${invitationId}`);
-  // get invitation from database
-  const invitation = await prisma.invitation.findUnique({
-    where: {
-      id: invitationId,
-    },
-  });
-  if (!invitation) {
-    return null;
-  }
-
-  // get the recipientId from invitation
-  // get container from the invitation
-  const { recipientId, shareId } = invitation;
-  console.log(
-    `got share id ${shareId} from invitation, getting containerId from share`
-  );
-
-  const share = await prisma.share.findUnique({
-    where: {
-      id: shareId,
-    },
-  });
-
-  if (!share) {
-    console.log(`Cannot accept invitation - Share does not exist.`);
-    return null;
-  }
-
-  const { containerId } = share;
-  console.log(
-    `creating membership to container ${containerId} for user ${recipientId}`
-  );
-  // create a new groupUser for recipientId and group
-  const groupUser = await addGroupMember(containerId, recipientId);
-
-  // Mark the invitation as accepted
-  const result = await prisma.invitation.update({
-    where: {
-      id: invitationId,
-    },
-    data: {
-      status: InvitationStatus.ACCEPTED,
-    },
-  });
-
-  if (!result) {
-    return null;
-  }
-
-  return {
-    success: 'did not delete because we are not ready yet',
-  };
-}
-
 export async function removeInvitationAndGroup(invitationId: number) {
   const invitation = await prisma.invitation.findUnique({
     where: {
