@@ -66,18 +66,16 @@ async function login() {
     console.log(`no public key, either call keychain.value.load() or generate a new one `);
     return;
   }
-
-  const createUserResp = await user.createUser(email.value, jwkPublicKey.value);
-  if (!createUserResp) {
-    console.log(`could not create user, trying to log in`);
-    const loginResp = await user.login(email.value);
-    if (!loginResp) {
-      console.log(`could not log in either 🤷`);
+  const loginResp = await user.login(email.value);
+  if (!loginResp) {
+    console.log(`could not log in, trying to create 🤷`);
+    const createUserResp = await user.createUser(email.value, jwkPublicKey.value);
+    if (!createUserResp) {
+      console.log(`could not create user`);
       return;
     }
-    console.log(`logged in, user id is ${user.id}`);
   }
-
+  console.log(`logged in, user id is ${user.id}`);
   if (!folderStore.defaultFolder) {
     // Creating a default folder
     const createFolderResp = await folderStore.createFolder();
