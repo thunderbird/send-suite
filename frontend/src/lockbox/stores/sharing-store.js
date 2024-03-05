@@ -63,39 +63,22 @@ const useSharingStore = defineStore('sharingManager', () => {
     return url;
   }
 
-  // TODO: move this to the server-side
   async function acceptAccessLink(linkId, password) {
-    // Check for existence of link
+    // Check for existence of link.
     const { unwrappedKey, containerId } = await getContainerKeyFromChallenge(linkId, password, api, keychain);
     console.log(`unwrappedKey: ${unwrappedKey}`);
     console.log(`containerId: ${containerId}`);
 
     if (user.id) {
-      // If the user is already has an invitation and is a member of the container,
-      // these two API calls are a no-op
+      // Use the AccessLink to make the User a member of the shared folder.
+      const acceptAccessLinkResp = await api.callApi(`sharing/${linkId}/member/accept`, {}, 'POST');
 
-      console.log(`Using existing user id`);
-      // TODO: this in particular needs to be server-side
-      // Create an Invitation and set it to ACCEPTED
-      console.log(`creating invitation for access link`);
-      const createInvitationResp = await api.callApi(`sharing/${linkId}/member/${user.id}/accept`, {}, 'POST');
-      // Reminder that this api call creates an invitation, where the value of
-      // the wrappedKey is the password-wrapped one, not the publicKey wrapped one.
-
-      if (!createInvitationResp) {
-        return false;
-      }
-      console.log(`adding member to container`);
-      const addMemberResp = await api.addMemberToContainer(user.id, containerId);
-      console.log(`adding user to convo`);
-      console.log(addMemberResp);
-      if (!addMemberResp) {
+      if (!acceptAccessLinkResp) {
         return false;
       }
     } else {
-      // TODO: consider switching to sessionStorage
-      // Generate a temporary keypair
-      // for encrypting containerKey in keychain.
+      // TODO: consider switching to sessionStorage.
+      // Generate a temporary keypair for encrypting containerKey in keychain.
       await keychain.rsa.generateKeyPair();
     }
     await keychain.add(containerId, unwrappedKey);
