@@ -22,6 +22,7 @@ function consoleFormat(info) {
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: process.env.DEVELOPER_TIMEZONE ?? 'UTC',
   })} ${info.level.toLocaleUpperCase()}: ${info.message}`;
 }
 
