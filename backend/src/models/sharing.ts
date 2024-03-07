@@ -349,9 +349,7 @@ export async function acceptInvitation(invitationId: number) {
     return null;
   }
 
-  return {
-    success: 'did not delete because we are not ready yet',
-  };
+  return result;
 }
 
 export async function getContainersSharedByMe(
