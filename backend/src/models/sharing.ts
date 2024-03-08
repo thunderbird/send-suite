@@ -10,7 +10,7 @@ import { base64url } from '../utils';
 
 export async function createAccessLink(
   containerId: number,
-  senderId: number,
+  senderId: string,
   wrappedKey: string,
   salt: string,
   challengeKey: string,
@@ -142,8 +142,8 @@ export async function getContainerForAccessLink(linkId: string) {
 export async function createInvitation(
   containerId: number,
   wrappedKey: string,
-  senderId: number,
-  recipientId: number,
+  senderId: string,
+  recipientId: string,
   permission: number
 ) {
   console.log(`Looking for existing share`);
@@ -211,7 +211,7 @@ export async function createInvitation(
 
 export async function createInvitationForAccessLink(
   linkId: string,
-  recipientId: number
+  recipientId: string
 ) {
   const accessLink = await prisma.accessLink.findUnique({
     where: {
@@ -279,7 +279,7 @@ export async function removeAccessLink(linkId: string) {
   });
 }
 
-export async function getAllInvitations(userId: number) {
+export async function getAllInvitations(userId: string) {
   const invitations = await prisma.invitation.findMany({
     where: {
       recipientId: userId,
@@ -298,7 +298,7 @@ export async function getAllInvitations(userId: number) {
 }
 
 export async function getContainersSharedByMe(
-  userId: number,
+  userId: string,
   type: ContainerType
 ) {
   const shares = await prisma.share.findMany({
@@ -342,7 +342,7 @@ export async function getContainersSharedByMe(
 }
 
 export async function getContainersSharedWithMe(
-  recipientId: number,
+  recipientId: string,
   type: ContainerType
 ) {
   const invitations = await prisma.invitation.findMany({

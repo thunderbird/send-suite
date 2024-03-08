@@ -24,7 +24,7 @@ though, the `getContainersSharedWithMe` is also looking for accepted invitations
 
 
 */
-export async function getOwnedContainers(ownerId: number) {
+export async function getOwnedContainers(ownerId: string) {
   return prisma.container.findMany({
     where: {
       ownerId,
@@ -37,7 +37,7 @@ export async function getOwnedContainers(ownerId: number) {
 
 export async function getSharesForContainer(
   containerId: number,
-  userId: number
+  userId: string
 ) {
   return await prisma.share.findMany({
     where: {
@@ -109,7 +109,7 @@ export async function updateAccessLinkPermissions(
 }
 
 export async function __getSharedContainersAndMembers(
-  userId: number,
+  userId: string,
   type: ContainerType
 ) {
   // Get the containers I can access, but owned by someone else
@@ -310,7 +310,7 @@ export async function getContainerWithDescendants(id: number) {
   return container;
 }
 
-export async function addGroupMember(containerId: number, userId: number) {
+export async function addGroupMember(containerId: number, userId: string) {
   const container = await prisma.container.findUnique({
     where: {
       id: containerId,
@@ -445,7 +445,7 @@ export async function removeInvitationAndGroup(invitationId: number) {
   return result;
 }
 
-export async function removeGroupMember(containerId: number, userId: number) {
+export async function removeGroupMember(containerId: number, userId: string) {
   const group = await prisma.group.findFirst({
     where: {
       container: {
@@ -552,7 +552,7 @@ export async function updateTagName(tagId: number, name: string) {
 // Get all items and containers (that I have access to) with a specific tag or tags
 
 export async function getContainersAndItemsWithTags(
-  userId: number,
+  userId: string,
   tagNames: string[]
 ) {
   // First, find the group memberships for the user.

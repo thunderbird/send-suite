@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 export async function createUpload(
   id: string,
   size: number,
-  ownerId: number,
+  ownerId: string,
   type: string
 ) {
   const upload = await prisma.upload.create({

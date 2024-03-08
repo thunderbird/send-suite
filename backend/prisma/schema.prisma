@@ -18,7 +18,7 @@ enum UserTier {
 }
 
 model User {
-  id                  Int                  @id @default(autoincrement())
+  id                  String  @id @default(uuid()) @db.Uuid
   email               String?
   publicKey           String?
   tier                UserTier
@@ -52,8 +52,8 @@ model Profile {
   avatar        String?
 
   // 1-1 relationship with User
-  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId        Int     @unique
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String  @db.Uuid @unique
 
   accessToken   String?
   refreshToken  String?
@@ -69,7 +69,7 @@ model Group {
 model Membership {
   groupId     Int
   group       Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  userId      Int
+  userId      String  @db.Uuid
   user        User  @relation(fields: [userId], references: [id])
   permission  Int   @default(0)
                     // Modeled as a bitfield, i.e., 0b00000110
@@ -89,7 +89,7 @@ model Share {
   containerId     Int
   container       Container @relation("SharedFolder", fields: [containerId], references: [id], onDelete: Cascade)
 
-  senderId        Int   // Not necessarily the owner of the container
+  senderId        String  @db.Uuid   // Not necessarily the owner of the container
   sender          User    @relation("Sender", fields: [senderId], references: [id])
 
   // There are two ways to access a Share.
@@ -113,7 +113,7 @@ model Invitation {
   share         Share   @relation(fields: [shareId], references: [id], onDelete: Cascade)
   wrappedKey    String  // Container key wrapped with recipient publicKey
 
-  recipientId   Int
+  recipientId   String  @db.Uuid
   recipient     User    @relation("Recipient", fields: [recipientId], references: [id])
   status        InvitationStatus @default(PENDING)
 
@@ -170,7 +170,7 @@ model Container {
   shareOnly Boolean         @default(false)
   shares    Share[]         @relation("SharedFolder")
 
-  ownerId   Int
+  ownerId   String          @db.Uuid
   owner     User            @relation(fields: [ownerId], references: [id])
   groupId   Int             @unique
   group     Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
@@ -215,7 +215,7 @@ model Item {
 model Upload {
   id        String        @unique
   size      Int
-  ownerId   Int
+  ownerId   String        @db.Uuid
   owner     User          @relation(fields: [ownerId], references: [id])
   items     Item[]        // A single Upload may back multiple Items
   type      String        // mime type

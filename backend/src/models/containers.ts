@@ -6,7 +6,7 @@ import { PermissionType } from '../types/custom';
 // owner is added to new group
 export async function createContainer(
   name: string,
-  ownerId: number,
+  ownerId: string,
   type: ContainerType,
   parentId: number,
   shareOnly: boolean

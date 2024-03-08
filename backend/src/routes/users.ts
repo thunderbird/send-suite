@@ -40,7 +40,7 @@ router.get('/me', requireLogin, async (req, res) => {
 router.get('/publickey/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const user = await getUserPublicKey(parseInt(id));
+    const user = await getUserPublicKey(id);
     res.status(200).json(user);
   } catch (error) {
     res.status(500).json({
@@ -192,7 +192,7 @@ router.post('/', async (req, res) => {
 router.get('/:userId/containers', async (req, res) => {
   const { userId } = req.params;
   try {
-    const containers = await getAllUserGroupContainers(parseInt(userId), null);
+    const containers = await getAllUserGroupContainers(userId, null);
     res.status(200).json(containers);
   } catch (error) {
     res.status(500).json({
@@ -205,7 +205,7 @@ router.get('/:userId/conversations', async (req, res) => {
   const { userId } = req.params;
   try {
     const containers = await getAllUserGroupContainers(
-      parseInt(userId),
+      userId,
       ContainerType.CONVERSATION
     );
     res.status(200).json(containers);
@@ -219,10 +219,7 @@ router.get('/:userId/conversations', async (req, res) => {
 router.get('/:userId/activity', async (req, res) => {
   const { userId } = req.params;
   try {
-    const containers = await getRecentActivity(
-      parseInt(userId),
-      ContainerType.FOLDER
-    );
+    const containers = await getRecentActivity(userId, ContainerType.FOLDER);
     res.status(200).json(containers);
   } catch (error) {
     console.log(`🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡`);
@@ -237,7 +234,7 @@ router.get('/:userId/folders/sharedByMe', async (req, res) => {
   const { userId } = req.params;
   try {
     const containersAndMembers = await getContainersSharedByMe(
-      parseInt(userId),
+      userId,
       ContainerType.FOLDER
     );
 
@@ -254,7 +251,7 @@ router.get('/:userId/folders/sharedWithMe', async (req, res) => {
   const { userId } = req.params;
   try {
     const containersAndMembers = await getContainersSharedWithMe(
-      parseInt(userId),
+      userId,
       ContainerType.FOLDER
     );
 
@@ -271,7 +268,7 @@ router.get('/:userId/folders/sharedWithMe', async (req, res) => {
 router.get('/:userId/invitations', async (req, res) => {
   const { userId } = req.params;
   try {
-    const invitations = await getAllInvitations(parseInt(userId));
+    const invitations = await getAllInvitations(userId);
     res.status(200).json(invitations);
   } catch (error) {
     res.status(500).json({
@@ -284,7 +281,7 @@ router.post('/:id/backup', async (req, res) => {
   const { id } = req.params;
   const { keys, keypair, keystring, salt } = req.body;
   try {
-    const user = await setBackup(parseInt(id), keys, keypair, keystring, salt);
+    const user = await setBackup(id, keys, keypair, keystring, salt);
     res.status(200).json({
       message: 'backup complete',
     });
@@ -298,7 +295,7 @@ router.post('/:id/backup', async (req, res) => {
 router.get('/:id/backup', async (req, res) => {
   const { id } = req.params;
   try {
-    const backup = await getBackup(parseInt(id));
+    const backup = await getBackup(id);
     res.status(200).json(backup);
   } catch (error) {
     res.status(500).json({

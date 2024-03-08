@@ -39,7 +39,7 @@ router.post(
       expiration,
     }: {
       containerId: number;
-      senderId: number;
+      senderId: string;
       wrappedKey: string;
       salt: string;
       challengeKey: string;
@@ -193,10 +193,7 @@ router.post(
     const { linkId, recipientId } = req.params;
 
     try {
-      const result = await createInvitationForAccessLink(
-        linkId,
-        parseInt(recipientId)
-      );
+      const result = await createInvitationForAccessLink(linkId, recipientId);
       res.status(200).json(result);
     } catch (error) {
       res.status(500).json({

@@ -77,9 +77,7 @@ router.get('/:tagName', getGroupMemberPermissions, async (req, res) => {
   }
 
   try {
-    const result = await getContainersAndItemsWithTags(parseInt(userId), [
-      tagName,
-    ]);
+    const result = await getContainersAndItemsWithTags(userId, [tagName]);
     if (!result) {
       res.status(500).json({
         message: 'Server error.',

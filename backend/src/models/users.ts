@@ -77,7 +77,7 @@ export async function findOrCreateUserProfileByMozillaId(
   return user;
 }
 
-export async function getUserPublicKey(id: number) {
+export async function getUserPublicKey(id: string) {
   return prisma.user.findUnique({
     where: {
       id,
@@ -88,7 +88,7 @@ export async function getUserPublicKey(id: number) {
   });
 }
 
-export async function updateUserPublicKey(id: number, publicKey: string) {
+export async function updateUserPublicKey(id: string, publicKey: string) {
   return prisma.user.update({
     where: {
       id,
@@ -100,7 +100,7 @@ export async function updateUserPublicKey(id: number, publicKey: string) {
 }
 
 async function _whereContainer(
-  userId: number,
+  userId: string,
   type: ContainerType | null,
   shareOnly?: boolean,
   topLevelOnly?: boolean
@@ -147,7 +147,7 @@ async function _whereContainer(
 
 // Does not include shareOnly containers.
 export async function getAllUserGroupContainers(
-  userId: number,
+  userId: string,
   type: ContainerType | null
 ) {
   const containerWhere = await _whereContainer(userId, type, false, true);
@@ -197,7 +197,7 @@ export async function getAllUserGroupContainers(
 }
 
 export async function getRecentActivity(
-  userId: number,
+  userId: string,
   type: ContainerType | null
 ) {
   // Get all containers
@@ -234,7 +234,7 @@ export async function getRecentActivity(
   return containers;
 }
 
-export async function getBackup(id: number) {
+export async function getBackup(id: string) {
   return prisma.user.findUnique({
     where: {
       id,
@@ -249,7 +249,7 @@ export async function getBackup(id: number) {
 }
 
 export async function setBackup(
-  id: number,
+  id: string,
   keys: string,
   keypair: string,
   keystring: string,

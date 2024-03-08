@@ -28,7 +28,7 @@ type Profile = {
   refreshToken: string;
 };
 type User = {
-  id: number;
+  id: string;
   email: string;
   tier: string;
   createdAt: Date;

@@ -37,13 +37,7 @@ function extractParamOrBody(req, prop: string) {
 function extractUserId(req) {
   const path = ['user', 'id'];
   const val = extractSessionValue(req, path);
-  try {
-    const userId = parseInt(val, 10);
-    return userId;
-  } catch (e) {
-    console.error(`Could  ${path} for ${extractMethodAndRoute(req)}`);
-    return null;
-  }
+  return val;
 }
 
 function extractContainerId(req) {

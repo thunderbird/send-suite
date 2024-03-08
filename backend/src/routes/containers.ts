@@ -222,7 +222,7 @@ router.get('/', (req, res) => {
 router.get('/owner/:userId', async (req, res) => {
   const { userId } = req.params;
   try {
-    const containers = await getOwnedContainers(parseInt(userId));
+    const containers = await getOwnedContainers(userId);
     res.status(200).json(containers);
   } catch (error) {
     res.status(500).json({
@@ -310,8 +310,8 @@ router.post(
       const invitation = await createInvitation(
         parseInt(containerId),
         wrappedKey,
-        parseInt(senderId),
-        parseInt(recipientId),
+        senderId,
+        recipientId,
         parseInt(permission)
       );
       res.status(200).json(invitation);
@@ -358,10 +358,7 @@ router.post(
     const { containerId } = req.params;
     const { userId } = req.body;
     try {
-      const container = await addGroupMember(
-        parseInt(containerId),
-        parseInt(userId)
-      );
+      const container = await addGroupMember(parseInt(containerId), userId);
       res.status(200).json(container);
     } catch (error) {
       res.status(500).json({
@@ -378,10 +375,7 @@ router.delete(
   async (req, res) => {
     const { containerId, userId } = req.params;
     try {
-      const container = await removeGroupMember(
-        parseInt(containerId),
-        parseInt(userId)
-      );
+      const container = await removeGroupMember(parseInt(containerId), userId);
       res.status(200).json(container);
     } catch (error) {
       console.log(error);
@@ -434,10 +428,7 @@ router.get(
     const { containerId } = req.params;
     const { userId } = req.body; // TODO: get from session
     try {
-      const result = await getSharesForContainer(
-        parseInt(containerId),
-        parseInt(userId)
-      );
+      const result = await getSharesForContainer(parseInt(containerId), userId);
       res.status(200).json({
         result,
       });
