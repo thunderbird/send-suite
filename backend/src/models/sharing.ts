@@ -335,26 +335,21 @@ export async function acceptInvitation(invitationId: number) {
   // create a new groupUser for recipientId and group
   const groupUser = await addGroupMember(containerId, recipientId);
 
-  // Mark the invitation as accepted, if necessary.
-  if (invitation.status !== InvitationStatus.ACCEPTED) {
-    const result = await prisma.invitation.update({
-      where: {
-        id: invitationId,
-      },
-      data: {
-        status: InvitationStatus.ACCEPTED,
-      },
-    });
+  // Mark the invitation as accepted
+  const result = await prisma.invitation.update({
+    where: {
+      id: invitationId,
+    },
+    data: {
+      status: InvitationStatus.ACCEPTED,
+    },
+  });
 
-    if (!result) {
-      return null;
-    }
+  if (!result) {
+    return null;
   }
 
-  // Placeholder until #90 is addressed
-  return {
-    success: true,
-  };
+  return result;
 }
 
 export async function getContainersSharedByMe(
