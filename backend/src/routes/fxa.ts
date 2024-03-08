@@ -2,7 +2,7 @@ import { Router } from 'express';
 import axios from 'axios';
 import { getIssuer, getClient, generateState } from '../auth/client';
 import { findOrCreateUserProfileByMozillaId } from '../models/users';
-
+import logger from '../logger';
 const FXA_STATE = 'fxa_state';
 
 const router: Router = Router();
@@ -43,7 +43,8 @@ router.get('/login', async (req, res, next) => {
     };
   } catch (err) {
     // Log the error, but continue with OIDC auth
-    console.error('Could not initialize metrics flow, error occurred: ', err);
+    logger.error(`Could not initialize metrics flow.`);
+    logger.error(err);
   }
 
   // Set up client
@@ -66,7 +67,8 @@ router.get('/login', async (req, res, next) => {
   // so they can do the redirect.
   req.session.save((err) => {
     if (err) {
-      console.log(`couldn't save session`);
+      logger.error('Could not save session in /login.');
+      logger.error(err);
       res.status(500).json(err);
       return;
     }
@@ -101,7 +103,8 @@ router.get('/', async (req, res) => {
   delete req.session[FXA_STATE];
   req.session.save(async (err) => {
     if (err) {
-      console.log(`couldn't save session`);
+      logger.error('Could not save session in / callback.');
+      logger.error(err);
       res.status(500).json(err);
       return;
     }
@@ -137,7 +140,8 @@ router.get('/', async (req, res) => {
     req.session['user'] = user;
     req.session.save((err) => {
       if (err) {
-        console.log(`couldn't save session`);
+        logger.error('Could not save session in / callback.');
+        logger.error(err);
         res.status(500).json(err);
         return;
       }
@@ -166,10 +170,6 @@ TODO:
 
   const destroyUrl = `https://oauth.stage.mozaws.net/v1/destroy`;
   const accessToken = `${req.session?.user?.profile?.accessToken}`;
-  console.log(`
-
-  🛑🛑🛑🛑🛑🛑🛑 logging out of fxa
-  `);
   try {
     if (accessToken) {
       const body = {
@@ -188,11 +188,12 @@ TODO:
     } else {
       return res.redirect('./login');
     }
-  } catch (e) {
-    console.log(e);
+  } catch (err) {
+    logger.error('Error in /logout.');
+    logger.error(err);
+
     res.status(500).json({
       message: 'Could not log out',
-      error: e,
     });
   }
 });

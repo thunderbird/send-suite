@@ -43,7 +43,6 @@ async function handleUpload(ws, message, fileStream) {
   const uploadId = crypto.randomBytes(24).toString('hex');
   const fileInfo = JSON.parse(message);
 
-  console.log(fileInfo);
   ws.send(
     JSON.stringify({
       id: uploadId,
@@ -94,7 +93,6 @@ async function handleUpload(ws, message, fileStream) {
 }
 
 export default function (ws, req) {
-  console.log(`wsHandler initialized`);
   let fileStream;
 
   ws.on('close', (e) => {

@@ -5,7 +5,6 @@ import WebSocket from 'ws';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import sessionFileStore from 'session-file-store';
-import morgan from 'morgan';
 
 import users from './routes/users';
 import containers from './routes/containers';
@@ -14,11 +13,11 @@ import download from './routes/download';
 import sharing from './routes/sharing';
 import tags from './routes/tags';
 import fxa from './routes/fxa';
-// import createStreamingRouter from './routes/streamingRouter';
 
 import wsUploadHandler from './wsUploadHandler';
 import wsMsgHandler from './wsMsgHandler';
-import { uuidv4 } from './utils';
+
+import logger from './logger';
 
 type Profile = {
   mozid: string;
@@ -48,22 +47,12 @@ const HOST = '0.0.0.0';
 const WS_UPLOAD_PATH = `/api/ws`;
 const WS_MESSAGE_PATH = `/api/messagebus`;
 
-let streamingClients = [];
-// const { router: streamingRouter, broadcast: streamingBroadcast } = createStreamingRouter(streamingClients);
 const wsUploadServer = new WebSocket.Server({ noServer: true });
 const wsMessageServer = new WebSocket.Server({ noServer: true });
+
 const app = express();
-
 app.use(express.static('public'));
-app.use(morgan('combined'));
-
 app.use(express.json({ limit: '5mb' }));
-// app.use(
-//   cors({
-//     origin: 'moz-extension://19f948ec-3c58-4af6-9ec8-f2d1d5d01044',
-//     credentials: true,
-//   })
-// );
 
 let allowedOrigins = ['http://localhost:5173'];
 
@@ -105,27 +94,7 @@ const expressSession = session({
 app.use(expressSession);
 app.use(cookieParser());
 
-// passport.use('openidconnect', strategy);
-// // refresh.use('openidconnect', strategy);
-// app.use(passport.initialize());
-// app.use(passport.session());
-
-// passport.serializeUser((user, next) => {
-//   console.log(`🐓🐓🐓 serializing user`);
-//   console.log(user);
-//   next(null, user);
-// });
-
-// passport.deserializeUser((user, next) => {
-//   console.log(`🦄🦄🦄 deserializing user`);
-//   console.log(user);
-//   next(null, user);
-// });
-
 app.get('/', (req, res) => {
-  res.status(200).send('echo');
-});
-app.get('/echo', (req, res) => {
   res.status(200).send('echo');
 });
 
@@ -143,51 +112,29 @@ app.use('/api/sharing', sharing);
 app.use('/api/tags', tags);
 app.use('/lockbox/fxa', fxa);
 app.use('/api/lockbox/fxa', fxa);
-// app.use('/api/stream', streamingRouter);
-
-// Can't do this yet, no refreshToken
-// app.get('/lockbox/profile', async (req, res) => {
-//   refresh.requestNewAccessToken(
-//     'openidconnect',
-//     'some_refresh_token',
-//     function (err, accessToken, refreshToken) {
-//       // You have a new access token, store it in the user object,
-//       // or use it to make a new request.
-//       // `refreshToken` may or may not exist, depending on the strategy you are using.
-//       // You probably don't need it anyway, as according to the OAuth 2.0 spec,
-//       // it should be the same as the initial refresh token.
-//     },
-//   );
-// })
 
 app.get(`*`, (req, res) => {
   res.status(404);
 });
 
 const server = app.listen(PORT, HOST, async () => {
-  console.log(`🚀 Server ready at: http://${HOST}:${PORT}`);
+  logger.info(`🚀 Server ready at: http://${HOST}:${PORT}`);
 });
 
 const messageClients = new Map();
 // Listen for WebSocket connections
 server.on('upgrade', (req, socket, head) => {
-  // console.log('got the upgrade request');
   if (req.url === WS_UPLOAD_PATH) {
-    // console.log(`upgrading ${WS_UPLOAD_PATH}`);
     wsUploadServer.handleUpgrade(req, socket, head, (ws) => {
-      // console.log('handling upgrade for upload');
       wsUploadServer.emit('connection', ws, req);
       wsUploadHandler(ws, req);
     });
   } else if (req.url.startsWith(WS_MESSAGE_PATH)) {
-    console.log(`upgrading ${WS_MESSAGE_PATH}`);
+    logger.info(`upgrading ${WS_MESSAGE_PATH}`);
     wsMessageServer.handleUpgrade(req, socket, head, (ws) => {
-      // console.log('handling upgrade for messages');
-      // wsMessageServer.emit('connection', ws, req);
-      // const id = uuidv4();
       const parts = req.url.split('/');
       const id = parts[parts.length - 1];
-      console.log(id);
+      logger.info(id);
       messageClients.set(id, ws);
       wsMsgHandler(ws, messageClients);
     });

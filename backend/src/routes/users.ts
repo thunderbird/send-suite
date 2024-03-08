@@ -86,8 +86,6 @@ router.get('/folders', requireLogin, async (req, res) => {
     );
     res.status(200).json(containers);
   } catch (error) {
-    console.log(`🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡`);
-    console.log(error);
     res.status(500).json({
       message: 'Could not retrieve user folders.',
     });
@@ -117,16 +115,12 @@ router.get('/lookup/:email', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   const { email } = req.body;
-  console.log(`looking for user ${email}`);
   try {
     const user = await getUserByEmail(email);
     if (user) {
-      console.log(`Adding logged-in user to request object`);
       req.session.user = user;
       req.session.save((err) => {
         if (err) {
-          console.log(`💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣`);
-          console.log(`couldn't save session`);
           res.status(500).json(err);
         } else {
           res.status(200).json(user);
@@ -136,8 +130,6 @@ router.post('/login', async (req, res) => {
       res.status(404).send();
     }
   } catch (error) {
-    console.log(error);
-
     res.status(500).json({
       message: 'Server error.',
       error: error.message,
@@ -155,8 +147,6 @@ router.post('/', async (req, res) => {
     email: string;
     tier: UserTier | null;
   } = req.body;
-  console.log(email);
-  console.log(typeof publicKey);
   let userEmail = email;
   if (email) {
     userEmail = email.trim().toLowerCase();
@@ -225,8 +215,6 @@ router.get('/:userId/activity', async (req, res) => {
     );
     res.status(200).json(containers);
   } catch (error) {
-    console.log(`🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡🤡`);
-    console.log(error);
     res.status(500).json({
       message: 'Server error.',
     });
@@ -243,7 +231,6 @@ router.get('/:userId/folders/sharedByMe', async (req, res) => {
 
     res.status(200).json(containersAndMembers);
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       message: 'Server error.',
     });
@@ -260,7 +247,6 @@ router.get('/:userId/folders/sharedWithMe', async (req, res) => {
 
     res.status(200).json(containersAndMembers);
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       message: 'Server error.',
     });
