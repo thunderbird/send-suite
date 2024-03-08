@@ -140,7 +140,7 @@ is a user and containerId === 0
 
 export function canRead(req, res, next) {
   if (!hasRead(req[PERMISSION_REQUEST_KEY])) {
-    logger.info(`Missing read permission`);
+    logger.warn(`Missing read permission`);
     reject(res);
     return;
   }
@@ -148,7 +148,7 @@ export function canRead(req, res, next) {
 }
 export function canWrite(req, res, next) {
   if (!hasWrite(req[PERMISSION_REQUEST_KEY])) {
-    logger.info(`Missing write permission`);
+    logger.warn(`Missing write permission`);
     reject(res);
     return;
   }
@@ -156,7 +156,7 @@ export function canWrite(req, res, next) {
 }
 export function canAdmin(req, res, next) {
   if (!hasAdmin(req[PERMISSION_REQUEST_KEY])) {
-    logger.info(`Missing admin permission`);
+    logger.warn(`Missing admin permission`);
     reject(res);
     return;
   }
@@ -164,7 +164,7 @@ export function canAdmin(req, res, next) {
 }
 export function canShare(req, res, next) {
   if (!hasShare(req[PERMISSION_REQUEST_KEY])) {
-    logger.info(`Missing share permission`);
+    logger.warn(`Missing share permission`);
     reject(res);
     return;
   }
