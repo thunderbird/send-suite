@@ -23,18 +23,12 @@ export default class FSStorage {
   }
 
   getStream(id: string): fs.ReadStream {
-    // console.log(
-    //   `we get(${id}) which is this fs path: ${path.join(this.dir, id)}`
-    // );
     return fs.createReadStream(path.join(this.dir, id));
   }
 
   set(id: string, file: fs.ReadStream): Promise<void> {
     return new Promise((resolve, reject) => {
       const filepath = path.join(this.dir, id);
-      console.log(
-        `we just set ${filepath} for file (with id ${id}) the fs version of storage.set()`
-      );
       const fstream = fs.createWriteStream(filepath);
       file.pipe(fstream);
       file.on('error', (err) => {

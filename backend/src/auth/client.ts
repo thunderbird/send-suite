@@ -10,7 +10,6 @@ export async function getIssuer() {
   const mozIssuer = await Issuer.discover(
     'https://accounts.stage.mozaws.net/.well-known/openid-configuration'
   );
-  console.log('Discovered issuer %s %O', mozIssuer.issuer, mozIssuer.metadata);
   return mozIssuer;
 }
 
