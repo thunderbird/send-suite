@@ -47,7 +47,6 @@ router.post(
         });
       }
     } catch (error) {
-      console.log(error);
       res.status(500).json({
         message: 'Server error.',
         // error: error.message,
@@ -67,7 +66,6 @@ router.get('/:id/size', async (req, res) => {
       size,
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       message: 'Server error.',
     });
@@ -85,7 +83,6 @@ router.get('/:id/metadata', async (req, res) => {
       ...metadata,
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       message: 'Server error.',
     });

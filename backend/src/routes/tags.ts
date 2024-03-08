@@ -21,7 +21,6 @@ router.post('/item/:itemId/', async (req, res) => {
     res.status(500).json({
       message: 'Server error.',
     });
-    console.log(e);
   }
 });
 

@@ -15,7 +15,6 @@ export async function createContainer(
     data: {},
   });
 
-  console.log(`👿 just created group`);
   await prisma.membership.create({
     data: {
       groupId: group.id,
@@ -23,7 +22,6 @@ export async function createContainer(
       permission: PermissionType.ADMIN, // Owner has full permissions
     },
   });
-  console.log(`👿 just added owner to group`);
 
   const createArgs = {
     data: {
@@ -41,8 +39,6 @@ export async function createContainer(
   }
 
   const container = await prisma.container.create(createArgs);
-  console.log(`👿 just created container, connected to group`);
-
   return container;
 }
 
@@ -123,9 +119,6 @@ export async function getItemsInContainer(id: number) {
       },
       tags: true,
     },
-    // include: {
-    //   items: true,
-    // },
   });
 }
 
