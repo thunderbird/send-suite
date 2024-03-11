@@ -337,16 +337,18 @@ export async function acceptInvitation(invitationId: number) {
 
   // Mark the invitation as accepted, if necessary.
   if (invitation.status !== InvitationStatus.ACCEPTED) {
-    const result = await prisma.invitation.update({
-      where: {
-        id: invitationId,
-      },
-      data: {
-        status: InvitationStatus.ACCEPTED,
-      },
-    });
-
-    if (!result) {
+    try {
+      const result = await prisma.invitation.update({
+        where: {
+          id: invitationId,
+        },
+        data: {
+          status: InvitationStatus.ACCEPTED,
+        },
+      });
+    } catch (err) {
+      // TODO: return a standardized Error object
+      // per https://github.com/thunderbird/send-suite/issues/90
       return null;
     }
   }
