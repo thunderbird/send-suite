@@ -6,9 +6,10 @@ import {
   getAccessLinkChallenge,
   acceptAccessLink,
   getContainerForAccessLink,
-  createInvitationForAccessLink,
+  createInvitationFromAccessLink,
   removeAccessLink,
   isAccessLinkValid,
+  acceptInvitation,
 } from '../models/sharing';
 
 import {
@@ -185,28 +186,26 @@ router.delete('/:linkId', async (req, res) => {
   }
 });
 
-// For record keeping purposes, create a corresponding invitation
-router.post(
-  '/:linkId/member/:recipientId/accept',
-  getGroupMemberPermissions,
-  async (req, res) => {
-    const { linkId, recipientId } = req.params;
-
-    try {
-      const result = await createInvitationForAccessLink(
-        linkId,
-        parseInt(recipientId)
-      );
-      res.status(200).json(result);
-    } catch (error) {
-      res.status(500).json({
-        message: 'Server error.',
-      });
-    }
+// Allow user to use an AccessLink to become a group member for a container
+router.post('/:linkId/member/accept', requireLogin, async (req, res) => {
+  const { linkId } = req.params;
+  const { id } = req.session.user;
+  try {
+    // We create an Invitation for two reasons:
+    // - it allows us to reuse the existing `acceptInvitation()`
+    // - it serves as record-keeping (e.g., we can prevent someone
+    // from re-joining after their access has been revoked)
+    const newInvitation = await createInvitationFromAccessLink(linkId, id);
+    const result = await acceptInvitation(newInvitation.id);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error.',
+    });
   }
-);
+});
 
-//
+// Destroy a folder, its items, and any record of group memberships
 router.post('/burn', async (req, res) => {
   const { containerId } = req.body;
   console.log(`🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥`);
