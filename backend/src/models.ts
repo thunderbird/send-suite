@@ -3,6 +3,8 @@ import {
   ContainerType,
   ItemType,
   InvitationStatus,
+  Item,
+  Membership,
 } from '@prisma/client';
 const prisma = new PrismaClient();
 
@@ -181,37 +183,31 @@ export async function createItem(
   type: ItemType,
   wrappedKey: string
 ) {
-  const item = await prisma.item.create({
-    data: {
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      name,
-      wrappedKey,
-      // containerId,
-      // uploadId,
-      type,
-      upload: {
-        connect: {
-          id: uploadId,
-        },
-      },
-      container: {
-        connect: {
-          id: containerId,
-        },
-      },
-    },
-  });
-  if (item) {
-    // touch the container's `updatedAt` date
-    await prisma.container.update({
-      where: {
-        id: containerId,
-      },
+  let item: Item | Record<string, string>;
+  try {
+    item = await prisma.item.create({
       data: {
+        createdAt: new Date(),
         updatedAt: new Date(),
+        name,
+        wrappedKey,
+        type,
+        upload: {
+          connect: {
+            id: uploadId,
+          },
+        },
+        container: {
+          connect: {
+            id: containerId,
+          },
+        },
       },
     });
+  } catch (err) {
+    item = {
+      error: 'could not create item',
+    };
   }
   return item;
 }
@@ -334,25 +330,31 @@ export async function addGroupMember(containerId: number, userId: number) {
     return null;
   }
 
-  console.log(`Checking for existing membership`);
-  const membership = await prisma.membership.findFirst({
+  let membership: Membership | Record<string, string>;
+  membership = await prisma.membership.findFirst({
     where: {
       groupId: group.id,
       userId,
     },
   });
   if (membership) {
-    console.log(`membership found. no need to create`);
     return membership;
   }
 
-  return prisma.membership.create({
-    data: {
-      groupId: group.id,
-      userId,
-      permission: PermissionType.READ, // Lowest permissions, by default
-    },
-  });
+  try {
+    membership = await prisma.membership.create({
+      data: {
+        groupId: group.id,
+        userId,
+        permission: PermissionType.READ, // Lowest permissions, by default
+      },
+    });
+    return membership;
+  } catch (err) {
+    return {
+      error: 'could not create membership',
+    };
+  }
 }
 
 export async function removeInvitationAndGroup(invitationId: number) {

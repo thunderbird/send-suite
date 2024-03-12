@@ -28,51 +28,63 @@ export async function createAccessLink(
     },
   });
 
-  if (!share) {
-    // Create a share
-    share = await prisma.share.create({
+  // For placeholder error message:
+  // if there's an error while creating, what couldn't we create?
+  let entityName: string;
+  try {
+    if (!share) {
+      // Create a share
+      entityName = 'share';
+      share = await prisma.share.create({
+        data: {
+          containerId,
+          senderId,
+        },
+      });
+    }
+
+    if (!share) {
+      console.log(`Could not create share before creating accessLink.`);
+      return {
+        error: 'could not create ${entityName}',
+      };
+    }
+
+    console.log(`Created share for access link: ${share.id}`);
+    const id = base64url(randomBytes(64));
+
+    console.log(`🚀 I see an expiration of: ${expiration}`);
+    let expiryDate = null;
+    if (expiration) {
+      expiryDate = new Date(expiration);
+    }
+
+    console.log(`🚀 using expiryDate`);
+    console.log(expiryDate);
+    entityName = 'access link';
+    return prisma.accessLink.create({
       data: {
-        containerId,
-        senderId,
+        id,
+        share: {
+          connect: {
+            id: share.id,
+          },
+        },
+        wrappedKey,
+        salt,
+        challengeKey,
+        challengeSalt,
+        challengeCiphertext,
+        challengePlaintext,
+        permission,
+        expiryDate,
       },
     });
+  } catch (err) {
+    return {
+      error: 'could not create ${entityName}',
+    };
   }
-
-  if (!share) {
-    console.log(`Could not create share before creating accessLink.`);
-    return null;
-  }
-
-  console.log(`Created share for access link: ${share.id}`);
-  const id = base64url(randomBytes(64));
-
-  console.log(`🚀 I see an expiration of: ${expiration}`);
-  let expiryDate = null;
-  if (expiration) {
-    expiryDate = new Date(expiration);
-  }
-
-  console.log(`🚀 using expiryDate`);
-  console.log(expiryDate);
-
-  return prisma.accessLink.create({
-    data: {
-      id,
-      share: {
-        connect: {
-          id: share.id,
-        },
-      },
-      wrappedKey,
-      salt,
-      challengeKey,
-      challengeSalt,
-      challengeCiphertext,
-      challengePlaintext,
-      permission,
-      expiryDate,
-    },
-  });
 }
 
 export async function getAccessLinkChallenge(linkId: string) {
@@ -154,60 +166,71 @@ export async function createInvitation(
       senderId,
     },
   });
+  // For placeholder error message:
+  // if there's an error while creating, what couldn't we create?
+  let entityName: string;
+  try {
+    if (!share) {
+      console.log(`getting user with id ${senderId}`);
+      const user = await prisma.user.findUnique({
+        where: {
+          id: senderId,
+        },
+      });
 
-  if (!share) {
-    console.log(`getting user with id ${senderId}`);
-    const user = await prisma.user.findUnique({
+      console.log(`No existing share. Let's create one.`);
+      // Create a share
+      entityName = 'share';
+      share = await prisma.share.create({
+        data: {
+          containerId,
+          senderId: user.id,
+        },
+      });
+    }
+
+    if (!share) {
+      console.log(`Could not create share before creating invitation.`);
+      return {
+        error: 'could not create ${entityName}',
+      };
+    }
+
+    console.log(`Checking for existing invitation`);
+    const invitation = await prisma.invitation.findFirst({
       where: {
-        id: senderId,
+        shareId: share.id,
+        recipientId,
       },
     });
+    if (invitation) {
+      console.log(`invitation found. no need to create duplicate`);
+      return invitation;
+    }
 
-    console.log(`No existing share. Let's create one.`);
-    // Create a share
-    share = await prisma.share.create({
+    console.log(`Creating invitation`);
+    entityName = 'access link';
+    return prisma.invitation.create({
       data: {
-        containerId,
-        senderId: user.id,
+        share: {
+          connect: {
+            id: share.id,
+          },
+        },
+        wrappedKey,
+        recipient: {
+          connect: {
+            id: recipientId,
+          },
+        },
+        permission,
       },
     });
+  } catch (err) {
+    return {
+      error: 'could not create ${entityName}',
+    };
   }
-
-  if (!share) {
-    console.log(`Could not create share before creating invitation.`);
-    return null;
-  }
-
-  console.log(`Checking for existing invitation`);
-  const invitation = await prisma.invitation.findFirst({
-    where: {
-      shareId: share.id,
-      recipientId,
-    },
-  });
-  if (invitation) {
-    console.log(`invitation found. no need to create duplicate`);
-    return invitation;
-  }
-
-  console.log(`Creating invitation`);
-
-  return prisma.invitation.create({
-    data: {
-      share: {
-        connect: {
-          id: share.id,
-        },
-      },
-      wrappedKey,
-      recipient: {
-        connect: {
-          id: recipientId,
-        },
-      },
-      permission,
-    },
-  });
 }
 
 export async function createInvitationFromAccessLink(

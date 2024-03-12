@@ -7,16 +7,22 @@ export async function createUpload(
   ownerId: number,
   type: string
 ) {
-  const upload = await prisma.upload.create({
-    data: {
-      id,
-      size,
-      ownerId,
-      createdAt: new Date(),
-      type,
-    },
-  });
-  return upload;
+  try {
+    const upload = await prisma.upload.create({
+      data: {
+        id,
+        size,
+        ownerId,
+        createdAt: new Date(),
+        type,
+      },
+    });
+    return upload;
+  } catch (err) {
+    return {
+      error: 'could not create upload',
+    };
+  }
 }
 
 export async function getUploadSize(id: string) {

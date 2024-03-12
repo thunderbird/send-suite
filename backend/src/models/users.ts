@@ -6,13 +6,19 @@ export async function createUser(
   email: string,
   tier: UserTier = UserTier.PRO
 ) {
-  return prisma.user.create({
-    data: {
-      publicKey,
-      email,
-      tier,
-    },
-  });
+  try {
+    return prisma.user.create({
+      data: {
+        publicKey,
+        email,
+        tier,
+      },
+    });
+  } catch (err) {
+    return {
+      error: 'could not create user',
+    };
+  }
 }
 
 export async function getUserByEmail(email: string) {

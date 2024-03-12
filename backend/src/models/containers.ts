@@ -11,35 +11,47 @@ export async function createContainer(
   parentId: number,
   shareOnly: boolean
 ) {
-  const group = await prisma.group.create({
-    data: {},
-  });
+  // For placeholder error message:
+  // if there's an error while creating, what couldn't we create?
+  let entityName: string;
+  try {
+    entityName = 'group';
+    const group = await prisma.group.create({
+      data: {},
+    });
 
-  await prisma.membership.create({
-    data: {
-      groupId: group.id,
-      userId: ownerId,
-      permission: PermissionType.ADMIN, // Owner has full permissions
-    },
-  });
+    entityName = 'membership';
+    const membership = await prisma.membership.create({
+      data: {
+        groupId: group.id,
+        userId: ownerId,
+        permission: PermissionType.ADMIN, // Owner has full permissions
+      },
+    });
 
-  const createArgs = {
-    data: {
-      name,
-      ownerId,
-      groupId: group.id,
-      type,
-      shareOnly,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  };
-  if (parentId !== 0) {
-    createArgs.data['parentId'] = parentId;
+    const createArgs = {
+      data: {
+        name,
+        ownerId,
+        groupId: group.id,
+        type,
+        shareOnly,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    };
+    if (parentId !== 0) {
+      createArgs.data['parentId'] = parentId;
+    }
+
+    entityName = 'container';
+    const container = await prisma.container.create(createArgs);
+    return container;
+  } catch (err) {
+    return {
+      error: `could not create ${entityName}`,
+    };
   }
-
-  const container = await prisma.container.create(createArgs);
-  return container;
 }
 
 export async function getItemsInContainer(id: number) {
