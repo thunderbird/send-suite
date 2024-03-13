@@ -65,16 +65,19 @@ export async function getSharesForContainer(
 }
 
 export async function updateItemName(itemId: number, name: string) {
-  const result = await prisma.item.update({
-    where: {
-      id: itemId,
-    },
-    data: {
-      name,
-      updatedAt: new Date(),
-    },
-  });
-  return result;
+  try {
+    return await prisma.item.update({
+      where: {
+        id: itemId,
+      },
+      data: {
+        name,
+        updatedAt: new Date(),
+      },
+    });
+  } catch (err) {
+    throw new Error(`Could not update item`);
+  }
 }
 
 export async function updateInvitationPermissions(
@@ -83,15 +86,18 @@ export async function updateInvitationPermissions(
   userId: number,
   permission: PermissionType
 ) {
-  const result = await prisma.invitation.update({
-    where: {
-      id: invitationId,
-    },
-    data: {
-      permission,
-    },
-  });
-  return result;
+  try {
+    return await prisma.invitation.update({
+      where: {
+        id: invitationId,
+      },
+      data: {
+        permission,
+      },
+    });
+  } catch (err) {
+    throw new Error(`Could not update invitation`);
+  }
 }
 export async function updateAccessLinkPermissions(
   containerId: number,
@@ -99,15 +105,18 @@ export async function updateAccessLinkPermissions(
   userId: number,
   permission: PermissionType
 ) {
-  const result = await prisma.accessLink.update({
-    where: {
-      id: accessLinkId,
-    },
-    data: {
-      permission,
-    },
-  });
-  return result;
+  try {
+    return await prisma.accessLink.update({
+      where: {
+        id: accessLinkId,
+      },
+      data: {
+        permission,
+      },
+    });
+  } catch (err) {
+    throw new Error(`Could not update access link`);
+  }
 }
 
 export async function getContainerWithMembers(containerId: number) {
@@ -209,14 +218,18 @@ export async function deleteItem(id: number, shouldDeleteUpload = false) {
   }
   if (containerId && result) {
     // touch the container's `updatedAt` date
-    await prisma.container.update({
-      where: {
-        id: containerId,
-      },
-      data: {
-        updatedAt: new Date(),
-      },
-    });
+    try {
+      await prisma.container.update({
+        where: {
+          id: containerId,
+        },
+        data: {
+          updatedAt: new Date(),
+        },
+      });
+    } catch (err) {
+      throw new Error(`Could not update container`);
+    }
   }
   return result;
 }
@@ -470,16 +483,19 @@ export async function deleteTag(id: number) {
 
 // Update/rename a tag
 export async function updateTagName(tagId: number, name: string) {
-  const result = await prisma.tag.update({
-    where: {
-      id: tagId,
-    },
-    data: {
-      name,
-      // updatedAt: new Date(),
-    },
-  });
-  return result;
+  try {
+    return await prisma.tag.update({
+      where: {
+        id: tagId,
+      },
+      data: {
+        name,
+        // updatedAt: new Date(),
+      },
+    });
+  } catch (err) {
+    throw new Error(`Could not update tag`);
+  }
 }
 // Get all items and containers (that I have access to) with a specific tag or tags
 

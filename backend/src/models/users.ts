@@ -113,14 +113,18 @@ export async function getUserPublicKey(id: number) {
 }
 
 export async function updateUserPublicKey(id: number, publicKey: string) {
-  return prisma.user.update({
-    where: {
-      id,
-    },
-    data: {
-      publicKey,
-    },
-  });
+  try {
+    return prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        publicKey,
+      },
+    });
+  } catch (err) {
+    throw new Error(`Could not update user`);
+  }
 }
 
 async function _whereContainer(
@@ -298,15 +302,19 @@ export async function setBackup(
   keystring: string,
   salt: string
 ) {
-  return prisma.user.update({
-    where: {
-      id,
-    },
-    data: {
-      backupContainerKeys: keys,
-      backupKeypair: keypair,
-      backupKeystring: keystring,
-      backupSalt: salt,
-    },
-  });
+  try {
+    return prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        backupContainerKeys: keys,
+        backupKeypair: keypair,
+        backupKeystring: keystring,
+        backupSalt: salt,
+      },
+    });
+  } catch (err) {
+    throw new Error(`Could not update user`);
+  }
 }

@@ -104,7 +104,7 @@ const dayjs = inject('dayjs');
                   <IconShare class="w-4 h-4" />
                   Share
                 </Btn> -->
-                <Btn danger @click="folderStore.deleteItem(item.id)">
+                <Btn danger @click="folderStore.deleteItem(item.id, folderStore.rootFolder.id)">
                   <IconTrash class="w-4 h-4" />
                 </Btn>
               </div>

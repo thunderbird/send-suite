@@ -260,16 +260,21 @@ export async function createInvitationFromAccessLink(
   // NOTE: we're just copying over the password-wrapped key
   // we *are not* wrapping the key with the user's publicKey
   // that's what's supposed to be in that field.
+  let invitation;
   try {
-    const invitation = await createInvitation(
+    invitation = await createInvitation(
       accessLink.share.containerId,
       accessLink.wrappedKey,
       accessLink.share.senderId,
       recipientId,
       accessLink.permission
     );
+  } catch (err) {
+    throw err;
+  }
 
-    const result = await prisma.invitation.update({
+  try {
+    return await prisma.invitation.update({
       where: {
         id: invitation.id,
       },
@@ -277,10 +282,8 @@ export async function createInvitationFromAccessLink(
         status: InvitationStatus.ACCEPTED,
       },
     });
-
-    return result;
   } catch (err) {
-    throw err;
+    throw new Error(`Could not update invitation`);
   }
 }
 
@@ -375,7 +378,7 @@ export async function acceptInvitation(invitationId: number) {
   // Mark the invitation as accepted, if necessary.
   if (invitation.status !== InvitationStatus.ACCEPTED) {
     try {
-      const result = await prisma.invitation.update({
+      await prisma.invitation.update({
         where: {
           id: invitationId,
         },
@@ -384,9 +387,7 @@ export async function acceptInvitation(invitationId: number) {
         },
       });
     } catch (err) {
-      // TODO: return a standardized Error object
-      // per https://github.com/thunderbird/send-suite/issues/90
-      return null;
+      throw new Error(`Could not update invitation`);
     }
   }
 

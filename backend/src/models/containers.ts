@@ -172,14 +172,17 @@ export async function getAccessLinksForContainer(containerId: number) {
 }
 
 export async function updateContainerName(containerId: number, name: string) {
-  const result = await prisma.container.update({
-    where: {
-      id: containerId,
-    },
-    data: {
-      name,
-      updatedAt: new Date(),
-    },
-  });
-  return result;
+  try {
+    return await prisma.container.update({
+      where: {
+        id: containerId,
+      },
+      data: {
+        name,
+        updatedAt: new Date(),
+      },
+    });
+  } catch (err) {
+    throw new Error(`Could not update container`);
+  }
 }
