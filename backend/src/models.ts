@@ -110,52 +110,6 @@ export async function updateAccessLinkPermissions(
   return result;
 }
 
-export async function __getSharedContainersAndMembers(
-  userId: number,
-  type: ContainerType
-) {
-  // Get the containers I can access, but owned by someone else
-  const containerWhere = {
-    ownerId: {
-      not: userId, // Exclude the user's own containers
-    },
-    type,
-  };
-
-  const results = await prisma.membership.findMany({
-    where: {
-      userId,
-    },
-    include: {
-      group: {
-        include: {
-          container: {
-            where: containerWhere,
-          },
-          members: {
-            select: {
-              user: true,
-            },
-          }, // Include the members of each group
-        },
-      },
-    },
-  });
-
-  if (results) {
-    // Only include results with non-null containers.
-    // Null containers happen because:
-    // - the initial query is for GroupUsers
-    // - doing an `include` for containers also returns non-owned ones
-    // Return container objects whose type matches.
-    return results
-      .filter((obj) => !!obj.group.container)
-      .map((obj) => obj.group.container)
-      .filter((container) => container.type === type);
-  }
-  return results;
-}
-
 export async function getContainerWithMembers(containerId: number) {
   return await prisma.container.findUnique({
     where: {

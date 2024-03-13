@@ -412,6 +412,8 @@ export async function getContainersSharedByMe(
     },
   });
 
+  // TODO: double check this, might be redundant since
+  // findMany returns `[]` if no matching records.
   if (!shares) {
     return [];
   }

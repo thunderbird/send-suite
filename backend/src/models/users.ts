@@ -20,6 +20,7 @@ export async function createUser(
 }
 
 export async function getUserByEmail(email: string) {
+  // TODO: revisit this and consider deleting
   const users = await prisma.user.findMany({
     where: {
       email,
@@ -37,6 +38,8 @@ export async function findOrCreateUserProfileByMozillaId(
   accessToken?: string,
   refreshToken?: string
 ) {
+  // TODO: confirm whether profiles and users have a unique 1-1 mapping.
+  // If so, do a `findUnique`
   const users = await prisma.user.findMany({
     where: {
       profile: {
