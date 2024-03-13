@@ -86,16 +86,20 @@ export async function createAccessLink(
 }
 
 export async function getAccessLinkChallenge(linkId: string) {
-  return prisma.accessLink.findUnique({
-    where: {
-      id: linkId,
-    },
-    select: {
-      challengeKey: true,
-      challengeSalt: true,
-      challengeCiphertext: true,
-    },
-  });
+  try {
+    return prisma.accessLink.findUniqueOrThrow({
+      where: {
+        id: linkId,
+      },
+      select: {
+        challengeKey: true,
+        challengeSalt: true,
+        challengeCiphertext: true,
+      },
+    });
+  } catch (err) {
+    throw new Error(`Could not find access link`);
+  }
 }
 
 export async function acceptAccessLink(
@@ -106,7 +110,7 @@ export async function acceptAccessLink(
     // find the accessLink in the database
     // for the linkId, does the challenge match
     // what's in the database?
-    const accessLink = await prisma.accessLink.findUnique({
+    const accessLink = await prisma.accessLink.findUniqueOrThrow({
       where: {
         id: linkId,
         challengePlaintext,
@@ -121,33 +125,35 @@ export async function acceptAccessLink(
     });
     return accessLink;
   } catch (e) {
-    console.log(`👿😿`);
-    console.log(e);
-    return null;
+    throw new Error(`Could not find access link`);
   }
 }
 
 export async function getContainerForAccessLink(linkId: string) {
-  return await prisma.accessLink.findUnique({
-    where: {
-      id: linkId,
-    },
-    select: {
-      share: {
-        select: {
-          container: {
-            include: {
-              items: {
-                include: {
-                  upload: true,
+  try {
+    return await prisma.accessLink.findUniqueOrThrow({
+      where: {
+        id: linkId,
+      },
+      select: {
+        share: {
+          select: {
+            container: {
+              include: {
+                items: {
+                  include: {
+                    upload: true,
+                  },
                 },
               },
             },
           },
         },
       },
-    },
-  });
+    });
+  } catch (err) {
+    throw new Error(`Could not find access link`);
+  }
 }
 
 export async function createInvitation(
@@ -227,21 +233,28 @@ export async function createInvitationFromAccessLink(
   linkId: string,
   recipientId: number
 ) {
-  const accessLink = await prisma.accessLink.findUnique({
-    where: {
-      id: linkId,
-    },
-    select: {
-      wrappedKey: true,
-      permission: true,
-      share: {
-        select: {
-          senderId: true,
-          containerId: true,
+  let accessLink;
+
+  try {
+    accessLink = await prisma.accessLink.findUniqueOrThrow({
+      where: {
+        id: linkId,
+      },
+      select: {
+        wrappedKey: true,
+        permission: true,
+        share: {
+          select: {
+            senderId: true,
+            containerId: true,
+          },
         },
       },
-    },
-  });
+    });
+  } catch (err) {
+    throw new Error(`Could not find access link`);
+  }
+
   console.log(accessLink);
 
   // NOTE: we're just copying over the password-wrapped key
@@ -323,13 +336,15 @@ export async function getAllInvitations(userId: number) {
 export async function acceptInvitation(invitationId: number) {
   console.log(`accepting invitation for ${invitationId}`);
   // get invitation from database
-  const invitation = await prisma.invitation.findUnique({
-    where: {
-      id: invitationId,
-    },
-  });
-  if (!invitation) {
-    return null;
+  let invitation;
+  try {
+    invitation = await prisma.invitation.findUniqueOrThrow({
+      where: {
+        id: invitationId,
+      },
+    });
+  } catch (err) {
+    throw new Error(`Could not find invitation`);
   }
 
   // get the recipientId from invitation
@@ -339,15 +354,15 @@ export async function acceptInvitation(invitationId: number) {
     `got share id ${shareId} from invitation, getting containerId from share`
   );
 
-  const share = await prisma.share.findUnique({
-    where: {
-      id: shareId,
-    },
-  });
-
-  if (!share) {
-    console.log(`Cannot accept invitation - Share does not exist.`);
-    return null;
+  let share;
+  try {
+    share = await prisma.share.findUniqueOrThrow({
+      where: {
+        id: shareId,
+      },
+    });
+  } catch (err) {
+    throw new Error(`Could not find share`);
   }
 
   const { containerId } = share;
@@ -481,34 +496,39 @@ export async function burnFolder(
   // get the container so we can get the
   // - groups (so we can get users)
   // - items (so we can get uploads)
-  const container = await prisma.container.findUnique({
-    where: {
-      id: containerId,
-    },
-    select: {
-      group: {
-        select: {
-          id: true,
-          members: {
-            select: {
-              user: {
-                select: {
-                  id: true,
-                  tier: true,
+  let container;
+  try {
+    container = await prisma.container.findUniqueOrThrow({
+      where: {
+        id: containerId,
+      },
+      select: {
+        group: {
+          select: {
+            id: true,
+            members: {
+              select: {
+                user: {
+                  select: {
+                    id: true,
+                    tier: true,
+                  },
                 },
               },
             },
           },
         },
-      },
-      items: {
-        select: {
-          id: true,
-          uploadId: true,
+        items: {
+          select: {
+            id: true,
+            uploadId: true,
+          },
         },
       },
-    },
-  });
+    });
+  } catch (err) {
+    throw new Error(`Could not find container`);
+  }
 
   const users = container.group.members.map(({ user }) => user);
 

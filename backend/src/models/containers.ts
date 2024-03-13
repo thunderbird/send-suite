@@ -52,48 +52,50 @@ export async function createContainer(
 }
 
 export async function getItemsInContainer(id: number) {
-  return prisma.container.findUnique({
-    where: {
-      id,
-    },
-    select: {
-      id: true,
-      name: true,
-      createdAt: true,
-      updatedAt: true,
-      type: true,
-      shareOnly: true,
-      ownerId: true,
-      groupId: true,
-      wrappedKey: true,
-      parentId: true,
-      children: {
-        select: {
-          id: true,
-          name: true,
-          createdAt: true,
-          updatedAt: true,
-          type: true,
-          shareOnly: true,
-          ownerId: true,
-          groupId: true,
-          wrappedKey: true,
-          parentId: true,
-          items: {
-            select: {
-              name: true,
-              wrappedKey: true,
-              uploadId: true,
-              createdAt: true,
-              updatedAt: true,
-              type: true,
-              upload: {
-                select: {
-                  size: true,
-                  type: true,
-                  owner: {
-                    select: {
-                      email: true,
+  try {
+    return prisma.container.findUniqueOrThrow({
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+        name: true,
+        createdAt: true,
+        updatedAt: true,
+        type: true,
+        shareOnly: true,
+        ownerId: true,
+        groupId: true,
+        wrappedKey: true,
+        parentId: true,
+        children: {
+          select: {
+            id: true,
+            name: true,
+            createdAt: true,
+            updatedAt: true,
+            type: true,
+            shareOnly: true,
+            ownerId: true,
+            groupId: true,
+            wrappedKey: true,
+            parentId: true,
+            items: {
+              select: {
+                name: true,
+                wrappedKey: true,
+                uploadId: true,
+                createdAt: true,
+                updatedAt: true,
+                type: true,
+                upload: {
+                  select: {
+                    size: true,
+                    type: true,
+                    owner: {
+                      select: {
+                        email: true,
+                      },
                     },
                   },
                 },
@@ -101,42 +103,50 @@ export async function getItemsInContainer(id: number) {
             },
           },
         },
-      },
-      items: {
-        select: {
-          id: true,
-          name: true,
-          wrappedKey: true,
-          uploadId: true,
-          createdAt: true,
-          updatedAt: true,
-          containerId: true,
-          type: true,
-          tags: true,
-          upload: {
-            select: {
-              size: true,
-              type: true,
-              owner: {
-                select: {
-                  email: true,
+        items: {
+          select: {
+            id: true,
+            name: true,
+            wrappedKey: true,
+            uploadId: true,
+            createdAt: true,
+            updatedAt: true,
+            containerId: true,
+            type: true,
+            tags: true,
+            upload: {
+              select: {
+                size: true,
+                type: true,
+                owner: {
+                  select: {
+                    email: true,
+                  },
                 },
               },
             },
           },
         },
+        tags: true,
       },
-      tags: true,
-    },
-  });
+    });
+  } catch (err) {
+    throw new Error(`Could not find container`);
+  }
 }
 
 export async function getContainerWithAncestors(id: number) {
-  const container = await prisma.container.findUnique({
-    where: {
-      id,
-    },
-  });
+  let container;
+  try {
+    container = await prisma.container.findUniqueOrThrow({
+      where: {
+        id,
+      },
+    });
+  } catch (err) {
+    throw new Error(`Could not find container`);
+  }
+
   if (container.parentId) {
     container['parent'] = await getContainerWithAncestors(container.parentId);
   }

@@ -23,27 +23,35 @@ export async function createUpload(
 }
 
 export async function getUploadSize(id: string) {
-  const upload = await prisma.upload.findUnique({
-    where: {
-      id,
-    },
-    select: {
-      size: true,
-    },
-  });
-  return upload.size;
+  try {
+    const upload = await prisma.upload.findUniqueOrThrow({
+      where: {
+        id,
+      },
+      select: {
+        size: true,
+      },
+    });
+    return upload.size;
+  } catch (err) {
+    throw new Error(`Could not find upload`);
+  }
 }
 
 export async function getUploadMetadata(id: string) {
-  const upload = await prisma.upload.findUnique({
-    where: {
-      id,
-    },
-    select: {
-      size: true,
-      type: true,
-    },
-  });
-  const { size, type } = upload;
-  return { size, type };
+  try {
+    const upload = await prisma.upload.findUniqueOrThrow({
+      where: {
+        id,
+      },
+      select: {
+        size: true,
+        type: true,
+      },
+    });
+    const { size, type } = upload;
+    return { size, type };
+  } catch (err) {
+    throw new Error(`Could not find upload`);
+  }
 }

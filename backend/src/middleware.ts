@@ -126,13 +126,16 @@ is a user and containerId === 0
   }
 
   // Find the GroupUser
-  const membership = await prisma.membership.findUnique({
-    where: {
-      groupId_userId: { groupId: group.id, userId },
-    },
-  });
-
-  if (!membership) {
+  let membership;
+  try {
+    membership = await prisma.membership.findUniqueOrThrow({
+      where: {
+        groupId_userId: { groupId: group.id, userId },
+      },
+    });
+  } catch (err) {
+    // No need to throw an error.
+    // This is handled correctly by `reject(res)`
     reject(res);
     return;
   }

@@ -111,23 +111,27 @@ export async function updateAccessLinkPermissions(
 }
 
 export async function getContainerWithMembers(containerId: number) {
-  return await prisma.container.findUnique({
-    where: {
-      id: containerId,
-    },
-    select: {
-      group: {
-        select: {
-          id: true,
-          members: {
-            select: {
-              user: true,
+  try {
+    return await prisma.container.findUniqueOrThrow({
+      where: {
+        id: containerId,
+      },
+      select: {
+        group: {
+          select: {
+            id: true,
+            members: {
+              select: {
+                user: true,
+              },
             },
           },
         },
       },
-    },
-  });
+    });
+  } catch (err) {
+    throw new Error(`could not find container`);
+  }
 }
 
 export async function createItem(
@@ -165,15 +169,20 @@ export async function createItem(
 export async function deleteItem(id: number, shouldDeleteUpload = false) {
   let containerId;
   if (shouldDeleteUpload) {
-    const item = await prisma.item.findUnique({
-      where: {
-        id,
-      },
-      select: {
-        containerId: true,
-        uploadId: true,
-      },
-    });
+    let item;
+    try {
+      item = await prisma.item.findUniqueOrThrow({
+        where: {
+          id,
+        },
+        select: {
+          containerId: true,
+          uploadId: true,
+        },
+      });
+    } catch (err) {
+      throw new Error(`Could not find item`);
+    }
     containerId = item.containerId;
     try {
       await prisma.upload.delete({
@@ -232,20 +241,29 @@ export async function updateItem() {
 }
 
 export async function getContainerInfo(id: number) {
-  return prisma.container.findUnique({
-    where: {
-      id,
-    },
-  });
+  try {
+    return prisma.container.findUniqueOrThrow({
+      where: {
+        id,
+      },
+    });
+  } catch (err) {
+    throw new Error(`Could not find container`);
+  }
 }
 
 export async function getContainerWithDescendants(id: number) {
-  const container = await prisma.container.findUnique({
-    where: { id },
-    include: {
-      children: true,
-    },
-  });
+  let container;
+  try {
+    container = await prisma.container.findUniqueOrThrow({
+      where: { id },
+      include: {
+        children: true,
+      },
+    });
+  } catch (err) {
+    throw new Error(`Could not find container`);
+  }
 
   if (container.children.length > 0) {
     for (let i = 0; i < container.children.length; i++) {
@@ -260,21 +278,22 @@ export async function getContainerWithDescendants(id: number) {
 }
 
 export async function addGroupMember(containerId: number, userId: number) {
-  const container = await prisma.container.findUnique({
-    where: {
-      id: containerId,
-    },
-    select: {
-      group: {
-        select: {
-          id: true,
+  let container;
+  try {
+    container = await prisma.container.findUniqueOrThrow({
+      where: {
+        id: containerId,
+      },
+      select: {
+        group: {
+          select: {
+            id: true,
+          },
         },
       },
-    },
-  });
-
-  if (!container) {
-    throw new Error(`could not create membership`);
+    });
+  } catch (err) {
+    throw new Error(`Could not find container`);
   }
 
   const { group } = container ?? {};
@@ -309,17 +328,19 @@ export async function addGroupMember(containerId: number, userId: number) {
 }
 
 export async function removeInvitationAndGroup(invitationId: number) {
-  const invitation = await prisma.invitation.findUnique({
-    where: {
-      id: invitationId,
-    },
-    include: {
-      share: true,
-      recipient: true,
-    },
-  });
-  if (!invitation) {
-    return null;
+  let invitation;
+  try {
+    invitation = await prisma.invitation.findUniqueOrThrow({
+      where: {
+        id: invitationId,
+      },
+      include: {
+        share: true,
+        recipient: true,
+      },
+    });
+  } catch (err) {
+    throw new Error(`Could not find invitation`);
   }
 
   // remove membership, if any

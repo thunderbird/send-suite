@@ -98,14 +98,18 @@ export async function findOrCreateUserProfileByMozillaId(
 }
 
 export async function getUserPublicKey(id: number) {
-  return prisma.user.findUnique({
-    where: {
-      id,
-    },
-    select: {
-      publicKey: true,
-    },
-  });
+  try {
+    return prisma.user.findUniqueOrThrow({
+      where: {
+        id,
+      },
+      select: {
+        publicKey: true,
+      },
+    });
+  } catch (err) {
+    throw new Error(`Could not find user`);
+  }
 }
 
 export async function updateUserPublicKey(id: number, publicKey: string) {
@@ -138,10 +142,13 @@ async function _whereContainer(
       },
     },
   };
-  const user = await prisma.user.findUnique(params);
-  if (!user) {
-    return null;
+  let user;
+  try {
+    user = await prisma.user.findUniqueOrThrow(params);
+  } catch (err) {
+    throw new Error(`Could not find user`);
   }
+
   const groupIds = user.groups.map(({ groupId }) => groupId);
   const containerWhere = {
     groupId: {
@@ -170,7 +177,13 @@ export async function getAllUserGroupContainers(
   userId: number,
   type: ContainerType | null
 ) {
-  const containerWhere = await _whereContainer(userId, type, false, true);
+  let containerWhere;
+  try {
+    containerWhere = await _whereContainer(userId, type, false, true);
+  } catch (err) {
+    throw new Error(`Could not find container`);
+  }
+
   return prisma.container.findMany({
     where: containerWhere,
     // include: {
@@ -221,7 +234,13 @@ export async function getRecentActivity(
   type: ContainerType | null
 ) {
   // Get all containers
-  const containerWhere = await _whereContainer(userId, type);
+  let containerWhere;
+  try {
+    containerWhere = await _whereContainer(userId, type);
+  } catch (err) {
+    throw new Error(`Could not find container`);
+  }
+
   const containers = await prisma.container.findMany({
     take: 10,
     where: containerWhere,
@@ -255,17 +274,21 @@ export async function getRecentActivity(
 }
 
 export async function getBackup(id: number) {
-  return prisma.user.findUnique({
-    where: {
-      id,
-    },
-    select: {
-      backupContainerKeys: true,
-      backupKeypair: true,
-      backupKeystring: true,
-      backupSalt: true,
-    },
-  });
+  try {
+    return prisma.user.findUniqueOrThrow({
+      where: {
+        id,
+      },
+      select: {
+        backupContainerKeys: true,
+        backupKeypair: true,
+        backupKeystring: true,
+        backupSalt: true,
+      },
+    });
+  } catch (err) {
+    throw new Error(`Could not find user`);
+  }
 }
 
 export async function setBackup(
