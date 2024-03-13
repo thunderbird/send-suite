@@ -8,7 +8,7 @@ export async function createUpload(
   type: string
 ) {
   try {
-    const upload = await prisma.upload.create({
+    return await prisma.upload.create({
       data: {
         id,
         size,
@@ -17,11 +17,8 @@ export async function createUpload(
         type,
       },
     });
-    return upload;
   } catch (err) {
-    return {
-      error: 'could not create upload',
-    };
+    throw new Error(`could not create upload`);
   }
 }
 

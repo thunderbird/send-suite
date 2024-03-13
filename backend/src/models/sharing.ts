@@ -45,9 +45,7 @@ export async function createAccessLink(
 
     if (!share) {
       console.log(`Could not create share before creating accessLink.`);
-      return {
-        error: 'could not create ${entityName}',
-      };
+      throw new Error(`could not create ${entityName}`);
     }
 
     console.log(`Created share for access link: ${share.id}`);
@@ -81,9 +79,7 @@ export async function createAccessLink(
       },
     });
   } catch (err) {
-    return {
-      error: 'could not create ${entityName}',
-    };
+    throw new Error(`could not create ${entityName}`);
   }
 }
 
@@ -171,29 +167,19 @@ export async function createInvitation(
   let entityName: string;
   try {
     if (!share) {
-      console.log(`getting user with id ${senderId}`);
-      const user = await prisma.user.findUnique({
-        where: {
-          id: senderId,
-        },
-      });
-
       console.log(`No existing share. Let's create one.`);
-      // Create a share
       entityName = 'share';
       share = await prisma.share.create({
         data: {
           containerId,
-          senderId: user.id,
+          senderId,
         },
       });
     }
 
     if (!share) {
       console.log(`Could not create share before creating invitation.`);
-      return {
-        error: 'could not create ${entityName}',
-      };
+      throw new Error(`could not create ${entityName}`);
     }
 
     console.log(`Checking for existing invitation`);
@@ -227,9 +213,7 @@ export async function createInvitation(
       },
     });
   } catch (err) {
-    return {
-      error: 'could not create ${entityName}',
-    };
+    throw new Error(`could not create ${entityName}`);
   }
 }
 
@@ -257,23 +241,28 @@ export async function createInvitationFromAccessLink(
   // NOTE: we're just copying over the password-wrapped key
   // we *are not* wrapping the key with the user's publicKey
   // that's what's supposed to be in that field.
-  const invitation = await createInvitation(
-    accessLink.share.containerId,
-    accessLink.wrappedKey,
-    accessLink.share.senderId,
-    recipientId,
-    accessLink.permission
-  );
-  const result = await prisma.invitation.update({
-    where: {
-      id: invitation.id,
-    },
-    data: {
-      status: InvitationStatus.ACCEPTED,
-    },
-  });
+  try {
+    const invitation = await createInvitation(
+      accessLink.share.containerId,
+      accessLink.wrappedKey,
+      accessLink.share.senderId,
+      recipientId,
+      accessLink.permission
+    );
 
-  return result;
+    const result = await prisma.invitation.update({
+      where: {
+        id: invitation.id,
+      },
+      data: {
+        status: InvitationStatus.ACCEPTED,
+      },
+    });
+
+    return result;
+  } catch (err) {
+    throw err;
+  }
 }
 
 export async function isAccessLinkValid(linkId: string) {
@@ -296,11 +285,17 @@ export async function isAccessLinkValid(linkId: string) {
 }
 
 export async function removeAccessLink(linkId: string) {
-  return prisma.accessLink.delete({
-    where: {
-      id: linkId,
-    },
-  });
+  try {
+    return prisma.accessLink.delete({
+      where: {
+        id: linkId,
+      },
+    });
+  } catch (err) {
+    return {
+      error: 'could not delete access link',
+    };
+  }
 }
 
 export async function getAllInvitations(userId: number) {
@@ -417,12 +412,6 @@ export async function getContainersSharedByMe(
     return [];
   }
 
-  // const containers = shares.filter(
-  //   (share) =>
-  //     share.container.type === type && share.container.group.members.length > 1
-  // );
-  // const containers = shares.map((share) => share.container);
-  // return containers;
   return shares;
 }
 
@@ -464,130 +453,139 @@ export async function burnFolder(
     },
   });
 
-  // For each share, delete corresponding access links
-  for (const share of shares) {
-    await prisma.accessLink.deleteMany({
+  // For placeholder error message:
+  // if there's an error while creating, what couldn't we create?
+  let entityName: string;
+  try {
+    // For each share, delete corresponding access links
+    entityName = 'access link';
+    for (const share of shares) {
+      await prisma.accessLink.deleteMany({
+        where: {
+          shareId: share.id,
+        },
+      });
+    }
+
+    console.log(`✅ deleted ephemeral links`);
+
+    // get the container so we can get the
+    // - groups (so we can get users)
+    // - items (so we can get uploads)
+    const container = await prisma.container.findUnique({
       where: {
-        shareId: share.id,
+        id: containerId,
       },
-    });
-  }
-
-  console.log(`✅ deleted ephemeral links`);
-  // links.forEach(({ id }) => {
-  //   console.log(`✅ link id: ${id}`);
-  // });
-  // console.log(links);
-
-  // get the container so we can get the
-  // - groups (so we can get users)
-  // - items (so we can get uploads)
-  const container = await prisma.container.findUnique({
-    where: {
-      id: containerId,
-    },
-    select: {
-      group: {
-        select: {
-          id: true,
-          members: {
-            select: {
-              user: {
-                select: {
-                  id: true,
-                  tier: true,
+      select: {
+        group: {
+          select: {
+            id: true,
+            members: {
+              select: {
+                user: {
+                  select: {
+                    id: true,
+                    tier: true,
+                  },
                 },
               },
             },
           },
         },
-      },
-      items: {
-        select: {
-          id: true,
-          uploadId: true,
+        items: {
+          select: {
+            id: true,
+            uploadId: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  const users = container.group.members.map(({ user }) => user);
+    const users = container.group.members.map(({ user }) => user);
 
-  console.log(`🤡 deleting items and uploads`);
-  const uploadIds = container.items.map((item) => item.uploadId);
-  await Promise.all(
-    container.items.map(async ({ id }) => {
-      console.log(`✅ deleting item ${id}`);
-      return prisma.item.delete({
-        where: {
-          id,
-        },
-      });
-    })
-  );
-
-  if (shouldDeleteUpload) {
+    console.log(`🤡 deleting items and uploads`);
+    const uploadIds = container.items.map((item) => item.uploadId);
+    entityName = 'item';
     await Promise.all(
-      uploadIds.map(async (id) => {
-        console.log(`✅ deleting upload ${id}`);
-        return prisma.upload.delete({
+      container.items.map(async ({ id }) => {
+        console.log(`✅ deleting item ${id}`);
+        return prisma.item.delete({
           where: {
             id,
           },
         });
       })
     );
-  }
 
-  const deleteResp = await prisma.container.delete({
-    where: {
-      id: containerId,
-    },
-  });
-  if (!deleteResp) {
-    console.log(`👿👿👿👿 oh noes.`);
-    return null;
-  }
-  console.log(`✅ deleting container ${containerId}`);
-  await Promise.all(
-    users.map(async ({ id, tier }) => {
-      return await prisma.membership.deleteMany({
-        where: {
-          groupId: container.group.id,
-          // don't specify the user id
-          // remove all groupUser records for this group
-          // userId: id,
-        },
-      });
-      console.log(
-        `✅ deleted groupUser relations for group ${container.group.id}`
+    if (shouldDeleteUpload) {
+      entityName = 'upload';
+      await Promise.all(
+        uploadIds.map(async (id) => {
+          console.log(`✅ deleting upload ${id}`);
+          return prisma.upload.delete({
+            where: {
+              id,
+            },
+          });
+        })
       );
-    })
-  );
+    }
 
-  // must do *after* deleting groupUser
-  await Promise.all(
-    users
-      .filter((user) => user.tier === UserTier.EPHEMERAL)
-      .map(async ({ id, tier }) => {
-        await prisma.user.delete({
+    entityName = 'container';
+    const deleteResp = await prisma.container.delete({
+      where: {
+        id: containerId,
+      },
+    });
+    if (!deleteResp) {
+      console.log(`👿👿👿👿 oh noes.`);
+      return null;
+    }
+    console.log(`✅ deleting container ${containerId}`);
+    entityName = 'membership';
+    await Promise.all(
+      users.map(async ({ id, tier }) => {
+        return await prisma.membership.deleteMany({
           where: {
-            id,
+            groupId: container.group.id,
+            // don't specify the user id
+            // remove all groupUser records for this group
+            // userId: id,
           },
         });
-        console.log(`✅ deleted ephemeral user ${id}`);
       })
-  );
+    );
 
-  await prisma.group.delete({
-    where: {
-      id: container.group.id,
-    },
-  });
-  console.log(`✅ deleted group user ${container.group.id}`);
+    // must do *after* deleting groupUser
+    entityName = 'user';
+    await Promise.all(
+      users
+        .filter((user) => user.tier === UserTier.EPHEMERAL)
+        .map(async ({ id, tier }) => {
+          await prisma.user.delete({
+            where: {
+              id,
+            },
+          });
+          console.log(`✅ deleted ephemeral user ${id}`);
+        })
+    );
 
-  // Basically, if we got this far, everything was burned successfully.
-  return deleteResp;
+    entityName = 'group';
+    await prisma.group.delete({
+      where: {
+        id: container.group.id,
+      },
+    });
+    console.log(`✅ deleted group user ${container.group.id}`);
+
+    // Basically, if we got this far, everything was burned successfully.
+    return deleteResp;
+  } catch (err) {
+    return {
+      error: `could not delete ${entityName}`,
+    };
+  }
 }
 
 export async function burnEphemeralConversation(containerId: number) {

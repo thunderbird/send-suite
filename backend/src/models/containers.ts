@@ -45,12 +45,9 @@ export async function createContainer(
     }
 
     entityName = 'container';
-    const container = await prisma.container.create(createArgs);
-    return container;
+    return await prisma.container.create(createArgs);
   } catch (err) {
-    return {
-      error: `could not create ${entityName}`,
-    };
+    throw new Error(`could not create ${entityName}`);
   }
 }
 

@@ -183,9 +183,8 @@ export async function createItem(
   type: ItemType,
   wrappedKey: string
 ) {
-  let item: Item | Record<string, string>;
   try {
-    item = await prisma.item.create({
+    return await prisma.item.create({
       data: {
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -205,11 +204,8 @@ export async function createItem(
       },
     });
   } catch (err) {
-    item = {
-      error: 'could not create item',
-    };
+    throw new Error(`could not create item`);
   }
-  return item;
 }
 
 export async function deleteItem(id: number, shouldDeleteUpload = false) {
@@ -321,17 +317,16 @@ export async function addGroupMember(containerId: number, userId: number) {
   });
 
   if (!container) {
-    return null;
+    throw new Error(`could not create membership`);
   }
 
   const { group } = container ?? {};
 
-  if (!group) {
-    return null;
+  if (!group.id) {
+    throw new Error(`could not create membership`);
   }
 
-  let membership: Membership | Record<string, string>;
-  membership = await prisma.membership.findFirst({
+  const membership = await prisma.membership.findFirst({
     where: {
       groupId: group.id,
       userId,
@@ -342,18 +337,15 @@ export async function addGroupMember(containerId: number, userId: number) {
   }
 
   try {
-    membership = await prisma.membership.create({
+    return await prisma.membership.create({
       data: {
         groupId: group.id,
         userId,
         permission: PermissionType.READ, // Lowest permissions, by default
       },
     });
-    return membership;
   } catch (err) {
-    return {
-      error: 'could not create membership',
-    };
+    throw new Error(`could not create membership`);
   }
 }
 

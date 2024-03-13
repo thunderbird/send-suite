@@ -15,9 +15,7 @@ export async function createUser(
       },
     });
   } catch (err) {
-    return {
-      error: 'could not create user',
-    };
+    throw new Error(`could not create user`);
   }
 }
 
@@ -39,6 +37,22 @@ export async function findOrCreateUserProfileByMozillaId(
   accessToken?: string,
   refreshToken?: string
 ) {
+  const users = await prisma.user.findMany({
+    where: {
+      profile: {
+        mozid,
+      },
+    },
+  });
+  let user = users[0];
+  if (!user) {
+    try {
+      user = await createUser('', email, UserTier.FREE);
+    } catch (err) {
+      throw err;
+    }
+  }
+
   const profile = await prisma.profile.upsert({
     where: {
       mozid,
@@ -54,10 +68,8 @@ export async function findOrCreateUserProfileByMozillaId(
       accessToken,
       refreshToken,
       user: {
-        create: {
-          email,
-          // For now, we assume they're on the FREE teir.
-          tier: UserTier.FREE,
+        connect: {
+          id: user.id,
         },
       },
     },
@@ -76,7 +88,6 @@ export async function findOrCreateUserProfileByMozillaId(
   });
 
   // Flip the nesting of the user and the profile.
-  const { user } = profile;
   delete profile.user;
   user['profile'] = profile;
 
