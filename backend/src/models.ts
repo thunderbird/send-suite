@@ -221,24 +221,29 @@ export async function deleteItem(id: number, shouldDeleteUpload = false) {
       },
     });
     containerId = item.containerId;
-    const uploadDeleteResult = await prisma.upload.delete({
-      where: {
-        id: item.uploadId,
-      },
-    });
-    if (!uploadDeleteResult) {
-      console.log(`We should delete the upload, but could not`);
-      return null;
+    try {
+      await prisma.upload.delete({
+        where: {
+          id: item.uploadId,
+        },
+      });
+    } catch (err) {
+      throw new Error(`Could not delete upload`);
     }
-    console.log(`deleted upload ${item.uploadId}`);
   }
 
-  const result = await prisma.item.delete({
-    where: {
-      id,
-    },
-  });
+  let result;
+  try {
+    result = await prisma.item.delete({
+      where: {
+        id,
+      },
+    });
 
+    console.log(`deleted item ${id}`);
+  } catch (err) {
+    throw new Error(`Could not delete item`);
+  }
   if (containerId && result) {
     // touch the container's `updatedAt` date
     await prisma.container.update({
@@ -250,8 +255,6 @@ export async function deleteItem(id: number, shouldDeleteUpload = false) {
       },
     });
   }
-
-  console.log(`deleted item ${id}`);
   return result;
 }
 
@@ -369,18 +372,21 @@ export async function removeInvitationAndGroup(invitationId: number) {
       invitation.share.containerId,
       invitation.recipient.id
     );
-  } catch (e) {
-    console.log(e);
+  } catch (err) {
+    console.log(err);
     console.log(`Could not remove membership - may not exist`);
+    throw new Error(`Could not remove membership`);
   }
 
-  const result = await prisma.invitation.delete({
-    where: {
-      id: invitationId,
-    },
-  });
-
-  return result;
+  try {
+    return await prisma.invitation.delete({
+      where: {
+        id: invitationId,
+      },
+    });
+  } catch (err) {
+    throw new Error(`Could not delete invitation`);
+  }
 }
 
 export async function removeGroupMember(containerId: number, userId: number) {
@@ -392,11 +398,15 @@ export async function removeGroupMember(containerId: number, userId: number) {
     },
   });
 
-  return prisma.membership.delete({
-    where: {
-      groupId_userId: { groupId: group.id, userId },
-    },
-  });
+  try {
+    return prisma.membership.delete({
+      where: {
+        groupId_userId: { groupId: group.id, userId },
+      },
+    });
+  } catch (err) {
+    throw new Error(`Could not remove membership`);
+  }
 }
 
 // Create a tag for an item
@@ -465,13 +475,15 @@ export async function createTagForContainer(
 
 // Delete a tag
 export async function deleteTag(id: number) {
-  const result = await prisma.tag.delete({
-    where: {
-      id,
-    },
-  });
-
-  return result;
+  try {
+    return await prisma.tag.delete({
+      where: {
+        id,
+      },
+    });
+  } catch (err) {
+    throw new Error(`Could not delete tag`);
+  }
 }
 
 // Update/rename a tag
