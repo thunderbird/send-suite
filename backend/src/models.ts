@@ -418,22 +418,24 @@ export async function createTagForItem(
     connect: [{ id: itemId }],
   };
 
-  // create the tag and add the container
-  const tag = await prisma.tag.upsert({
-    where: {
-      name,
-    },
-    update: {
-      items,
-    },
-    create: {
-      name,
-      color,
-      items,
-    },
-  });
-
-  return tag;
+  try {
+    // create the tag and add the container
+    return await prisma.tag.upsert({
+      where: {
+        name,
+      },
+      update: {
+        items,
+      },
+      create: {
+        name,
+        color,
+        items,
+      },
+    });
+  } catch (err) {
+    throw new Error(`Could not upsert tag`);
+  }
 }
 
 // Create a tag for a container
@@ -450,22 +452,24 @@ export async function createTagForContainer(
     connect: [{ id: containerId }],
   };
 
-  // create the tag and add the container
-  const tag = await prisma.tag.upsert({
-    where: {
-      name,
-    },
-    update: {
-      containers,
-    },
-    create: {
-      name,
-      color,
-      containers,
-    },
-  });
-
-  return tag;
+  try {
+    // create the tag and add the container
+    return await prisma.tag.upsert({
+      where: {
+        name,
+      },
+      update: {
+        containers,
+      },
+      create: {
+        name,
+        color,
+        containers,
+      },
+    });
+  } catch (err) {
+    throw new Error(`Could not upsert tag`);
+  }
 }
 
 // Delete a tag

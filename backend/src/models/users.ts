@@ -56,39 +56,44 @@ export async function findOrCreateUserProfileByMozillaId(
     }
   }
 
-  const profile = await prisma.profile.upsert({
-    where: {
-      mozid,
-    },
-    update: {
-      avatar,
-      accessToken,
-      refreshToken,
-    },
-    create: {
-      mozid,
-      avatar,
-      accessToken,
-      refreshToken,
-      user: {
-        connect: {
-          id: user.id,
+  let profile;
+  try {
+    profile = await prisma.profile.upsert({
+      where: {
+        mozid,
+      },
+      update: {
+        avatar,
+        accessToken,
+        refreshToken,
+      },
+      create: {
+        mozid,
+        avatar,
+        accessToken,
+        refreshToken,
+        user: {
+          connect: {
+            id: user.id,
+          },
         },
       },
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          email: true,
-          tier: true,
-          createdAt: true,
-          updatedAt: true,
-          activatedAt: true,
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            tier: true,
+            createdAt: true,
+            updatedAt: true,
+            activatedAt: true,
+          },
         },
       },
-    },
-  });
+    });
+  } catch (err) {
+    throw new Error(`Could not upsert user`);
+  }
 
   // Flip the nesting of the user and the profile.
   delete profile.user;

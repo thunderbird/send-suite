@@ -129,25 +129,29 @@ router.get('/', async (req, res) => {
     const userinfo: Record<string, any> = await client.userinfo(accessToken);
 
     const { uid, avatar, email } = userinfo;
-    const user = await findOrCreateUserProfileByMozillaId(
-      uid,
-      avatar,
-      email,
-      accessToken,
-      refreshToken
-    );
+    try {
+      const user = await findOrCreateUserProfileByMozillaId(
+        uid,
+        avatar,
+        email,
+        accessToken,
+        refreshToken
+      );
 
-    req.session['user'] = user;
-    req.session.save((err) => {
-      if (err) {
-        logger.error('Could not save session in / callback.');
-        logger.error(err);
-        res.status(500).json(err);
-        return;
-      }
+      req.session['user'] = user;
+      req.session.save((err) => {
+        if (err) {
+          logger.error('Could not save session in / callback.');
+          logger.error(err);
+          res.status(500).json(err);
+          return;
+        }
 
-      res.redirect('/login-success.html');
-    });
+        res.redirect('/login-success.html');
+      });
+    } catch (err) {
+      throw new Error(`Could not create user/profile`);
+    }
   });
 });
 
