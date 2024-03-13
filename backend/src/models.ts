@@ -329,6 +329,8 @@ export async function addGroupMember(containerId: number, userId: number) {
     throw new Error(`could not create membership`);
   }
 
+  // Returns `null` if no record found.
+  // Do not try/catch.
   const membership = await prisma.membership.findFirst({
     where: {
       groupId: group.id,
@@ -390,13 +392,18 @@ export async function removeInvitationAndGroup(invitationId: number) {
 }
 
 export async function removeGroupMember(containerId: number, userId: number) {
-  const group = await prisma.group.findFirst({
-    where: {
-      container: {
-        id: containerId,
+  let group;
+  try {
+    group = await prisma.group.findFirstOrThrow({
+      where: {
+        container: {
+          id: containerId,
+        },
       },
-    },
-  });
+    });
+  } catch (err) {
+    throw new Error(`Could not find group`);
+  }
 
   try {
     return prisma.membership.delete({

@@ -21,6 +21,8 @@ export async function createAccessLink(
   permission: number,
   expiration?: string
 ) {
+  // Do not wrap with try/catch.
+  // We'll create a share if one isn't found.
   let share = await prisma.share.findFirst({
     where: {
       containerId,
@@ -156,6 +158,8 @@ export async function createInvitation(
   permission: number
 ) {
   console.log(`Looking for existing share`);
+  // Do not wrap with try/catch.
+  // We'll create a share if one isn't found.
   let share = await prisma.share.findFirst({
     where: {
       containerId,
@@ -183,6 +187,8 @@ export async function createInvitation(
     }
 
     console.log(`Checking for existing invitation`);
+    // Do not wrap with try/catch.
+    // We'll create a share if one isn't found.
     const invitation = await prisma.invitation.findFirst({
       where: {
         shareId: share.id,

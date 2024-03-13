@@ -109,18 +109,22 @@ is a user and containerId === 0
     return;
   }
 
-  const group = await prisma.group.findFirst({
-    where: {
-      container: {
-        id: containerId,
+  let group;
+  try {
+    group = await prisma.group.findFirstOrThrow({
+      where: {
+        container: {
+          id: containerId,
+        },
       },
-    },
-  });
-
-  if (!group) {
+    });
+  } catch (err) {
+    // No need to throw an error.
+    // This is handled correctly by `reject(res)`
     reject(res);
     return;
   }
+
   // Find the GroupUser
   const membership = await prisma.membership.findUnique({
     where: {
