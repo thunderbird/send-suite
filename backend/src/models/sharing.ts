@@ -9,6 +9,13 @@ import { randomBytes } from 'crypto';
 import { base64url } from '../utils';
 import { addGroupMember } from '../models';
 
+/**
+ * Create Access Link
+ * Creates an access link for a container.
+ * Looks for an existing share (which connects access links to containers).
+ * If one is not found, a new share is created.
+ * Function will throw an error if unable to create the new share or the access link.
+ */
 export async function createAccessLink(
   containerId: number,
   senderId: number,
@@ -21,8 +28,6 @@ export async function createAccessLink(
   permission: number,
   expiration?: string
 ) {
-  // Do not wrap with try/catch.
-  // We'll create a share if one isn't found.
   let share = await prisma.share.findFirst({
     where: {
       containerId,
@@ -207,7 +212,7 @@ export async function createInvitation(
     }
 
     console.log(`Creating invitation`);
-    entityName = 'access link';
+    entityName = 'invitation';
     return prisma.invitation.create({
       data: {
         share: {
