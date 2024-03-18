@@ -3,11 +3,14 @@ import {
   UserTier,
   InvitationStatus,
   ContainerType,
+  Share,
+  Invitation,
 } from '@prisma/client';
 const prisma = new PrismaClient();
 import { randomBytes } from 'crypto';
 import { base64url } from '../utils';
 import { addGroupMember } from '../models';
+import { fromPrisma } from './prisma-helper';
 
 /**
  * Create Access Link
@@ -28,137 +31,128 @@ export async function createAccessLink(
   permission: number,
   expiration?: string
 ) {
-  let share = await prisma.share.findFirst({
-    where: {
-      containerId,
-      senderId,
-    },
-  });
-
-  // For placeholder error message:
-  // if there's an error while creating, what couldn't we create?
-  let entityName: string;
+  let share: Share;
   try {
-    if (!share) {
-      // Create a share
-      entityName = 'share';
-      share = await prisma.share.create({
-        data: {
-          containerId,
-          senderId,
-        },
-      });
-    }
-
-    if (!share) {
-      console.log(`Could not create share before creating accessLink.`);
-      throw new Error(`could not create ${entityName}`);
-    }
-
-    console.log(`Created share for access link: ${share.id}`);
-    const id = base64url(randomBytes(64));
-
-    console.log(`🚀 I see an expiration of: ${expiration}`);
-    let expiryDate = null;
-    if (expiration) {
-      expiryDate = new Date(expiration);
-    }
-
-    console.log(`🚀 using expiryDate`);
-    console.log(expiryDate);
-    entityName = 'access link';
-    return prisma.accessLink.create({
-      data: {
-        id,
-        share: {
-          connect: {
-            id: share.id,
-          },
-        },
-        wrappedKey,
-        salt,
-        challengeKey,
-        challengeSalt,
-        challengeCiphertext,
-        challengePlaintext,
-        permission,
-        expiryDate,
+    const findShareQuery = {
+      where: {
+        containerId,
+        senderId,
       },
-    });
+    };
+    share = await fromPrisma(prisma.share.findFirstOrThrow, findShareQuery);
   } catch (err) {
-    throw new Error(`could not create ${entityName}`);
+    const createShareQuery = {
+      data: {
+        containerId,
+        senderId,
+      },
+    };
+    const onCreateError = () => {
+      throw new Error(`Could not create share for access link`);
+    };
+    share = await fromPrisma(
+      prisma.share.create,
+      createShareQuery,
+      onCreateError
+    );
   }
+
+  const id = base64url(randomBytes(64));
+  let expiryDate = expiration ? new Date(expiration) : null;
+
+  const accessLinkQuery = {
+    data: {
+      id,
+      share: {
+        connect: {
+          id: share.id,
+        },
+      },
+      wrappedKey,
+      salt,
+      challengeKey,
+      challengeSalt,
+      challengeCiphertext,
+      challengePlaintext,
+      permission,
+      expiryDate,
+    },
+  };
+  const onAccessLinkError = () => {
+    throw new Error(`Could not create access link`);
+  };
+  return await fromPrisma(
+    prisma.accessLink.create,
+    accessLinkQuery,
+    onAccessLinkError
+  );
 }
 
 export async function getAccessLinkChallenge(linkId: string) {
-  try {
-    return prisma.accessLink.findUniqueOrThrow({
-      where: {
-        id: linkId,
-      },
-      select: {
-        challengeKey: true,
-        challengeSalt: true,
-        challengeCiphertext: true,
-      },
-    });
-  } catch (err) {
+  const query = {
+    where: {
+      id: linkId,
+    },
+    select: {
+      challengeKey: true,
+      challengeSalt: true,
+      challengeCiphertext: true,
+    },
+  };
+  const onError = () => {
     throw new Error(`Could not find access link`);
-  }
+  };
+  return await fromPrisma(prisma.accessLink.findUniqueOrThrow, query, onError);
 }
 
 export async function acceptAccessLink(
   linkId: string,
   challengePlaintext: string
 ) {
-  try {
-    // find the accessLink in the database
-    // for the linkId, does the challenge match
-    // what's in the database?
-    const accessLink = await prisma.accessLink.findUniqueOrThrow({
-      where: {
-        id: linkId,
-        challengePlaintext,
-      },
-      include: {
-        share: {
-          select: {
-            containerId: true,
-          },
+  const query = {
+    where: {
+      id: linkId,
+      challengePlaintext,
+    },
+    include: {
+      share: {
+        select: {
+          containerId: true,
         },
       },
-    });
-    return accessLink;
-  } catch (e) {
+    },
+  };
+  const onError = () => {
     throw new Error(`Could not find access link`);
-  }
+  };
+  return await fromPrisma(prisma.accessLink.findUniqueOrThrow, query, onError);
 }
 
 export async function getContainerForAccessLink(linkId: string) {
-  try {
-    return await prisma.accessLink.findUniqueOrThrow({
-      where: {
-        id: linkId,
-      },
-      select: {
-        share: {
-          select: {
-            container: {
-              include: {
-                items: {
-                  include: {
-                    upload: true,
-                  },
+  const query = {
+    where: {
+      id: linkId,
+    },
+    select: {
+      share: {
+        select: {
+          container: {
+            include: {
+              items: {
+                include: {
+                  upload: true,
                 },
               },
             },
           },
         },
       },
-    });
-  } catch (err) {
+    },
+  };
+  const onError = () => {
     throw new Error(`Could not find access link`);
-  }
+  };
+  return await fromPrisma(prisma.accessLink.findUniqueOrThrow, query, onError);
 }
 
 export async function createInvitation(
@@ -171,49 +165,47 @@ export async function createInvitation(
   console.log(`Looking for existing share`);
   // Do not wrap with try/catch.
   // We'll create a share if one isn't found.
-  let share = await prisma.share.findFirst({
-    where: {
-      containerId,
-      senderId,
-    },
-  });
-  // For placeholder error message:
-  // if there's an error while creating, what couldn't we create?
-  let entityName: string;
+  let share: Share;
+
   try {
-    if (!share) {
-      console.log(`No existing share. Let's create one.`);
-      entityName = 'share';
-      share = await prisma.share.create({
-        data: {
-          containerId,
-          senderId,
-        },
-      });
-    }
+    const findShareQuery = {
+      where: {
+        containerId,
+        senderId,
+      },
+    };
+    share = await fromPrisma(prisma.share.findFirstOrThrow, findShareQuery);
+  } catch (err) {
+    const createShareQuery = {
+      data: {
+        containerId,
+        senderId,
+      },
+    };
+    const onCreateShareError = () => {
+      throw new Error(`Could not create share for invitation`);
+    };
+    share = await fromPrisma(
+      prisma.share.create,
+      createShareQuery,
+      onCreateShareError
+    );
+  }
 
-    if (!share) {
-      console.log(`Could not create share before creating invitation.`);
-      throw new Error(`could not create ${entityName}`);
-    }
-
-    console.log(`Checking for existing invitation`);
-    // Do not wrap with try/catch.
-    // We'll create a share if one isn't found.
-    const invitation = await prisma.invitation.findFirst({
+  let invitation: Invitation;
+  try {
+    const findInvitationQuery = {
       where: {
         shareId: share.id,
         recipientId,
       },
-    });
-    if (invitation) {
-      console.log(`invitation found. no need to create duplicate`);
-      return invitation;
-    }
-
-    console.log(`Creating invitation`);
-    entityName = 'invitation';
-    return prisma.invitation.create({
+    };
+    invitation = await fromPrisma(
+      prisma.invitation.findFirstOrThrow,
+      findInvitationQuery
+    );
+  } catch (err) {
+    const createInvitationQuery = {
       data: {
         share: {
           connect: {
@@ -228,73 +220,80 @@ export async function createInvitation(
         },
         permission,
       },
-    });
-  } catch (err) {
-    throw new Error(`could not create ${entityName}`);
+    };
+    const onCreateInvitationError = () => {
+      throw new Error(`Could not create invitation`);
+    };
+    invitation = await fromPrisma(
+      prisma.invitation.create,
+      createInvitationQuery,
+      onCreateInvitationError
+    );
   }
+
+  return invitation;
 }
 
 export async function createInvitationFromAccessLink(
   linkId: string,
   recipientId: number
 ) {
-  let accessLink;
-
-  try {
-    accessLink = await prisma.accessLink.findUniqueOrThrow({
-      where: {
-        id: linkId,
-      },
-      select: {
-        wrappedKey: true,
-        permission: true,
-        share: {
-          select: {
-            senderId: true,
-            containerId: true,
-          },
+  const findAccessLinkQuery = {
+    where: {
+      id: linkId,
+    },
+    select: {
+      wrappedKey: true,
+      permission: true,
+      share: {
+        select: {
+          senderId: true,
+          containerId: true,
         },
       },
-    });
-  } catch (err) {
+    },
+  };
+  const onFindAccessLinkError = () => {
     throw new Error(`Could not find access link`);
-  }
-
-  console.log(accessLink);
+  };
+  const accessLink = await fromPrisma(
+    prisma.accessLink.findUniqueOrThrow,
+    findAccessLinkQuery,
+    onFindAccessLinkError
+  );
 
   // NOTE: we're just copying over the password-wrapped key
   // we *are not* wrapping the key with the user's publicKey
   // that's what's supposed to be in that field.
-  let invitation;
-  try {
-    invitation = await createInvitation(
-      accessLink.share.containerId,
-      accessLink.wrappedKey,
-      accessLink.share.senderId,
-      recipientId,
-      accessLink.permission
-    );
-  } catch (err) {
-    throw err;
-  }
+  const invitation = await createInvitation(
+    accessLink.share.containerId,
+    accessLink.wrappedKey,
+    accessLink.share.senderId,
+    recipientId,
+    accessLink.permission
+  );
 
-  try {
-    return await prisma.invitation.update({
-      where: {
-        id: invitation.id,
-      },
-      data: {
-        status: InvitationStatus.ACCEPTED,
-      },
-    });
-  } catch (err) {
+  const updateInvitationQuery = {
+    where: {
+      id: invitation.id,
+    },
+    data: {
+      status: InvitationStatus.ACCEPTED,
+    },
+  };
+  const onUpdateError = () => {
     throw new Error(`Could not update invitation`);
-  }
+  };
+  return await fromPrisma(
+    prisma.invitation.update,
+    updateInvitationQuery,
+    onUpdateError
+  );
 }
 
 export async function isAccessLinkValid(linkId: string) {
   const now = new Date();
-  const results = await prisma.accessLink.findMany({
+  const query = {
     where: {
       AND: [
         { id: { equals: linkId } },
@@ -306,25 +305,25 @@ export async function isAccessLinkValid(linkId: string) {
     select: {
       id: true,
     },
-  });
-
+  };
+  const results = await fromPrisma(prisma.accessLink.findMany, query);
   return results.length > 0 ? results[0] : null;
 }
 
 export async function removeAccessLink(linkId: string) {
-  try {
-    return prisma.accessLink.delete({
-      where: {
-        id: linkId,
-      },
-    });
-  } catch (err) {
+  const query = {
+    where: {
+      id: linkId,
+    },
+  };
+  const onError = () => {
     throw new Error(`Could not delete access link`);
-  }
+  };
+  return await fromPrisma(prisma.accessLink.delete, query, onError);
 }
 
 export async function getAllInvitations(userId: number) {
-  const invitations = await prisma.invitation.findMany({
+  const query = {
     where: {
       recipientId: userId,
       status: InvitationStatus.PENDING,
@@ -337,60 +336,57 @@ export async function getAllInvitations(userId: number) {
         },
       },
     },
-  });
-  return invitations;
+  };
+  return await fromPrisma(prisma.invitation.findMany, query);
 }
 
 export async function acceptInvitation(invitationId: number) {
-  console.log(`accepting invitation for ${invitationId}`);
-  // get invitation from database
-  let invitation;
-  try {
-    invitation = await prisma.invitation.findUniqueOrThrow({
-      where: {
-        id: invitationId,
-      },
-    });
-  } catch (err) {
+  const findInvitationQuery = {
+    where: {
+      id: invitationId,
+    },
+  };
+  const onFindInvitationError = () => {
     throw new Error(`Could not find invitation`);
-  }
-
-  // get the recipientId from invitation
-  // get container from the invitation
-  const { recipientId, shareId } = invitation;
-  console.log(
-    `got share id ${shareId} from invitation, getting containerId from share`
+  };
+  const invitation = await fromPrisma(
+    prisma.invitation.findUniqueOrThrow,
+    findInvitationQuery,
+    onFindInvitationError
   );
 
-  let share;
-  try {
-    share = await prisma.share.findUniqueOrThrow({
-      where: {
-        id: shareId,
-      },
-    });
-  } catch (err) {
+  const { recipientId, shareId } = invitation;
+  const findShareQuery = {
+    where: {
+      id: shareId,
+    },
+  };
+  const onFindShareError = () => {
     throw new Error(`Could not find share`);
-  }
+  };
+  const share = await fromPrisma(
+    prisma.share.findUniqueOrThrow,
+    findShareQuery,
+    onFindShareError
+  );
 
   const { containerId } = share;
-  console.log(
-    `creating membership to container ${containerId} for user ${recipientId}`
-  );
+
   // create a new groupUser for recipientId and group
   const groupUser = await addGroupMember(containerId, recipientId);
 
   // Mark the invitation as accepted, if necessary.
   if (invitation.status !== InvitationStatus.ACCEPTED) {
     try {
-      await prisma.invitation.update({
+      const updateInvtationQuery = {
         where: {
           id: invitationId,
         },
         data: {
           status: InvitationStatus.ACCEPTED,
         },
-      });
+      };
+      await fromPrisma(prisma.invitation.update, updateInvtationQuery);
     } catch (err) {
       throw new Error(`Could not update invitation`);
     }
@@ -406,7 +402,7 @@ export async function getContainersSharedByMe(
   userId: number,
   type: ContainerType
 ) {
-  const shares = await prisma.share.findMany({
+  const query = {
     where: {
       senderId: userId,
     },
@@ -431,7 +427,9 @@ export async function getContainersSharedByMe(
       // Include all accessLinks
       accessLinks: true,
     },
-  });
+  };
+
+  const shares = await fromPrisma(prisma.share.findMany, query);
 
   // TODO: double check this, might be redundant since
   // findMany returns `[]` if no matching records.
@@ -446,7 +444,7 @@ export async function getContainersSharedWithMe(
   recipientId: number,
   type: ContainerType
 ) {
-  const invitations = await prisma.invitation.findMany({
+  const query = {
     where: {
       recipientId,
       status: InvitationStatus.ACCEPTED,
@@ -464,7 +462,8 @@ export async function getContainersSharedWithMe(
         },
       },
     },
-  });
+  };
+  const invitations = await fromPrisma(prisma.invitation.findMany, query);
   return invitations.filter((i) => i.share.container.type === type);
 }
 
@@ -474,27 +473,28 @@ export async function burnFolder(
 ) {
   // delete the ephemeral link
   console.log(`🤡 burning container id: ${containerId}`);
-  const shares = await prisma.share.findMany({
+  const findShareQuery = {
     where: {
       containerId,
     },
-  });
-
-  // For placeholder error message:
-  // if there's an error while creating, what couldn't we create?
+  };
+  const shares = await fromPrisma(prisma.share.findMany, findShareQuery);
 
   // For each share, delete corresponding access links
-
   for (const share of shares) {
-    try {
-      await prisma.accessLink.deleteMany({
-        where: {
-          shareId: share.id,
-        },
-      });
-    } catch (err) {
+    const deleteSharesQuery = {
+      where: {
+        shareId: share.id,
+      },
+    };
+    const onDeleteShareError = () => {
       throw new Error(`could not delete access link`);
-    }
+    };
+    await fromPrisma(
+      prisma.accessLink.deleteMany,
+      deleteSharesQuery,
+      onDeleteShareError
+    );
   }
 
   console.log(`✅ deleted ephemeral links`);
@@ -502,39 +502,42 @@ export async function burnFolder(
   // get the container so we can get the
   // - groups (so we can get users)
   // - items (so we can get uploads)
-  let container;
-  try {
-    container = await prisma.container.findUniqueOrThrow({
-      where: {
-        id: containerId,
-      },
-      select: {
-        group: {
-          select: {
-            id: true,
-            members: {
-              select: {
-                user: {
-                  select: {
-                    id: true,
-                    tier: true,
-                  },
+  const findContainersQuery = {
+    where: {
+      id: containerId,
+    },
+    select: {
+      group: {
+        select: {
+          id: true,
+          members: {
+            select: {
+              user: {
+                select: {
+                  id: true,
+                  tier: true,
                 },
               },
             },
           },
         },
-        items: {
-          select: {
-            id: true,
-            uploadId: true,
-          },
+      },
+      items: {
+        select: {
+          id: true,
+          uploadId: true,
         },
       },
-    });
-  } catch (err) {
+    },
+  };
+  const findContainerError = () => {
     throw new Error(`Could not find container`);
-  }
+  };
+  const container = await fromPrisma(
+    prisma.container.findUniqueOrThrow,
+    findContainersQuery,
+    findContainerError
+  );
 
   const users = container.group.members.map(({ user }) => user);
 
@@ -544,15 +547,15 @@ export async function burnFolder(
   await Promise.all(
     container.items.map(async ({ id }) => {
       console.log(`✅ deleting item ${id}`);
-      try {
-        return prisma.item.delete({
-          where: {
-            id,
-          },
-        });
-      } catch (err) {
+      const deleteItemQuery = {
+        where: {
+          id,
+        },
+      };
+      const onDeleteError = () => {
         throw new Error(`could not delete item`);
-      }
+      };
+      return fromPrisma(prisma.item.delete, deleteItemQuery, onDeleteError);
     })
   );
 
@@ -560,44 +563,56 @@ export async function burnFolder(
     await Promise.all(
       uploadIds.map(async (id) => {
         console.log(`✅ deleting upload ${id}`);
-        try {
-          return prisma.upload.delete({
-            where: {
-              id,
-            },
-          });
-        } catch (err) {
+        const deleteUploadQuery = {
+          where: {
+            id,
+          },
+        };
+        const onDeleteUploadError = () => {
           throw new Error(`could not delete upload`);
-        }
+        };
+        return fromPrisma(
+          prisma.upload.delete,
+          deleteUploadQuery,
+          onDeleteUploadError
+        );
       })
     );
   }
 
-  try {
-    await prisma.container.delete({
-      where: {
-        id: containerId,
-      },
-    });
-  } catch (err) {
+  const deleteContainerQuery = {
+    where: {
+      id: containerId,
+    },
+  };
+  const onDeleteContainerError = () => {
     throw new Error(`could not delete container`);
-  }
+  };
+  await fromPrisma(
+    prisma.container.delete,
+    deleteContainerQuery,
+    onDeleteContainerError
+  );
   console.log(`✅ deleting container ${containerId}`);
 
   await Promise.all(
     users.map(async ({ id, tier }) => {
-      try {
-        return await prisma.membership.deleteMany({
-          where: {
-            groupId: container.group.id,
-            // don't specify the user id
-            // remove all groupUser records for this group
-            // userId: id,
-          },
-        });
-      } catch (err) {
+      const deleteMembershipQuery = {
+        where: {
+          groupId: container.group.id,
+          // don't specify the user id
+          // remove all groupUser records for this group
+          // userId: id,
+        },
+      };
+      const onDeleteMembershipError = () => {
         throw new Error(`could not delete membership`);
-      }
+      };
+      return fromPrisma(
+        prisma.membership.deleteMany,
+        deleteMembershipQuery,
+        onDeleteMembershipError
+      );
     })
   );
 
@@ -606,29 +621,31 @@ export async function burnFolder(
     users
       .filter((user) => user.tier === UserTier.EPHEMERAL)
       .map(async ({ id, tier }) => {
-        try {
-          await prisma.user.delete({
-            where: {
-              id,
-            },
-          });
-        } catch (err) {
+        const userDeleteQuery = {
+          where: {
+            id,
+          },
+        };
+        const onUserDeleteError = () => {
           throw new Error(`could not delete user`);
-        }
-        console.log(`✅ deleted ephemeral user ${id}`);
+        };
+        await fromPrisma(
+          prisma.user.delete,
+          userDeleteQuery,
+          onUserDeleteError
+        );
       })
   );
 
-  try {
-    await prisma.group.delete({
-      where: {
-        id: container.group.id,
-      },
-    });
-    console.log(`✅ deleted group user ${container.group.id}`);
-  } catch (err) {
+  const groupDeleteQuery = {
+    where: {
+      id: container.group.id,
+    },
+  };
+  const onGroupDeleteError = () => {
     throw new Error(`could not delete group`);
-  }
+  };
+  await fromPrisma(prisma.group.delete, groupDeleteQuery, onGroupDeleteError);
 
   // Basically, if we got this far, everything was burned successfully.
   return {
