@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { fromPrisma } from './models/prisma-helper';
 
 import {
   hasWrite,
@@ -109,40 +110,36 @@ is a user and containerId === 0
     return;
   }
 
-  let group;
   try {
-    group = await prisma.group.findFirstOrThrow({
+    const findGroupQuery = {
       where: {
         container: {
           id: containerId,
         },
       },
-    });
-  } catch (err) {
-    // No need to throw an error.
-    // This is handled correctly by `reject(res)`
-    reject(res);
-    return;
-  }
+    };
+    const group = await fromPrisma(
+      prisma.group.findFirstOrThrow,
+      findGroupQuery
+    );
 
-  // Find the GroupUser
-  let membership;
-  try {
-    membership = await prisma.membership.findUniqueOrThrow({
+    const findMembershipQuery = {
       where: {
         groupId_userId: { groupId: group.id, userId },
       },
-    });
+    };
+    const membership = await fromPrisma(
+      prisma.membership.findUniqueOrThrow,
+      findMembershipQuery
+    );
+
+    // Attach it to the request
+    req[PERMISSION_REQUEST_KEY] = membership.permission;
+    next();
   } catch (err) {
-    // No need to throw an error.
-    // This is handled correctly by `reject(res)`
     reject(res);
     return;
   }
-
-  // Attach it to the request
-  req[PERMISSION_REQUEST_KEY] = membership.permission;
-  next();
 }
 
 export function canRead(req, res, next) {
