@@ -1,32 +1,36 @@
-import { PrismaClient, UserTier, ContainerType } from '@prisma/client';
+import { PrismaClient, UserTier, ContainerType, User } from '@prisma/client';
 const prisma = new PrismaClient();
+import { fromPrisma } from './prisma-helper';
 
 export async function createUser(
   publicKey: string,
   email: string,
   tier: UserTier = UserTier.PRO
 ) {
-  try {
-    return prisma.user.create({
-      data: {
-        publicKey,
-        email,
-        tier,
-      },
-    });
-  } catch (err) {
+  const query = {
+    data: {
+      publicKey,
+      email,
+      tier,
+    },
+  };
+  const onError = () => {
     throw new Error(`could not create user`);
-  }
+  };
+  return await fromPrisma(prisma.user.create, query, onError);
 }
 
 export async function getUserByEmail(email: string) {
   // TODO: revisit this and consider deleting
-  const users = await prisma.user.findMany({
+  const query = {
     where: {
       email,
     },
-  });
-
+  };
+  const onError = () => {
+    throw new Error(`could not find user`);
+  };
+  const users = await fromPrisma(prisma.user.findMany, query, onError);
   return users[0];
 }
 
@@ -38,62 +42,62 @@ export async function findOrCreateUserProfileByMozillaId(
   accessToken?: string,
   refreshToken?: string
 ) {
-  // TODO: confirm whether profiles and users have a unique 1-1 mapping.
-  // If so, do a `findUnique`
-  const users = await prisma.user.findMany({
+  let user: User;
+  const userQuery = {
     where: {
       profile: {
         mozid,
       },
     },
-  });
-  let user = users[0];
-  if (!user) {
-    try {
-      user = await createUser('', email, UserTier.FREE);
-    } catch (err) {
-      throw err;
-    }
+  };
+
+  try {
+    user = await fromPrisma(prisma.user.findFirstOrThrow, userQuery);
+  } catch (err) {
+    user = await createUser('', email, UserTier.FREE);
   }
 
-  let profile;
-  try {
-    profile = await prisma.profile.upsert({
-      where: {
-        mozid,
-      },
-      update: {
-        avatar,
-        accessToken,
-        refreshToken,
-      },
-      create: {
-        mozid,
-        avatar,
-        accessToken,
-        refreshToken,
-        user: {
-          connect: {
-            id: user.id,
-          },
+  const profileQuery = {
+    where: {
+      mozid,
+    },
+    update: {
+      avatar,
+      accessToken,
+      refreshToken,
+    },
+    create: {
+      mozid,
+      avatar,
+      accessToken,
+      refreshToken,
+      user: {
+        connect: {
+          id: user.id,
         },
       },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            tier: true,
-            createdAt: true,
-            updatedAt: true,
-            activatedAt: true,
-          },
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          tier: true,
+          createdAt: true,
+          updatedAt: true,
+          activatedAt: true,
         },
       },
-    });
-  } catch (err) {
-    throw new Error(`Could not upsert user`);
-  }
+    },
+  };
+  const onProfileError = () => {
+    throw new Error(`could not upsert profile on moz login`);
+  };
+  const profile = await fromPrisma(
+    prisma.profile.upsert,
+    profileQuery,
+    onProfileError
+  );
 
   // Flip the nesting of the user and the profile.
   delete profile.user;
@@ -103,33 +107,33 @@ export async function findOrCreateUserProfileByMozillaId(
 }
 
 export async function getUserPublicKey(id: number) {
-  try {
-    return prisma.user.findUniqueOrThrow({
-      where: {
-        id,
-      },
-      select: {
-        publicKey: true,
-      },
-    });
-  } catch (err) {
+  const query = {
+    where: {
+      id,
+    },
+    select: {
+      publicKey: true,
+    },
+  };
+  const onError = () => {
     throw new Error(`Could not find user`);
-  }
+  };
+  return await fromPrisma(prisma.user.findUniqueOrThrow, query, onError);
 }
 
 export async function updateUserPublicKey(id: number, publicKey: string) {
-  try {
-    return prisma.user.update({
-      where: {
-        id,
-      },
-      data: {
-        publicKey,
-      },
-    });
-  } catch (err) {
+  const query = {
+    where: {
+      id,
+    },
+    data: {
+      publicKey,
+    },
+  };
+  const onError = () => {
     throw new Error(`Could not update user`);
-  }
+  };
+  return await fromPrisma(prisma.user.update, query, onError);
 }
 
 async function _whereContainer(
@@ -138,7 +142,7 @@ async function _whereContainer(
   shareOnly?: boolean,
   topLevelOnly?: boolean
 ) {
-  const params = {
+  const query = {
     where: {
       id: userId,
     },
@@ -151,12 +155,10 @@ async function _whereContainer(
       },
     },
   };
-  let user;
-  try {
-    user = await prisma.user.findUniqueOrThrow(params);
-  } catch (err) {
+  const onError = () => {
     throw new Error(`Could not find user`);
-  }
+  };
+  const user = await fromPrisma(prisma.user.findUniqueOrThrow, query, onError);
 
   const groupIds = user.groups.map(({ groupId }) => groupId);
   const containerWhere = {
@@ -186,14 +188,8 @@ export async function getAllUserGroupContainers(
   userId: number,
   type: ContainerType | null
 ) {
-  let containerWhere;
-  try {
-    containerWhere = await _whereContainer(userId, type, false, true);
-  } catch (err) {
-    throw new Error(`Could not find container`);
-  }
-
-  return prisma.container.findMany({
+  const containerWhere = await _whereContainer(userId, type, false, true);
+  const query = {
     where: containerWhere,
     // include: {
     //   items: true,
@@ -235,7 +231,8 @@ export async function getAllUserGroupContainers(
       },
       tags: true,
     },
-  });
+  };
+  return await fromPrisma(prisma.container.findMany, query);
 }
 
 export async function getRecentActivity(
@@ -243,14 +240,8 @@ export async function getRecentActivity(
   type: ContainerType | null
 ) {
   // Get all containers
-  let containerWhere;
-  try {
-    containerWhere = await _whereContainer(userId, type);
-  } catch (err) {
-    throw new Error(`Could not find container`);
-  }
-
-  const containers = await prisma.container.findMany({
+  const containerWhere = await _whereContainer(userId, type);
+  const query = {
     take: 10,
     where: containerWhere,
     orderBy: [
@@ -277,27 +268,29 @@ export async function getRecentActivity(
         },
       },
     },
-  });
-
-  return containers;
+  };
+  const onError = () => {
+    throw new Error(`Could not find containers for recent activity`);
+  };
+  return await fromPrisma(prisma.container.findMany, query, onError);
 }
 
 export async function getBackup(id: number) {
-  try {
-    return prisma.user.findUniqueOrThrow({
-      where: {
-        id,
-      },
-      select: {
-        backupContainerKeys: true,
-        backupKeypair: true,
-        backupKeystring: true,
-        backupSalt: true,
-      },
-    });
-  } catch (err) {
-    throw new Error(`Could not find user`);
-  }
+  const query = {
+    where: {
+      id,
+    },
+    select: {
+      backupContainerKeys: true,
+      backupKeypair: true,
+      backupKeystring: true,
+      backupSalt: true,
+    },
+  };
+  const onError = () => {
+    throw new Error(`Could not find user while getting backup`);
+  };
+  return await fromPrisma(prisma.user.findUniqueOrThrow, query, onError);
 }
 
 export async function setBackup(
@@ -307,19 +300,19 @@ export async function setBackup(
   keystring: string,
   salt: string
 ) {
-  try {
-    return prisma.user.update({
-      where: {
-        id,
-      },
-      data: {
-        backupContainerKeys: keys,
-        backupKeypair: keypair,
-        backupKeystring: keystring,
-        backupSalt: salt,
-      },
-    });
-  } catch (err) {
-    throw new Error(`Could not update user`);
-  }
+  const query = {
+    where: {
+      id,
+    },
+    data: {
+      backupContainerKeys: keys,
+      backupKeypair: keypair,
+      backupKeystring: keystring,
+      backupSalt: salt,
+    },
+  };
+  const onError = () => {
+    throw new Error(`Could not find user while setting backup`);
+  };
+  return await fromPrisma(prisma.user.update, query, onError);
 }
