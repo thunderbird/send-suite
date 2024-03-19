@@ -53,6 +53,7 @@ export default class Uploader {
         size: blob.size,
         ownerId: this.user.id,
         type: blob.type,
+        containerId,
       },
       'POST'
     );

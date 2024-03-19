@@ -3,8 +3,11 @@ import {
   ContainerType,
   ItemType,
   InvitationStatus,
+  Item,
+  Membership,
 } from '@prisma/client';
 const prisma = new PrismaClient();
+import { fromPrisma } from './models/prisma-helper';
 
 import { PermissionType } from './types/custom';
 
@@ -25,21 +28,22 @@ though, the `getContainersSharedWithMe` is also looking for accepted invitations
 
 */
 export async function getOwnedContainers(ownerId: number) {
-  return prisma.container.findMany({
+  const query = {
     where: {
       ownerId,
     },
     orderBy: {
       createdAt: 'desc',
     },
-  });
+  };
+  return await fromPrisma(prisma.container.findMany, query);
 }
 
 export async function getSharesForContainer(
   containerId: number,
   userId: number
 ) {
-  return await prisma.share.findMany({
+  const query = {
     where: {
       containerId,
     },
@@ -59,11 +63,12 @@ export async function getSharesForContainer(
         },
       },
     },
-  });
+  };
+  return await fromPrisma(prisma.share.findMany, query);
 }
 
 export async function updateItemName(itemId: number, name: string) {
-  const result = await prisma.item.update({
+  const query = {
     where: {
       id: itemId,
     },
@@ -71,8 +76,11 @@ export async function updateItemName(itemId: number, name: string) {
       name,
       updatedAt: new Date(),
     },
-  });
-  return result;
+  };
+  const onError = () => {
+    throw new Error(`Could not update item`);
+  };
+  return await fromPrisma(prisma.item.update, query, onError);
 }
 
 export async function updateInvitationPermissions(
@@ -81,81 +89,42 @@ export async function updateInvitationPermissions(
   userId: number,
   permission: PermissionType
 ) {
-  const result = await prisma.invitation.update({
+  const query = {
     where: {
       id: invitationId,
     },
     data: {
       permission,
     },
-  });
-  return result;
+  };
+  const onError = () => {
+    throw new Error(`Could not update invitation`);
+  };
+  return await fromPrisma(prisma.invitation.update, query, onError);
 }
+
 export async function updateAccessLinkPermissions(
   containerId: number,
   accessLinkId: string,
   userId: number,
   permission: PermissionType
 ) {
-  const result = await prisma.accessLink.update({
+  const query = {
     where: {
       id: accessLinkId,
     },
     data: {
       permission,
     },
-  });
-  return result;
-}
-
-export async function __getSharedContainersAndMembers(
-  userId: number,
-  type: ContainerType
-) {
-  // Get the containers I can access, but owned by someone else
-  const containerWhere = {
-    ownerId: {
-      not: userId, // Exclude the user's own containers
-    },
-    type,
   };
-
-  const results = await prisma.membership.findMany({
-    where: {
-      userId,
-    },
-    include: {
-      group: {
-        include: {
-          container: {
-            where: containerWhere,
-          },
-          members: {
-            select: {
-              user: true,
-            },
-          }, // Include the members of each group
-        },
-      },
-    },
-  });
-
-  if (results) {
-    // Only include results with non-null containers.
-    // Null containers happen because:
-    // - the initial query is for GroupUsers
-    // - doing an `include` for containers also returns non-owned ones
-    // Return container objects whose type matches.
-    return results
-      .filter((obj) => !!obj.group.container)
-      .map((obj) => obj.group.container)
-      .filter((container) => container.type === type);
-  }
-  return results;
+  const onError = () => {
+    throw new Error(`Could not update access link`);
+  };
+  return await fromPrisma(prisma.accessLink.update, query, onError);
 }
 
 export async function getContainerWithMembers(containerId: number) {
-  return await prisma.container.findUnique({
+  const query = {
     where: {
       id: containerId,
     },
@@ -171,7 +140,11 @@ export async function getContainerWithMembers(containerId: number) {
         },
       },
     },
-  });
+  };
+  const onError = () => {
+    throw new Error(`could not find container`);
+  };
+  return await fromPrisma(prisma.container.findUniqueOrThrow, query, onError);
 }
 
 export async function createItem(
@@ -181,14 +154,12 @@ export async function createItem(
   type: ItemType,
   wrappedKey: string
 ) {
-  const item = await prisma.item.create({
+  const query = {
     data: {
       createdAt: new Date(),
       updatedAt: new Date(),
       name,
       wrappedKey,
-      // containerId,
-      // uploadId,
       type,
       upload: {
         connect: {
@@ -201,102 +172,114 @@ export async function createItem(
         },
       },
     },
-  });
-  if (item) {
-    // touch the container's `updatedAt` date
-    await prisma.container.update({
-      where: {
-        id: containerId,
-      },
-      data: {
-        updatedAt: new Date(),
-      },
-    });
-  }
-  return item;
+  };
+  const onError = () => {
+    throw new Error(`could not create item`);
+  };
+
+  return await fromPrisma(prisma.item.create, query, onError);
 }
 
 export async function deleteItem(id: number, shouldDeleteUpload = false) {
-  let containerId;
-  if (shouldDeleteUpload) {
-    const item = await prisma.item.findUnique({
-      where: {
-        id,
-      },
-      select: {
-        containerId: true,
-        uploadId: true,
-      },
-    });
-    containerId = item.containerId;
-    const uploadDeleteResult = await prisma.upload.delete({
-      where: {
-        id: item.uploadId,
-      },
-    });
-    if (!uploadDeleteResult) {
-      console.log(`We should delete the upload, but could not`);
-      return null;
-    }
-    console.log(`deleted upload ${item.uploadId}`);
-  }
-
-  const result = await prisma.item.delete({
+  const findItemQuery = {
     where: {
       id,
     },
-  });
+    select: {
+      containerId: true,
+      uploadId: true,
+    },
+  };
+  const onItemFindError = () => {
+    throw new Error(`Could not find item`);
+  };
+  const item = await fromPrisma(
+    prisma.item.findUniqueOrThrow,
+    findItemQuery,
+    onItemFindError
+  );
+  const containerId = item.containerId;
+
+  if (shouldDeleteUpload) {
+    const uploadDeleteQuery = {
+      where: {
+        id: item.uploadId,
+      },
+    };
+    const onUploadDeleteError = () => {
+      throw new Error(`Could not delete upload`);
+    };
+    await fromPrisma(
+      prisma.upload.delete,
+      uploadDeleteQuery,
+      onUploadDeleteError
+    );
+  }
+
+  const itemDeleteQuery = {
+    where: {
+      id,
+    },
+  };
+  const onItemDeleteError = () => {
+    throw new Error(`Could not delete item`);
+  };
+  const result = await fromPrisma(
+    prisma.item.delete,
+    itemDeleteQuery,
+    onItemDeleteError
+  );
 
   if (containerId && result) {
     // touch the container's `updatedAt` date
-    await prisma.container.update({
+    const updateContainerQuery = {
       where: {
         id: containerId,
       },
       data: {
         updatedAt: new Date(),
       },
-    });
+    };
+    const onUpdateContainerError = () => {
+      throw new Error(`Could not update container`);
+    };
+    await fromPrisma(
+      prisma.container.update,
+      updateContainerQuery,
+      onUpdateContainerError
+    );
   }
 
-  console.log(`deleted item ${id}`);
   return result;
 }
 
-export async function copyItemToContainer(
-  id: number,
-  containerId: number,
-  wrappedKey: string
-) {
-  // - copies existing item, creating it in another container
-  // get the existing item (so we can use its name and get its upload id)
-  // get the container (to confirm it exists)
-  // call createItem, with the new containerId and wrappedKey
-  // return the new item
-}
-
-export async function moveItem() {}
-export async function updateItem() {
-  // why update?
-  // - rename
-  // - new uploadId
-}
-
 export async function getContainerInfo(id: number) {
-  return prisma.container.findUnique({
+  const query = {
     where: {
       id,
     },
-  });
+  };
+  const onError = () => {
+    throw new Error(`Could not find container`);
+  };
+  return await fromPrisma(prisma.container.findUniqueOrThrow, query, onError);
 }
 
 export async function getContainerWithDescendants(id: number) {
-  const container = await prisma.container.findUnique({
+  const query = {
     where: { id },
     include: {
       children: true,
     },
-  });
+  };
+  const onError = () => {
+    throw new Error(`Could not find container`);
+  };
+  const container = await fromPrisma(
+    prisma.container.findUniqueOrThrow,
+    query,
+    onError
+  );
 
   if (container.children.length > 0) {
     for (let i = 0; i < container.children.length; i++) {
@@ -311,7 +294,7 @@ export async function getContainerWithDescendants(id: number) {
 }
 
 export async function addGroupMember(containerId: number, userId: number) {
-  const container = await prisma.container.findUnique({
+  const findContainerQuery = {
     where: {
       id: containerId,
     },
@@ -322,41 +305,56 @@ export async function addGroupMember(containerId: number, userId: number) {
         },
       },
     },
-  });
-
-  if (!container) {
-    return null;
-  }
+  };
+  const onFindContainerError = () => {
+    throw new Error(`Could not find container`);
+  };
+  const container = await fromPrisma(
+    prisma.container.findUniqueOrThrow,
+    findContainerQuery,
+    onFindContainerError
+  );
 
   const { group } = container ?? {};
-
-  if (!group) {
-    return null;
+  if (!group.id) {
+    throw new Error(`could not create membership`);
   }
 
-  console.log(`Checking for existing membership`);
-  const membership = await prisma.membership.findFirst({
+  // Returns `null` if no record found.
+  // Do not try/catch.
+  const findMembershipQuery = {
     where: {
       groupId: group.id,
       userId,
     },
-  });
+  };
+  const membership = await fromPrisma(
+    prisma.membership.findFirst,
+    findMembershipQuery
+  );
   if (membership) {
-    console.log(`membership found. no need to create`);
     return membership;
   }
 
-  return prisma.membership.create({
+  const createMembershipQuery = {
     data: {
       groupId: group.id,
       userId,
       permission: PermissionType.READ, // Lowest permissions, by default
     },
-  });
+  };
+  const onCreateMembershipError = () => {
+    throw new Error(`could not create membership`);
+  };
+  return await fromPrisma(
+    prisma.membership.create,
+    createMembershipQuery,
+    onCreateMembershipError
+  );
 }
 
 export async function removeInvitationAndGroup(invitationId: number) {
-  const invitation = await prisma.invitation.findUnique({
+  const findInvitationQuery = {
     where: {
       id: invitationId,
     },
@@ -364,45 +362,67 @@ export async function removeInvitationAndGroup(invitationId: number) {
       share: true,
       recipient: true,
     },
-  });
-  if (!invitation) {
-    return null;
-  }
+  };
+  const onFindInvitationError = () => {
+    throw new Error(`Could not find invitation`);
+  };
+  const invitation = await fromPrisma(
+    prisma.invitation.findUniqueOrThrow,
+    findInvitationQuery,
+    onFindInvitationError
+  );
 
   // remove membership, if any
-  try {
-    await removeGroupMember(
-      invitation.share.containerId,
-      invitation.recipient.id
-    );
-  } catch (e) {
-    console.log(e);
-    console.log(`Could not remove membership - may not exist`);
-  }
+  await removeGroupMember(
+    invitation.share.containerId,
+    invitation.recipient.id
+  );
 
-  const result = await prisma.invitation.delete({
+  const deleteInvitationQuery = {
     where: {
       id: invitationId,
     },
-  });
-
-  return result;
+  };
+  const onDeleteInvitationError = () => {
+    throw new Error(`Could not delete invitation`);
+  };
+  return await fromPrisma(
+    prisma.invitation.delete,
+    deleteInvitationQuery,
+    onDeleteInvitationError
+  );
 }
 
 export async function removeGroupMember(containerId: number, userId: number) {
-  const group = await prisma.group.findFirst({
+  const findGroupQuery = {
     where: {
       container: {
         id: containerId,
       },
     },
-  });
+  };
+  const onFindGroupError = () => {
+    throw new Error(`Could not find group`);
+  };
+  const group = await fromPrisma(
+    prisma.group.findFirstOrThrow,
+    findGroupQuery,
+    onFindGroupError
+  );
 
-  return prisma.membership.delete({
+  const deleteMembershipQuery = {
     where: {
       groupId_userId: { groupId: group.id, userId },
     },
-  });
+  };
+  const onDeleteMembershipError = () => {
+    throw new Error(`Could not remove membership`);
+  };
+  return await fromPrisma(
+    prisma.membership.delete,
+    deleteMembershipQuery,
+    onDeleteMembershipError
+  );
 }
 
 // Create a tag for an item
@@ -418,9 +438,7 @@ export async function createTagForItem(
   const items = {
     connect: [{ id: itemId }],
   };
-
-  // create the tag and add the container
-  const tag = await prisma.tag.upsert({
+  const query = {
     where: {
       name,
     },
@@ -432,9 +450,12 @@ export async function createTagForItem(
       color,
       items,
     },
-  });
+  };
+  const onError = () => {
+    throw new Error(`Could not upsert tag`);
+  };
 
-  return tag;
+  return await fromPrisma(prisma.tag.upsert, query, onError);
 }
 
 // Create a tag for a container
@@ -451,8 +472,7 @@ export async function createTagForContainer(
     connect: [{ id: containerId }],
   };
 
-  // create the tag and add the container
-  const tag = await prisma.tag.upsert({
+  const query = {
     where: {
       name,
     },
@@ -464,25 +484,30 @@ export async function createTagForContainer(
       color,
       containers,
     },
-  });
+  };
+  const onError = () => {
+    throw new Error(`Could not upsert tag`);
+  };
 
-  return tag;
+  return await fromPrisma(prisma.tag.upsert, query, onError);
 }
 
 // Delete a tag
 export async function deleteTag(id: number) {
-  const result = await prisma.tag.delete({
+  const query = {
     where: {
       id,
     },
-  });
-
-  return result;
+  };
+  const onError = () => {
+    throw new Error(`Could not delete tag`);
+  };
+  return await fromPrisma(prisma.tag.delete, query, onError);
 }
 
 // Update/rename a tag
 export async function updateTagName(tagId: number, name: string) {
-  const result = await prisma.tag.update({
+  const query = {
     where: {
       id: tagId,
     },
@@ -490,8 +515,11 @@ export async function updateTagName(tagId: number, name: string) {
       name,
       // updatedAt: new Date(),
     },
-  });
-  return result;
+  };
+  const onError = () => {
+    throw new Error(`Could not update tag`);
+  };
+  return await fromPrisma(prisma.tag.update, query, onError);
 }
 // Get all items and containers (that I have access to) with a specific tag or tags
 
@@ -500,15 +528,19 @@ export async function getContainersAndItemsWithTags(
   tagNames: string[]
 ) {
   // First, find the group memberships for the user.
-  const memberships = await prisma.membership.findMany({
+  const findMembershipQuery = {
     where: { userId },
-  });
+  };
+  const memberships = await fromPrisma(
+    prisma.membership.findMany,
+    findMembershipQuery
+  );
 
   // We then transform the memberships to just include the groupId
   const groupIds = memberships.map((membership) => membership.groupId);
 
   // Now get all containers with these group IDs
-  const containersWithTags = await prisma.container.findMany({
+  const findContainersQuery = {
     where: {
       group: { id: { in: groupIds } },
       tags: { some: { name: { in: tagNames } } }, // Looking for any of the input tags
@@ -517,10 +549,14 @@ export async function getContainersAndItemsWithTags(
       items: true, // include related items
       tags: true, // include related tags
     },
-  });
+  };
+  const containersWithTags = await fromPrisma(
+    prisma.container.findMany,
+    findContainersQuery
+  );
 
   // Fetching items with the tag and any parent container must be made accessible by the groups
-  const itemsWithTags = await prisma.item.findMany({
+  const findItemsQuery = {
     where: {
       container: {
         group: { id: { in: groupIds } },
@@ -531,7 +567,8 @@ export async function getContainersAndItemsWithTags(
       container: true, // include related container
       tags: true, // include related tags
     },
-  });
+  };
+  const itemsWithTags = await fromPrisma(prisma.item.findMany, findItemsQuery);
 
   return {
     containers: containersWithTags,

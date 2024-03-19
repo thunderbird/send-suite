@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
+import { fromPrisma } from './prisma-helper';
 
 export async function createUpload(
   id: string,
@@ -7,7 +8,7 @@ export async function createUpload(
   ownerId: number,
   type: string
 ) {
-  const upload = await prisma.upload.create({
+  const query = {
     data: {
       id,
       size,
@@ -15,24 +16,35 @@ export async function createUpload(
       createdAt: new Date(),
       type,
     },
-  });
-  return upload;
+  };
+  const onError = () => {
+    throw new Error(`could not create upload`);
+  };
+  return await fromPrisma(prisma.upload.create, query, onError);
 }
 
 export async function getUploadSize(id: string) {
-  const upload = await prisma.upload.findUnique({
+  const query = {
     where: {
       id,
     },
     select: {
       size: true,
     },
-  });
+  };
+  const onError = () => {
+    throw new Error(`could not create upload`);
+  };
+  const upload = await fromPrisma(
+    prisma.upload.findUniqueOrThrow,
+    query,
+    onError
+  );
   return upload.size;
 }
 
 export async function getUploadMetadata(id: string) {
-  const upload = await prisma.upload.findUnique({
+  const query = {
     where: {
       id,
     },
@@ -40,7 +52,15 @@ export async function getUploadMetadata(id: string) {
       size: true,
       type: true,
     },
-  });
+  };
+  const onError = () => {
+    throw new Error(`Could not find upload`);
+  };
+  const upload = await fromPrisma(
+    prisma.upload.findUniqueOrThrow,
+    query,
+    onError
+  );
   const { size, type } = upload;
   return { size, type };
 }
