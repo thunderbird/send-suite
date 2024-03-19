@@ -17,6 +17,7 @@ import fxa from './routes/fxa';
 import wsUploadHandler from './wsUploadHandler';
 import wsMsgHandler from './wsMsgHandler';
 
+import { errorHandler } from './errors/routes';
 import logger from './logger';
 
 type Profile = {
@@ -116,6 +117,9 @@ app.use('/api/lockbox/fxa', fxa);
 app.get(`*`, (req, res) => {
   res.status(404);
 });
+
+// errorHandler needs to be final middleware registered.
+app.use(errorHandler);
 
 const server = app.listen(PORT, HOST, async () => {
   logger.info(`🚀 Server ready at: http://${HOST}:${PORT}`);
