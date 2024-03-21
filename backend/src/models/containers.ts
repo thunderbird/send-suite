@@ -2,6 +2,14 @@ import { PrismaClient, ContainerType } from '@prisma/client';
 const prisma = new PrismaClient();
 import { PermissionType } from '../types/custom';
 import { fromPrisma } from './prisma-helper';
+import {
+  BaseError,
+  CONTAINER_NOT_UPDATED,
+  CONTAINER_NOT_FOUND,
+  CONTAINER_NOT_CREATED,
+  GROUP_NOT_CREATED,
+  MEMBERSHIP_NOT_CREATED,
+} from '../errors/models';
 
 // Automatically creates a group for container
 // owner is added to new group
@@ -15,10 +23,7 @@ export async function createContainer(
   let query: Record<string, any> = {
     data: {},
   };
-  const onGroupError = () => {
-    throw new Error(`Could not create group while creating container`);
-  };
-  const group = await fromPrisma(prisma.group.create, query, onGroupError);
+  const group = await fromPrisma(prisma.group.create, query, GROUP_NOT_CREATED);
 
   query = {
     data: {
@@ -27,10 +32,7 @@ export async function createContainer(
       permission: PermissionType.ADMIN, // Owner has full permissions
     },
   };
-  const onMembershipError = () => {
-    throw new Error(`Could not create membership while creating container`);
-  };
-  await fromPrisma(prisma.membership.create, query, onMembershipError);
+  await fromPrisma(prisma.membership.create, query, MEMBERSHIP_NOT_CREATED);
 
   query = {
     data: {
@@ -46,11 +48,12 @@ export async function createContainer(
   if (parentId !== 0) {
     query.data['parentId'] = parentId;
   }
-  const onContainerError = () => {
-    throw new Error(`Could not create membership while creating container`);
-  };
 
-  return await fromPrisma(prisma.container.create, query, onContainerError);
+  return await fromPrisma(
+    prisma.container.create,
+    query,
+    CONTAINER_NOT_CREATED
+  );
 }
 
 export async function getItemsInContainer(id: number) {
@@ -132,11 +135,11 @@ export async function getItemsInContainer(id: number) {
     },
   };
 
-  const onError = () => {
-    throw new Error(`Could not find container`);
-  };
-
-  return fromPrisma(prisma.container.findUniqueOrThrow, query, onError);
+  return fromPrisma(
+    prisma.container.findUniqueOrThrow,
+    query,
+    CONTAINER_NOT_FOUND
+  );
 }
 
 export async function getContainerWithAncestors(id: number) {
@@ -146,11 +149,11 @@ export async function getContainerWithAncestors(id: number) {
     },
   };
 
-  const onError = () => {
-    throw new Error(`Could not find container`);
-  };
-
-  const container = await fromPrisma(prisma.container.findUniqueOrThrow, query, onError);
+  const container = await fromPrisma(
+    prisma.container.findUniqueOrThrow,
+    query,
+    CONTAINER_NOT_FOUND
+  );
 
   if (container.parentId) {
     container['parent'] = await getContainerWithAncestors(container.parentId);
@@ -173,11 +176,7 @@ export async function getAccessLinksForContainer(containerId: number) {
     },
   };
 
-  const onError = () => {
-    throw new Error(`Could not find container`);
-  };
-
-  const shares = await fromPrisma(prisma.share.findMany, query, onError);
+  const shares = await fromPrisma(prisma.share.findMany, query);
   return shares.flatMap((share) => share.accessLinks.map((link) => link));
 }
 
@@ -192,9 +191,9 @@ export async function updateContainerName(containerId: number, name: string) {
     },
   };
 
-  const onError = () => {
-    throw new Error(`Could not update container name`);
-  };
-
-  return await fromPrisma(prisma.container.update, query, onError);
+  return await fromPrisma(
+    prisma.container.update,
+    query,
+    CONTAINER_NOT_UPDATED
+  );
 }

@@ -7,37 +7,27 @@ import {
   Membership,
 } from '@prisma/client';
 const prisma = new PrismaClient();
-import { fromPrisma } from './models/prisma-helper';
-
 import { PermissionType } from './types/custom';
-
-/*
-
-ok, I think I need to rewrite these:
-- getOwnedContainers
-- getContainersSharedByMe
-- getContainersSharedWithMe
-
-definitely those last two.
-I should be using the `_whereContainer()` to get the `shareOnly:true` ones.
-
-though, the `getContainersSharedWithMe` is also looking for accepted invitations.
-...which makes me wonder, do I have a query for pending invitations?
-
-
-
-*/
-export async function getOwnedContainers(ownerId: number) {
-  const query = {
-    where: {
-      ownerId,
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  };
-  return await fromPrisma(prisma.container.findMany, query);
-}
+import { fromPrisma } from './models/prisma-helper';
+import {
+  BaseError,
+  CONTAINER_NOT_UPDATED,
+  CONTAINER_NOT_FOUND,
+  CONTAINER_NOT_CREATED,
+  MEMBERSHIP_NOT_CREATED,
+  GROUP_NOT_CREATED,
+  ITEM_NOT_CREATED,
+  ITEM_NOT_DELETED,
+  ITEM_NOT_UPDATED,
+  INVITATION_NOT_FOUND,
+  INVITATION_NOT_DELETED,
+  UPLOAD_NOT_DELETED,
+  ITEM_NOT_FOUND,
+  GROUP_NOT_FOUND,
+  MEMBERSHIP_NOT_DELETED,
+  INVITATION_NOT_UPDATED,
+  ACCESSLINK_NOT_UPDATED,
+} from './errors/models';
 
 export async function getSharesForContainer(
   containerId: number,
@@ -77,10 +67,8 @@ export async function updateItemName(itemId: number, name: string) {
       updatedAt: new Date(),
     },
   };
-  const onError = () => {
-    throw new Error(`Could not update item`);
-  };
-  return await fromPrisma(prisma.item.update, query, onError);
+
+  return await fromPrisma(prisma.item.update, query, ITEM_NOT_UPDATED);
 }
 
 export async function updateInvitationPermissions(
@@ -97,10 +85,12 @@ export async function updateInvitationPermissions(
       permission,
     },
   };
-  const onError = () => {
-    throw new Error(`Could not update invitation`);
-  };
-  return await fromPrisma(prisma.invitation.update, query, onError);
+
+  return await fromPrisma(
+    prisma.invitation.update,
+    query,
+    INVITATION_NOT_UPDATED
+  );
 }
 
 export async function updateAccessLinkPermissions(
@@ -117,10 +107,12 @@ export async function updateAccessLinkPermissions(
       permission,
     },
   };
-  const onError = () => {
-    throw new Error(`Could not update access link`);
-  };
-  return await fromPrisma(prisma.accessLink.update, query, onError);
+
+  return await fromPrisma(
+    prisma.accessLink.update,
+    query,
+    ACCESSLINK_NOT_UPDATED
+  );
 }
 
 export async function getContainerWithMembers(containerId: number) {
@@ -141,10 +133,12 @@ export async function getContainerWithMembers(containerId: number) {
       },
     },
   };
-  const onError = () => {
-    throw new Error(`could not find container`);
-  };
-  return await fromPrisma(prisma.container.findUniqueOrThrow, query, onError);
+
+  return await fromPrisma(
+    prisma.container.findUniqueOrThrow,
+    query,
+    CONTAINER_NOT_FOUND
+  );
 }
 
 export async function createItem(
@@ -173,11 +167,8 @@ export async function createItem(
       },
     },
   };
-  const onError = () => {
-    throw new Error(`could not create item`);
-  };
 
-  return await fromPrisma(prisma.item.create, query, onError);
+  return await fromPrisma(prisma.item.create, query, ITEM_NOT_CREATED);
 }
 
 export async function deleteItem(id: number, shouldDeleteUpload = false) {
@@ -190,13 +181,11 @@ export async function deleteItem(id: number, shouldDeleteUpload = false) {
       uploadId: true,
     },
   };
-  const onItemFindError = () => {
-    throw new Error(`Could not find item`);
-  };
+
   const item = await fromPrisma(
     prisma.item.findUniqueOrThrow,
     findItemQuery,
-    onItemFindError
+    ITEM_NOT_FOUND
   );
   const containerId = item.containerId;
 
@@ -206,13 +195,11 @@ export async function deleteItem(id: number, shouldDeleteUpload = false) {
         id: item.uploadId,
       },
     };
-    const onUploadDeleteError = () => {
-      throw new Error(`Could not delete upload`);
-    };
+
     await fromPrisma(
       prisma.upload.delete,
       uploadDeleteQuery,
-      onUploadDeleteError
+      UPLOAD_NOT_DELETED
     );
   }
 
@@ -221,13 +208,11 @@ export async function deleteItem(id: number, shouldDeleteUpload = false) {
       id,
     },
   };
-  const onItemDeleteError = () => {
-    throw new Error(`Could not delete item`);
-  };
+
   const result = await fromPrisma(
     prisma.item.delete,
     itemDeleteQuery,
-    onItemDeleteError
+    ITEM_NOT_DELETED
   );
 
   if (containerId && result) {
@@ -240,13 +225,11 @@ export async function deleteItem(id: number, shouldDeleteUpload = false) {
         updatedAt: new Date(),
       },
     };
-    const onUpdateContainerError = () => {
-      throw new Error(`Could not update container`);
-    };
+
     await fromPrisma(
       prisma.container.update,
       updateContainerQuery,
-      onUpdateContainerError
+      CONTAINER_NOT_UPDATED
     );
   }
 
@@ -259,10 +242,11 @@ export async function getContainerInfo(id: number) {
       id,
     },
   };
-  const onError = () => {
-    throw new Error(`Could not find container`);
-  };
-  return await fromPrisma(prisma.container.findUniqueOrThrow, query, onError);
+  return await fromPrisma(
+    prisma.container.findUniqueOrThrow,
+    query,
+    CONTAINER_NOT_FOUND
+  );
 }
 
 export async function getContainerWithDescendants(id: number) {
@@ -272,13 +256,11 @@ export async function getContainerWithDescendants(id: number) {
       children: true,
     },
   };
-  const onError = () => {
-    throw new Error(`Could not find container`);
-  };
+
   const container = await fromPrisma(
     prisma.container.findUniqueOrThrow,
     query,
-    onError
+    CONTAINER_NOT_FOUND
   );
 
   if (container.children.length > 0) {
@@ -306,18 +288,16 @@ export async function addGroupMember(containerId: number, userId: number) {
       },
     },
   };
-  const onFindContainerError = () => {
-    throw new Error(`Could not find container`);
-  };
+
   const container = await fromPrisma(
     prisma.container.findUniqueOrThrow,
     findContainerQuery,
-    onFindContainerError
+    CONTAINER_NOT_FOUND
   );
 
   const { group } = container ?? {};
   if (!group.id) {
-    throw new Error(`could not create membership`);
+    throw new BaseError(MEMBERSHIP_NOT_CREATED);
   }
 
   // Returns `null` if no record found.
@@ -343,13 +323,11 @@ export async function addGroupMember(containerId: number, userId: number) {
       permission: PermissionType.READ, // Lowest permissions, by default
     },
   };
-  const onCreateMembershipError = () => {
-    throw new Error(`could not create membership`);
-  };
+
   return await fromPrisma(
     prisma.membership.create,
     createMembershipQuery,
-    onCreateMembershipError
+    MEMBERSHIP_NOT_CREATED
   );
 }
 
@@ -363,13 +341,11 @@ export async function removeInvitationAndGroup(invitationId: number) {
       recipient: true,
     },
   };
-  const onFindInvitationError = () => {
-    throw new Error(`Could not find invitation`);
-  };
+
   const invitation = await fromPrisma(
     prisma.invitation.findUniqueOrThrow,
     findInvitationQuery,
-    onFindInvitationError
+    INVITATION_NOT_FOUND
   );
 
   // remove membership, if any
@@ -383,13 +359,11 @@ export async function removeInvitationAndGroup(invitationId: number) {
       id: invitationId,
     },
   };
-  const onDeleteInvitationError = () => {
-    throw new Error(`Could not delete invitation`);
-  };
+
   return await fromPrisma(
     prisma.invitation.delete,
     deleteInvitationQuery,
-    onDeleteInvitationError
+    INVITATION_NOT_DELETED
   );
 }
 
@@ -401,13 +375,11 @@ export async function removeGroupMember(containerId: number, userId: number) {
       },
     },
   };
-  const onFindGroupError = () => {
-    throw new Error(`Could not find group`);
-  };
+
   const group = await fromPrisma(
     prisma.group.findFirstOrThrow,
     findGroupQuery,
-    onFindGroupError
+    GROUP_NOT_FOUND
   );
 
   const deleteMembershipQuery = {
@@ -415,13 +387,11 @@ export async function removeGroupMember(containerId: number, userId: number) {
       groupId_userId: { groupId: group.id, userId },
     },
   };
-  const onDeleteMembershipError = () => {
-    throw new Error(`Could not remove membership`);
-  };
+
   return await fromPrisma(
     prisma.membership.delete,
     deleteMembershipQuery,
-    onDeleteMembershipError
+    MEMBERSHIP_NOT_DELETED
   );
 }
 
