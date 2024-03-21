@@ -1,7 +1,7 @@
 import logger from '../logger';
 /**
  * Accepts an async route handler.
- * Any errors thrown will be passed to Express.
+ * Any errors thrown will be passed to the global error handler middleware.
  */
 export function asyncHandler(fn) {
   return function (req, res, next) {
@@ -9,28 +9,25 @@ export function asyncHandler(fn) {
   };
 }
 
-/**
- *
- */
-export class CustomError extends Error {
-  statusCode: number;
-  constructor(statusCode: number, message: string) {
-    super(message);
-    this.statusCode = statusCode;
+const ERROR_STATUS_CODE = 'ERROR_STATUS_CODE';
+const ERROR_USER_MESSAGE = 'ERROR_USER_MESSAGE';
 
-    // Restore the prototype chain per
-    // https://www.typescriptlang.org/docs/handbook/2/classes.html#extends-clauses
-    Object.setPrototypeOf(this, CustomError.prototype);
-  }
+// Returns a middleware function that adds error information to the request object
+export function onError(statusCode: number, message: string) {
+  return (req, res, next) => {
+    req[ERROR_STATUS_CODE] = statusCode;
+    req[ERROR_USER_MESSAGE] = message;
+    next();
+  };
 }
 
-// Defined the middleware function
+// Global error handler middleware
 export function errorHandler(err, req, res, next) {
-  // Define error details
-  const status = err.statusCode || 500;
-  const message = err.message || 'Internal Server Error';
+  // Get the error information from the request,
+  // Falling back to the values from the ErrorObj
+  const status = req[ERROR_STATUS_CODE] ?? 500;
+  const message = req[ERROR_USER_MESSAGE] ?? 'Internal Server Error';
 
-  // Send the response
   res.status(status).json({
     status: 'error',
     statusCode: status,
@@ -38,6 +35,6 @@ export function errorHandler(err, req, res, next) {
   });
 
   logger.error(
-    `${status} - ${message} - ${req.originalUrl} - ${req.method} - ${req.ip}`
+    `${status} - ${req.method} ${req.originalUrl} - ${req.ip} - ${message} `
   );
 }
