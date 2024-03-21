@@ -1,20 +1,27 @@
 type PrismaFn = (opts: PrismaOpts) => Promise<any>;
 type PrismaOpts = Record<string, any>;
 type ErrorCallback = () => never;
+import { BaseError } from '../errors/models';
+import logger from '../logger';
 
 export async function fromPrisma(
   fn: PrismaFn,
   options: PrismaOpts,
-  onError?: ErrorCallback
+  onError?: string | ErrorCallback
 ) {
   try {
-    return fn(options);
+    const result = await fn(options);
+    return result;
   } catch (err) {
     // TODO: send original `err` to Sentry, once that's set up
     if (onError) {
-      onError();
+      if (typeof onError === 'string') {
+        throw new BaseError(onError);
+      } else {
+        onError();
+      }
     } else {
-      throw new Error(err.message);
+      throw new Error(err.name);
     }
   }
 }
