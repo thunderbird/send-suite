@@ -12,7 +12,7 @@ import {
   acceptInvitation,
 } from '../models/sharing';
 
-import { asyncHandler } from '../errors/routes';
+import { asyncHandler, onError } from '../errors/routes';
 
 import {
   requireLogin,
@@ -22,13 +22,13 @@ import {
 
 const router: Router = Router();
 
-// Request a new hash for a shared container,
-// previously only used for "ephemeral chat"
+// Request a new hash for a shared container
 router.post(
   '/',
   requireLogin,
   getGroupMemberPermissions,
   canShare,
+  onError(500, 'Could not create access link'),
   asyncHandler(async (req, res) => {
     const {
       containerId,
@@ -78,6 +78,7 @@ router.post(
 // Get the challenge for this hash
 router.get(
   '/:linkId/challenge',
+  onError(500, 'Could not get access link challenge'),
   asyncHandler(async (req, res) => {
     const { linkId } = req.params;
     if (!linkId) {
@@ -100,6 +101,7 @@ router.get(
 // associated salt
 router.post(
   '/:linkId/challenge',
+  onError(403, 'Failed access link challenge'),
   asyncHandler(async (req, res) => {
     const { linkId } = req.params;
     const { challengePlaintext } = req.body;
@@ -118,6 +120,7 @@ router.post(
 // Get an AccessLink's container and items
 router.get(
   '/exists/:linkId',
+  onError(404, 'Could not find access link'),
   asyncHandler(async (req, res) => {
     const { linkId } = req.params;
     res.status(200).json(await isAccessLinkValid(linkId));
@@ -133,6 +136,7 @@ If I want to protect this with permissions, I'd need to:
 */
 router.get(
   '/:linkId',
+  onError(404, 'Could not find container for access link'),
   asyncHandler(async (req, res) => {
     const { linkId } = req.params;
     const containerWithItems = await getContainerForAccessLink(linkId);
@@ -143,6 +147,7 @@ router.get(
 // Remove accessLink
 router.delete(
   '/:linkId',
+  onError(400, 'Could not delete access link'),
   asyncHandler(async (req, res) => {
     const { linkId } = req.params;
     const result = await removeAccessLink(linkId);
@@ -154,6 +159,7 @@ router.delete(
 router.post(
   '/:linkId/member/accept',
   requireLogin,
+  onError(500, 'Could not accept access link'),
   asyncHandler(async (req, res) => {
     const { linkId } = req.params;
     const { id } = req.session.user;
@@ -170,6 +176,7 @@ router.post(
 // Destroy a folder, its items, and any record of group memberships
 router.post(
   '/burn',
+  onError(500, 'Could not burn container'),
   asyncHandler(async (req, res) => {
     const { containerId } = req.body;
     const result = await burnEphemeralConversation(parseInt(containerId));

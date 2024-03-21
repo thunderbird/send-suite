@@ -1,7 +1,6 @@
 import { Prisma, ContainerType } from '@prisma/client';
 import { Router } from 'express';
 import {
-  getOwnedContainers,
   createItem,
   deleteItem,
   addGroupMember,
@@ -25,7 +24,7 @@ import {
   canAdmin,
 } from '../middleware';
 
-import { asyncHandler } from '../errors/routes';
+import { asyncHandler, onError } from '../errors/routes';
 
 import { createInvitation, burnFolder } from '../models/sharing';
 
@@ -59,6 +58,7 @@ router.get(
   requireLogin,
   getGroupMemberPermissions,
   canRead,
+  onError(404, 'Could not find container'),
   asyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const container = await getItemsInContainer(parseInt(containerId));
@@ -77,6 +77,7 @@ router.get(
   requireLogin,
   getGroupMemberPermissions,
   canRead,
+  onError(404, 'Could not get access links'),
   asyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const links = await getAccessLinksForContainer(parseInt(containerId));
@@ -95,6 +96,7 @@ router.post(
   renameBodyProperty('parentId', 'containerId'),
   getGroupMemberPermissions,
   canWrite,
+  onError(400, 'Could not create container'),
   asyncHandler(async (req, res) => {
     const {
       name,
@@ -116,13 +118,6 @@ router.post(
       parentId = req.body.containerId;
     }
 
-    const messagesByCode: Record<string, string> = {
-      P2002: 'Container already exists',
-      // P2003: 'User does not exist',
-      // Can't use P2003, it's a generic foreign-key error
-    };
-
-    const defaultMessage = 'Bad request';
     const container = await createContainer(
       name.trim().toLowerCase(),
       ownerId,
@@ -143,6 +138,7 @@ router.post(
   requireLogin,
   getGroupMemberPermissions,
   canWrite,
+  onError(500, 'Could not rename container'),
   asyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const { name } = req.body;
@@ -157,6 +153,7 @@ router.delete(
   requireLogin,
   getGroupMemberPermissions,
   canAdmin,
+  onError(500, 'Could not delete container'),
   asyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const root = await getContainerWithDescendants(parseInt(containerId));
@@ -172,19 +169,11 @@ router.delete(
 // everything above this line is confirmed for q1-dogfood use
 // ==================================================================================
 
-router.get(
-  '/owner/:userId',
-  asyncHandler(async (req, res) => {
-    const { userId } = req.params;
-    const containers = await getOwnedContainers(parseInt(userId));
-    res.status(200).json(containers);
-  })
-);
-
 // Add an Item
 router.post(
   '/:containerId/item',
   getGroupMemberPermissions,
+  onError(500, 'Could not create item'),
   asyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const { name, uploadId, type, wrappedKey } = req.body;
@@ -202,6 +191,7 @@ router.post(
 router.delete(
   '/:containerId/item/:itemId',
   getGroupMemberPermissions,
+  onError(500, 'Could not delete item'),
   asyncHandler(async (req, res) => {
     const { containerId, itemId } = req.params;
     // Force req.body.shouldDeleteUpload to a boolean
@@ -214,6 +204,7 @@ router.delete(
 router.post(
   '/:containerId/item/:itemId/rename',
   getGroupMemberPermissions,
+  onError(500, 'Could not rename item'),
   asyncHandler(async (req, res) => {
     const { containerId, itemId } = req.params;
     const { name } = req.body;
@@ -225,6 +216,7 @@ router.post(
 router.post(
   '/:containerId/member/invite',
   getGroupMemberPermissions,
+  onError(500, 'Could not invite member'),
   asyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const { senderId, recipientId, wrappedKey } = req.body;
@@ -246,6 +238,7 @@ router.post(
 // Remove invitation and group membership
 router.delete(
   '/:containerId/member/remove/:invitationId',
+  onError(500, 'Could not remove invitation'),
   asyncHandler(async (req, res) => {
     const { invitationId } = req.params;
     const result = await removeInvitationAndGroup(parseInt(invitationId));
@@ -257,6 +250,7 @@ router.delete(
 router.post(
   '/:containerId/member',
   getGroupMemberPermissions,
+  onError(500, 'Could not add group member'),
   asyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const { userId } = req.body;
@@ -272,6 +266,7 @@ router.post(
 router.delete(
   '/:containerId/member/:userId',
   getGroupMemberPermissions,
+  onError(500, 'Could not remove group member'),
   asyncHandler(async (req, res) => {
     const { containerId, userId } = req.params;
     const container = await removeGroupMember(
@@ -286,6 +281,7 @@ router.delete(
 router.get(
   '/:containerId/members',
   getGroupMemberPermissions,
+  onError(404, 'Could not get container and members'),
   asyncHandler(async (req, res) => {
     // getContainerWithMembers
     const { containerId } = req.params;
@@ -298,6 +294,7 @@ router.get(
 router.get(
   '/:containerId/info',
   getGroupMemberPermissions,
+  onError(500, 'Could not get container information'),
   asyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const container = await getContainerInfo(parseInt(containerId));
@@ -308,6 +305,7 @@ router.get(
 router.get(
   '/:containerId/shares',
   getGroupMemberPermissions,
+  onError(500, 'Could not get shares for container'),
   asyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const { userId } = req.body; // TODO: get from session
@@ -324,6 +322,7 @@ router.get(
 router.post(
   '/:containerId/shares/invitation/update',
   getGroupMemberPermissions,
+  onError(500, 'Could not update permissions for invitation'),
   asyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const { userId, invitationId, permission } = req.body; // TODO: get from session
@@ -342,6 +341,7 @@ router.post(
 router.post(
   '/:containerId/shares/accessLink/update',
   getGroupMemberPermissions,
+  onError(500, 'Could not update permissions for access link'),
   asyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const { userId, accessLinkId, permission } = req.body; // TODO: get from session

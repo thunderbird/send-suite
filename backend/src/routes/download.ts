@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import storage from '../storage';
-import { asyncHandler } from '../errors/routes';
+import { asyncHandler, onError } from '../errors/routes';
 
 const router: Router = Router();
 
@@ -15,6 +15,7 @@ const router: Router = Router();
 // permissions attached to an Access Link
 router.get(
   '/:id',
+  onError(404, 'Could not find file'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
     try {

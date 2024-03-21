@@ -2,7 +2,7 @@ import { ContainerType, UserTier } from '@prisma/client';
 
 import { Router } from 'express';
 
-import { asyncHandler } from '../errors/routes';
+import { asyncHandler, onError } from '../errors/routes';
 
 import {
   getAllInvitations,
@@ -29,6 +29,7 @@ const router: Router = Router();
 router.get(
   '/me',
   requireLogin,
+  onError(500, 'Could not get user session'),
   asyncHandler(async (req, res) => {
     // Retrieves the logged-in user from the current session
     // ok, I need to persist the user to the session, don't I?
@@ -46,6 +47,7 @@ router.get(
 
 router.get(
   '/publickey/:id',
+  onError(404, 'Could not get public key'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
     const user = await getUserPublicKey(parseInt(id));
@@ -59,6 +61,7 @@ router.get(
 router.post(
   '/publickey',
   requireLogin,
+  onError(500, 'Could not update user profile'),
   asyncHandler(async (req, res) => {
     const {
       publicKey,
@@ -80,6 +83,7 @@ router.post(
 router.get(
   '/folders',
   requireLogin,
+  onError(404, 'Could not get user folders'),
   asyncHandler(async (req, res) => {
     const { id } = req.session.user;
     const containers = await getAllUserGroupContainers(
@@ -93,6 +97,7 @@ router.get(
 router.get(
   '/lookup/:email',
   requireLogin,
+  onError(404, 'Could not find user'),
   asyncHandler(async (req, res) => {
     const { email } = req.params;
     const user = await getUserByEmail(email);
@@ -106,6 +111,7 @@ router.get(
 
 router.post(
   '/login',
+  onError(500, 'Could not log in'),
   asyncHandler(async (req, res) => {
     const { email } = req.body;
     const user = await getUserByEmail(email);
@@ -130,6 +136,7 @@ router.post(
 
 router.post(
   '/',
+  onError(500, 'Could not create user'),
   asyncHandler(async (req, res) => {
     const {
       publicKey,
@@ -159,6 +166,7 @@ router.post(
 // All containers, regardless of type
 router.get(
   '/:userId/containers',
+  onError(404, 'Could not get containers'),
   asyncHandler(async (req, res) => {
     const { userId } = req.params;
     const containers = await getAllUserGroupContainers(parseInt(userId), null);
@@ -168,6 +176,7 @@ router.get(
 
 router.get(
   '/:userId/conversations',
+  onError(404, 'Could not get conversations'),
   asyncHandler(async (req, res) => {
     const { userId } = req.params;
     const containers = await getAllUserGroupContainers(
@@ -180,6 +189,7 @@ router.get(
 
 router.get(
   '/:userId/activity',
+  onError(404, 'Could not get activity'),
   asyncHandler(async (req, res) => {
     const { userId } = req.params;
     const containers = await getRecentActivity(
@@ -192,6 +202,7 @@ router.get(
 
 router.get(
   '/:userId/folders/sharedByMe',
+  onError(404, 'Could not get shared folders'),
   asyncHandler(async (req, res) => {
     const { userId } = req.params;
     const containersAndMembers = await getContainersSharedByMe(
@@ -205,6 +216,7 @@ router.get(
 
 router.get(
   '/:userId/folders/sharedWithMe',
+  onError(404, 'Could not get received folders'),
   asyncHandler(async (req, res) => {
     const { userId } = req.params;
     const containersAndMembers = await getContainersSharedWithMe(
@@ -219,6 +231,7 @@ router.get(
 // Get invitations for user
 router.get(
   '/:userId/invitations',
+  onError(404, 'Could not get invitations'),
   asyncHandler(async (req, res) => {
     const { userId } = req.params;
     const invitations = await getAllInvitations(parseInt(userId));
@@ -228,6 +241,7 @@ router.get(
 
 router.post(
   '/:id/backup',
+  onError(500, 'Could not make backup'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { keys, keypair, keystring, salt } = req.body;
@@ -240,6 +254,7 @@ router.post(
 
 router.get(
   '/:id/backup',
+  onError(404, 'Could not retrieve backup'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
     const backup = await getBackup(parseInt(id));

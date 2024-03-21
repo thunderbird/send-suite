@@ -3,7 +3,7 @@ import axios from 'axios';
 import { getIssuer, getClient, generateState } from '../auth/client';
 import { findOrCreateUserProfileByMozillaId } from '../models/users';
 import logger from '../logger';
-import { asyncHandler } from '../errors/routes';
+import { asyncHandler, onError } from '../errors/routes';
 
 const FXA_STATE = 'fxa_state';
 
@@ -12,6 +12,7 @@ const router: Router = Router();
 // Route for obtaining an authorization URL for Mozilla account.
 router.get(
   '/login',
+  onError(500, 'Could not log into Mozilla Account'),
   asyncHandler(async (req, res, next) => {
     // Params to include when we request an authorization url
     let additionalParams: Record<string, any> = {
@@ -87,6 +88,7 @@ router.get(
 // Mozilla account OIDC callback handler
 router.get(
   '/',
+  onError(500, 'Could not log in'),
   asyncHandler(async (req, res) => {
     // If provider sends an error, immediately redirect
     // to error page.
@@ -160,6 +162,7 @@ router.get(
 
 router.get(
   '/logout',
+  onError(500, 'Could not log out'),
   asyncHandler(async (req, res, next) => {
     /*
 
