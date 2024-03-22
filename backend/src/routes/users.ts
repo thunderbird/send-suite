@@ -23,6 +23,7 @@ import {
 
 import { requireLogin } from '../middleware';
 import logger from '../logger';
+import { BaseError, SESSION_NOT_SAVED } from '../errors/models';
 
 const router: Router = Router();
 
@@ -119,7 +120,7 @@ router.post(
       req.session.user = user;
       req.session.save((err) => {
         if (err) {
-          throw Error(`Could not save user to session`);
+          throw new BaseError(SESSION_NOT_SAVED);
         } else {
           logger.info(`
           session id: ${req.session.id}

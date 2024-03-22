@@ -42,6 +42,8 @@ export const USER_NOT_DELETED = 'USER_NOT_DELETED';
 
 export const PROFILE_NOT_CREATED = 'PROFILE_NOT_CREATED';
 
+export const SESSION_NOT_SAVED = 'SESSION_NOT_SAVED';
+
 export class BaseError extends Error {
   constructor(errorType: string) {
     super(errorType);
