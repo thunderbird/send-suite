@@ -1,7 +1,12 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 import { fromPrisma } from './prisma-helper';
-import { UPLOAD_NOT_CREATED, UPLOAD_NOT_FOUND } from '../errors/models';
+import storage from '../storage';
+import {
+  BaseError,
+  UPLOAD_NOT_CREATED,
+  UPLOAD_NOT_FOUND,
+} from '../errors/models';
 
 export async function createUpload(
   id: string,
@@ -9,6 +14,14 @@ export async function createUpload(
   ownerId: number,
   type: string
 ) {
+  // Confirm that file `id` exists and what's on disk
+  // is at least as large as the stated size.
+  // (Encrypted files are larger than the decrypted contents)
+  const sizeOnDisk = await storage.length(id);
+  if (sizeOnDisk < size) {
+    throw new BaseError(UPLOAD_NOT_CREATED);
+  }
+
   const query = {
     data: {
       id,

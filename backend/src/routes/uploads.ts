@@ -1,6 +1,5 @@
 import { Router } from 'express';
 
-import storage from '../storage';
 import { asyncHandler, onError } from '../errors/routes';
 
 import {
@@ -17,6 +16,11 @@ import {
 
 const router: Router = Router();
 
+/**
+ * This is actually the second step when uploading an encrypted file.
+ * The first part is the actual upload via WebSockets.
+ * This step creates the database entity for that uploaded file.
+ */
 router.post(
   '/',
   requireLogin,
@@ -25,24 +29,12 @@ router.post(
   onError(500, 'Could not upload file'),
   asyncHandler(async (req, res) => {
     const { id, size, ownerId, type } = req.body;
-    // Confirm that file `id` exists and what's on disk
-    // is at least as large as the stated size.
-    // (Encrypted files are larger than the decrypted contents)
-    // storage.length(id) >= size
 
-    const sizeOnDisk = await storage.length(id);
-    if (sizeOnDisk >= size) {
-      const upload = await createUpload(id, size, ownerId, type);
-      res.status(201).json({
-        message: 'Upload created',
-        upload,
-      });
-    } else {
-      res.status(400).json({
-        message: 'File does not exist.',
-        // error: error.message,
-      });
-    }
+    const upload = await createUpload(id, size, ownerId, type);
+    res.status(201).json({
+      message: 'Upload created',
+      upload,
+    });
   })
 );
 
