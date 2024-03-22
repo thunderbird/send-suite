@@ -44,6 +44,8 @@ export const PROFILE_NOT_CREATED = 'PROFILE_NOT_CREATED';
 
 export const SESSION_NOT_SAVED = 'SESSION_NOT_SAVED';
 
+export const DOWNLOAD_ERROR = 'DOWNLOAD_ERROR';
+
 export class BaseError extends Error {
   constructor(errorType: string) {
     super(errorType);
