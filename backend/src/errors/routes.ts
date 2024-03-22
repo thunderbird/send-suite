@@ -21,12 +21,15 @@ export function onError(statusCode: number, message: string) {
   };
 }
 
-// Global error handler middleware
+// Global error handler middleware.
+// Uses the error status code and message
+// if added by `onError`.
+// Falls back to a generic status 500 and the
+// message from the `err` object.
 export function errorHandler(err, req, res, next) {
-  // Get the error information from the request,
-  // Falling back to the values from the ErrorObj
   const status = req[ERROR_STATUS_CODE] ?? 500;
-  const message = req[ERROR_USER_MESSAGE] ?? 'Internal Server Error';
+  const message =
+    req[ERROR_USER_MESSAGE] ?? err.message ?? 'Internal Server Error';
 
   res.status(status).json({
     status: 'error',
