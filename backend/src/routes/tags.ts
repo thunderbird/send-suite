@@ -8,12 +8,13 @@ import {
   getContainersAndItemsWithTags,
 } from '../models';
 import { getGroupMemberPermissions, requireLogin } from '../middleware';
-import { asyncHandler } from '../errors/routes';
+import { asyncHandler, onError } from '../errors/routes';
 
 const router: Router = Router();
 
 router.post(
   '/item/:itemId/',
+  onError(500, 'Could not create tag'),
   asyncHandler(async (req, res) => {
     const { itemId } = req.params;
     const { name, color } = req.body;
@@ -24,6 +25,7 @@ router.post(
 
 router.post(
   '/container/:containerId/',
+  onError(500, 'Could not create tag'),
   asyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const { name, color } = req.body;
@@ -34,6 +36,7 @@ router.post(
 
 router.delete(
   '/:tagId',
+  onError(500, 'Could not delete tag'),
   asyncHandler(async (req, res) => {
     const { tagId } = req.params;
     const result = await deleteTag(parseInt(tagId));
@@ -43,6 +46,7 @@ router.delete(
 
 router.post(
   '/:tagId/rename',
+  onError(500, 'Could not rename tag'),
   asyncHandler(async (req, res) => {
     const { tagId } = req.params;
     const { name } = req.body;
@@ -56,6 +60,7 @@ router.get(
   '/:tagName',
   requireLogin,
   getGroupMemberPermissions,
+  onError(404, 'Could not find tag'),
   asyncHandler(async (req, res) => {
     const { tagName } = req.params;
     const { id } = req.session.user;
