@@ -482,7 +482,6 @@ export async function burnFolder(
   shouldDeleteUpload?: boolean
 ) {
   // delete the ephemeral link
-  console.log(`🤡 burning container id: ${containerId}`);
   const findShareQuery = {
     where: {
       containerId,
@@ -509,8 +508,6 @@ export async function burnFolder(
       SHARE_NOT_DELETED
     );
   }
-
-  console.log(`✅ deleted ephemeral links`);
 
   // get the container so we can get the
   // - groups (so we can get users)
@@ -552,12 +549,10 @@ export async function burnFolder(
 
   const users = container.group.members.map(({ user }) => user);
 
-  console.log(`🤡 deleting items and uploads`);
   const uploadIds = container.items.map((item) => item.uploadId);
 
   await Promise.all(
     container.items.map(async ({ id }) => {
-      console.log(`✅ deleting item ${id}`);
       const deleteItemQuery = {
         where: {
           id,
@@ -571,7 +566,6 @@ export async function burnFolder(
   if (shouldDeleteUpload) {
     await Promise.all(
       uploadIds.map(async (id) => {
-        console.log(`✅ deleting upload ${id}`);
         const deleteUploadQuery = {
           where: {
             id,
@@ -598,7 +592,6 @@ export async function burnFolder(
     deleteContainerQuery,
     CONTAINER_NOT_DELETED
   );
-  console.log(`✅ deleting container ${containerId}`);
 
   await Promise.all(
     users.map(async ({ id, tier }) => {
