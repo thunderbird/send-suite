@@ -1,41 +1,40 @@
 import { Router } from 'express';
 
 import storage from '../storage';
+import { asyncHandler, onError } from '../errors/routes';
+import { BaseError, DOWNLOAD_ERROR } from '../errors/models';
 
 const router: Router = Router();
 
-// TODO: For more security:
-// - find the item(s), given the file id
-// - find the parent folder
-// - find the group for the folder
-// - confirm the user is a member of the group
-// However, that prevents anonymous downloading.
-// But, we could possibly trace it back to the
-// permissions attached to an Access Link
-router.get('/:id', async (req, res) => {
-  const { id } = req.params;
-  try {
-    const contentLength = await storage.length(id);
-    const fileStream = await storage.get(id);
-    let cancelled = false;
+// Security for this route will be addressed in ticket #101
+router.get(
+  '/:id',
+  onError(404, 'Could not find file'),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    try {
+      const contentLength = await storage.length(id);
+      const fileStream = await storage.get(id);
+      let canceled = false;
 
-    req.on('aborted', () => {
-      cancelled = true;
-      fileStream.destroy();
-    });
+      req.on('aborted', () => {
+        canceled = true;
+        fileStream.destroy();
+      });
 
-    res.writeHead(200, {
-      'Content-Type': 'application/octet-stream',
-      'Content-Length': contentLength,
-    });
-    fileStream.pipe(res).on('finish', async () => {
-      if (cancelled) {
-        return;
-      }
-    });
-  } catch (e) {
-    res.sendStatus(404);
-  }
-});
+      res.writeHead(200, {
+        'Content-Type': 'application/octet-stream',
+        'Content-Length': contentLength,
+      });
+      fileStream.pipe(res).on('finish', async () => {
+        if (canceled) {
+          return;
+        }
+      });
+    } catch (e) {
+      throw new BaseError(DOWNLOAD_ERROR);
+    }
+  })
+);
 
 export default router;

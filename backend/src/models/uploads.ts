@@ -1,6 +1,12 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 import { fromPrisma } from './prisma-helper';
+import storage from '../storage';
+import {
+  BaseError,
+  UPLOAD_NOT_CREATED,
+  UPLOAD_NOT_FOUND,
+} from '../errors/models';
 
 export async function createUpload(
   id: string,
@@ -8,6 +14,14 @@ export async function createUpload(
   ownerId: number,
   type: string
 ) {
+  // Confirm that file `id` exists and what's on disk
+  // is at least as large as the stated size.
+  // (Encrypted files are larger than the decrypted contents)
+  const sizeOnDisk = await storage.length(id);
+  if (sizeOnDisk < size) {
+    throw new BaseError(UPLOAD_NOT_CREATED);
+  }
+
   const query = {
     data: {
       id,
@@ -17,10 +31,8 @@ export async function createUpload(
       type,
     },
   };
-  const onError = () => {
-    throw new Error(`could not create upload`);
-  };
-  return await fromPrisma(prisma.upload.create, query, onError);
+
+  return await fromPrisma(prisma.upload.create, query, UPLOAD_NOT_CREATED);
 }
 
 export async function getUploadSize(id: string) {
@@ -32,13 +44,11 @@ export async function getUploadSize(id: string) {
       size: true,
     },
   };
-  const onError = () => {
-    throw new Error(`could not create upload`);
-  };
+
   const upload = await fromPrisma(
     prisma.upload.findUniqueOrThrow,
     query,
-    onError
+    UPLOAD_NOT_FOUND
   );
   return upload.size;
 }
@@ -53,13 +63,11 @@ export async function getUploadMetadata(id: string) {
       type: true,
     },
   };
-  const onError = () => {
-    throw new Error(`Could not find upload`);
-  };
+
   const upload = await fromPrisma(
     prisma.upload.findUniqueOrThrow,
     query,
-    onError
+    UPLOAD_NOT_FOUND
   );
   const { size, type } = upload;
   return { size, type };

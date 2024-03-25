@@ -8,10 +8,9 @@ import {
   hasShare,
   allPermissions,
 } from './types/custom';
-const prisma = new PrismaClient();
-
 import logger from './logger';
 
+const prisma = new PrismaClient();
 const PERMISSION_REQUEST_KEY = '_permission';
 
 function extractMethodAndRoute(req) {
@@ -22,7 +21,7 @@ function extractSessionValue(req, path) {
   let val = req.session;
   for (let item of path) {
     if (!val[item]) {
-      logger.error(
+      logger.info(
         `No req.session.${path.join('.')} for ${extractMethodAndRoute(req)}`
       );
       return null;
