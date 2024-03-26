@@ -1,6 +1,10 @@
 import { Router } from 'express';
 
-import { asyncHandler, onError } from '../errors/routes';
+import {
+  wrapAsyncHandler,
+  addErrorHandling,
+  UPLOAD_ERRORS,
+} from '../errors/routes';
 
 import {
   createUpload,
@@ -11,7 +15,7 @@ import {
 import {
   requireLogin,
   getGroupMemberPermissions,
-  canWrite,
+  requireWritePermission,
 } from '../middleware';
 
 const router: Router = Router();
@@ -25,9 +29,9 @@ router.post(
   '/',
   requireLogin,
   getGroupMemberPermissions,
-  canWrite,
-  onError(500, 'Could not upload file'),
-  asyncHandler(async (req, res) => {
+  requireWritePermission,
+  addErrorHandling(UPLOAD_ERRORS.NOT_CREATED),
+  wrapAsyncHandler(async (req, res) => {
     const { id, size, ownerId, type } = req.body;
 
     const upload = await createUpload(id, size, ownerId, type);
@@ -43,8 +47,8 @@ router.post(
 // i.e., permissions are applied to containers, not to uploads.
 router.get(
   '/:id/size',
-  onError(500, 'Could not get file size'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(UPLOAD_ERRORS.FILE_NOT_FOUND),
+  wrapAsyncHandler(async (req, res) => {
     const { id } = req.params;
     const size = await getUploadSize(id);
     res.status(201).json({
@@ -58,8 +62,8 @@ router.get(
 // i.e., permissions are applied to containers, not to uploads.
 router.get(
   '/:id/metadata',
-  onError(500, 'Could not get file information'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(UPLOAD_ERRORS.FILE_NOT_FOUND),
+  wrapAsyncHandler(async (req, res) => {
     const { id } = req.params;
     const metadata = await getUploadMetadata(id);
     res.status(201).json({

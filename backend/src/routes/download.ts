@@ -1,16 +1,20 @@
 import { Router } from 'express';
 
 import storage from '../storage';
-import { asyncHandler, onError } from '../errors/routes';
-import { BaseError, DOWNLOAD_ERROR } from '../errors/models';
+import {
+  wrapAsyncHandler,
+  addErrorHandling,
+  DOWNLOAD_ERRORS,
+} from '../errors/routes';
+import { BaseError, TRANSFER_ERROR } from '../errors/models';
 
 const router: Router = Router();
 
 // Security for this route will be addressed in ticket #101
 router.get(
   '/:id',
-  onError(404, 'Could not find file'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(DOWNLOAD_ERRORS.DOWNLOAD_FAILED),
+  wrapAsyncHandler(async (req, res) => {
     const { id } = req.params;
     try {
       const contentLength = await storage.length(id);

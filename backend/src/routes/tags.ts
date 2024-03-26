@@ -1,4 +1,3 @@
-import { Prisma, ContainerType, UserTier } from '@prisma/client';
 import { Router } from 'express';
 import {
   createTagForItem,
@@ -8,14 +7,18 @@ import {
   getContainersAndItemsWithTags,
 } from '../models';
 import { getGroupMemberPermissions, requireLogin } from '../middleware';
-import { asyncHandler, onError } from '../errors/routes';
+import {
+  wrapAsyncHandler,
+  addErrorHandling,
+  TAG_ERRORS,
+} from '../errors/routes';
 
 const router: Router = Router();
 
 router.post(
   '/item/:itemId/',
-  onError(500, 'Could not create tag'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(TAG_ERRORS.NOT_CREATED),
+  wrapAsyncHandler(async (req, res) => {
     const { itemId } = req.params;
     const { name, color } = req.body;
     const tag = await createTagForItem(name, color, parseInt(itemId));
@@ -25,8 +28,8 @@ router.post(
 
 router.post(
   '/container/:containerId/',
-  onError(500, 'Could not create tag'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(TAG_ERRORS.NOT_CREATED),
+  wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const { name, color } = req.body;
     const tag = await createTagForContainer(name, color, parseInt(containerId));
@@ -36,8 +39,8 @@ router.post(
 
 router.delete(
   '/:tagId',
-  onError(500, 'Could not delete tag'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(TAG_ERRORS.NOT_DELETED),
+  wrapAsyncHandler(async (req, res) => {
     const { tagId } = req.params;
     const result = await deleteTag(parseInt(tagId));
     res.status(200).json(result);
@@ -46,8 +49,8 @@ router.delete(
 
 router.post(
   '/:tagId/rename',
-  onError(500, 'Could not rename tag'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(TAG_ERRORS.NOT_RENAMED),
+  wrapAsyncHandler(async (req, res) => {
     const { tagId } = req.params;
     const { name } = req.body;
     const tag = await updateTagName(parseInt(tagId), name);
@@ -60,8 +63,8 @@ router.get(
   '/:tagName',
   requireLogin,
   getGroupMemberPermissions,
-  onError(404, 'Could not find tag'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(TAG_ERRORS.NOT_FOUND),
+  wrapAsyncHandler(async (req, res) => {
     const { tagName } = req.params;
     const { id } = req.session.user;
     const result = await getContainersAndItemsWithTags(id, [tagName]);

@@ -12,12 +12,16 @@ import {
   acceptInvitation,
 } from '../models/sharing';
 
-import { asyncHandler, onError } from '../errors/routes';
+import {
+  wrapAsyncHandler,
+  addErrorHandling,
+  SHARING_ERRORS,
+} from '../errors/routes';
 
 import {
   requireLogin,
   getGroupMemberPermissions,
-  canShare,
+  requireSharePermission,
 } from '../middleware';
 
 const router: Router = Router();
@@ -27,9 +31,9 @@ router.post(
   '/',
   requireLogin,
   getGroupMemberPermissions,
-  canShare,
-  onError(500, 'Could not create access link'),
-  asyncHandler(async (req, res) => {
+  requireSharePermission,
+  addErrorHandling(SHARING_ERRORS.ACCESS_LINK_NOT_CREATED),
+  wrapAsyncHandler(async (req, res) => {
     const {
       containerId,
       senderId,
@@ -78,8 +82,8 @@ router.post(
 // Get the challenge for this hash
 router.get(
   '/:linkId/challenge',
-  onError(500, 'Could not get access link challenge'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(SHARING_ERRORS.CHALLENGE_NOT_FOUND),
+  wrapAsyncHandler(async (req, res) => {
     const { linkId } = req.params;
     if (!linkId) {
       res.status(400).json({
@@ -101,8 +105,8 @@ router.get(
 // associated salt
 router.post(
   '/:linkId/challenge',
-  onError(403, 'Failed access link challenge'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(SHARING_ERRORS.CHALLENGE_FAILED),
+  wrapAsyncHandler(async (req, res) => {
     const { linkId } = req.params;
     const { challengePlaintext } = req.body;
 
@@ -120,8 +124,8 @@ router.post(
 // Get an AccessLink's container and items
 router.get(
   '/exists/:linkId',
-  onError(404, 'Could not find access link'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(SHARING_ERRORS.ACCESS_LINK_NOT_FOUND),
+  wrapAsyncHandler(async (req, res) => {
     const { linkId } = req.params;
     res.status(200).json(await isAccessLinkValid(linkId));
   })
@@ -136,8 +140,8 @@ If I want to protect this with permissions, I'd need to:
 */
 router.get(
   '/:linkId',
-  onError(404, 'Could not find container for access link'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(SHARING_ERRORS.CONTAINER_NOT_FOUND),
+  wrapAsyncHandler(async (req, res) => {
     const { linkId } = req.params;
     const containerWithItems = await getContainerForAccessLink(linkId);
     res.status(200).json(containerWithItems);
@@ -147,8 +151,8 @@ router.get(
 // Remove accessLink
 router.delete(
   '/:linkId',
-  onError(400, 'Could not delete access link'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(SHARING_ERRORS.ACCESS_LINK_NOT_DELETED),
+  wrapAsyncHandler(async (req, res) => {
     const { linkId } = req.params;
     const result = await removeAccessLink(linkId);
     res.status(200).json(result);
@@ -159,8 +163,8 @@ router.delete(
 router.post(
   '/:linkId/member/accept',
   requireLogin,
-  onError(500, 'Could not accept access link'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(SHARING_ERRORS.ACCESS_LINK_NOT_ACCEPTED),
+  wrapAsyncHandler(async (req, res) => {
     const { linkId } = req.params;
     const { id } = req.session.user;
     // We create an Invitation for two reasons:
@@ -176,8 +180,8 @@ router.post(
 // Destroy a folder, its items, and any record of group memberships
 router.post(
   '/burn',
-  onError(500, 'Could not burn container'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(SHARING_ERRORS.NOT_BURNED),
+  wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.body;
     const result = await burnEphemeralConversation(parseInt(containerId));
     res.status(200).json({
