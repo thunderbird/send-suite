@@ -36,7 +36,7 @@ router.get(
         }
       });
     } catch (e) {
-      throw new BaseError(DOWNLOAD_ERROR);
+      throw new BaseError(TRANSFER_ERROR);
     }
   })
 );
