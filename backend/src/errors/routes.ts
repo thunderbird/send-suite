@@ -30,7 +30,7 @@ export const CONTAINER_ERRORS = {
     message: 'Could not delete container.',
   },
   CONTAINER_NOT_FOUND: {
-    statusCode: 500,
+    statusCode: 404,
     message: 'Could not find container.',
   },
   CONTAINER_NOT_RENAMED: {
@@ -90,11 +90,6 @@ export const DOWNLOAD_ERRORS = {
   },
 };
 
-export const ACCESS_LINK_NOT_CREATED = {
-  statusCode: 500,
-  message: 'Could not create access link.',
-};
-
 export const SHARING_ERRORS = {
   ACCESS_LINK_NOT_ACCEPTED: {
     statusCode: 500,
@@ -118,7 +113,7 @@ export const SHARING_ERRORS = {
   },
   CHALLENGE_NOT_FOUND: {
     statusCode: 404,
-    message: 'Could not create access link.',
+    message: 'Could not get access link challenge.',
   },
   CONTAINER_NOT_FOUND: {
     statusCode: 404,
@@ -194,12 +189,12 @@ export const USER_ERRORS = {
     message: 'Could not get public key.',
   },
   RECEIVED_FOLDERS_NOT_FOUND: {
-    statusCode: 500,
-    message: 'Could not get user session.',
+    statusCode: 404,
+    message: 'Could not get received folders.',
   },
   SHARED_FOLDERS_NOT_FOUND: {
-    statusCode: 500,
-    message: 'Could not get user session.',
+    statusCode: 404,
+    message: 'Could not get shared folders.',
   },
   SESSION_NOT_FOUND: {
     statusCode: 500,
