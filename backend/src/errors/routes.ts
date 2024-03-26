@@ -215,25 +215,27 @@ export const USER_ERRORS = {
   },
 };
 
+// Identifies the request variables used by the middleware in this file.
+const REQ_VAR_STATUS_CODE = 'REQ_VAR_STATUS_CODE';
+const REQ_VAR_USER_MESSAGE = 'REQ_VAR_USER_MESSAGE';
+
+// Returns a middleware function that adds error information to the request object
+export function addErrorHandling(err: ErrorRespInfo) {
+  const { statusCode, message } = err;
+  return (req, res, next) => {
+    req[REQ_VAR_STATUS_CODE] = statusCode;
+    req[REQ_VAR_USER_MESSAGE] = message;
+    next();
+  };
+}
+
 /**
  * Accepts an async route handler.
  * Any errors thrown will be passed to the global error handler middleware.
  */
-export function asyncHandler(fn) {
+export function wrapAsyncHandler(fn) {
   return function (req, res, next) {
     return Promise.resolve(fn(req, res, next)).catch(next);
-  };
-}
-
-const ERROR_STATUS_CODE = 'ERROR_STATUS_CODE';
-const ERROR_USER_MESSAGE = 'ERROR_USER_MESSAGE';
-
-// Returns a middleware function that adds error information to the request object
-export function onError(statusCode: number, message: string) {
-  return (req, res, next) => {
-    req[ERROR_STATUS_CODE] = statusCode;
-    req[ERROR_USER_MESSAGE] = message;
-    next();
   };
 }
 
@@ -243,9 +245,9 @@ export function onError(statusCode: number, message: string) {
 // Falls back to a generic status 500 and the
 // message from the `err` object.
 export function errorHandler(err, req, res, next) {
-  const status = req[ERROR_STATUS_CODE] ?? 500;
+  const status = req[REQ_VAR_STATUS_CODE] ?? 500;
   const message =
-    req[ERROR_USER_MESSAGE] ?? err.message ?? 'Internal Server Error';
+    req[REQ_VAR_USER_MESSAGE] ?? err.message ?? 'Internal Server Error';
 
   res.status(status).json({
     status: 'error',
