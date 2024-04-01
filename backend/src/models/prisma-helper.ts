@@ -25,3 +25,24 @@ export async function fromPrisma(
     }
   }
 }
+
+export const itemsIncludeOptions = {
+  items: {
+    include: {
+      upload: {
+        include: {
+          owner: {
+            select: {
+              email: true,
+            },
+          },
+        },
+      },
+    },
+  },
+};
+export const childrenIncludeOptions = {
+  children: {
+    include: itemsIncludeOptions,
+  },
+};
