@@ -19,12 +19,16 @@ import {
   requireLogin,
   renameBodyProperty,
   getGroupMemberPermissions,
-  canWrite,
-  canRead,
-  canAdmin,
+  requireWritePermission,
+  requireReadPermission,
+  requireAdminPermission,
 } from '../middleware';
 
-import { asyncHandler, onError } from '../errors/routes';
+import {
+  wrapAsyncHandler,
+  addErrorHandling,
+  CONTAINER_ERRORS,
+} from '../errors/routes';
 
 import { createInvitation, burnFolder } from '../models/sharing';
 
@@ -57,9 +61,9 @@ router.get(
   '/:containerId',
   requireLogin,
   getGroupMemberPermissions,
-  canRead,
-  onError(404, 'Could not find container'),
-  asyncHandler(async (req, res) => {
+  requireReadPermission,
+  addErrorHandling(CONTAINER_ERRORS.CONTAINER_NOT_FOUND),
+  wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const container = await getItemsInContainer(parseInt(containerId));
 
@@ -76,9 +80,9 @@ router.get(
   '/:containerId/links',
   requireLogin,
   getGroupMemberPermissions,
-  canRead,
-  onError(404, 'Could not get access links'),
-  asyncHandler(async (req, res) => {
+  requireReadPermission,
+  addErrorHandling(CONTAINER_ERRORS.ACCESS_LINKS_NOT_FOUND),
+  wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const links = await getAccessLinksForContainer(parseInt(containerId));
     res.status(200).json(links);
@@ -95,9 +99,9 @@ router.post(
   requireLogin,
   renameBodyProperty('parentId', 'containerId'),
   getGroupMemberPermissions,
-  canWrite,
-  onError(400, 'Could not create container'),
-  asyncHandler(async (req, res) => {
+  requireWritePermission,
+  addErrorHandling(CONTAINER_ERRORS.CONTAINER_NOT_CREATED),
+  wrapAsyncHandler(async (req, res) => {
     const {
       name,
       type,
@@ -137,9 +141,9 @@ router.post(
   '/:containerId/rename',
   requireLogin,
   getGroupMemberPermissions,
-  canWrite,
-  onError(500, 'Could not rename container'),
-  asyncHandler(async (req, res) => {
+  requireWritePermission,
+  addErrorHandling(CONTAINER_ERRORS.CONTAINER_NOT_RENAMED),
+  wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const { name } = req.body;
     const container = await updateContainerName(parseInt(containerId), name);
@@ -152,9 +156,9 @@ router.delete(
   '/:containerId',
   requireLogin,
   getGroupMemberPermissions,
-  canAdmin,
-  onError(500, 'Could not delete container'),
-  asyncHandler(async (req, res) => {
+  requireAdminPermission,
+  addErrorHandling(CONTAINER_ERRORS.CONTAINER_NOT_DELETED),
+  wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const root = await getContainerWithDescendants(parseInt(containerId));
     const idArray = flattenDescendants(root);
@@ -173,8 +177,8 @@ router.delete(
 router.post(
   '/:containerId/item',
   getGroupMemberPermissions,
-  onError(500, 'Could not create item'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(CONTAINER_ERRORS.ITEM_NOT_CREATED),
+  wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const { name, uploadId, type, wrappedKey } = req.body;
     const item = await createItem(
@@ -191,8 +195,8 @@ router.post(
 router.delete(
   '/:containerId/item/:itemId',
   getGroupMemberPermissions,
-  onError(500, 'Could not delete item'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(CONTAINER_ERRORS.ITEM_NOT_DELETED),
+  wrapAsyncHandler(async (req, res) => {
     const { containerId, itemId } = req.params;
     // Force req.body.shouldDeleteUpload to a boolean
     const shouldDeleteUpload = !!req.body.shouldDeleteUpload;
@@ -204,8 +208,8 @@ router.delete(
 router.post(
   '/:containerId/item/:itemId/rename',
   getGroupMemberPermissions,
-  onError(500, 'Could not rename item'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(CONTAINER_ERRORS.ITEM_NOT_RENAMED),
+  wrapAsyncHandler(async (req, res) => {
     const { containerId, itemId } = req.params;
     const { name } = req.body;
     const item = await updateItemName(parseInt(itemId), name);
@@ -216,8 +220,8 @@ router.post(
 router.post(
   '/:containerId/member/invite',
   getGroupMemberPermissions,
-  onError(500, 'Could not invite member'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(CONTAINER_ERRORS.INVITATION_NOT_CREATED),
+  wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const { senderId, recipientId, wrappedKey } = req.body;
     let permission = '0';
@@ -238,8 +242,8 @@ router.post(
 // Remove invitation and group membership
 router.delete(
   '/:containerId/member/remove/:invitationId',
-  onError(500, 'Could not remove invitation'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(CONTAINER_ERRORS.INVITATION_NOT_DELETED),
+  wrapAsyncHandler(async (req, res) => {
     const { invitationId } = req.params;
     const result = await removeInvitationAndGroup(parseInt(invitationId));
     res.status(200).json(result);
@@ -250,8 +254,8 @@ router.delete(
 router.post(
   '/:containerId/member',
   getGroupMemberPermissions,
-  onError(500, 'Could not add group member'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(CONTAINER_ERRORS.MEMBER_NOT_CREATED),
+  wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const { userId } = req.body;
     const container = await addGroupMember(
@@ -266,8 +270,8 @@ router.post(
 router.delete(
   '/:containerId/member/:userId',
   getGroupMemberPermissions,
-  onError(500, 'Could not remove group member'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(CONTAINER_ERRORS.MEMBER_NOT_DELETED),
+  wrapAsyncHandler(async (req, res) => {
     const { containerId, userId } = req.params;
     const container = await removeGroupMember(
       parseInt(containerId),
@@ -281,8 +285,8 @@ router.delete(
 router.get(
   '/:containerId/members',
   getGroupMemberPermissions,
-  onError(404, 'Could not get container and members'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(CONTAINER_ERRORS.MEMBERS_NOT_FOUND),
+  wrapAsyncHandler(async (req, res) => {
     // getContainerWithMembers
     const { containerId } = req.params;
     const { group } = await getContainerWithMembers(parseInt(containerId));
@@ -294,8 +298,8 @@ router.get(
 router.get(
   '/:containerId/info',
   getGroupMemberPermissions,
-  onError(500, 'Could not get container information'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(CONTAINER_ERRORS.INFO_NOT_FOUND),
+  wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const container = await getContainerInfo(parseInt(containerId));
     res.status(200).json(container);
@@ -305,8 +309,8 @@ router.get(
 router.get(
   '/:containerId/shares',
   getGroupMemberPermissions,
-  onError(500, 'Could not get shares for container'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(CONTAINER_ERRORS.SHARES_NOT_FOUND),
+  wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const { userId } = req.body; // TODO: get from session
     const result = await getSharesForContainer(
@@ -322,8 +326,8 @@ router.get(
 router.post(
   '/:containerId/shares/invitation/update',
   getGroupMemberPermissions,
-  onError(500, 'Could not update permissions for invitation'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(CONTAINER_ERRORS.PERMISSIONS_NOT_UPDATED),
+  wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const { userId, invitationId, permission } = req.body; // TODO: get from session
 
@@ -341,8 +345,8 @@ router.post(
 router.post(
   '/:containerId/shares/accessLink/update',
   getGroupMemberPermissions,
-  onError(500, 'Could not update permissions for access link'),
-  asyncHandler(async (req, res) => {
+  addErrorHandling(CONTAINER_ERRORS.PERMISSIONS_NOT_UPDATED),
+  wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const { userId, accessLinkId, permission } = req.body; // TODO: get from session
     const result = await updateAccessLinkPermissions(
