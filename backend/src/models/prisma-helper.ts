@@ -14,6 +14,7 @@ export async function fromPrisma(
     return result;
   } catch (err) {
     // TODO: send original `err` to Sentry, once that's set up
+    logger.error(err);
     if (onError) {
       if (typeof onError === 'string') {
         throw new BaseError(onError);
@@ -25,3 +26,24 @@ export async function fromPrisma(
     }
   }
 }
+
+export const itemsIncludeOptions = {
+  items: {
+    include: {
+      upload: {
+        include: {
+          owner: {
+            select: {
+              email: true,
+            },
+          },
+        },
+      },
+    },
+  },
+};
+export const childrenIncludeOptions = {
+  children: {
+    include: itemsIncludeOptions,
+  },
+};

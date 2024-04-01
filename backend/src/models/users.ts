@@ -1,6 +1,6 @@
 import { PrismaClient, UserTier, ContainerType, User } from '@prisma/client';
 const prisma = new PrismaClient();
-import { fromPrisma } from './prisma-helper';
+import { fromPrisma, itemsIncludeOptions } from './prisma-helper';
 import {
   PROFILE_NOT_CREATED,
   USER_NOT_CREATED,
@@ -189,45 +189,8 @@ export async function getAllUserGroupContainers(
   const containerWhere = await _whereContainer(userId, type, false, true);
   const query = {
     where: containerWhere,
-    // include: {
-    //   items: true,
-    // },
-    select: {
-      id: true,
-      name: true,
-      createdAt: true,
-      updatedAt: true,
-      type: true,
-      shareOnly: true,
-      ownerId: true,
-      groupId: true,
-      wrappedKey: true,
-      parentId: true,
-      items: {
-        select: {
-          id: true,
-          name: true,
-          wrappedKey: true,
-          uploadId: true,
-          containerId: true,
-          // uploadId: true,
-          // createdAt: true,
-          type: true,
-          tags: true,
-          upload: {
-            select: {
-              type: true,
-              size: true,
-              owner: {
-                select: {
-                  email: true,
-                },
-              },
-            },
-          },
-        },
-      },
-      tags: true,
+    include: {
+      ...itemsIncludeOptions,
     },
   };
   return await fromPrisma(prisma.container.findMany, query);

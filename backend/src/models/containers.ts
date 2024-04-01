@@ -1,7 +1,11 @@
 import { PrismaClient, ContainerType } from '@prisma/client';
 const prisma = new PrismaClient();
 import { PermissionType } from '../types/custom';
-import { fromPrisma } from './prisma-helper';
+import {
+  childrenIncludeOptions,
+  fromPrisma,
+  itemsIncludeOptions,
+} from './prisma-helper';
 import {
   BaseError,
   CONTAINER_NOT_UPDATED,
@@ -57,81 +61,16 @@ export async function createContainer(
 }
 
 export async function getItemsInContainer(id: number) {
+  // Nested include syntax
+  // per https://github.com/prisma/prisma/discussions/5810#discussioncomment-400341
+
   const query = {
     where: {
       id,
     },
-    select: {
-      id: true,
-      name: true,
-      createdAt: true,
-      updatedAt: true,
-      type: true,
-      shareOnly: true,
-      ownerId: true,
-      groupId: true,
-      wrappedKey: true,
-      parentId: true,
-      children: {
-        select: {
-          id: true,
-          name: true,
-          createdAt: true,
-          updatedAt: true,
-          type: true,
-          shareOnly: true,
-          ownerId: true,
-          groupId: true,
-          wrappedKey: true,
-          parentId: true,
-          items: {
-            select: {
-              name: true,
-              wrappedKey: true,
-              uploadId: true,
-              createdAt: true,
-              updatedAt: true,
-              type: true,
-              upload: {
-                select: {
-                  size: true,
-                  type: true,
-                  owner: {
-                    select: {
-                      email: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      items: {
-        select: {
-          id: true,
-          name: true,
-          wrappedKey: true,
-          uploadId: true,
-          createdAt: true,
-          updatedAt: true,
-          containerId: true,
-          type: true,
-          tags: true,
-          upload: {
-            select: {
-              size: true,
-              type: true,
-              owner: {
-                select: {
-                  email: true,
-                },
-              },
-            },
-          },
-        },
-      },
-      tags: true,
+    include: {
+      ...childrenIncludeOptions,
+      ...itemsIncludeOptions,
     },
   };
 
