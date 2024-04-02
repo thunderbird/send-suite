@@ -27,6 +27,9 @@ import {
   MEMBERSHIP_NOT_DELETED,
   INVITATION_NOT_UPDATED,
   ACCESSLINK_NOT_UPDATED,
+  TAG_NOT_CREATED,
+  TAG_NOT_DELETED,
+  TAG_NOT_UPDATED,
 } from './errors/models';
 
 export async function getSharesForContainer(
@@ -421,11 +424,8 @@ export async function createTagForItem(
       items,
     },
   };
-  const onError = () => {
-    throw new Error(`Could not upsert tag`);
-  };
 
-  return await fromPrisma(prisma.tag.upsert, query, onError);
+  return await fromPrisma(prisma.tag.upsert, query, TAG_NOT_CREATED);
 }
 
 // Create a tag for a container
@@ -455,11 +455,8 @@ export async function createTagForContainer(
       containers,
     },
   };
-  const onError = () => {
-    throw new Error(`Could not upsert tag`);
-  };
 
-  return await fromPrisma(prisma.tag.upsert, query, onError);
+  return await fromPrisma(prisma.tag.upsert, query, TAG_NOT_CREATED);
 }
 
 // Delete a tag
@@ -469,10 +466,8 @@ export async function deleteTag(id: number) {
       id,
     },
   };
-  const onError = () => {
-    throw new Error(`Could not delete tag`);
-  };
-  return await fromPrisma(prisma.tag.delete, query, onError);
+
+  return await fromPrisma(prisma.tag.delete, query, TAG_NOT_DELETED);
 }
 
 // Update/rename a tag
@@ -486,10 +481,8 @@ export async function updateTagName(tagId: number, name: string) {
       // updatedAt: new Date(),
     },
   };
-  const onError = () => {
-    throw new Error(`Could not update tag`);
-  };
-  return await fromPrisma(prisma.tag.update, query, onError);
+
+  return await fromPrisma(prisma.tag.update, query, TAG_NOT_UPDATED);
 }
 // Get all items and containers (that I have access to) with a specific tag or tags
 

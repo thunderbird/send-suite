@@ -14,11 +14,11 @@ import { fromPrisma } from './prisma-helper';
 import {
   ACCESSLINK_NOT_DELETED,
   ACCESSLINK_NOT_FOUND,
-  BaseError,
   CONTAINER_NOT_DELETED,
   CONTAINER_NOT_FOUND,
   GROUP_NOT_DELETED,
   INVITATION_NOT_CREATED,
+  INVITATION_NOT_FOUND,
   INVITATION_NOT_UPDATED,
   ITEM_NOT_DELETED,
   MEMBERSHIP_NOT_DELETED,
@@ -115,10 +115,12 @@ export async function getAccessLinkChallenge(linkId: string) {
       challengeCiphertext: true,
     },
   };
-  const onError = () => {
-    throw new Error(`Could not find access link`);
-  };
-  return await fromPrisma(prisma.accessLink.findUniqueOrThrow, query, onError);
+
+  return await fromPrisma(
+    prisma.accessLink.findUniqueOrThrow,
+    query,
+    ACCESSLINK_NOT_FOUND
+  );
 }
 
 export async function acceptAccessLink(
@@ -138,10 +140,12 @@ export async function acceptAccessLink(
       },
     },
   };
-  const onError = () => {
-    throw new Error(`Could not find access link`);
-  };
-  return await fromPrisma(prisma.accessLink.findUniqueOrThrow, query, onError);
+
+  return await fromPrisma(
+    prisma.accessLink.findUniqueOrThrow,
+    query,
+    ACCESSLINK_NOT_FOUND
+  );
 }
 
 export async function getContainerForAccessLink(linkId: string) {
@@ -165,10 +169,12 @@ export async function getContainerForAccessLink(linkId: string) {
       },
     },
   };
-  const onError = () => {
-    throw new Error(`Could not find access link`);
-  };
-  return await fromPrisma(prisma.accessLink.findUniqueOrThrow, query, onError);
+
+  return await fromPrisma(
+    prisma.accessLink.findUniqueOrThrow,
+    query,
+    ACCESSLINK_NOT_FOUND
+  );
 }
 
 /**
@@ -356,13 +362,11 @@ export async function acceptInvitation(invitationId: number) {
       id: invitationId,
     },
   };
-  const onFindInvitationError = () => {
-    throw new Error(`Could not find invitation`);
-  };
+
   const invitation = await fromPrisma(
     prisma.invitation.findUniqueOrThrow,
     findInvitationQuery,
-    onFindInvitationError
+    INVITATION_NOT_FOUND
   );
 
   const { recipientId, shareId } = invitation;
