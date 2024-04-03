@@ -18,6 +18,8 @@ export async function createUser(
       publicKey,
       email,
       tier,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
   };
 
