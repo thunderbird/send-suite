@@ -113,8 +113,7 @@ export default class Sharer {
       },
       'POST'
     );
-
-    if (response?.id) {
+    if (!response.container?.id) {
       console.log(`could not create a new container for items`);
       return null;
     }
