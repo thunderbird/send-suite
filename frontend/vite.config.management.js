@@ -16,6 +16,7 @@ export default defineConfig({
     },
   },
   build: {
+    sourcemap: 'inline',
     outDir: 'dist/pages',
     rollupOptions: {
       input: {
