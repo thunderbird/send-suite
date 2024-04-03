@@ -186,8 +186,8 @@ async function decryptAll(protectedContainerKeysStr, protectedKeypairStr, passwo
 </script>
 
 <template>
-  <div class="flex min-h-screen">
-    <div class="flex flex-col gap-4 grow">
+  <div class="flex">
+    <div class="flex flex-col gap-4">
       <header class="flex flex-col gap-4 px-4 py-4">
         <h1>Key Recovery</h1>
         <p>
