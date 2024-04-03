@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, toRaw } from 'vue';
 import init from '@/lib/init';
 import { Storage } from '@/lib/storage';
 import useUserStore from '@/stores/user-store';
@@ -9,12 +9,13 @@ import useConfigurationStore from '@/stores/configuration-store';
 import useApiStore from '@/stores/api-store';
 
 import BackupAndRestore from '@/common/components/BackupAndRestore.vue';
-
+import Btn from '@/lockbox/elements/Btn.vue';
 const DEBUG = true;
 const SERVER = `server`;
 
 const storage = new Storage();
 const { user } = useUserStore();
+const userStore = useUserStore();
 const { keychain, resetKeychain } = useKeychainStore();
 const { api } = useApiStore();
 const folderStore = useFolderStore();
@@ -22,6 +23,7 @@ const configurationStore = useConfigurationStore();
 
 const resp = ref(null);
 const authUrl = ref('');
+const sessionInfo = ref(null);
 
 configurationStore.$onAction((actionInfo) => {
   // console.log(actionInfo);
@@ -160,6 +162,33 @@ async function save() {
   }
 }
 
+async function dbUserSetup() {
+  // Populate the user if they exist
+  const didPopulate = await userStore.populateFromSession();
+  if (!didPopulate) {
+    console.warn(`DEBUG: could not retrieve user; did mozilla login fail?`);
+    return;
+  }
+  userStore.user.store();
+
+  // Check if the user has a public key.
+  // If not, this is almost certainly a new user.
+  const publicKey = await userStore.getPublicKey();
+  if (!publicKey) {
+    await keychain.rsa.generateKeyPair();
+    await keychain.store();
+
+    const jwkPublicKey = await keychain.rsa.getPublicKeyJwk();
+    const didUpdate = await userStore.updatePublicKey(jwkPublicKey);
+    if (!didUpdate) {
+      console.warn(`DEBUG: could not update user's public key`);
+    }
+  }
+
+  // Existing init() handles
+  await init(userStore.user, keychain, folderStore);
+}
+
 async function loginToMozAccount() {
   // waitaminit...do I get a different session or the same if I open a new window?
   // Let's find out!
@@ -172,6 +201,27 @@ async function loginToMozAccount() {
     // window.location = resp.url;
   }
 }
+async function pingSession() {
+  sessionInfo.value = (await api.callApi(`users/me`)) ?? `You need to log into your mozilla account`;
+}
+
+function formatSessionInfo(info) {
+  console.log(info);
+  if (!info) {
+    return null;
+  }
+  const val = structuredClone(toRaw(info));
+  if (!val.user) {
+    return info;
+  }
+  for (let key in val.user) {
+    console.log(`inspecting ${key}`);
+    if (typeof val.user[key] == 'string' && val.user[key].length > 20) {
+      val.user[key] = val.user[key].substring(0, 20) + '...';
+    }
+  }
+  return JSON.stringify(val, null, 4);
+}
 
 async function openPopup() {
   try {
@@ -181,20 +231,22 @@ async function openPopup() {
       type: 'popup',
       allowScriptsToClose: true,
     });
-
     /*
-
 TODO: I need to start an interval that pings the server.
 It should ask if the current code has just been used to successfully log in.
 If so, we should grab the login information from the server and popuplate the local user-store.
 
 And, we should show that information here instead of showing the login button.
-
     */
   } catch (e) {
     console.log(`popup failed`);
     console.log(e);
   }
+}
+
+async function finishLogin() {
+  pingSession();
+  dbUserSetup();
 }
 </script>
 
@@ -215,11 +267,17 @@ And, we should show that information here instead of showing the login button.
     </div>
   </form>
   <h1>Hi.</h1>
-  <button @click.prevent="loginToMozAccount">Get Moz Acct Auth URL</button>
+  <button @click.prevent="loginToMozAccount">Log into Mozilla Account</button>
+  <button @click.prevent="finishLogin">Click after moz login</button>
   <!-- <br />
   <button v-if="authUrl" @click.prevent="openPopup">Click this button Moz Acct with {{ authUrl }}</button> -->
   <br />
   <BackupAndRestore />
+  <Btn @click.prevent="pingSession">ping session</Btn>
+  <br />
+  <pre v-if="sessionInfo">
+    {{ formatSessionInfo(sessionInfo) }}
+  </pre>
 </template>
 
 <style scoped>
