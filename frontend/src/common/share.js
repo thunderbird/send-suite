@@ -99,12 +99,11 @@ export default class Sharer {
       // }
     }
 
-    // A share-only Folder shouldn't
-    // have a parentId
+    // A share-only Folder shouldn't have a parentId
     const parentId = 0;
     const shareOnly = true;
 
-    const response = await api.callApi(
+    const response = await this.api.callApi(
       `containers`,
       {
         name: currentContainer.name,
@@ -114,12 +113,14 @@ export default class Sharer {
       },
       'POST'
     );
-    if (!(response || response.id)) {
+
+    if (response?.id) {
       console.log(`could not create a new container for items`);
       return null;
     }
+    const { id: newContainerId } = response.container;
 
-    const { id: newContainerId } = response;
+    console.log(`got a new container id: ${newContainerId}`);
     await this.keychain.newKeyForContainer(newContainerId);
     await this.keychain.store();
 
