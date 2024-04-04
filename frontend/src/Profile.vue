@@ -1,11 +1,11 @@
 <script setup>
-import { ref } from 'vue';
-
+import { ref, toRaw } from 'vue';
 import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
 import useFolderStore from '@/lockbox/stores/folder-store';
 import init from '@/lib/init';
+import BackupAndRestore from '@/common/components/BackupAndRestore.vue';
 import Btn from '@/lockbox/elements/Btn.vue';
 
 const { api } = useApiStore();
@@ -16,7 +16,25 @@ const folderStore = useFolderStore();
 const sessionInfo = ref(null);
 
 async function pingSession() {
-  sessionInfo.value = await api.callApi(`users/me`);
+  sessionInfo.value = (await api.callApi(`users/me`)) ?? `You need to log into your mozilla account`;
+}
+
+function formatSessionInfo(info) {
+  console.log(info);
+  if (!info) {
+    return null;
+  }
+  const val = structuredClone(toRaw(info));
+  if (!val.user) {
+    return info;
+  }
+  for (let key in val.user) {
+    console.log(`inspecting ${key}`);
+    if (typeof val.user[key] == 'string' && val.user[key].length > 20) {
+      val.user[key] = val.user[key].substring(0, 20) + '...';
+    }
+  }
+  return JSON.stringify(val, null, 4);
 }
 
 // After mozilla account login, confirm that
@@ -70,11 +88,12 @@ async function mozAcctLogin() {
 <template>
   <Btn @click.prevent="mozAcctLogin">Log into Moz Acct</Btn>
   <br />
+  <BackupAndRestore />
+  <br />
+  <br />
   <Btn @click.prevent="pingSession">ping session</Btn>
   <br />
-  <br />
-  <br />
   <pre v-if="sessionInfo">
-    {{ JSON.stringify(sessionInfo, null, 4) }}
+    {{ formatSessionInfo(sessionInfo) }}
   </pre>
 </template>
