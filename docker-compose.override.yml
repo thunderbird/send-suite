@@ -33,39 +33,12 @@ services:
     # Here we reference the application container that we are testing
     # You can test multiple containers at a time, simply duplicate this section
     # and customize it for each container, and give it a unique IP in 'credentials_network'.
-    frontend:
-        depends_on:
-            - ecs-local-endpoints
-        networks:
-            credentials_network:
-                ipv4_address: "169.254.170.3"
-        environment:
-          AWS_DEFAULT_REGION: "us-east-1"
-          AWS_CONTAINER_CREDENTIALS_RELATIVE_URI: "/role/Send-Dev-User"
     backend:
         depends_on:
             - ecs-local-endpoints
         networks:
             credentials_network:
-                ipv4_address: "169.254.170.4"
-        environment:
-          AWS_DEFAULT_REGION: "us-east-1"
-          AWS_CONTAINER_CREDENTIALS_RELATIVE_URI: "/role/Send-Dev-User"
-    db:
-        depends_on:
-            - ecs-local-endpoints
-        networks:
-            credentials_network:
-                ipv4_address: "169.254.170.5"
-        environment:
-          AWS_DEFAULT_REGION: "us-east-1"
-          AWS_CONTAINER_CREDENTIALS_RELATIVE_URI: "/role/Send-Dev-User"
-    reverse-proxy:
-        depends_on:
-            - ecs-local-endpoints
-        networks:
-            credentials_network:
-                ipv4_address: "169.254.170.6"
+                ipv4_address: "169.254.170.3"
         environment:
           AWS_DEFAULT_REGION: "us-east-1"
           AWS_CONTAINER_CREDENTIALS_RELATIVE_URI: "/role/Send-Dev-User"
