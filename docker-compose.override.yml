@@ -9,6 +9,12 @@ networks:
             config:
                 - subnet: "169.254.170.0/24"
                   gateway: 169.254.170.1
+    send-suite:
+        driver: bridge
+        ipam:
+            config:
+                - subnet: "192.168.10.0/24"
+                  gateway: 192.168.10.1
 services:
     # This container vends credentials to your containers
     ecs-local-endpoints:
@@ -37,6 +43,7 @@ services:
         depends_on:
             - ecs-local-endpoints
         networks:
+            send-suite:
             credentials_network:
                 ipv4_address: "169.254.170.3"
         environment:
