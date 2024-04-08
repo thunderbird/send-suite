@@ -49,3 +49,12 @@ services:
         environment:
           AWS_DEFAULT_REGION: "us-east-1"
           AWS_CONTAINER_CREDENTIALS_RELATIVE_URI: "/role/Send-Dev-User"
+    frontend:
+        networks:
+            send-suite:
+    db:
+        networks:
+            send-suite:
+    reverse-proxy:
+        networks:
+            send-suite:
