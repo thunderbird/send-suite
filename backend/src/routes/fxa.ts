@@ -149,7 +149,9 @@ router.get(
         accessToken,
         refreshToken
       );
-
+      console.log(`saving user to session after logging into mozilla account`);
+      console.log(user);
+      // TODO: strip out backup keys before storing to session.
       req.session['user'] = user;
       req.session.save((err) => {
         if (err) {

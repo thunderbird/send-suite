@@ -33,7 +33,7 @@ router.post(
   addErrorHandling(UPLOAD_ERRORS.NOT_CREATED),
   wrapAsyncHandler(async (req, res) => {
     const { id, size, ownerId, type } = req.body;
-
+    console.log(`um...about to create an upload?`);
     const upload = await createUpload(id, size, ownerId, type);
     res.status(201).json({
       message: 'Upload created',

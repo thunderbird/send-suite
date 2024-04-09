@@ -1,6 +1,10 @@
 import { Router } from 'express';
 
 import storage from '../storage';
+import S3Storage from '../storage/s3';
+
+const s3 = new S3Storage(null);
+
 import {
   wrapAsyncHandler,
   addErrorHandling,
@@ -17,8 +21,12 @@ router.get(
   wrapAsyncHandler(async (req, res) => {
     const { id } = req.params;
     try {
-      const contentLength = await storage.length(id);
-      const fileStream = await storage.get(id);
+      // const contentLength = await storage.length(id);
+      const contentLength = await s3.length(id);
+
+      // const fileStream = await storage.get(id);
+      const fileStream = await s3.getStream(id);
+
       let canceled = false;
 
       req.on('aborted', () => {
@@ -30,7 +38,9 @@ router.get(
         'Content-Type': 'application/octet-stream',
         'Content-Length': contentLength,
       });
-      fileStream.pipe(res).on('finish', async () => {
+      fileStream.pipe(res);
+
+      fileStream.on('finish', async () => {
         if (canceled) {
           return;
         }
