@@ -1,6 +1,5 @@
 import {
   S3Client,
-  GetObjectCommandOutput,
   GetObjectAttributesCommand,
   ObjectAttributes,
   GetObjectCommand,
@@ -8,28 +7,30 @@ import {
 import { Upload } from '@aws-sdk/lib-storage';
 
 import fs from 'fs';
-import stream, { Readable } from 'stream';
+import { Readable } from 'stream';
 import { Config, Logger } from '../types/custom';
 import { fromIni } from '@aws-sdk/credential-providers';
 
-// TODO: use dynamic buckets
 const Bucket = process.env.AWS_S3_BUCKET_URL;
+const region = process.env.AWS_DEFAULT_REGION;
 
 export default class S3Storage {
   private s3Client: S3Client;
 
   constructor(config: Config) {
     this.s3Client = new S3Client({
-      // credentials: {
-      //   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      // },
-      region: process.env.AWS_DEFAULT_REGION,
+      region,
+      // For manual configuration during development
       bucketEndpoint: true,
       credentials: fromIni({
         filepath: 'aws/credentials',
         configFilepath: 'aws/config',
       }),
+
+      // Catch-all attempt to load credentials from...literally anywhere.
+      // credentials: fromNodeProviderChain({
+      //   clientConfig: { region: process.env.AWS_DEFAULT_REGION },
+      // }),
     });
   }
 
