@@ -16,11 +16,9 @@ import { fromIni } from '@aws-sdk/credential-providers';
 const Bucket = process.env.AWS_S3_BUCKET_URL;
 
 export default class S3Storage {
-  private log: Logger;
   private s3Client: S3Client;
 
-  constructor(config: Config, log?: Logger) {
-    this.log = log;
+  constructor(config: Config) {
     this.s3Client = new S3Client({
       // credentials: {
       //   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
