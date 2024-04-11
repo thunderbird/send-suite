@@ -170,6 +170,8 @@ async function dbUserSetup() {
     return;
   }
   userStore.user.store();
+  user.id = userStore.user.id;
+  user.email = userStore.user.email;
 
   // Check if the user has a public key.
   // If not, this is almost certainly a new user.
@@ -245,8 +247,9 @@ And, we should show that information here instead of showing the login button.
 }
 
 async function finishLogin() {
-  pingSession();
-  dbUserSetup();
+  await pingSession();
+  await dbUserSetup();
+  await configureExtension();
 }
 </script>
 
