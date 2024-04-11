@@ -1,10 +1,5 @@
 import { Router } from 'express';
-
 import storage from '../storage';
-import S3Storage from '../storage/s3';
-
-const s3 = new S3Storage(null);
-
 import {
   wrapAsyncHandler,
   addErrorHandling,
@@ -21,11 +16,9 @@ router.get(
   wrapAsyncHandler(async (req, res) => {
     const { id } = req.params;
     try {
-      // const contentLength = await storage.length(id);
-      const contentLength = await s3.length(id);
+      const contentLength = await storage.length(id);
 
-      // const fileStream = await storage.get(id);
-      const fileStream = await s3.getStream(id);
+      const fileStream = await storage.get(id);
 
       let canceled = false;
 

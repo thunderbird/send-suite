@@ -2,8 +2,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 import { fromPrisma } from './prisma-helper';
 import storage from '../storage';
-import S3Storage from '../storage/s3';
-const s3 = new S3Storage(null);
+
 import {
   BaseError,
   UPLOAD_NOT_CREATED,
@@ -19,8 +18,7 @@ export async function createUpload(
   // Confirm that file `id` exists and what's on disk
   // is at least as large as the stated size.
   // (Encrypted files are larger than the decrypted contents)
-  // const sizeOnDisk = await storage.length(id);
-  const sizeOnDisk = await s3.length(id);
+  const sizeOnDisk = await storage.length(id);
   if (sizeOnDisk < size) {
     throw new BaseError(UPLOAD_NOT_CREATED);
   }
@@ -34,7 +32,6 @@ export async function createUpload(
       type,
     },
   };
-
   return await fromPrisma(prisma.upload.create, query, UPLOAD_NOT_CREATED);
 }
 
