@@ -6,11 +6,9 @@ import { Config, Logger } from '../types/custom';
 const stat = promisify(fs.stat);
 
 export default class FSStorage {
-  private log: Logger;
   private dir: string;
 
-  constructor(config: Config, log?: Logger) {
-    this.log = log;
+  constructor(config: Config) {
     this.dir = config.file_dir;
     fs.mkdirSync(this.dir, {
       recursive: true,

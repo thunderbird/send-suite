@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 import { fromPrisma } from './prisma-helper';
 import storage from '../storage';
+
 import {
   BaseError,
   UPLOAD_NOT_CREATED,
@@ -31,7 +32,6 @@ export async function createUpload(
       type,
     },
   };
-
   return await fromPrisma(prisma.upload.create, query, UPLOAD_NOT_CREATED);
 }
 

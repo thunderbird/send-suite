@@ -1,5 +1,4 @@
 import { Router } from 'express';
-
 import storage from '../storage';
 import {
   wrapAsyncHandler,
@@ -18,7 +17,9 @@ router.get(
     const { id } = req.params;
     try {
       const contentLength = await storage.length(id);
+
       const fileStream = await storage.get(id);
+
       let canceled = false;
 
       req.on('aborted', () => {
@@ -30,7 +31,9 @@ router.get(
         'Content-Type': 'application/octet-stream',
         'Content-Length': contentLength,
       });
-      fileStream.pipe(res).on('finish', async () => {
+      fileStream.pipe(res);
+
+      fileStream.on('finish', async () => {
         if (canceled) {
           return;
         }

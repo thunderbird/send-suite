@@ -53,6 +53,12 @@ export async function findOrCreateUserProfileByMozillaId(
         mozid,
       },
     },
+    select: {
+      id: true,
+      email: true,
+      tier: true,
+      profile: true,
+    },
   };
 
   try {

@@ -13,7 +13,6 @@ dist
 dist-ssr
 *.local
 sessions
-storage
 .pnpm-store
 
 # Logs
