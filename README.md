@@ -7,7 +7,9 @@ You'll need the following to run the server and use the client:
 - An account on the FXA staging server
 - The client id and secret for the FXA staging server (in 1Password, in the Services vault)
 
-## How to set up and run
+## Webapp
+
+### How to set up and run webapp
 
 First, clone the repo and create/edit `backend/.env`:
 
@@ -35,7 +37,7 @@ To watch the backend logs:
 docker compose logs -f
 ```
 
-## Using the webapp
+### Using the webapp
 
 - Visit `http://localhost:8080/` and accept the self-signed certificate
   - In Firefox, you'll want to add an exception for this certificate
@@ -44,6 +46,57 @@ docker compose logs -f
 - After logging in, go to `My Files` in the sidebar
 
 From here, you can do things like create folders, upload files to folders, and create share links. (Note that the share links will only be valid on your machines, since they'll have `localhost` addresses.)
+
+## TB Extension
+
+### Building the TB Extension
+
+If this is the first time you're building the extension, you'll need to install the tooling on the host:
+
+```sh
+cd frontend
+pnpm/yarn/npm install
+```
+
+Build the extension:
+
+```sh
+pnpm/yarn/npm run build
+```
+
+This outputs to `frontend/dist/`.
+
+### Loading the TB Extension
+
+To load this in Thunderbird:
+
+- Go to Settings and click `Add-ons and Themes` in the lower left-hand corner
+- In the "Manage your Extensions" window, click the gear icon in the upper right and choose `Debug Add-ons`
+- On the "Mozilla Thunderbird" page that appears, click the `Load Temporary Add-on...` button in the upper-right.
+- Navigate to the `send-suite/frontend/dist/` directory and choose the `manifest.json`
+
+### Using the Extension
+
+- After loading the extension, go to Settings and click `Composition` in the left-hand menu.
+- Scroll down to "Attachments" and click the `Add Lockbox Send` button
+- In the Lockbox Send configuration panel, click the `Log into Mozilla Account` button
+- In the popup, follow the Mozilla Account login flow
+- After you successfully log in, the popup should close (or you can manually close it)
+- **IMPORTANT**: in the Lockbox Send configuration panel, click the `Click after moz login` button to finish setting up the extension with the Mozilla Account.
+
+You can now right-click attachments in emails and choose "Convert to Lockbox Send". You'll be prompted for an optional password to protect the attachment.
+
+Successful conversion results in a "beautiful" link being added to your message body.
+
+Note: the link will only work on your local machine, as the URL is a `localhost` one. (But you should be able to open it in a browser and see that the file downloads and can be viewed).
+
+#### Re-login will/may be required
+
+The TB Extension loses the login session pretty quickly, requiring you to go click the `Log into Mozilla Account` button again.
+
+This could be because the sessions are expiring when the backend reloads (which it does automatically when code changes).
+
+If you're not changing the backend code (and the backend doesn't restart), you might be fine.
 
 ## Additional documentation
 
