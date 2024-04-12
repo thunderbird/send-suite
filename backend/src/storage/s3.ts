@@ -14,10 +14,13 @@ import { fromIni } from '@aws-sdk/credential-providers';
 const Bucket = process.env.AWS_S3_BUCKET_URL;
 const region = process.env.AWS_DEFAULT_REGION;
 
+const queueSize = 4;
+const partSize = 1024 * 1024 * 5;
+
 export default class S3Storage {
   private s3Client: S3Client;
 
-  constructor(config: Config) {
+  constructor() {
     this.s3Client = new S3Client({
       region,
       // For manual configuration during development
@@ -26,11 +29,6 @@ export default class S3Storage {
         filepath: 'aws/credentials',
         configFilepath: 'aws/config',
       }),
-
-      // Catch-all attempt to load credentials from...literally anywhere.
-      // credentials: fromNodeProviderChain({
-      //   clientConfig: { region: process.env.AWS_DEFAULT_REGION },
-      // }),
     });
   }
 
@@ -74,8 +72,8 @@ export default class S3Storage {
             Key,
             Body: readableStream,
           },
-          queueSize: 4,
-          partSize: 1024 * 1024 * 5,
+          queueSize,
+          partSize,
           leavePartsOnError: false,
         });
         await uploadProcess.done();
