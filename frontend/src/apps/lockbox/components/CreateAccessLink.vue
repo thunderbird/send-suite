@@ -60,4 +60,3 @@ watch(
   </section>
   <Btn class="mb-8" @click="newAccessLink">Create Share Link <IconLink class="w-4 h-4" /></Btn>
 </template>
-@/apps/lockbox/stores/sharing-store

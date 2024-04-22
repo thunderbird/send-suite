@@ -38,4 +38,3 @@ async function addTag() {
     </div>
   </form>
 </template>
-@/apps/lockbox/const
