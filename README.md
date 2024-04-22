@@ -25,6 +25,18 @@ cd ..
 # back out to the main directory before proceeding
 ```
 
+Next, create the `frontend/.env`:
+
+```sh
+cd frontend
+
+cp dev.env .env
+# for now, you shouldn't need to edit the .env
+
+cd ..
+# back out to the main directory before proceeding
+```
+
 To run the containers:
 
 ```sh
