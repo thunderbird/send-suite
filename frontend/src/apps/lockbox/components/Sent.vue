@@ -2,11 +2,11 @@
 import { ref, computed, onMounted, toRaw } from 'vue';
 
 // TODO: after proof-of-concept, move these to the sharing-store
-import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
+import useSharingStore from '@/apps/lockbox/stores/sharing-store';
 
-const { api } = useApiStore();
 const { user } = useUserStore();
+const sharingStore = useSharingStore();
 
 const sent = ref([]);
 const foldersByRecipientId = computed(() => groupByRecipient(toRaw(sent.value)));
@@ -14,7 +14,8 @@ const emailsByRecipientId = computed(() => createEmailMap(toRaw(sent.value)));
 const shareOnlyFolders = computed(() => toRaw(sent.value).filter(({ container }) => container.shareOnly));
 
 async function getSentFolders() {
-  const resp = await api.getFoldersSharedByUser(user.id);
+  // TODO: update for
+  const resp = await sharingStore.getFoldersSharedByUser(user.id);
   console.log(resp);
   sent.value = resp.map(({ accessLinks, container }) => ({ accessLinks, container }));
 }
