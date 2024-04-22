@@ -2,9 +2,8 @@
 import { ref, watch } from 'vue';
 import useUserStore from '@/stores/user-store';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
-import useSharingStore from '@apps/lockbox/stores/sharing-store';
+import useSharingStore from '@/apps/lockbox/stores/sharing-store';
 
-import FolderView from '../components/FolderView.vue';
 import { EXTENSION_READY, SHARE_COMPLETE, SHARE_ABORTED, SELECTION_COMPLETE } from '@/lib/const';
 
 const { user } = useUserStore();
