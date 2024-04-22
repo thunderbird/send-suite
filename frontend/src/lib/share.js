@@ -21,7 +21,7 @@ export default class Sharer {
 
   // Creates Invitation
   async shareContainerWithInvitation(containerId, email) {
-    let user = await this.api.getUserByEmail(email);
+    let user = await this.api.callApi(`users/lookup/${email}/`);
 
     if (user) {
       let { publicKey, id: recipientId } = user;
@@ -55,7 +55,15 @@ export default class Sharer {
         return null;
       }
 
-      const resp = await this.api.inviteGroupMember(containerId, wrappedKey, recipientId, this.user.id);
+      const resp = await this.api.callApi(
+        `containers/${containerId}/member/invite`,
+        {
+          wrappedKey,
+          recipientId,
+          senderId: this.user.id,
+        },
+        'POST'
+      );
       console.log(`Invitation creation response:`);
       console.log(resp);
       return resp;
@@ -90,7 +98,7 @@ export default class Sharer {
 
     let currentContainer = { name: 'untitled' };
     if (containerId) {
-      currentContainer = await this.api.getContainerInfo(containerId);
+      currentContainer = await this.api.callApi(`containers/${containerId}/info`);
       // TODO: future enhancement
       // If there are no itemsToShare, get the items from the `currentContainer`
       // if (itemsToShare.length > 0) {

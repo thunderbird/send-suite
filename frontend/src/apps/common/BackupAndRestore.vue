@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
-import Btn from '@/lockbox/elements/Btn.vue';
+import Btn from '@/apps/lockbox/elements/Btn.vue';
 
 import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
@@ -14,13 +14,26 @@ const MIN_WORD_LENGTH = 5;
 const MSG_NOT_COMPLEX = `Please enter ${PHRASE_SIZE} different words. Each word must be at least ${MIN_WORD_LENGTH} letters long.`;
 const MSG_INCORRECT_PASSPHRASE = 'Passphrase is incorrect';
 const MSG_COULD_NOT_RETRIEVE = 'Could not retrieve backup from the server.';
-const words = ref(['']);
+const words = ref([
+  'aaaaa',
+  'bbbbb',
+  'ccccc',
+  'ddddd',
+  'eeeee',
+  'fffff',
+  'ggggg',
+  'hhhhh',
+  'iiiii',
+  'jjjjj',
+  'kkkkk',
+  'lllll',
+]);
 const passphrase = computed(() => {
   return words.value.join(' ');
 });
 
 const msg = ref('');
-const { user } = useUserStore();
+const { user, createBackup, getBackup } = useUserStore();
 const { keychain } = useKeychainStore();
 const { api } = useApiStore();
 
@@ -43,7 +56,7 @@ async function makeBackup() {
     containerKeys,
     passphrase.value
   );
-  const resp = await api.createBackup(
+  const resp = await createBackup(
     user.id,
     protectedContainerKeysStr,
     protectedKeypairStr,
@@ -59,7 +72,7 @@ async function restoreFromBackup() {
     return;
   }
 
-  const resp = await api.getBackup(user.id);
+  const resp = await getBackup(user.id);
   if (!resp) {
     msg.value = MSG_COULD_NOT_RETRIEVE;
     return;
