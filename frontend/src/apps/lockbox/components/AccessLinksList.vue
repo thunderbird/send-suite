@@ -33,4 +33,3 @@ TODO: implement "regeneration" of links
     </label>
   </section>
 </template>
-@/apps/lockbox/stores/sharing-store

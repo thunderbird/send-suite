@@ -9,4 +9,3 @@ defineProps({
     <slot></slot>
   </div>
 </template>
-@/apps/lockbox/const

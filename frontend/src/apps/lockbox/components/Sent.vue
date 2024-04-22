@@ -14,7 +14,6 @@ const emailsByRecipientId = computed(() => createEmailMap(toRaw(sent.value)));
 const shareOnlyFolders = computed(() => toRaw(sent.value).filter(({ container }) => container.shareOnly));
 
 async function getSentFolders() {
-  // TODO: update for
   const resp = await sharingStore.getFoldersSharedByUser(user.id);
   console.log(resp);
   sent.value = resp.map(({ accessLinks, container }) => ({ accessLinks, container }));

@@ -68,4 +68,3 @@ onMounted(() => {
   </div>
   <button class="btn-primary" @click="accept">Go</button>
 </template>
-@/apps/lockbox/stores/sharing-store

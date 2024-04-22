@@ -9,4 +9,3 @@ defineProps({
   <IconTag :class="['w-5 h-5', `${TagColors[color]}`]" />
   <slot></slot>
 </template>
-@/apps/lockbox/const

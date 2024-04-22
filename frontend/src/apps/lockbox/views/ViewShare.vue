@@ -23,4 +23,3 @@ onMounted(async () => {
 
   <FolderTree :folder="folder" :containerId="containerId" />
 </template>
-@/apps/lockbox/stores/sharing-store
