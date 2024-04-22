@@ -1,5 +1,5 @@
 import { createApp } from 'vue';
-import ManagementPage from '@/lockbox/ManagementPage.vue';
+import ManagementPage from './ManagementPage.vue';
 import { createPinia } from 'pinia';
 const pinia = createPinia();
 const app = createApp(ManagementPage);
