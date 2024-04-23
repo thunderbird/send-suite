@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "build": "./build.sh",
+    "build": "./scripts/build.sh",
     "preview": "vite preview",
     "test": "vitest",
     "test-debug": "vitest --inspect-brk --single-thread"

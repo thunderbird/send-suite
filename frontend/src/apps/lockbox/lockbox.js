@@ -1,0 +1,10 @@
+import { createApp } from 'vue';
+import './style.css';
+import Lockbox from './Lockbox.vue';
+import router from './router';
+import { createPinia } from 'pinia';
+const pinia = createPinia();
+const app = createApp(Lockbox);
+app.use(pinia);
+app.use(router);
+app.mount('#app');

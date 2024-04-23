@@ -48,7 +48,7 @@ export class User {
   // which retrieves the user from the backend session.
   async login(loginEmail = this.email) {
     console.log(`logging in as ${loginEmail}`);
-    const resp = await this._api.login(loginEmail);
+    const resp = await this._api.callApi(`users/login`, { email: loginEmail }, 'POST');
     if (!resp) {
       return null;
     }

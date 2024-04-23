@@ -1,4 +1,4 @@
-import { INIT_ERRORS } from '@/lockbox/const';
+import { INIT_ERRORS } from '@/apps/lockbox/const';
 import { User } from '@/lib/user';
 import { Keychain } from '@/lib/keychain';
 

@@ -10,9 +10,6 @@
       "strict_min_version": "110.0a1"
     }
   },
-  "action": {
-    "default_title": "Send-ish"
-  },
   "background": {
     "scripts": ["background.js"]
   },
