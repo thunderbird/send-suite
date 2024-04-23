@@ -25,7 +25,7 @@ export default class Downloader {
 
     // Need the size for download.
     // Need the type for saving the file.
-    const { size, type } = await this.api.callApi(`uploads/${id}/metadata`);
+    const { size, type } = await this.api.call(`uploads/${id}/metadata`);
     if (!size) {
       console.log(`no size`);
       return;

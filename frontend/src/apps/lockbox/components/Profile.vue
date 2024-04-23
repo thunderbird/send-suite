@@ -16,7 +16,7 @@ const folderStore = useFolderStore();
 const sessionInfo = ref(null);
 
 async function pingSession() {
-  sessionInfo.value = (await api.callApi(`users/me`)) ?? `You need to log into your mozilla account`;
+  sessionInfo.value = (await api.call(`users/me`)) ?? `You need to log into your mozilla account`;
 }
 
 function formatSessionInfo(info) {

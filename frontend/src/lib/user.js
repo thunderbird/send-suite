@@ -22,7 +22,7 @@ export class User {
     };
   }
   async createUser(email, jwkPublicKey, isEphemeral = false) {
-    const resp = await this._api.callApi(
+    const resp = await this._api.call(
       `users`,
       {
         email,
@@ -48,7 +48,7 @@ export class User {
   // which retrieves the user from the backend session.
   async login(loginEmail = this.email) {
     console.log(`logging in as ${loginEmail}`);
-    const resp = await this._api.callApi(`users/login`, { email: loginEmail }, 'POST');
+    const resp = await this._api.call(`users/login`, { email: loginEmail }, 'POST');
     if (!resp) {
       return null;
     }

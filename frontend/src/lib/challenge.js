@@ -2,7 +2,7 @@ import { Util } from '@/lib/keychain';
 
 export async function getContainerKeyFromChallenge(hash, password, api, keychain) {
   // call api at /api/ephemeral/:hash
-  const resp = await api.callApi(`sharing/${hash}/challenge`);
+  const resp = await api.call(`sharing/${hash}/challenge`);
 
   if (!resp) {
     console.log('uh oh');
@@ -39,7 +39,7 @@ export async function getContainerKeyFromChallenge(hash, password, api, keychain
     // - containerId
     // - wrapped container key
     // - salt (for unwrapping container key)
-    const challengeResp = await api.callApi(
+    const challengeResp = await api.call(
       `sharing/${hash}/challenge`,
       {
         challengePlaintext,

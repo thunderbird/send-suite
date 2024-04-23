@@ -21,7 +21,7 @@ export default class Sharer {
 
   // Creates Invitation
   async shareContainerWithInvitation(containerId, email) {
-    let user = await this.api.callApi(`users/lookup/${email}/`);
+    let user = await this.api.call(`users/lookup/${email}/`);
 
     if (user) {
       let { publicKey, id: recipientId } = user;
@@ -55,7 +55,7 @@ export default class Sharer {
         return null;
       }
 
-      const resp = await this.api.callApi(
+      const resp = await this.api.call(
         `containers/${containerId}/member/invite`,
         {
           wrappedKey,
@@ -98,7 +98,7 @@ export default class Sharer {
 
     let currentContainer = { name: 'untitled' };
     if (containerId) {
-      currentContainer = await this.api.callApi(`containers/${containerId}/info`);
+      currentContainer = await this.api.call(`containers/${containerId}/info`);
       // TODO: future enhancement
       // If there are no itemsToShare, get the items from the `currentContainer`
       // if (itemsToShare.length > 0) {
@@ -111,7 +111,7 @@ export default class Sharer {
     const parentId = 0;
     const shareOnly = true;
 
-    const response = await this.api.callApi(
+    const response = await this.api.call(
       `containers`,
       {
         name: currentContainer.name,
@@ -151,7 +151,7 @@ export default class Sharer {
         // create the new item with the existing uploadId
         // in the newContainer
 
-        const itemResp = await this.api.callApi(
+        const itemResp = await this.api.call(
           `containers/${newContainerId}/item`,
           {
             uploadId,
@@ -200,7 +200,7 @@ export default class Sharer {
     const saltStr = Util.arrayBufferToBase64(salt);
     const challengeSaltStr = Util.arrayBufferToBase64(challengeSalt);
 
-    const resp = await this.api.callApi(
+    const resp = await this.api.call(
       `sharing`,
       {
         containerId,

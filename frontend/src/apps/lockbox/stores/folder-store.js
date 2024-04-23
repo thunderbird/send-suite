@@ -47,13 +47,13 @@ const useFolderStore = defineStore('folderManager', () => {
   }
 
   async function fetchSubtree(rootFolderId) {
-    const tree = await api.callApi(`containers/${rootFolderId}/`);
+    const tree = await api.call(`containers/${rootFolderId}/`);
     folders.value = tree.children;
     rootFolder.value = tree;
   }
 
   async function fetchUserFolders() {
-    const userFolders = await api.callApi(`users/folders`);
+    const userFolders = await api.call(`users/folders`);
     console.log(`fetchUserFolders got these:`);
     console.log(userFolders);
     folders.value = userFolders;
@@ -86,7 +86,7 @@ const useFolderStore = defineStore('folderManager', () => {
     if (rootFolder.value) {
       parentId = rootFolder.value.id;
     }
-    const { container } = await api.callApi(
+    const { container } = await api.call(
       `containers`,
       {
         name: name, // ?? timestamp(),
@@ -105,7 +105,7 @@ const useFolderStore = defineStore('folderManager', () => {
   }
 
   async function renameFolder(folderId, name) {
-    const result = await api.callApi(`containers/${folderId}/rename`, { name }, 'POST');
+    const result = await api.call(`containers/${folderId}/rename`, { name }, 'POST');
     if (result) {
       // Update name locally, without re-fetching
       const node = findNode(folderId, folders.value);
@@ -115,7 +115,7 @@ const useFolderStore = defineStore('folderManager', () => {
   }
 
   async function renameItem(folderId, itemId, name) {
-    const result = await api.callApi(`containers/${folderId}/item/${itemId}/rename`, { name }, 'POST');
+    const result = await api.call(`containers/${folderId}/item/${itemId}/rename`, { name }, 'POST');
     if (result) {
       const node = findNode(itemId, rootFolder.value.items);
       node.name = result.name;
@@ -135,14 +135,14 @@ const useFolderStore = defineStore('folderManager', () => {
     // TODO: decide whether to:
     // - remove self from group?
     // - or burn the folder?
-    const resp = await api.callApi(`containers/${folderId}`, {}, 'DELETE');
+    const resp = await api.call(`containers/${folderId}`, {}, 'DELETE');
     if (resp) {
       folders.value = [...folders.value.filter((f) => f.id !== folderId)];
     }
   }
 
   async function deleteItem(itemId, folderId) {
-    const result = await api.callApi(
+    const result = await api.call(
       `containers/${folderId}/item/${itemId}`,
       {
         shouldDeleteContent: true,

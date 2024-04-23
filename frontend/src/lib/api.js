@@ -20,7 +20,7 @@ export class ApiConnection {
     this.sessionId = sessionId;
   }
 
-  async callApi(path, body = {}, method = 'GET', headers = {}) {
+  async call(path, body = {}, method = 'GET', headers = {}) {
     if (this.sessionId) {
       headers = {
         ...headers,

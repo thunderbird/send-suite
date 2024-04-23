@@ -12,7 +12,7 @@ const useUserStore = defineStore('user', () => {
   // After login, get user from backend and save it locally.
   // Returns a boolean signaling whether successfully populated the user.
   async function populateFromSession() {
-    const userResp = await api.callApi(`users/me`);
+    const userResp = await api.call(`users/me`);
     if (!userResp?.user) {
       return;
     }
@@ -29,12 +29,12 @@ const useUserStore = defineStore('user', () => {
   async function getPublicKey() {
     // Explicitly passing user id; this route is for retrieving
     // any user's public key, not just the currently logged in user
-    const resp = await api.callApi(`users/publickey/${user.id}`);
+    const resp = await api.call(`users/publickey/${user.id}`);
     return resp.publicKey;
   }
 
   async function updatePublicKey(jwkPublicKey) {
-    const resp = await api.callApi(
+    const resp = await api.call(
       `users/publickey`,
       {
         publicKey: jwkPublicKey,
@@ -45,12 +45,12 @@ const useUserStore = defineStore('user', () => {
   }
 
   async function getMozAccountAuthUrl() {
-    const resp = await api.callApi(`lockbox/fxa/login`);
+    const resp = await api.call(`lockbox/fxa/login`);
     return resp.url;
   }
   // TODO: shift the userId from frontend argument to backend session
   async function createBackup(userId, keys, keypair, keystring, salt) {
-    return await api.callApi(
+    return await api.call(
       `users/${userId}/backup`,
       {
         keys,
@@ -64,7 +64,7 @@ const useUserStore = defineStore('user', () => {
 
   // TODO: shift the userId from frontend argument to backend session
   async function getBackup(userId) {
-    return await api.callApi(`users/${userId}/backup`);
+    return await api.call(`users/${userId}/backup`);
   }
 
   return {

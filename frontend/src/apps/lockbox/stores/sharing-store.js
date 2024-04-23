@@ -54,7 +54,7 @@ const useSharingStore = defineStore('sharingManager', () => {
 
     if (user.id) {
       // Use the AccessLink to make the User a member of the shared folder.
-      const acceptAccessLinkResp = await api.callApi(`sharing/${linkId}/member/accept`, {}, 'POST');
+      const acceptAccessLinkResp = await api.call(`sharing/${linkId}/member/accept`, {}, 'POST');
 
       if (!acceptAccessLinkResp) {
         return false;
@@ -70,11 +70,11 @@ const useSharingStore = defineStore('sharingManager', () => {
   }
 
   async function isAccessLinkValid(linkId) {
-    return await api.callApi(`sharing/exists/${linkId}`);
+    return await api.call(`sharing/exists/${linkId}`);
   }
 
   async function fetchAccessLinks(folderId) {
-    _links.value = await api.callApi(`containers/${folderId}/links`);
+    _links.value = await api.call(`containers/${folderId}/links`);
   }
 
   async function shareItems(itemsArray, password) {
@@ -101,37 +101,37 @@ const useSharingStore = defineStore('sharingManager', () => {
   }
 
   async function getSharedFolder(hash) {
-    return await api.callApi(`sharing/${hash}/`);
+    return await api.call(`sharing/${hash}/`);
   }
 
   async function getInvitations(userId) {
     // TODO: shift the userId from frontend argument to backend session
-    return await api.callApi(`users/${userId}/invitations/`);
+    return await api.call(`users/${userId}/invitations/`);
   }
 
   async function getFoldersSharedWithUser(userId) {
     // TODO: shift the userId from frontend argument to backend session
-    return await api.callApi(`users/${userId}/folders/sharedWithMe`);
+    return await api.call(`users/${userId}/folders/sharedWithMe`);
   }
 
   async function getFoldersSharedByUser(userId) {
     // TODO: shift the userId from frontend argument to backend session
-    return await api.callApi(`users/${userId}/folders/sharedByMe`);
+    return await api.call(`users/${userId}/folders/sharedByMe`);
   }
 
   async function getSharesForFolder(containerId, userId) {
     // TODO: shift the userId from frontend argument to backend session
-    return await api.callApi(`containers/${containerId}/shares`, {
+    return await api.call(`containers/${containerId}/shares`, {
       userId,
     });
   }
 
   async function acceptInvitation(invitationId, containerId) {
-    return await api.callApi(`containers/${containerId}/member/accept/${invitationId}`, {}, 'POST');
+    return await api.call(`containers/${containerId}/member/accept/${invitationId}`, {}, 'POST');
   }
 
   async function updateInvitationPermissions(containerId, userId, invitationId, permission) {
-    return await api.callApi(
+    return await api.call(
       `containers/${containerId}/shares/invitation/update`,
       { userId, invitationId, permission },
       'POST'
@@ -139,7 +139,7 @@ const useSharingStore = defineStore('sharingManager', () => {
   }
 
   async function updateAccessLinkPermissions(containerId, userId, accessLinkId, permission) {
-    return await api.callApi(
+    return await api.call(
       `containers/${containerId}/shares/accessLink/update`,
       { userId, accessLinkId, permission },
       'POST'

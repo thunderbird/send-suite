@@ -196,7 +196,7 @@ async function loginToMozAccount() {
   // waitaminit...do I get a different session or the same if I open a new window?
   // Let's find out!
   // Get the auth url
-  const resp = await api.callApi(`lockbox/fxa/login`);
+  const resp = await api.call(`lockbox/fxa/login`);
   if (resp.url) {
     authUrl.value = resp.url;
     openPopup();
@@ -205,7 +205,7 @@ async function loginToMozAccount() {
   }
 }
 async function pingSession() {
-  sessionInfo.value = (await api.callApi(`users/me`)) ?? `You need to log into your mozilla account`;
+  sessionInfo.value = (await api.call(`users/me`)) ?? `You need to log into your mozilla account`;
 }
 
 function formatSessionInfo(info) {

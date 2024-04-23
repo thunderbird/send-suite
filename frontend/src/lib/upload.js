@@ -46,7 +46,7 @@ export default class Uploader {
     console.log(blob.type);
 
     // Create a Content entry in the database
-    const { upload } = await this.api.callApi(
+    const { upload } = await this.api.call(
       'uploads',
       {
         id: id,
@@ -64,7 +64,7 @@ export default class Uploader {
     }
 
     // For the Content entry, create the corresponding Item in the Container
-    const itemObj = await this.api.callApi(
+    const itemObj = await this.api.call(
       `containers/${containerId}/item`,
       {
         uploadId: upload.id,

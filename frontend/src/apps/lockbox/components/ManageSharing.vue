@@ -67,14 +67,14 @@ async function getSharingInfo() {
 }
 
 async function removeMember(invitationId) {
-  const success = await api.callApi(`containers/${props.folderId}/member/remove/${invitationId}`, {}, 'DELETE');
+  const success = await api.call(`containers/${props.folderId}/member/remove/${invitationId}`, {}, 'DELETE');
   if (success) {
     await getSharingInfo();
   }
 }
 
 async function removeLink(accessLinkId) {
-  const success = await callApi(`sharing/${accessLinkId}`, {}, 'DELETE');
+  const success = await call(`sharing/${accessLinkId}`, {}, 'DELETE');
   if (success) {
     await getSharingInfo();
   }
