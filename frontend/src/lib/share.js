@@ -10,7 +10,7 @@ export default class Sharer {
 
   // Creates AccessLink
   async shareItemsWithPassword(items, password) {
-    const containerId = await this.createShareOnlyContainer(items, null, this.user.id);
+    const containerId = await this.createShareOnlyContainer(items, null);
     return await this.requestAccessLink(containerId, password);
   }
 
@@ -89,7 +89,7 @@ export default class Sharer {
 
     // Arbitrarily picked keychain.value.store to
     // confirm presence of keychain
-    if (!this.api && !this.keychain.store) {
+    if (!this.api?.call || !this.keychain?.store) {
       console.log(`Need access to api and keychain`);
       return;
     }
@@ -111,6 +111,7 @@ export default class Sharer {
     const parentId = 0;
     const shareOnly = true;
 
+    // Create the share-only container
     const response = await this.api.call(
       `containers`,
       {
@@ -127,7 +128,6 @@ export default class Sharer {
     }
     const { id: newContainerId } = response.container;
 
-    console.log(`got a new container id: ${newContainerId}`);
     await this.keychain.newKeyForContainer(newContainerId);
     await this.keychain.store();
 
@@ -151,6 +151,8 @@ export default class Sharer {
         // create the new item with the existing uploadId
         // in the newContainer
 
+        // TODO: add error handling if this call fails
+        // TODO: decide what happens if some, but not all calls fail
         const itemResp = await this.api.call(
           `containers/${newContainerId}/item`,
           {
@@ -161,8 +163,6 @@ export default class Sharer {
           },
           'POST'
         );
-        console.log(`🎉 here it is...`);
-        console.log(itemResp);
         return itemResp;
       })
     );
