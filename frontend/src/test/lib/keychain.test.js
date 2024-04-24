@@ -1,5 +1,5 @@
 import { expect, describe, it } from 'vitest';
-import { Keychain, Util } from './keychain';
+import { Keychain, Util } from '@/lib/keychain';
 
 describe('AES Key Generation', () => {
   const keychain = new Keychain();
