@@ -26,6 +26,8 @@
     "autoprefixer": "^10.4.15",
     "buffer": "^6.0.3",
     "eslint": "^8.7.0",
+    "happy-dom": "^14.7.1",
+    "msw": "^2.2.14",
     "postcss": "^8.4.28",
     "postcss-import": "^15.1.0",
     "prettier": "^2.5.1",
