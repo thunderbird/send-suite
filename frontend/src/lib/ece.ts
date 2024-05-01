@@ -20,7 +20,15 @@ function generateSalt(len) {
 }
 
 class ECETransformer {
-  constructor(mode, ikm, rs, salt) {
+  mode: string;
+  prevChunk: Buffer;
+  seq: number;
+  firstchunk: boolean;
+  rs: number;
+  key: CryptoKey;
+  salt: ArrayBuffer;
+  nonceBase: Buffer;
+  constructor(mode: string, ikm: CryptoKey, rs: number, salt?: ArrayBuffer) {
     this.mode = mode;
     this.prevChunk;
     this.seq = 0;
@@ -93,11 +101,15 @@ class ECETransformer {
     return Buffer.concat([Buffer.from(this.salt), nums]);
   }
 
-  readHeader(buffer) {
+  readHeader(buffer: Buffer) {
     if (buffer.length < 21) {
       throw new Error('chunk too small for reading header');
     }
-    const header = {};
+    const header: {
+      salt?: ArrayBuffer;
+      rs?: number;
+      length?: number;
+    } = {};
     header.salt = buffer.buffer.slice(0, KEY_LENGTH);
     header.rs = buffer.readUIntBE(KEY_LENGTH, 4);
     const idlen = buffer.readUInt8(KEY_LENGTH + 4);
@@ -107,7 +119,11 @@ class ECETransformer {
 
   async encryptRecord(buffer, seq, isLast) {
     const nonce = this.generateNonce(seq);
-    const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: nonce }, this.key, this.pad(buffer, isLast));
+    const encrypted = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv: nonce },
+      this.key,
+      this.pad(buffer, isLast)
+    );
     return Buffer.from(encrypted);
   }
 
@@ -138,7 +154,9 @@ class ECETransformer {
 
   async transformPrevChunk(isLast, controller) {
     if (this.mode === MODE_ENCRYPT) {
-      controller.enqueue(await this.encryptRecord(this.prevChunk, this.seq, isLast));
+      controller.enqueue(
+        await this.encryptRecord(this.prevChunk, this.seq, isLast)
+      );
       this.seq++;
     } else {
       if (this.seq === 0) {
@@ -149,7 +167,9 @@ class ECETransformer {
         // this.key = await this.generateKey();
         this.nonceBase = await this.generateNonceBase();
       } else {
-        controller.enqueue(await this.decryptRecord(this.prevChunk, this.seq - 1, isLast));
+        controller.enqueue(
+          await this.decryptRecord(this.prevChunk, this.seq - 1, isLast)
+        );
       }
       this.seq++;
     }
@@ -172,7 +192,12 @@ class ECETransformer {
 }
 
 class StreamSlicer {
-  constructor(rs, mode) {
+  mode: string;
+  rs: number;
+  chunkSize: number;
+  partialChunk: Uint8Array;
+  offset: number;
+  constructor(rs: number, mode: string) {
     this.mode = mode;
     this.rs = rs;
     this.chunkSize = mode === MODE_ENCRYPT ? rs - 17 : 21;
@@ -233,7 +258,12 @@ key:  Uint8Array containing key of size KEY_LENGTH
 rs:   int containing record size, optional
 salt: ArrayBuffer containing salt of KEY_LENGTH length, optional
 */
-export function encryptStream(input, key, rs = ECE_RECORD_SIZE, salt = generateSalt(KEY_LENGTH)) {
+export function encryptStream(
+  input: ReadableStream,
+  key: CryptoKey,
+  rs = ECE_RECORD_SIZE,
+  salt = generateSalt(KEY_LENGTH)
+) {
   const mode = 'encrypt';
   const inputStream = transformStream(input, new StreamSlicer(rs, mode));
   return transformStream(inputStream, new ECETransformer(mode, key, rs, salt));
@@ -244,7 +274,11 @@ input: a ReadableStream containing data to be transformed
 key:  Uint8Array containing key of size KEY_LENGTH
 rs:   int containing record size, optional
 */
-export function decryptStream(input, key, rs = ECE_RECORD_SIZE) {
+export function decryptStream(
+  input: ReadableStream,
+  key: CryptoKey,
+  rs = ECE_RECORD_SIZE
+) {
   const mode = 'decrypt';
   const inputStream = transformStream(input, new StreamSlicer(rs, mode));
   return transformStream(inputStream, new ECETransformer(mode, key, rs));

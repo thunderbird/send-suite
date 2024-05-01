@@ -18,7 +18,7 @@ function readableToTransformController(
 export function transformStream(
   readable: ReadableStream,
   transformer: Transformer,
-  oncancel: (a?: any) => void
+  oncancel?: (a?: any) => void
 ) {
   try {
     return readable.pipeThrough(new TransformStream(transformer));
