@@ -1,26 +1,30 @@
-import { timestamp } from './utils';
-import { CONTAINER_TYPE, ITEM_TYPE } from './const';
-
 export class ApiConnection {
-  constructor(serverUrl) {
-    // using new URL() trims off excess whitespace and trailing '/'
-    console.log(`ApiConnection got passed the following serverUrl: ${serverUrl}`);
+  serverUrl: string;
+  sessionId: string;
+
+  constructor(serverUrl: string) {
     if (!serverUrl) {
       throw Error('No Server URL provided.');
     }
+    // using new URL() trims off excess whitespace and trailing '/'
     const u = new URL(serverUrl);
     this.serverUrl = u.origin;
   }
 
-  toString() {
+  toString(): string {
     return this.serverUrl;
   }
 
-  setSessionId(sessionId) {
+  setSessionId(sessionId: string): void {
     this.sessionId = sessionId;
   }
 
-  async call(path, body = {}, method = 'GET', headers = {}) {
+  public async call<T = { [key: string]: any }>(
+    path: string,
+    body = {},
+    method = 'GET',
+    headers = {}
+  ): Promise<T | null> {
     if (this.sessionId) {
       headers = {
         ...headers,
@@ -29,7 +33,7 @@ export class ApiConnection {
     }
 
     const url = `${this.serverUrl}/api/${path}`;
-    const opts = {
+    const opts: Record<string, any> = {
       mode: 'cors',
       credentials: 'include', // include cookies
       method,
@@ -42,7 +46,7 @@ export class ApiConnection {
       });
     }
 
-    let resp;
+    let resp: Response;
     try {
       resp = await fetch(url, opts);
     } catch (e) {
