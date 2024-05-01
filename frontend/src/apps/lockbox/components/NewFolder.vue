@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 
 import Btn from '@/apps/lockbox/elements/Btn.vue';

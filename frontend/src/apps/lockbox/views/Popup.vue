@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, watch } from 'vue';
 import useUserStore from '@/stores/user-store';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';

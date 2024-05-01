@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';

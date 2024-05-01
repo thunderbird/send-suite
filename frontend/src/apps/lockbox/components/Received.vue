@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, toRaw } from 'vue';
 
 // TODO: after proof-of-concept, move these to the sharing-store

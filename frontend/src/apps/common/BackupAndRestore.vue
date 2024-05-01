@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
 
