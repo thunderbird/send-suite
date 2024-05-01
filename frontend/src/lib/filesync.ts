@@ -7,35 +7,40 @@ import {
 } from './utils';
 import { blobStream } from './streams';
 import { encryptStream, decryptStream } from './ece';
+import { Canceler, JsonResponse } from '@/types';
 
-async function _upload(blob, key, canceller = {}) {
-  const endpoint = 'wss://localhost:8088/api/ws';
+async function _upload(
+  stream: ReadableStream,
+  key: CryptoKey,
+  canceler: Canceler = {}
+): Promise<JsonResponse> {
+  let host = import.meta.env.VITE_SEND_SERVER_URL;
+  if (host) {
+    host = host.split('//')[1];
+  } else {
+    throw new Error('no server url is set');
+  }
+  const endpoint = `wss://${host}/api/ws`;
   const ws = await asyncInitWebSocket(endpoint);
 
   try {
     // Send a preamble
     const fileMeta = {
-      name: 'does this even matter?',
+      name: 'filename',
     };
 
-    const uploadInfoResponse = listenForResponse(ws, canceller);
+    // Set up handler for the response to the preamble.
+    // However, we do not need to do anything with that response.
+    // Therefore, we omit the `await`
+    listenForResponse(ws, canceler);
     ws.send(JSON.stringify(fileMeta));
-    const uploadInfo = await uploadInfoResponse;
-    console.log(
-      `👍👍👍 we did the uploadInfo, which was ${
-        JSON.stringify(fileMeta).length
-      } chars long`
-    );
-    console.log(uploadInfo);
-    console.log(`file id ${uploadInfo.id}`);
 
     let size = 0;
-    const completedResponse = listenForResponse(ws, canceller);
+    // Intentionally omitting `await` so that the encrypt & upload
+    // finishes before we read the response from the server.
+    const completedResponse = listenForResponse(ws, canceler);
 
-    let stream = blob;
     if (key) {
-      // TODO: encrypt the stream
-      // we want to make this optional for simple downloads
       stream = encryptStream(stream, key);
     }
 
@@ -43,7 +48,7 @@ async function _upload(blob, key, canceller = {}) {
     let state = await reader.read();
 
     while (!state.done) {
-      if (canceller.cancelled) {
+      if (canceler.cancelled) {
         ws.close();
       }
       if (ws.readyState !== WebSocket.OPEN) {
@@ -51,13 +56,13 @@ async function _upload(blob, key, canceller = {}) {
       }
       const buf = state.value;
       ws.send(buf);
-      // onprogress(size);
+
       size += buf.length;
       state = await reader.read();
       while (
         ws.bufferedAmount > ECE_RECORD_SIZE * 2 &&
         ws.readyState === WebSocket.OPEN &&
-        !canceller.cancelled
+        !canceler.cancelled
       ) {
         await delay();
       }
@@ -66,61 +71,55 @@ async function _upload(blob, key, canceller = {}) {
       ws.send(new Uint8Array([0])); //EOF
     }
 
-    await completedResponse;
     console.log(`👍👍👍`);
-    console.log(completedResponse);
+    console.log(await completedResponse);
     console.log(`wrote ${size} bytes`);
-    return completedResponse;
+    return await completedResponse;
   } catch (e) {
     throw e;
   } finally {
-    if (![WebSocket.CLOSED, WebSocket.CLOSING].includes(ws.readyState)) {
+    if (
+      ws.readyState !== WebSocket.CLOSED &&
+      ws.readyState !== WebSocket.CLOSING
+    ) {
       ws.close();
     }
   }
 }
 
-async function _doDownload(id, canceller = {}) {
-  const endpoint = 'https://localhost:8088/api/download';
+async function _download(id: string, canceler: Canceler = {}): Promise<Blob> {
+  const endpoint = `${import.meta.env.VITE_SEND_SERVER_URL}/api/download`;
   const xhr = new XMLHttpRequest();
-  canceller.oncancel = function () {
+  canceler.oncancel = function () {
     xhr.abort();
   };
   return new Promise((resolve, reject) => {
     xhr.addEventListener('loadend', function () {
-      canceller.oncancel = function () {};
+      canceler.oncancel = function () {};
 
       if (xhr.status !== 200) {
-        return reject(new Error(xhr.status));
+        return reject(new Error(`${xhr.status}`));
       }
-      // console.log(`got xhr.response`);
-      // console.log(xhr.response);
       const blob = new Blob([xhr.response]);
       resolve(blob);
-    });
-
-    xhr.addEventListener('progress', function (event) {
-      if (event.target.status === 200) {
-        // onprogress(event.loaded);
-      }
     });
 
     xhr.open('get', `${endpoint}/${id}`);
     xhr.responseType = 'blob';
     xhr.send();
-    // onprogress(0);
   });
 }
 
-// TODO: see download() fn from appointment (src/utils.js)
-async function _saveFile(file) {
-  return new Promise(function (resolve, reject) {
+async function _saveFile(file: Record<string, any>): Promise<void> {
+  return new Promise(function (resolve) {
     const dataView = new DataView(file.plaintext);
     const blob = new Blob([dataView], { type: file.type });
 
-    if (navigator.msSaveBlob) {
-      navigator.msSaveBlob(blob, file.name);
-      return resolve();
+    //@ts-ignore
+    if (window.navigator.msSaveOrOpenBlob) {
+      //@ts-ignore
+      window.navigator.msSaveOrOpenBlob(blob, file.name);
+      resolve();
     } else {
       const downloadUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -128,31 +127,33 @@ async function _saveFile(file) {
       a.download = file.name;
       document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(downloadUrl);
-      setTimeout(resolve, 100);
+      setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(downloadUrl);
+        resolve();
+      }, 0);
     }
   });
 }
 
-export async function download(
-  id,
-  size,
-  key,
+export async function getBlob(
+  id: string,
+  size: number,
+  key: CryptoKey,
   isMessage = true,
   filename = 'dummy.file',
   type = 'text/plain'
-) {
-  const downloadedBlob = await _doDownload(id);
+): Promise<string | void> {
+  const downloadedBlob = await _download(id);
 
-  let plaintext;
+  let plaintext: ArrayBufferLike | string;
   if (key) {
     let plainStream = decryptStream(blobStream(downloadedBlob), key);
-
     plaintext = await streamToArrayBuffer(plainStream, size);
   } else {
-    console.log(`no decryption, just convert blob to array buffer`);
     plaintext = await downloadedBlob.arrayBuffer();
   }
+
   if (isMessage) {
     const decoder = new TextDecoder();
     const plaintextString = decoder.decode(plaintext);
@@ -166,12 +167,13 @@ export async function download(
   }
 }
 
-export async function sendBlob(blob, aesKey) {
-  console.log(`want to send blob of size ${blob.size}`);
-  console.log(blob);
-
+export async function sendBlob(blob: Blob, aesKey: CryptoKey): Promise<string> {
   const stream = blobStream(blob);
   const result = await _upload(stream, aesKey);
-  console.log(result);
-  return result.id;
+  // Using a type guard since a JsonResponse can be a single object or an array
+  if (Array.isArray(result)) {
+    return result[0].id;
+  } else {
+    return result.id;
+  }
 }
