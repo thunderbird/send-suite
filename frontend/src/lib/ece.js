@@ -1,6 +1,9 @@
 import { Buffer } from 'buffer';
 import { transformStream } from './streams';
 
+// Polyfill necessary after tsconfig.json chnages
+import getRandomValues from 'get-random-values';
+
 const NONCE_LENGTH = 12;
 const TAG_LENGTH = 16;
 const KEY_LENGTH = 16;
@@ -12,7 +15,7 @@ const encoder = new TextEncoder();
 
 function generateSalt(len) {
   const randSalt = new Uint8Array(len);
-  crypto.getRandomValues(randSalt);
+  getRandomValues(randSalt);
   return randSalt.buffer;
 }
 
