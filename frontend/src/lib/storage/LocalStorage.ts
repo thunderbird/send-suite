@@ -1,4 +1,6 @@
-export default class LocalStorageAdapter {
+import { StorageAdapter } from '@/types';
+
+export default class LocalStorageAdapter implements StorageAdapter {
   constructor() {}
 
   keys() {
@@ -9,25 +11,24 @@ export default class LocalStorageAdapter {
     return keys;
   }
 
-  get(key) {
+  get(key: string): any {
     const val = localStorage.getItem(key);
     if (!val) {
       return null;
     }
     return JSON.parse(val);
-    // return val;
   }
 
-  set(key, val) {
+  set(key: string, val: any) {
     const value = JSON.stringify(val);
     localStorage.setItem(key, value);
   }
 
-  remove(id) {
+  remove(id: string): void {
     localStorage.removeItem(id);
   }
 
-  clear() {
+  clear(): void {
     console.log(`clearing localStorage`);
     localStorage.clear();
   }
