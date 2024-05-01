@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, inject } from 'vue';
 import TagLabel from '@/apps/lockbox/elements/TagLabel.vue';
 import { TagColors } from '@/apps/lockbox/const';
@@ -9,7 +9,9 @@ const props = defineProps({
   id: Number,
 });
 
-const { addTagForContainer, addTagForItem } = inject('tagManager');
+// TODO: re-implement these as part of a tag-store
+// once it is time to revisit tags.
+// const { addTagForContainer, addTagForItem } = inject('tagManager');
 
 const name = ref('');
 const color = ref('');
@@ -18,9 +20,9 @@ const color = ref('');
 async function addTag() {
   console.log(`you want to add the tag ${name.value} with color ${color.value}`);
   if (props.type === 'container') {
-    addTagForContainer(props.id, name.value, color.value);
+    // addTagForContainer(props.id, name.value, color.value);
   } else if (props.type === 'item') {
-    addTagForItem(props.id, name.value, color.value);
+    // addTagForItem(props.id, name.value, color.value);
   }
 }
 </script>

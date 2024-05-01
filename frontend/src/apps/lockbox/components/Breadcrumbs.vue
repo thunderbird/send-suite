@@ -1,5 +1,5 @@
-<script setup>
-import { ref, inject, watchEffect } from 'vue';
+<script setup lang="ts">
+import { ref, watchEffect } from 'vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 const folderStore = useFolderStore();
 
