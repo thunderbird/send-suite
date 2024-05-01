@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, toRaw } from 'vue';
 import init from '@/lib/init';
 import { Storage } from '@/lib/storage';
@@ -7,9 +7,11 @@ import useKeychainStore from '@/stores/keychain-store';
 import useConfigurationStore from '@/stores/configuration-store';
 import useApiStore from '@/stores/api-store';
 
-import useFolderStore from '@/apps/lockbox/stores/folder-store';
+import useFolderStore, { FolderStore } from '@/apps/lockbox/stores/folder-store';
 import BackupAndRestore from '@/apps/common/BackupAndRestore.vue';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
+import { User } from '@/lib/user';
+import { Keychain } from '@/lib/keychain';
 
 const DEBUG = true;
 const SERVER = `server`;
@@ -55,7 +57,7 @@ function setAccountConfigured(accountId) {
 onMounted(async () => {
   try {
     // app-sepcific initialization
-    await init(user, keychain, folderStore);
+    await init(userStore.user as User, keychain as Keychain, folderStore as unknown as FolderStore);
     email.value = user.email;
     userId.value = user.id;
 
@@ -189,7 +191,7 @@ async function dbUserSetup() {
   }
 
   // Existing init() handles
-  await init(userStore.user, keychain, folderStore);
+  await init(userStore.user as User, keychain as Keychain, folderStore as unknown as FolderStore);
 }
 
 async function loginToMozAccount() {
