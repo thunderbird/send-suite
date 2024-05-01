@@ -107,11 +107,7 @@ class ECETransformer {
 
   async encryptRecord(buffer, seq, isLast) {
     const nonce = this.generateNonce(seq);
-    const encrypted = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv: nonce },
-      this.key,
-      this.pad(buffer, isLast)
-    );
+    const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: nonce }, this.key, this.pad(buffer, isLast));
     return Buffer.from(encrypted);
   }
 
@@ -142,9 +138,7 @@ class ECETransformer {
 
   async transformPrevChunk(isLast, controller) {
     if (this.mode === MODE_ENCRYPT) {
-      controller.enqueue(
-        await this.encryptRecord(this.prevChunk, this.seq, isLast)
-      );
+      controller.enqueue(await this.encryptRecord(this.prevChunk, this.seq, isLast));
       this.seq++;
     } else {
       if (this.seq === 0) {
@@ -155,9 +149,7 @@ class ECETransformer {
         // this.key = await this.generateKey();
         this.nonceBase = await this.generateNonceBase();
       } else {
-        controller.enqueue(
-          await this.decryptRecord(this.prevChunk, this.seq - 1, isLast)
-        );
+        controller.enqueue(await this.decryptRecord(this.prevChunk, this.seq - 1, isLast));
       }
       this.seq++;
     }
@@ -241,12 +233,7 @@ key:  Uint8Array containing key of size KEY_LENGTH
 rs:   int containing record size, optional
 salt: ArrayBuffer containing salt of KEY_LENGTH length, optional
 */
-export function encryptStream(
-  input,
-  key,
-  rs = ECE_RECORD_SIZE,
-  salt = generateSalt(KEY_LENGTH)
-) {
+export function encryptStream(input, key, rs = ECE_RECORD_SIZE, salt = generateSalt(KEY_LENGTH)) {
   const mode = 'encrypt';
   const inputStream = transformStream(input, new StreamSlicer(rs, mode));
   return transformStream(inputStream, new ECETransformer(mode, key, rs, salt));
