@@ -5,15 +5,26 @@ import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
 import Uploader from '@/lib/upload';
 import Downloader from '@/lib/download';
-import { timestamp } from '@/lib/utils';
+import { User } from '@/lib/user';
+import { Keychain } from '@/lib/keychain';
 import { CONTAINER_TYPE } from '@/lib/const';
+import { Folder, Item } from '@/types';
+
+// Providing just enough typing for a folder-store to be passed
+// to init() (in init.ts).
+export type FolderStore = import('pinia').StoreDefinition & {
+  defaultFolder: Folder | null;
+  createFolder: () => Promise<Folder>;
+  sync: () => Promise<void>;
+};
 
 const useFolderStore = defineStore('folderManager', () => {
   const { api } = useApiStore();
   const { user } = useUserStore();
   const { keychain } = useKeychainStore();
-  const uploader = new Uploader(user, keychain, api);
-  const downloader = new Downloader(keychain, api);
+
+  const uploader = new Uploader(user as User, keychain as Keychain, api);
+  const downloader = new Downloader(keychain as Keychain, api);
 
   const folders = ref([]);
   const rootFolder = ref(null);
@@ -33,11 +44,15 @@ const useFolderStore = defineStore('folderManager', () => {
     return calculateFolderSizes(folders.value);
   });
 
-  const selectedFolder = computed(() => findNode(selectedFolderId.value, folders.value));
+  const selectedFolder = computed<Folder>(
+    () => findNode(selectedFolderId.value, folders.value) as Folder
+  );
 
-  const selectedFile = computed(() => findNode(selectedFileId.value, rootFolder.value?.items));
+  const selectedFile = computed<Item>(
+    () => findNode(selectedFileId.value, rootFolder.value?.items) as Item
+  );
 
-  async function init() {
+  function init(): void {
     console.log(`initializing the folderStore`);
     folders.value = [];
     rootFolder.value = null;
@@ -46,21 +61,19 @@ const useFolderStore = defineStore('folderManager', () => {
     selectedFileId.value = 0;
   }
 
-  async function fetchSubtree(rootFolderId) {
-    const tree = await api.call(`containers/${rootFolderId}/`);
+  async function fetchSubtree(rootFolderId: number): Promise<void> {
+    const tree = await api.call<Folder>(`containers/${rootFolderId}/`);
     folders.value = tree.children;
     rootFolder.value = tree;
   }
 
-  async function fetchUserFolders() {
-    const userFolders = await api.call(`users/folders`);
-    console.log(`fetchUserFolders got these:`);
-    console.log(userFolders);
+  async function fetchUserFolders(): Promise<void> {
+    const userFolders = await api.call<Folder[]>(`users/folders`);
     folders.value = userFolders;
     rootFolder.value = null;
   }
 
-  async function goToRootFolder(folderId) {
+  async function goToRootFolder(folderId: number): Promise<void> {
     if (folderId) {
       await fetchSubtree(folderId);
     } else {
@@ -70,23 +83,27 @@ const useFolderStore = defineStore('folderManager', () => {
     }
   }
 
-  function setSelectedFolder(folderId) {
+  function setSelectedFolder(folderId: number): void {
     // Updates the computed value
     selectedFolderId.value = folderId;
     selectedFileId.value = null;
   }
 
-  async function setSelectedFile(itemId) {
+  async function setSelectedFile(itemId: number): Promise<void> {
     // Updates the computed value
     selectedFolderId.value = null;
     selectedFileId.value = itemId;
   }
 
-  async function createFolder(name = 'Untitled', parentId = 0, shareOnly = false) {
+  async function createFolder(
+    name = 'Untitled',
+    parentId = 0,
+    shareOnly = false
+  ): Promise<Folder | null> {
     if (rootFolder.value) {
       parentId = rootFolder.value.id;
     }
-    const { container } = await api.call(
+    const { container } = await api.call<{ container: Folder }>(
       `containers`,
       {
         name: name, // ?? timestamp(),
@@ -102,10 +119,15 @@ const useFolderStore = defineStore('folderManager', () => {
       await keychain.store();
       return container;
     }
+    return null;
   }
 
-  async function renameFolder(folderId, name) {
-    const result = await api.call(`containers/${folderId}/rename`, { name }, 'POST');
+  async function renameFolder(folderId: number, name: string): Promise<Folder> {
+    const result = await api.call<Folder>(
+      `containers/${folderId}/rename`,
+      { name },
+      'POST'
+    );
     if (result) {
       // Update name locally, without re-fetching
       const node = findNode(folderId, folders.value);
@@ -114,8 +136,16 @@ const useFolderStore = defineStore('folderManager', () => {
     return result;
   }
 
-  async function renameItem(folderId, itemId, name) {
-    const result = await api.call(`containers/${folderId}/item/${itemId}/rename`, { name }, 'POST');
+  async function renameItem(
+    folderId: number,
+    itemId: number,
+    name: string
+  ): Promise<Item> {
+    const result = await api.call<Item>(
+      `containers/${folderId}/item/${itemId}/rename`,
+      { name },
+      'POST'
+    );
     if (result) {
       const node = findNode(itemId, rootFolder.value.items);
       node.name = result.name;
@@ -123,7 +153,7 @@ const useFolderStore = defineStore('folderManager', () => {
     return result;
   }
 
-  async function uploadItem(fileBlob, folderId) {
+  async function uploadItem(fileBlob: Blob, folderId: number): Promise<Item> {
     const newItem = await uploader.doUpload(fileBlob, folderId);
     if (newItem && rootFolder.value) {
       rootFolder.value.items = [...rootFolder.value.items, newItem];
@@ -131,17 +161,21 @@ const useFolderStore = defineStore('folderManager', () => {
     return newItem;
   }
 
-  async function deleteFolder(folderId) {
-    // TODO: decide whether to:
-    // - remove self from group?
-    // - or burn the folder?
-    const resp = await api.call(`containers/${folderId}`, {}, 'DELETE');
-    if (resp) {
+  async function deleteFolder(folderId: number): Promise<void> {
+    // currently burning the folder, which deletes child folders, items, memberships,
+    // and "ephemeral" users
+    const resp = await api.call<{ result: { message: string }[] }>(
+      `containers/${folderId}`,
+      {},
+      'DELETE'
+    );
+
+    if (resp?.result.length > 0) {
       folders.value = [...folders.value.filter((f) => f.id !== folderId)];
     }
   }
 
-  async function deleteItem(itemId, folderId) {
+  async function deleteItem(itemId: number, folderId: number): Promise<void> {
     const result = await api.call(
       `containers/${folderId}/item/${itemId}`,
       {
@@ -150,20 +184,32 @@ const useFolderStore = defineStore('folderManager', () => {
       'DELETE'
     );
     if (result) {
-      if (selectedFileId === itemId) {
+      if (selectedFileId.value === itemId) {
         setSelectedFile(null);
       }
       if (rootFolder.value?.items) {
-        rootFolder.value.items = [...rootFolder.value.items.filter((i) => i.id !== itemId)];
+        rootFolder.value.items = [
+          ...rootFolder.value.items.filter((i: Item) => i.id !== itemId),
+        ];
       }
     }
   }
 
-  async function downloadContent(uploadId, containerId, wrappedKey, name) {
-    const success = await downloader.doDownload(uploadId, containerId, wrappedKey, name);
+  async function downloadContent(
+    uploadId: string,
+    containerId: number,
+    wrappedKeyStr: string,
+    name: string
+  ): Promise<void> {
+    const success = await downloader.doDownload(
+      uploadId,
+      containerId,
+      wrappedKeyStr,
+      name
+    );
   }
 
-  function print() {
+  function print(): void {
     console.log(`rootFolder: ${rootFolder.value}`);
     console.log(`defaultFolder: ${defaultFolder.value}`);
     console.log(`visibleFolders: ${visibleFolders.value}`);
@@ -202,13 +248,16 @@ const useFolderStore = defineStore('folderManager', () => {
 
 export default useFolderStore;
 
-function calculateFolderSizes(folders) {
+function calculateFolderSizes(folders: Folder[]): Folder[] {
   // NOT recursive. (yet)
   // To do this properly, we'd want to ask the server.
   // Otherwise, we'd have to fetch all descendents in order
   // to do the full calculation.
   const foldersWithSizes = folders.map((folder) => {
-    let size = folder.items?.reduce((total, { upload }) => total + upload?.size || 0, 0);
+    let size = folder.items?.reduce(
+      (total, { upload }) => total + upload?.size || 0,
+      0
+    );
     if (isNaN(size)) {
       size = 0;
     }
@@ -218,7 +267,10 @@ function calculateFolderSizes(folders) {
   return foldersWithSizes;
 }
 
-function findNode(id, collection) {
+function findNode(
+  id: number,
+  collection: Folder[] | Item[]
+): Folder | Item | null {
   if (!collection) {
     return null;
   }
