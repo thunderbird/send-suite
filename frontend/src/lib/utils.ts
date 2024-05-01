@@ -1,16 +1,13 @@
-export function delay(delay = 100) {
+import { JsonResponse } from '@/types';
+
+export function delay(delay = 100): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, delay));
 }
 
-export function arrayToB64(array) {
-  return b64
-    .fromByteArray(array)
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '');
-}
-
-export async function streamToArrayBuffer(stream, size) {
+export async function streamToArrayBuffer(
+  stream: ReadableStream,
+  size?: number
+): Promise<ArrayBufferLike> {
   const reader = stream.getReader();
   let state = await reader.read();
 
@@ -41,23 +38,26 @@ export async function streamToArrayBuffer(stream, size) {
   return result.buffer;
 }
 
-export function timestamp() {
+export function timestamp(): number {
   return new Date().getTime();
 }
 
 class ConnectionError extends Error {
-  constructor(cancelled, duration, size) {
-    super(cancelled ? '0' : 'connection closed');
-    this.cancelled = cancelled;
+  canceled: boolean;
+  duration: number;
+  size: number;
+  constructor(canceled: boolean, duration?: number, size?: number) {
+    super(canceled ? '0' : 'connection closed');
+    this.canceled = canceled;
     this.duration = duration;
     this.size = size;
   }
 }
 
-export function asyncInitWebSocket(server) {
+export function asyncInitWebSocket(serverUrl: string): Promise<WebSocket> {
   return new Promise((resolve, reject) => {
     try {
-      const ws = new WebSocket(server);
+      const ws = new WebSocket(serverUrl);
       ws.addEventListener('open', () => resolve(ws), { once: true });
     } catch (e) {
       reject(new ConnectionError(false));
@@ -65,9 +65,10 @@ export function asyncInitWebSocket(server) {
   });
 }
 
-// This one should retry
-export async function connectToWebSocketServer(server) {
-  const ws = new WebSocket(server);
+export async function connectToWebSocketServer(
+  serverUrl: string
+): Promise<WebSocket> {
+  const ws = new WebSocket(serverUrl);
   return new Promise((resolve, reject) => {
     const timer = setInterval(() => {
       if (ws.readyState === 1) {
@@ -78,14 +79,17 @@ export async function connectToWebSocketServer(server) {
   });
 }
 
-export function listenForResponse(ws, canceller) {
+export async function listenForResponse(
+  ws: WebSocket,
+  canceler: Record<string, any>
+): Promise<JsonResponse> {
   return new Promise((resolve, reject) => {
-    function handleClose(event) {
+    function handleClose(event: CloseEvent) {
       // a 'close' event before a 'message' event means the request failed
       ws.removeEventListener('message', handleMessage);
-      reject(new ConnectionError(canceller.cancelled));
+      reject(new ConnectionError(canceler.canceled));
     }
-    function handleMessage(msg) {
+    function handleMessage(msg: MessageEvent) {
       ws.removeEventListener('close', handleClose);
       try {
         const response = JSON.parse(msg.data);
@@ -104,11 +108,11 @@ export function listenForResponse(ws, canceller) {
 }
 
 // https://gist.github.com/zentala/1e6f72438796d74531803cc3833c039c
-export function formatBytes(bytes, decimals) {
-  if(bytes == 0) return '0 Bytes';
+export function formatBytes(bytes: number, decimals: number = 2): string {
+  if (bytes == 0) return '0 Bytes';
   var k = 1024,
-      dm = decimals || 2,
-      sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
-      i = Math.floor(Math.log(bytes) / Math.log(k));
+    dm = decimals,
+    sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+    i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
