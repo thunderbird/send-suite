@@ -10,7 +10,6 @@ const folderStore = useFolderStore();
 
 const selectedFileName = ref(folderStore.selectedFile.name);
 const input = ref(null);
-const form = ref(null);
 
 async function updateFileName() {
   const result = await folderStore.renameItem(
@@ -42,7 +41,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <form @submit.prevent="updateFileName" ref="form">
+  <form @submit.prevent="updateFileName">
     <input type="text" v-model="selectedFileName" ref="input" @keydown.esc="resetForm" />
     <div class="flex flex-row justify-end">
       <Btn @click.prevent="updateFileName">Rename</Btn>
