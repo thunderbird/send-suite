@@ -4,7 +4,7 @@ import { Storage } from '@/lib/storage';
 
 // TODO: decide if it's worth it to move the internals of the Keychain class to the store.
 /*
-cons: not sure how I'd run the automated tests outside of the browser
+cons: additional code (store setup) for tests
 pros: (more) reactivity?
 
 */
