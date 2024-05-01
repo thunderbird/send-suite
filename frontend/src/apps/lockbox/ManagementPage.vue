@@ -24,7 +24,6 @@ const { api } = useApiStore();
 const folderStore = useFolderStore();
 const configurationStore = useConfigurationStore();
 
-const resp = ref(null);
 const authUrl = ref('');
 const sessionInfo = ref(null);
 
@@ -45,6 +44,7 @@ const accountId = new URL(location.href).searchParams.get('accountId');
 
 function setAccountConfigured(accountId) {
   try {
+    //@ts-ignore
     browser.cloudFile.updateAccount(accountId, {
       configured: true,
     });
@@ -100,10 +100,10 @@ async function configureExtension() {
     });
 }
 
-async function clean() {
+function clean() {
   storage.clear();
   resetKeychain();
-  await folderStore.init();
+  folderStore.init();
   folderStore.print();
 }
 
@@ -138,14 +138,14 @@ async function login() {
       return;
     }
 
-    user.id = createUserResp.user.id;
-    user.email = createUserResp.user.email;
+    user.id = createUserResp.id;
+    user.email = createUserResp.email;
   }
   // save user to storage
   console.log(`storing new user with id ${user.id}`);
   await user.store();
   // then do the normal init (which should also log us in, possibly for a second time)
-  await init(user, keychain, folderStore);
+  await init(user as User, keychain as Keychain, folderStore as unknown as FolderStore);
 
   // put our results in the form
   email.value = user.email;
