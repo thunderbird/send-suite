@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
 
@@ -10,6 +10,7 @@ const folderStore = useFolderStore();
 
 const selectedFileName = ref(folderStore.selectedFile.name);
 const input = ref(null);
+const form = ref(null);
 
 async function updateFileName() {
   const result = await folderStore.renameItem(
@@ -41,10 +42,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <form @submit.prevent="updateFileName">
+  <form @submit.prevent="updateFileName" ref="form">
     <input type="text" v-model="selectedFileName" ref="input" @keydown.esc="resetForm" />
     <div class="flex flex-row justify-end">
-      <Btn @click="updateFileName">Rename</Btn>
+      <Btn @click.prevent="updateFileName">Rename</Btn>
     </div>
   </form>
 </template>
