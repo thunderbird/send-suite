@@ -4,7 +4,7 @@ import { User as IUser, UserTier } from '@/types';
 
 export class User implements IUser {
   api: ApiConnection;
-  private storage: Storage;
+  storage: Storage;
   id: number;
   tier: string;
   email: string;

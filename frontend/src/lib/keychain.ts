@@ -348,7 +348,7 @@ export class Keychain {
   challenge: Challenge;
   backup: Backup;
   _keys: KeyStore;
-  private _storage: Storage;
+  _storage: Storage;
   constructor(storage: Storage) {
     this._init(storage);
   }
