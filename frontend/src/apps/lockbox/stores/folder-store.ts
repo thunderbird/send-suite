@@ -12,19 +12,21 @@ import { Folder, Item } from '@/types';
 
 // Providing just enough typing for a folder-store to be passed
 // to init() (in init.ts).
-export type FolderStore = import('pinia').StoreDefinition & {
+export interface FolderStore {
   defaultFolder: Folder | null;
   createFolder: () => Promise<Folder>;
   sync: () => Promise<void>;
-};
+  init: () => void;
+  print: () => void;
+}
 
-const useFolderStore = defineStore('folderManager', () => {
+const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
   const { api } = useApiStore();
   const { user } = useUserStore();
   const { keychain } = useKeychainStore();
 
-  const uploader = new Uploader(user as User, keychain as Keychain, api);
-  const downloader = new Downloader(keychain as Keychain, api);
+  const uploader = new Uploader(user, keychain, api);
+  const downloader = new Downloader(keychain, api);
 
   const folders = ref([]);
   const rootFolder = ref(null);
