@@ -2,6 +2,12 @@ import type { InjectionKey } from 'vue';
 import dayjs from 'dayjs';
 export const DayJsKey = Symbol() as InjectionKey<typeof dayjs>;
 
+export enum UserTier {
+  FREE = 1,
+  EPHEMERAL,
+  PRO,
+}
+
 export type JwkKeyPair = Record<'publicKey' | 'privateKey', string>;
 
 export type Canceler = Record<string, () => void>;
@@ -28,6 +34,14 @@ export type NamedBlob = Blob & { name: string };
 
 export interface Api {
   call<T = { [key: string]: any }>(path: string): AsyncJsonResponse<T>;
+  // This default type parameter means that we're expecting the API to return
+  // an object with any number of key/value pairs.
+  // But, we can pass in a more specific type parameter that better describes the
+  // shape of the data we expect to get back from the API.
+  // For example:
+  // const isAlive = await api.call<{ success: boolean }>(`/api/schrödinger/cat/status`);
+  // Or, to specify a defined type/interface:
+  // const folders = await api.call<Folder[]>(`/api/folders/`);
 }
 
 // interfaces used for API responses

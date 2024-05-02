@@ -115,24 +115,17 @@ async function _saveFile(file: Record<string, any>): Promise<void> {
     const dataView = new DataView(file.plaintext);
     const blob = new Blob([dataView], { type: file.type });
 
-    //@ts-ignore
-    if (window.navigator.msSaveOrOpenBlob) {
-      //@ts-ignore
-      window.navigator.msSaveOrOpenBlob(blob, file.name);
+    const downloadUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(downloadUrl);
       resolve();
-    } else {
-      const downloadUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = downloadUrl;
-      a.download = file.name;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(downloadUrl);
-        resolve();
-      }, 0);
-    }
+    }, 0);
   });
 }
 

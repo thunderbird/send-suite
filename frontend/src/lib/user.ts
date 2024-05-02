@@ -1,6 +1,6 @@
 import { Storage } from './storage';
 import { ApiConnection } from './api';
-import { AsyncJsonResponse, User as IUser } from '@/types';
+import { User as IUser, UserTier } from '@/types';
 
 export class User implements IUser {
   api: ApiConnection;
@@ -27,7 +27,7 @@ export class User implements IUser {
       {
         email,
         publicKey: jwkPublicKey,
-        tier: isEphemeral ? 'EPHEMERAL' : 'PRO',
+        tier: isEphemeral ? UserTier.EPHEMERAL : UserTier.PRO,
       },
       'POST'
     );

@@ -31,7 +31,10 @@ export default class Downloader {
     }
 
     // Get necessary metadata
-    const { size, type } = await this.api.call(`uploads/${id}/metadata`);
+    const { size, type } = await this.api.call<{
+      size: number;
+      type: string;
+    }>(`uploads/${id}/metadata`);
     if (!size) {
       return false;
     }

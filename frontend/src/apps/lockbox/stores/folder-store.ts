@@ -258,9 +258,7 @@ function calculateFolderSizes(folders: Folder[]): Folder[] {
       (total, { upload }) => total + upload?.size || 0,
       0
     );
-    if (isNaN(size)) {
-      size = 0;
-    }
+
     folder.size = size;
     return folder;
   });
