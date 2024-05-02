@@ -8,7 +8,15 @@ cons: additional code (store setup) for tests
 pros: (more) reactivity?
 
 */
-const useKeychainStore = defineStore('keychain', () => {
+
+// Providing just enough typing for a keychain-store to be passed
+// to init() (in init.ts).
+export interface KeychainStore {
+  keychain: Keychain;
+  resetKeychain: () => void;
+}
+
+const useKeychainStore: () => KeychainStore = defineStore('keychain', () => {
   const storage = new Storage();
   let keychain = new Keychain(storage);
 
