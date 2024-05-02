@@ -113,3 +113,10 @@ export interface Upload {
     email: string;
   };
 }
+
+export interface Backup {
+  backupContainerKeys: string;
+  backupKeypair: string;
+  backupKeystring: string;
+  backupSalt: string;
+}

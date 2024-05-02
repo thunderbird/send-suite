@@ -2,8 +2,27 @@ import { defineStore } from 'pinia';
 import { User } from '@/lib/user';
 import useApiStore from '@/stores/api-store';
 import { Storage } from '@/lib/storage';
+import { AsyncJsonResponse, Backup } from '@/types';
 
-const useUserStore = defineStore('user', () => {
+// Providing just enough typing for a user-store to be passed
+// to init() (in init.ts).
+export interface UserStore {
+  user: User;
+  populateFromSession: () => Promise<boolean>;
+  getPublicKey: () => Promise<string>;
+  updatePublicKey: (jwk: string) => Promise<string>;
+  getMozAccountAuthUrl: () => Promise<string>;
+  createBackup: (
+    userId: number,
+    keys: string,
+    keypair: string,
+    keystring: string,
+    salt: string
+  ) => AsyncJsonResponse;
+  getBackup: (id: number) => Promise<Backup>;
+}
+
+const useUserStore: () => UserStore = defineStore('user', () => {
   const { api } = useApiStore();
   const storage = new Storage();
 
@@ -26,7 +45,7 @@ const useUserStore = defineStore('user', () => {
     return true;
   }
 
-  async function getPublicKey() {
+  async function getPublicKey(): Promise<string> {
     // Explicitly passing user id; this route is for retrieving
     // any user's public key, not just the currently logged in user
     const resp = await api.call<{ publicKey: any }>(
@@ -35,7 +54,7 @@ const useUserStore = defineStore('user', () => {
     return resp.publicKey;
   }
 
-  async function updatePublicKey(jwkPublicKey) {
+  async function updatePublicKey(jwkPublicKey): Promise<string> {
     const resp = await api.call<{ update: { publicKey: string } }>(
       `users/publickey`,
       {
@@ -46,7 +65,7 @@ const useUserStore = defineStore('user', () => {
     return resp.update?.publicKey;
   }
 
-  async function getMozAccountAuthUrl() {
+  async function getMozAccountAuthUrl(): Promise<string> {
     const resp = await api.call<{ url: string }>(`lockbox/fxa/login`);
     return resp.url;
   }
@@ -66,7 +85,7 @@ const useUserStore = defineStore('user', () => {
 
   // TODO: shift the userId from frontend argument to backend session
   async function getBackup(userId) {
-    return await api.call(`users/${userId}/backup`);
+    return await api.call<Backup>(`users/${userId}/backup`);
   }
 
   return {
