@@ -3,9 +3,7 @@ import { onMounted } from 'vue';
 import init from '@/lib/init';
 import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
-import useFolderStore, { FolderStore } from '@/apps/lockbox/stores/folder-store';
-import { User } from '@/lib/user';
-import { Keychain } from '@/lib/keychain';
+import useFolderStore from '@/apps/lockbox/stores/folder-store';
 
 const userStore = useUserStore();
 const { keychain } = useKeychainStore();
@@ -13,7 +11,7 @@ const folderStore = useFolderStore();
 
 onMounted(async () => {
   // Non-zero values indicate a specific error has occurred.
-  const errorCode = await init(userStore.user as User, keychain as Keychain, folderStore as unknown as FolderStore);
+  const errorCode = await init(userStore.user, keychain, folderStore);
 
   if (errorCode) {
     // Load from backend session and retry init()
@@ -23,7 +21,7 @@ onMounted(async () => {
       return;
     }
     userStore.user.store();
-    await init(userStore.user as User, keychain as Keychain, folderStore as unknown as FolderStore);
+    await init(userStore.user, keychain, folderStore);
   }
 });
 </script>

@@ -7,11 +7,9 @@ import useKeychainStore from '@/stores/keychain-store';
 import useConfigurationStore from '@/stores/configuration-store';
 import useApiStore from '@/stores/api-store';
 
-import useFolderStore, { FolderStore } from '@/apps/lockbox/stores/folder-store';
+import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import BackupAndRestore from '@/apps/common/BackupAndRestore.vue';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
-import { User } from '@/lib/user';
-import { Keychain } from '@/lib/keychain';
 
 const DEBUG = true;
 const SERVER = `server`;
@@ -57,7 +55,7 @@ function setAccountConfigured(accountId) {
 onMounted(async () => {
   try {
     // app-sepcific initialization
-    await init(userStore.user as User, keychain as Keychain, folderStore as unknown as FolderStore);
+    await init(userStore.user, keychain, folderStore);
     email.value = user.email;
     userId.value = user.id;
 
@@ -145,7 +143,7 @@ async function login() {
   console.log(`storing new user with id ${user.id}`);
   await user.store();
   // then do the normal init (which should also log us in, possibly for a second time)
-  await init(user as User, keychain as Keychain, folderStore as unknown as FolderStore);
+  await init(user, keychain, folderStore);
 
   // put our results in the form
   email.value = user.email;
@@ -191,7 +189,7 @@ async function dbUserSetup() {
   }
 
   // Existing init() handles
-  await init(userStore.user as User, keychain as Keychain, folderStore as unknown as FolderStore);
+  await init(userStore.user, keychain, folderStore);
 }
 
 async function loginToMozAccount() {

@@ -3,16 +3,14 @@ import { ref, toRaw } from 'vue';
 import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
-import useFolderStore, { FolderStore } from '@/apps/lockbox/stores/folder-store';
+import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import init from '@/lib/init';
 import BackupAndRestore from '@/apps/common/BackupAndRestore.vue';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
-import { User } from '@/lib/user';
-import { Keychain } from '@/lib/keychain';
 
 const { api } = useApiStore();
 const userStore = useUserStore();
-const { keychain, resetKeychain } = useKeychainStore();
+const { keychain } = useKeychainStore();
 const folderStore = useFolderStore();
 
 const sessionInfo = ref(null);
@@ -67,7 +65,7 @@ async function dbUserSetup() {
   }
 
   // Existing init() handles
-  await init(userStore.user as User, keychain as Keychain, folderStore as unknown as FolderStore);
+  await init(userStore.user, keychain, folderStore);
 }
 
 async function mozAcctLogin() {
