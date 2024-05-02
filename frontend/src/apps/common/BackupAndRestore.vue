@@ -164,7 +164,13 @@ async function encryptAll(publicKeyJwk, privateKeyJwk, containerKeys, password) 
   };
 }
 
-async function decryptAll(protectedContainerKeysStr, protectedKeypairStr, passwordWrappedKeyStr, saltStr, password) {
+async function decryptAll(
+  protectedContainerKeysStr: string,
+  protectedKeypairStr: string,
+  passwordWrappedKeyStr: string,
+  saltStr: string,
+  password
+) {
   const salt = Util.base64ToArrayBuffer(saltStr);
   console.log(`got salt`);
   console.log(salt);
