@@ -3,7 +3,7 @@ import { User } from '@/lib/user';
 import { Keychain } from '@/lib/keychain';
 import { ApiConnection } from '@/lib/api';
 import { Item, NamedBlob, Upload } from '@/types';
-import { delay } from '@/lib/utils';
+import { delay, retryUntilSuccessOrTimeout } from '@/lib/utils';
 
 export default class Uploader {
   user: User;
@@ -55,9 +55,13 @@ export default class Uploader {
       return null;
     }
 
-    // Add a short delay to allow AWS to finish.
-    // Otherwise, AWS may send back error `NoSuchKey: The specified key does not exist.`
-    await delay(1000);
+    await retryUntilSuccessOrTimeout(
+      async () => {
+        await this.api.call(`uploads/${id}/stat`);
+      },
+      1000,
+      5000
+    );
 
     // Create a Content entry in the database
     const result = await this.api.call<{

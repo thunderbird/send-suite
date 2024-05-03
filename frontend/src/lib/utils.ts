@@ -4,6 +4,24 @@ export function delay(delay = 100): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, delay));
 }
 
+export async function retryUntilSuccessOrTimeout(
+  fn: () => any,
+  waitTimeMs: number = 1000,
+  maxWaitTimeMs: number = 5000
+): Promise<void> {
+  for (
+    let waitTotalMs = 0;
+    waitTotalMs < maxWaitTimeMs;
+    waitTotalMs += waitTimeMs
+  ) {
+    await delay(waitTimeMs);
+    try {
+      await fn();
+      return;
+    } catch (e) {}
+  }
+}
+
 export async function streamToArrayBuffer(
   stream: ReadableStream,
   size?: number
