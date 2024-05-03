@@ -256,10 +256,11 @@ function calculateFolderSizes(folders: Folder[]): Folder[] {
   // Otherwise, we'd have to fetch all descendents in order
   // to do the full calculation.
   const foldersWithSizes = folders.map((folder) => {
-    let size = folder.items?.reduce(
-      (total, { upload }) => total + upload?.size || 0,
-      0
-    );
+    let size =
+      folder.items?.reduce(
+        (total, { upload }) => total + upload?.size || 0,
+        0
+      ) || 0;
 
     folder.size = size;
     return folder;
