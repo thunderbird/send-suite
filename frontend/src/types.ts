@@ -32,16 +32,22 @@ export type AsyncJsonResponse<T = { [key: string]: any }> = Promise<
 
 export type NamedBlob = Blob & { name: string };
 
+/**
+ * Api interface for object that makes HTTP requests
+ *
+ * @interface
+ */
 export interface Api {
+  /**
+   * Makes a network call to the specified path.
+   *
+   * @template T - The expected shape of the response object. If not provided, defaults to any object shape.
+   *
+   * @param {string} path - The path of the API endpoint. (Should not include `/api/`.)
+   * @returns {AsyncJsonResponse<T>} Returns a Promise that resolves to the response data (or null).
+   *
+   */
   call<T = { [key: string]: any }>(path: string): AsyncJsonResponse<T>;
-  // This default type parameter means that we're expecting the API to return
-  // an object with any number of key/value pairs.
-  // But, we can pass in a more specific type parameter that better describes the
-  // shape of the data we expect to get back from the API.
-  // For example:
-  // const isAlive = await api.call<{ success: boolean }>(`/api/schrödinger/cat/status`);
-  // Or, to specify a defined type/interface:
-  // const folders = await api.call<Folder[]>(`/api/folders/`);
 }
 
 // interfaces used for API responses
