@@ -169,7 +169,7 @@ async function decryptAll(
   protectedKeypairStr: string,
   passwordWrappedKeyStr: string,
   saltStr: string,
-  password
+  password: string
 ) {
   const salt = Util.base64ToArrayBuffer(saltStr);
   console.log(`got salt`);
