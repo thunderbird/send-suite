@@ -2,7 +2,8 @@ import { sendBlob } from '@/lib/filesync';
 import { User } from '@/lib/user';
 import { Keychain } from '@/lib/keychain';
 import { ApiConnection } from '@/lib/api';
-import { Item, NamedBlob } from '@/types';
+import { Item, NamedBlob, Upload } from '@/types';
+import { delay } from '@/lib/utils';
 
 export default class Uploader {
   user: User;
@@ -54,8 +55,14 @@ export default class Uploader {
       return null;
     }
 
+    // Add a short delay to allow AWS to finish.
+    // Otherwise, AWS may send back error `NoSuchKey: The specified key does not exist.`
+    await delay(1000);
+
     // Create a Content entry in the database
-    const { upload } = await this.api.call(
+    const result = await this.api.call<{
+      upload: Upload;
+    }>(
       'uploads',
       {
         id: id,
@@ -66,11 +73,10 @@ export default class Uploader {
       },
       'POST'
     );
-
-    if (!upload) {
+    if (!result) {
       return null;
     }
-
+    const upload = result.upload;
     // For the Content entry, create the corresponding Item in the Container
     const itemObj = await this.api.call<Item>(
       `containers/${containerId}/item`,
