@@ -4,6 +4,13 @@ export function delay(delay = 100): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, delay));
 }
 
+/**
+ * Runs a function at an interval until it succeeds or the maximum wait time is reached.
+ *
+ * @param {function(): any} fn - The function to retry. Function can be `async`.
+ * @param {number} waitTimeMs - How long to wait between each retry.
+ * @param {number} maxWaitTimeMs - The maximum amount of time to retry until we give up.
+ */
 export async function retryUntilSuccessOrTimeout(
   fn: () => any,
   waitTimeMs: number = 1000,
