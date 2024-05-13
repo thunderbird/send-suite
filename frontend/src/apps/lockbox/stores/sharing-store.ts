@@ -29,7 +29,6 @@ const useSharingStore = defineStore('sharingManager', () => {
   ): Promise<string | null> {
     let shouldAddPasswordAsHash = false;
 
-    console.log(`password is: ${password}`);
     if (password.length === 0) {
       console.log(`no password, generating one`);
       password = Util.generateRandomPassword();
@@ -99,7 +98,6 @@ const useSharingStore = defineStore('sharingManager', () => {
   ): Promise<string | null> {
     let shouldAddPasswordAsHash = false;
 
-    console.log(`password is: ${password}`);
     if (password.length === 0) {
       console.log(`no password, generating one`);
       password = Util.generateRandomPassword();
