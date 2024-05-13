@@ -67,7 +67,7 @@ class BlobStreamController {
   blob: Blob;
   index: number;
   chunkSize: number;
-  constructor(blob: Blob, size: number) {
+  constructor(blob: Blob, size?: number) {
     this.blob = blob;
     this.index = 0;
     this.chunkSize = size || DEFAULT_CHUNK_SIZE;
@@ -101,4 +101,47 @@ export function blobStream(
   size?: number
 ): ReadableStream<Uint8Array> {
   return new ReadableStream(new BlobStreamController(blob, size));
+}
+
+export function arrayBufferToReadableStream(
+  buffer: ArrayBuffer
+): ReadableStream {
+  return new ReadableStream({
+    start: (controller) => {
+      controller.enqueue(new Uint8Array(buffer));
+      controller.close();
+    },
+  });
+}
+
+export async function readableStreamToArrayBuffer(
+  stream: ReadableStream
+): Promise<ArrayBuffer> {
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+
+  while (true) {
+    const { done, value } = await reader.read();
+
+    if (done) {
+      break;
+    }
+
+    chunks.push(value);
+  }
+
+  let totalLength = 0;
+  for (const chunk of chunks) {
+    totalLength += chunk.length;
+  }
+
+  const result = new Uint8Array(totalLength);
+  let offset = 0;
+
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  return result.buffer;
 }
