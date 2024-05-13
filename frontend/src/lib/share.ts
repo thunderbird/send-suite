@@ -80,15 +80,13 @@ export default class Sharer {
     containerId = null
   ): Promise<number | null> {
     if (items.length === 0 && !containerId) {
-      console.log(`Nothing is being shared`);
-      return;
+      return null;
     }
 
     // Arbitrarily picked keychain.value.store to
     // confirm presence of keychain
-    if (!this.api && !this.keychain.store) {
-      console.log(`Need access to api and keychain`);
-      return;
+    if (!this.api?.call || !this.keychain?.store) {
+      return null;
     }
 
     let itemsToShare = [...items];
@@ -108,6 +106,7 @@ export default class Sharer {
     const parentId = 0;
     const shareOnly = true;
 
+    // Create the share-only container
     const response = await this.api.call<{ container: Folder }>(
       `containers`,
       {
@@ -119,12 +118,10 @@ export default class Sharer {
       'POST'
     );
     if (!response.container?.id) {
-      console.log(`could not create a new container for items`);
       return null;
     }
     const { id: newContainerId } = response.container;
 
-    console.log(`got a new container id: ${newContainerId}`);
     await this.keychain.newKeyForContainer(newContainerId);
     await this.keychain.store();
 
@@ -164,8 +161,7 @@ export default class Sharer {
           },
           'POST'
         );
-        console.log(`🎉 here it is...`);
-        console.log(itemResp);
+
         return itemResp;
       })
     );
@@ -179,7 +175,6 @@ export default class Sharer {
     expiration?: string
   ): Promise<string | null> {
     // get the key (which unwraps it),
-    console.log(`using password: ${password}`);
     const unwrappedKey = await this.keychain.get(containerId);
 
     // and password protect it
@@ -232,14 +227,12 @@ export default class Sharer {
       return null;
     }
 
-    console.log(`created share link for container ${containerId}`);
     const accessLink = resp.id;
-    console.log(resp);
     const { origin } = new URL(window.location.href);
     // const url = `${origin}/share/${accessLink}`;
     // TODO: need the server url from...elsewhere
     // Using `origin` works fine for web application, but not for extension
-    const url = `http://localhost:5173/share/${accessLink}`;
+    const url = `${import.meta.env.VITE_SEND_CLIENT_URL}/share/${accessLink}`;
     return url;
   }
 }
