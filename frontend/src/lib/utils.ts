@@ -1,7 +1,12 @@
 import { JsonResponse } from '@/types';
 
-export function delay(delay = 100): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, delay));
+/**
+ * Returns a promise that resolves after an amount of time has passed.
+ *
+ * @param { number } delayMs - number of milliseconds that must pass before the promise resolves
+ */
+export function delay(delayMs = 100): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, delayMs));
 }
 
 /**

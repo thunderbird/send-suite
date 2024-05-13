@@ -349,7 +349,7 @@ export class Keychain {
   backup: Backup;
   _keys: KeyStore;
   _storage: Storage;
-  constructor(storage: Storage) {
+  constructor(storage?: Storage) {
     this._init(storage);
   }
 

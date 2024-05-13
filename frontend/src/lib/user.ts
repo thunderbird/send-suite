@@ -9,7 +9,7 @@ export class User implements IUser {
   tier: string;
   email: string;
 
-  constructor(api: ApiConnection, storage: Storage) {
+  constructor(api: ApiConnection, storage?: Storage) {
     this.api = api;
     this.storage = storage ?? new Storage();
     this.id = 0;

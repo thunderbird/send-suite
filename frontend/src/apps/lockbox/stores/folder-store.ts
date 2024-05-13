@@ -5,8 +5,6 @@ import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
 import Uploader from '@/lib/upload';
 import Downloader from '@/lib/download';
-import { User } from '@/lib/user';
-import { Keychain } from '@/lib/keychain';
 import { CONTAINER_TYPE } from '@/lib/const';
 import { Folder, Item } from '@/types';
 

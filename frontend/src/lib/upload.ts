@@ -3,7 +3,7 @@ import { User } from '@/lib/user';
 import { Keychain } from '@/lib/keychain';
 import { ApiConnection } from '@/lib/api';
 import { Item, NamedBlob, Upload } from '@/types';
-import { delay, retryUntilSuccessOrTimeout } from '@/lib/utils';
+import { retryUntilSuccessOrTimeout } from '@/lib/utils';
 
 export default class Uploader {
   user: User;
