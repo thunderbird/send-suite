@@ -17,15 +17,6 @@ export default defineConfig({
       '/login-success.html': 'http://backend:8080', // Using `backend` per the docker network name
     },
   },
-  test: {
-    include: ['**/*.test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    // don't use jsdom - it doesn't implement webcrypto
-    // environment: 'jsdom',
-    // setupFiles: ['./testSetup.js'],
-    globals: true,
-    setupFiles: ['vitest-localstorage-mock'],
-    mockReset: false,
-  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),

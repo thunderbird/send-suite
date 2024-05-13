@@ -28,6 +28,9 @@
     "autoprefixer": "^10.4.15",
     "buffer": "^6.0.3",
     "eslint": "^8.7.0",
+    "happy-dom": "^14.10.1",
+    "mock-socket": "^9.3.1",
+    "msw": "^2.3.0",
     "postcss": "^8.4.28",
     "postcss-import": "^15.1.0",
     "prettier": "^2.5.1",
@@ -38,6 +41,7 @@
     "vite": "^4.4.5",
     "vitest": "^0.34.5",
     "vitest-localstorage-mock": "^0.0.1",
+    "vitest-websocket-mock": "^0.3.0",
     "vue-eslint-parser": "^8.0.0"
   }
 }
