@@ -54,7 +54,7 @@ export interface Api {
 export interface User {
   id: number;
   email: string;
-  tier: string;
+  tier?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -98,10 +98,11 @@ export interface Folder extends Container {}
 export interface Item {
   id: number;
   name: string;
+  uploadId: string;
+
   wrappedKey?: string;
   containerId?: number;
   container?: Container;
-  uploadId: string;
   type?: string;
 
   createdAt?: Date;

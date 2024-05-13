@@ -1,5 +1,5 @@
 import { expect, describe, it } from 'vitest';
-import { Storage } from './index';
+import { Storage } from '@/lib/storage/index';
 
 describe('User storage', () => {
   it('can store a user without error', async () => {
