@@ -10,14 +10,30 @@ import { Keychain } from '@/lib/keychain';
 import { CONTAINER_TYPE } from '@/lib/const';
 import { Folder, Item } from '@/types';
 
-// Providing just enough typing for a folder-store to be passed
-// to init() (in init.ts).
 export interface FolderStore {
+  rootFolder: Folder;
   defaultFolder: Folder | null;
+  visibleFolders: Folder[];
+  selectedFolder: Folder;
+  selectedFile: Item;
   createFolder: () => Promise<Folder>;
   sync: () => Promise<void>;
   init: () => void;
   print: () => void;
+  goToRootFolder: (folderId: number) => Promise<void>;
+  setSelectedFolder: (folderId: number) => void;
+  setSelectedFile: (itemId: number) => Promise<void>;
+  renameFolder: (folderId: number, name: string) => Promise<Folder>;
+  deleteFolder: (folderId: number) => Promise<void>;
+  uploadItem: (fileBlob: Blob, folderId: number) => Promise<Item>;
+  deleteItem: (itemId: number, folderId: number) => Promise<void>;
+  renameItem: (folderId: number, itemId: number, name: string) => Promise<Item>;
+  downloadContent: (
+    uploadId: string,
+    containerId: number,
+    wrappedKeyStr: string,
+    name: string
+  ) => Promise<void>;
 }
 
 const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
