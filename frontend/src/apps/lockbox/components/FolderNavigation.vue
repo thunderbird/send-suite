@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { inject, ref } from 'vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 
@@ -13,7 +13,6 @@ import {
 } from '@tabler/icons-vue';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
 import DragAndDropUpload from '@/apps/lockbox/components/DragAndDropUpload.vue';
-import RecentActivity from '@/apps/lockbox/components/RecentActivity.vue';
 
 const folderStore = useFolderStore();
 </script>

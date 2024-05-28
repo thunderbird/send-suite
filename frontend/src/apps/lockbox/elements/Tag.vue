@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { IconTag } from '@tabler/icons-vue';
 import { TagColors } from '@/apps/lockbox/const';
 defineProps({

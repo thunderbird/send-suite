@@ -35,6 +35,12 @@ export async function createUpload(
   return await fromPrisma(prisma.upload.create, query, UPLOAD_NOT_CREATED);
 }
 
+export async function statUpload(id: string) {
+  // Checking the stored size confirms that the file exists
+  // and that we can query the storage by its id.
+  return await storage.length(id);
+}
+
 export async function getUploadSize(id: string) {
   const query = {
     where: {

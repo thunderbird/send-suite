@@ -1,7 +1,7 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
-
+import { NamedBlob } from '@/lib/filesync';
 import { useDropZone } from '@vueuse/core';
 const folderStore = useFolderStore();
 
@@ -18,7 +18,7 @@ function onDrop(files) {
       const reader = new FileReader();
       reader.onload = () => {
         const buffer = reader.result;
-        const blob = new Blob([buffer], { type: file.type });
+        const blob = new Blob([buffer], { type: file.type }) as NamedBlob;
         blob.name = file.name;
         fileBlobs.value.push(blob);
       };

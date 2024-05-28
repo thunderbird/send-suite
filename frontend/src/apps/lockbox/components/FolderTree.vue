@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 const folderStore = useFolderStore();
 

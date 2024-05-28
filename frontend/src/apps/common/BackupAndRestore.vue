@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
 
@@ -164,7 +164,13 @@ async function encryptAll(publicKeyJwk, privateKeyJwk, containerKeys, password) 
   };
 }
 
-async function decryptAll(protectedContainerKeysStr, protectedKeypairStr, passwordWrappedKeyStr, saltStr, password) {
+async function decryptAll(
+  protectedContainerKeysStr: string,
+  protectedKeypairStr: string,
+  passwordWrappedKeyStr: string,
+  saltStr: string,
+  password: string
+) {
   const salt = Util.base64ToArrayBuffer(saltStr);
   console.log(`got salt`);
   console.log(salt);

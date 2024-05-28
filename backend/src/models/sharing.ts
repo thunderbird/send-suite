@@ -170,11 +170,12 @@ export async function getContainerForAccessLink(linkId: string) {
     },
   };
 
-  return await fromPrisma(
+  const result = await fromPrisma(
     prisma.accessLink.findUniqueOrThrow,
     query,
     ACCESSLINK_NOT_FOUND
   );
+  return result?.share.container;
 }
 
 /**
@@ -412,7 +413,7 @@ export async function acceptInvitation(invitationId: number) {
   };
 }
 
-export async function getContainersSharedByMe(
+export async function getContainersSharedByUser(
   userId: number,
   type: ContainerType
 ) {
@@ -421,7 +422,13 @@ export async function getContainersSharedByMe(
       senderId: userId,
     },
     include: {
-      sender: true,
+      sender: {
+        select: {
+          id: true,
+          email: true,
+          tier: true,
+        },
+      },
       // Including related containers and members.
       container: {
         include: {
@@ -439,7 +446,13 @@ export async function getContainersSharedByMe(
         },
       },
       // Include all accessLinks
-      accessLinks: true,
+      accessLinks: {
+        select: {
+          id: true,
+          shareId: true,
+          expiryDate: true,
+        },
+      },
     },
   };
 
@@ -454,7 +467,7 @@ export async function getContainersSharedByMe(
   return shares;
 }
 
-export async function getContainersSharedWithMe(
+export async function getContainersSharedWithUser(
   recipientId: number,
   type: ContainerType
 ) {

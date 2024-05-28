@@ -1,6 +1,8 @@
-import { connectToWebSocketServer } from './utils';
+import { connectToWebSocketServer } from '@/lib/utils';
 
-export async function createMessageSocket(endpoint) {
+export async function createMessageSocket(
+  endpoint: string
+): Promise<WebSocket> {
   const connection = await connectToWebSocketServer(endpoint);
 
   connection.onclose = function (e) {
@@ -15,7 +17,7 @@ export async function createMessageSocket(endpoint) {
   };
 
   connection.onerror = function (err) {
-    console.error('Socket encountered error: ', err.message, 'Closing socket');
+    console.error('Socket encountered error: ', err, 'Closing socket');
     connection.close();
   };
 

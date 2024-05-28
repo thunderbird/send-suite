@@ -1,18 +1,17 @@
-<script setup>
+<script setup lang="ts">
 import { inject } from 'vue';
+import { DayJsKey } from '@/types';
 
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 
-import { IconDownload, IconShare, IconTrash, IconDotsVertical } from '@tabler/icons-vue';
+import { IconDownload, IconTrash, IconDotsVertical } from '@tabler/icons-vue';
 import FolderTableRowCell from '@/apps/lockbox/elements/FolderTableRowCell.vue';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
-import DragAndDropUpload from '@/apps/lockbox/components/DragAndDropUpload.vue';
 import Breadcrumbs from '@/apps/lockbox/components/Breadcrumbs.vue';
-import Tag from '@/apps/lockbox/elements/Tag.vue';
 
 const folderStore = useFolderStore();
 
-const dayjs = inject('dayjs');
+const dayjs = inject(DayJsKey);
 
 // onMounted(getVisibleFolders);
 // onMounted(folderStore.fetchUserFolders);

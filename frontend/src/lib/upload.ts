@@ -1,7 +1,19 @@
-import { sendBlob } from '@/lib/filesync';
+import { sendBlob, NamedBlob } from '@/lib/filesync';
+import { User } from '@/lib/user';
+import { Keychain } from '@/lib/keychain';
+import { ApiConnection } from '@/lib/api';
+import { retryUntilSuccessOrTimeout } from '@/lib/utils';
+import {
+  Item,
+  ItemResponse,
+  UploadResponse,
+} from '@/apps/lockbox/stores/folder-store.types';
 
 export default class Uploader {
-  constructor(user, keychain, api) {
+  user: User;
+  keychain: Keychain;
+  api: ApiConnection;
+  constructor(user: User, keychain: Keychain, api: ApiConnection) {
     this.user = user;
     // Even though we only need the user.id, we must receive the entire,
     // reactive `user` object. This gives enough time for it to "hydrate"
@@ -10,28 +22,33 @@ export default class Uploader {
     this.api = api;
   }
 
-  async doUpload(fileBlob, containerId, isText = true) {
+  async doUpload(
+    fileBlob: NamedBlob,
+    containerId: number,
+    isText = true
+  ): Promise<Item> {
     if (!containerId) {
-      console.log(`cannot upload - no folder selected`);
       return null;
     }
 
     if (!fileBlob) {
-      console.log(`cannot upload - no file blob provided`);
       return null;
     }
 
     // get folder key
     const wrappingKey = await this.keychain.get(containerId);
     if (!wrappingKey) {
-      console.log(`cannot upload - no key for conversation`);
+      return null;
     }
 
     // generate new AES key for the uploaded Content
     const key = await this.keychain.content.generateKey();
 
     // wrap the key for inclusion with the Item
-    const wrappedKeyStr = await this.keychain.container.wrapContentKey(key, wrappingKey);
+    const wrappedKeyStr = await this.keychain.container.wrapContentKey(
+      key,
+      wrappingKey
+    );
 
     const blob = fileBlob;
     const filename = blob.name;
@@ -39,14 +56,21 @@ export default class Uploader {
     // Blob is encrypted as it is uploaded through a websocket connection
     const id = await sendBlob(blob, key);
     if (!id) {
-      console.log(`could not upload Content`);
-      return;
+      return null;
     }
-    console.log(`🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀`);
-    console.log(blob.type);
+
+    await retryUntilSuccessOrTimeout(
+      async () => {
+        await this.api.call(`uploads/${id}/stat`);
+      },
+      1000,
+      5000
+    );
 
     // Create a Content entry in the database
-    const { upload } = await this.api.call(
+    const result = await this.api.call<{
+      upload: UploadResponse;
+    }>(
       'uploads',
       {
         id: id,
@@ -57,14 +81,12 @@ export default class Uploader {
       },
       'POST'
     );
-
-    if (!upload) {
-      console.log(`could not create Content entity in database`);
-      return;
+    if (!result) {
+      return null;
     }
-
+    const upload = result.upload;
     // For the Content entry, create the corresponding Item in the Container
-    const itemObj = await this.api.call(
+    const itemObj = await this.api.call<ItemResponse>(
       `containers/${containerId}/item`,
       {
         uploadId: upload.id,
@@ -74,8 +96,6 @@ export default class Uploader {
       },
       'POST'
     );
-    console.log(`🎉 here it is...`);
-    console.log(itemObj);
     return {
       ...itemObj,
       upload: {

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { TagLabelColors } from '@/apps/lockbox/const';
 defineProps({
   color: String,

@@ -10,8 +10,8 @@ import {
 
 import {
   getAllInvitations,
-  getContainersSharedByMe,
-  getContainersSharedWithMe,
+  getContainersSharedByUser,
+  getContainersSharedWithUser,
 } from '../models/sharing';
 
 import {
@@ -206,11 +206,11 @@ router.get(
 );
 
 router.get(
-  '/:userId/folders/sharedByMe',
+  '/:userId/folders/sharedByUser',
   addErrorHandling(USER_ERRORS.SHARED_FOLDERS_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
-    const containersAndMembers = await getContainersSharedByMe(
+    const containersAndMembers = await getContainersSharedByUser(
       parseInt(userId),
       ContainerType.FOLDER
     );
@@ -220,11 +220,11 @@ router.get(
 );
 
 router.get(
-  '/:userId/folders/sharedWithMe',
+  '/:userId/folders/sharedWithUser',
   addErrorHandling(USER_ERRORS.RECEIVED_FOLDERS_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
-    const containersAndMembers = await getContainersSharedWithMe(
+    const containersAndMembers = await getContainersSharedWithUser(
       parseInt(userId),
       ContainerType.FOLDER
     );

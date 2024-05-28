@@ -3,16 +3,18 @@ import { ref, computed } from 'vue';
 import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
-import { Util } from '@/lib/keychain';
+import { Keychain, Util } from '@/lib/keychain';
 import { getContainerKeyFromChallenge } from '@/lib/challenge';
 import Sharer from '@/lib/share';
+import { Item, FolderResponse } from '@/apps/lockbox/stores/folder-store.types';
+import { User } from '@/lib/user';
 
 const useSharingStore = defineStore('sharingManager', () => {
   const { api } = useApiStore();
   const { user } = useUserStore();
   const { keychain } = useKeychainStore();
 
-  const sharer = new Sharer(user, keychain, api);
+  const sharer = new Sharer(user as User, keychain as Keychain, api);
 
   const _links = ref([]);
 
@@ -20,7 +22,11 @@ const useSharingStore = defineStore('sharingManager', () => {
     return [..._links.value];
   });
 
-  async function createAccessLink(folderId, password, expiration) {
+  async function createAccessLink(
+    folderId: number,
+    password: string,
+    expiration: string
+  ): Promise<string | null> {
     let shouldAddPasswordAsHash = false;
 
     console.log(`password is: ${password}`);
@@ -41,20 +47,30 @@ const useSharingStore = defineStore('sharingManager', () => {
     }
 
     // refetch access links
-    // TODO: consider just adding updating sharer.requestAccessLink so that it returns the whole link and then pushing it to _links
+    // TODO: consider just updating sharer.requestAccessLink so that it returns the whole link and then pushing it to _links
     await fetchAccessLinks(folderId);
     return url;
   }
 
-  async function acceptAccessLink(linkId, password) {
+  async function acceptAccessLink(
+    linkId: string,
+    password: string
+  ): Promise<boolean> {
     // Check for existence of link.
-    const { unwrappedKey, containerId } = await getContainerKeyFromChallenge(linkId, password, api, keychain);
-    console.log(`unwrappedKey: ${unwrappedKey}`);
-    console.log(`containerId: ${containerId}`);
+    const { unwrappedKey, containerId } = await getContainerKeyFromChallenge(
+      linkId,
+      password,
+      api,
+      keychain as Keychain
+    );
 
     if (user.id) {
       // Use the AccessLink to make the User a member of the shared folder.
-      const acceptAccessLinkResp = await api.call(`sharing/${linkId}/member/accept`, {}, 'POST');
+      const acceptAccessLinkResp = await api.call(
+        `sharing/${linkId}/member/accept`,
+        {},
+        'POST'
+      );
 
       if (!acceptAccessLinkResp) {
         return false;
@@ -69,15 +85,18 @@ const useSharingStore = defineStore('sharingManager', () => {
     return true;
   }
 
-  async function isAccessLinkValid(linkId) {
-    return await api.call(`sharing/exists/${linkId}`);
+  async function isAccessLinkValid(linkId: string): Promise<{ id: string }> {
+    return await api.call<{ id: string }>(`sharing/exists/${linkId}`);
   }
 
-  async function fetchAccessLinks(folderId) {
+  async function fetchAccessLinks(folderId: number): Promise<void> {
     _links.value = await api.call(`containers/${folderId}/links`);
   }
 
-  async function shareItems(itemsArray, password) {
+  async function shareItems(
+    itemsArray: Item[],
+    password: string
+  ): Promise<string | null> {
     let shouldAddPasswordAsHash = false;
 
     console.log(`password is: ${password}`);
@@ -100,37 +119,48 @@ const useSharingStore = defineStore('sharingManager', () => {
     return url;
   }
 
-  async function getSharedFolder(hash) {
-    return await api.call(`sharing/${hash}/`);
+  async function getSharedFolder(hash: string) {
+    return await api.call<FolderResponse>(`sharing/${hash}/`);
   }
 
-  async function getInvitations(userId) {
+  async function getInvitations(userId: number) {
     // TODO: shift the userId from frontend argument to backend session
     return await api.call(`users/${userId}/invitations/`);
   }
 
-  async function getFoldersSharedWithUser(userId) {
+  async function getFoldersSharedWithUser(userId: number) {
     // TODO: shift the userId from frontend argument to backend session
-    return await api.call(`users/${userId}/folders/sharedWithMe`);
+    return await api.call<{ [key: string]: any }[]>(
+      `users/${userId}/folders/sharedWithUser`
+    );
   }
 
-  async function getFoldersSharedByUser(userId) {
+  async function getFoldersSharedByUser(userId: number) {
     // TODO: shift the userId from frontend argument to backend session
-    return await api.call(`users/${userId}/folders/sharedByMe`);
+    return await api.call(`users/${userId}/folders/sharedByUser`);
   }
 
-  async function getSharesForFolder(containerId, userId) {
+  async function getSharesForFolder(containerId: number, userId: number) {
     // TODO: shift the userId from frontend argument to backend session
     return await api.call(`containers/${containerId}/shares`, {
       userId,
     });
   }
 
-  async function acceptInvitation(invitationId, containerId) {
-    return await api.call(`containers/${containerId}/member/accept/${invitationId}`, {}, 'POST');
+  async function acceptInvitation(invitationId: number, containerId: number) {
+    return await api.call(
+      `containers/${containerId}/member/accept/${invitationId}`,
+      {},
+      'POST'
+    );
   }
 
-  async function updateInvitationPermissions(containerId, userId, invitationId, permission) {
+  async function updateInvitationPermissions(
+    containerId: number,
+    userId: number,
+    invitationId: number,
+    permission: number
+  ) {
     return await api.call(
       `containers/${containerId}/shares/invitation/update`,
       { userId, invitationId, permission },
@@ -138,7 +168,12 @@ const useSharingStore = defineStore('sharingManager', () => {
     );
   }
 
-  async function updateAccessLinkPermissions(containerId, userId, accessLinkId, permission) {
+  async function updateAccessLinkPermissions(
+    containerId: number,
+    userId: number,
+    accessLinkId: string,
+    permission: number
+  ) {
     return await api.call(
       `containers/${containerId}/shares/accessLink/update`,
       { userId, accessLinkId, permission },

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import Avatar from '@/apps/lockbox/elements/Avatar.vue';
 
 defineProps({

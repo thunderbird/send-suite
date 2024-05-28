@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import useUserStore from '@/stores/user-store';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 
@@ -6,10 +6,6 @@ import NewFolder from '@/apps/lockbox/components/NewFolder.vue';
 import FileInfo from '@/apps/lockbox/components/FileInfo.vue';
 import FolderInfo from '@/apps/lockbox/components/FolderInfo.vue';
 import FolderNavigation from '@/apps/lockbox/components/FolderNavigation.vue';
-import RecentActivity from '@/apps/lockbox/components/RecentActivity.vue';
-import SharedByMe from '@/apps/lockbox/components/SharedByMe.vue';
-import SharedWithMe from '@/apps/lockbox/components/SharedWithMe.vue';
-import InvitationList from '@/apps/lockbox/components/InvitationList.vue';
 
 const { user } = useUserStore();
 const folderStore = useFolderStore();
@@ -26,10 +22,6 @@ const folderStore = useFolderStore();
       >
         <h1>{{ user.email }} Lockbox</h1>
         <NewFolder />
-        <!-- <Breadcrumbs
-          @setCurrentFolderId="setCurrentFolderId"
-          :folderPath="folderPath"
-        /> -->
       </header>
       <main class="flex flex-col gap-4 px-4">
         <router-view></router-view>

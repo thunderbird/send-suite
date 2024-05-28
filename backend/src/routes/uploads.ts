@@ -10,6 +10,7 @@ import {
   createUpload,
   getUploadSize,
   getUploadMetadata,
+  statUpload,
 } from '../models/uploads';
 
 import {
@@ -42,6 +43,17 @@ router.post(
   })
 );
 
+router.get(
+  '/:id/stat',
+  addErrorHandling(UPLOAD_ERRORS.FILE_NOT_FOUND),
+  wrapAsyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const size = await statUpload(id);
+    res.status(201).json({
+      size,
+    });
+  })
+);
 // TODO: decide whether it's a security risk not to protect this route.
 // I feel like it is, but it doesn't pertain to anything "perimssion-able".
 // i.e., permissions are applied to containers, not to uploads.

@@ -4,11 +4,19 @@ import { Storage } from '@/lib/storage';
 
 // TODO: decide if it's worth it to move the internals of the Keychain class to the store.
 /*
-cons: not sure how I'd run the automated tests outside of the browser
+cons: additional code (store setup) for tests
 pros: (more) reactivity?
 
 */
-const useKeychainStore = defineStore('keychain', () => {
+
+// Providing just enough typing for a keychain-store to be passed
+// to init() (in init.ts).
+type KeychainStore = {
+  keychain: Keychain;
+  resetKeychain: () => void;
+};
+
+const useKeychainStore: () => KeychainStore = defineStore('keychain', () => {
   const storage = new Storage();
   let keychain = new Keychain(storage);
 

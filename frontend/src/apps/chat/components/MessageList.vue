@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, onMounted, inject } from 'vue';
-import { download } from '@/lib/filesync';
+import { getBlob } from '@/lib/filesync';
 import BurnButton from './BurnButton.vue';
 
 // onmounted, get all items for this convo/container
@@ -40,12 +40,12 @@ async function downloadContent(id, aesKey, filename, isMessage = true) {
 
   if (isMessage) {
     // console.log(aesKey);
-    const plaintextString = await download(id, size, aesKey);
+    const plaintextString = await getBlob(id, size, aesKey);
     // console.log(plaintextString);
     return plaintextString;
   }
   // download the file, specifying the id, size, aesKey, isMessage=false, filename, and (mime)type
-  await download(id, size, aesKey, false, filename, type);
+  await getBlob(id, size, aesKey, false, filename, type);
 }
 
 async function getContainerWithItems(id) {
@@ -66,10 +66,7 @@ async function getContainerWithItems(id) {
     container.items.map(async ({ uploadId, type, wrappedKey }) => ({
       id: uploadId,
       type,
-      aesKey: await keychain.container.unwrapContentKey(
-        wrappedKey,
-        wrappingKey
-      ),
+      aesKey: await keychain.container.unwrapContentKey(wrappedKey, wrappingKey),
     }))
   );
 
@@ -101,9 +98,7 @@ async function fillMessageList(contentArray) {
           type,
         };
       } else if (type === 'FILE') {
-        console.log(
-          `not putting file in messages array, but adding download key in map`
-        );
+        console.log(`not putting file in messages array, but adding download key in map`);
         downloadKeyMap[id] = aesKey;
         return {
           messageText: `bad mime type ${id}`,
@@ -147,9 +142,7 @@ watch(
 <template>
   <!-- <p>Conversation Id {{ props.conversationId }}</p> -->
   <div v-if="props.conversationId">
-    <div
-      class="flex sm:items-center justify-between py-3 border-b-2 border-gray-200 pr-3"
-    >
+    <div class="flex sm:items-center justify-between py-3 border-b-2 border-gray-200 pr-3">
       <div class="relative flex items-center space-x-4">
         <!-- <div class="relative">
           <span class="absolute text-green-500 right-0 bottom-0">
@@ -221,27 +214,14 @@ watch(
       <div class="chat-message mb-2" v-for="m in messageList" :key="m.id">
         <template v-if="m.sender.email === user.email">
           <div class="flex items-end justify-end">
-            <div
-              class="flex flex-col space-y-2 text-xs max-w-xs mx-2 order-1 items-end"
-            >
+            <div class="flex flex-col space-y-2 text-xs max-w-xs mx-2 order-1 items-end">
               <div>
-                <span
-                  class="px-4 py-2 rounded-lg inline-block rounded-br-none bg-blue-600 text-white"
-                >
+                <span class="px-4 py-2 rounded-lg inline-block rounded-br-none bg-blue-600 text-white">
                   <span v-if="m.type === 'MESSAGE'">
                     {{ m.messageText }}
                   </span>
                   <span v-else-if="m.type === 'FILE'">
-                    <a
-                      href="#"
-                      @click.prevent="
-                        downloadContent(
-                          m.id,
-                          downloadKeyMap[m.id],
-                          m.name,
-                          false
-                        )
-                      "
+                    <a href="#" @click.prevent="downloadContent(m.id, downloadKeyMap[m.id], m.name, false)"
                       >⬇️ {{ m.name }}</a
                     >
                   </span>
@@ -257,27 +237,14 @@ watch(
         </template>
         <template v-else>
           <div class="flex items-end">
-            <div
-              class="flex flex-col space-y-2 text-xs max-w-xs mx-2 order-2 items-start"
-            >
+            <div class="flex flex-col space-y-2 text-xs max-w-xs mx-2 order-2 items-start">
               <div>
-                <span
-                  class="px-4 py-2 rounded-lg inline-block rounded-bl-none bg-gray-300 text-gray-600"
-                >
+                <span class="px-4 py-2 rounded-lg inline-block rounded-bl-none bg-gray-300 text-gray-600">
                   <span v-if="m.type === 'MESSAGE'">
                     {{ m.messageText }}
                   </span>
                   <span v-else-if="m.type === 'FILE'">
-                    <a
-                      href="#"
-                      @click.prevent="
-                        downloadContent(
-                          m.id,
-                          downloadKeyMap[m.id],
-                          m.name,
-                          false
-                        )
-                      "
+                    <a href="#" @click.prevent="downloadContent(m.id, downloadKeyMap[m.id], m.name, false)"
                       >⬇️ {{ m.name }}</a
                     >
                   </span>

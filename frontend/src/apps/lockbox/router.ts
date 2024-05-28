@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router';
 
 import Lockbox from '@/apps/lockbox/pages/Web.vue';
 import FolderView from '@/apps/lockbox/components/FolderView.vue';
@@ -9,7 +9,7 @@ import Received from '@/apps/lockbox/components/Received.vue';
 import Share from '@/apps/lockbox/pages/Share.vue';
 import Recovery from '@/apps/common/Recovery.vue';
 
-const routes = [
+const routes: RouteRecordRaw[] = [
   {
     path: '/lockbox',
     component: Lockbox,

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, toRaw } from 'vue';
 
 // TODO: after proof-of-concept, move these to the sharing-store
@@ -9,8 +9,8 @@ const { user } = useUserStore();
 const sharingStore = useSharingStore();
 
 const sent = ref([]);
-const foldersByRecipientId = computed(() => groupByRecipient(toRaw(sent.value)));
-const emailsByRecipientId = computed(() => createEmailMap(toRaw(sent.value)));
+// const foldersByRecipientId = computed(() => groupByRecipient(toRaw(sent.value)));
+// const emailsByRecipientId = computed(() => createEmailMap(toRaw(sent.value)));
 const shareOnlyFolders = computed(() => toRaw(sent.value).filter(({ container }) => container.shareOnly));
 
 async function getSentFolders() {

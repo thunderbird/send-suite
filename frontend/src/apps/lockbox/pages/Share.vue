@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue';
 
 import AcceptAccessLink from '@/apps/lockbox/views/AcceptAccessLink.vue';

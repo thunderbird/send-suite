@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
 
@@ -44,7 +44,7 @@ onMounted(() => {
   <form @submit.prevent="updateFileName">
     <input type="text" v-model="selectedFileName" ref="input" @keydown.esc="resetForm" />
     <div class="flex flex-row justify-end">
-      <Btn @click="updateFileName">Rename</Btn>
+      <Btn @click.prevent="updateFileName">Rename</Btn>
     </div>
   </form>
 </template>

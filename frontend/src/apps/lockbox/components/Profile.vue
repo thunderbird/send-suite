@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, toRaw } from 'vue';
 import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
@@ -10,7 +10,7 @@ import Btn from '@/apps/lockbox/elements/Btn.vue';
 
 const { api } = useApiStore();
 const userStore = useUserStore();
-const { keychain, resetKeychain } = useKeychainStore();
+const { keychain } = useKeychainStore();
 const folderStore = useFolderStore();
 
 const sessionInfo = ref(null);
@@ -48,7 +48,7 @@ async function dbUserSetup() {
     console.warn(`DEBUG: could not retrieve user; did mozilla login fail?`);
     return;
   }
-  userStore.user.store();
+  userStore.store();
 
   // Check if the user has a public key.
   // If not, this is almost certainly a new user.
@@ -65,7 +65,7 @@ async function dbUserSetup() {
   }
 
   // Existing init() handles
-  await init(userStore.user, keychain, folderStore);
+  await init(userStore, keychain, folderStore);
 }
 
 async function mozAcctLogin() {
