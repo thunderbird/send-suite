@@ -15,7 +15,6 @@ const DEBUG = true;
 const SERVER = `server`;
 
 const storage = new Storage();
-const { user } = useUserStore();
 const userStore = useUserStore();
 const { keychain, resetKeychain } = useKeychainStore();
 const { api } = useApiStore();
@@ -55,9 +54,9 @@ function setAccountConfigured(accountId) {
 onMounted(async () => {
   try {
     // app-sepcific initialization
-    await init(userStore.user, keychain, folderStore);
-    email.value = user.email;
-    userId.value = user.id;
+    await init(userStore, keychain, folderStore);
+    email.value = userStore.user.email;
+    userId.value = userStore.user.id;
 
     // extension-specific initialization
     browser.storage.local.get(accountId).then((accountInfo) => {
@@ -117,37 +116,37 @@ async function login() {
     alert('email address is required for login');
     return;
   }
-  if (email.value !== user.email) {
+  if (email.value !== userStore.user.email) {
     console.log(`we're logging in as a different user. cleaning up and starting fresh`);
     await clean();
     await keychain.rsa.generateKeyPair();
     await keychain.store();
   }
 
-  const loginResp = await user.login(email.value);
+  const loginResp = await userStore.login(email.value);
   if (!loginResp) {
     console.log(`could not log in, trying to create`);
 
     jwkPublicKey.value = JSON.stringify(await keychain.rsa.getPublicKeyJwk());
-    const createUserResp = await user.createUser(email.value, jwkPublicKey.value);
+    const createUserResp = await userStore.createUser(email.value, jwkPublicKey.value);
     if (!createUserResp) {
       console.log(`could not create user either. that's pretty bad`);
       alert(`could neither log in nor create user`);
       return;
     }
 
-    user.id = createUserResp.id;
-    user.email = createUserResp.email;
+    userStore.user.id = createUserResp.id;
+    userStore.user.email = createUserResp.email;
   }
   // save user to storage
-  console.log(`storing new user with id ${user.id}`);
-  await user.store();
+  console.log(`storing new user with id ${userStore.user.id}`);
+  await userStore.store();
   // then do the normal init (which should also log us in, possibly for a second time)
-  await init(user, keychain, folderStore);
+  await init(userStore, keychain, folderStore);
 
   // put our results in the form
-  email.value = user.email;
-  userId.value = user.id;
+  email.value = userStore.user.email;
+  userId.value = userStore.user.id;
   console.log(`finished login on ManagementPage.vue`);
 }
 
@@ -170,9 +169,9 @@ async function dbUserSetup() {
     console.warn(`DEBUG: could not retrieve user; did mozilla login fail?`);
     return;
   }
-  userStore.user.store();
-  user.id = userStore.user.id;
-  user.email = userStore.user.email;
+  userStore.store();
+  userStore.user.id = userStore.user.id;
+  userStore.user.email = userStore.user.email;
 
   // Check if the user has a public key.
   // If not, this is almost certainly a new user.
@@ -189,7 +188,7 @@ async function dbUserSetup() {
   }
 
   // Existing init() handles
-  await init(userStore.user, keychain, folderStore);
+  await init(userStore, keychain, folderStore);
 }
 
 async function loginToMozAccount() {

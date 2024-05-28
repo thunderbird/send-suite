@@ -1,4 +1,4 @@
-import { StorageAdapter } from '@/types';
+import { StorageAdapter } from '.';
 
 export default class LocalStorageAdapter implements StorageAdapter {
   constructor() {}

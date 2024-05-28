@@ -48,7 +48,7 @@ async function dbUserSetup() {
     console.warn(`DEBUG: could not retrieve user; did mozilla login fail?`);
     return;
   }
-  userStore.user.store();
+  userStore.store();
 
   // Check if the user has a public key.
   // If not, this is almost certainly a new user.
@@ -65,7 +65,7 @@ async function dbUserSetup() {
   }
 
   // Existing init() handles
-  await init(userStore.user, keychain, folderStore);
+  await init(userStore, keychain, folderStore);
 }
 
 async function mozAcctLogin() {

@@ -1,21 +1,21 @@
 import { INIT_ERRORS } from '@/apps/lockbox/const';
-import { User } from '@/lib/user';
 import { Keychain } from '@/lib/keychain';
-import { FolderStore } from '@/apps/lockbox/stores/folder-store';
+import { FolderStore } from '@/apps/lockbox/stores/folder-store.types';
+import { UserStore } from '@/stores/user-store';
 
 /**
  * Loads user and keychain from storage; creates default folder if necessary.
- * @param {User} user - Instance of User class.
+ * @param {UserStore} userStore - Pinia store for managing user.
  * @param {Keychain} keychain - Instance of Keychain class.
  * @param {FolderStore} folderStore - Pinia store for managing folders.
  * @return {Promise<INIT_ERRORS>} - Returns Promise of 0 (success) or an error code typed by INIT_ERRORS.
  */
 async function init(
-  user: User,
+  userStore: UserStore,
   keychain: Keychain,
   folderStore: FolderStore
 ): Promise<INIT_ERRORS> {
-  const hasUser = await user.load();
+  const hasUser = await userStore.load();
   const hasKeychain = await keychain.load();
 
   if (!hasUser) {

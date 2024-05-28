@@ -1,9 +1,13 @@
-import { sendBlob } from '@/lib/filesync';
+import { sendBlob, NamedBlob } from '@/lib/filesync';
 import { User } from '@/lib/user';
 import { Keychain } from '@/lib/keychain';
 import { ApiConnection } from '@/lib/api';
-import { Item, NamedBlob, Upload } from '@/types';
 import { retryUntilSuccessOrTimeout } from '@/lib/utils';
+import {
+  Item,
+  ItemResponse,
+  UploadResponse,
+} from '@/apps/lockbox/stores/folder-store.types';
 
 export default class Uploader {
   user: User;
@@ -19,7 +23,7 @@ export default class Uploader {
   }
 
   async doUpload(
-    fileBlob: Blob,
+    fileBlob: NamedBlob,
     containerId: number,
     isText = true
   ): Promise<Item> {
@@ -65,7 +69,7 @@ export default class Uploader {
 
     // Create a Content entry in the database
     const result = await this.api.call<{
-      upload: Upload;
+      upload: UploadResponse;
     }>(
       'uploads',
       {
@@ -82,7 +86,7 @@ export default class Uploader {
     }
     const upload = result.upload;
     // For the Content entry, create the corresponding Item in the Container
-    const itemObj = await this.api.call<Item>(
+    const itemObj = await this.api.call<ItemResponse>(
       `containers/${containerId}/item`,
       {
         uploadId: upload.id,

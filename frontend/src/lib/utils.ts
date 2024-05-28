@@ -1,5 +1,4 @@
-import { JsonResponse } from '@/types';
-
+import { JsonResponse } from '@/lib/api';
 /**
  * Returns a promise that resolves after an amount of time has passed.
  *

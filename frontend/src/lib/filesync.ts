@@ -1,7 +1,11 @@
-import { streamToArrayBuffer } from './utils';
-import { blobStream } from './streams';
-import { decryptStream } from './ece';
+import { streamToArrayBuffer } from '@/lib/utils';
+import { blobStream } from '@/lib/streams';
+import { decryptStream } from '@/lib/ece';
 import { _download, _upload } from '@/lib/helpers';
+
+export type NamedBlob = Blob & { name: string };
+
+export type Canceler = Record<string, () => void>;
 
 async function _saveFile(file: Record<string, any>): Promise<void> {
   return new Promise(function (resolve) {

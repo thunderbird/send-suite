@@ -11,7 +11,7 @@ const folderStore = useFolderStore();
 
 onMounted(async () => {
   // Non-zero values indicate a specific error has occurred.
-  const errorCode = await init(userStore.user, keychain, folderStore);
+  const errorCode = await init(userStore, keychain, folderStore);
 
   if (errorCode) {
     // Load from backend session and retry init()
@@ -20,8 +20,8 @@ onMounted(async () => {
       console.warn(`DEBUG: could not retrieve user; did mozilla login fail?`);
       return;
     }
-    userStore.user.store();
-    await init(userStore.user, keychain, folderStore);
+    userStore.store();
+    await init(userStore, keychain, folderStore);
   }
 });
 </script>

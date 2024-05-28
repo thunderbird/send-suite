@@ -1,5 +1,12 @@
-import { JwkKeyPair, KeyStore, StorageAdapter, User } from '@/types';
+import { JwkKeyPair, StoredKey } from '@/lib/keychain';
 import LocalStorageAdapter from './LocalStorage';
+import { User } from '../user';
+
+export interface StorageAdapter {
+  get: (k: string) => any;
+  set: (k: string, v: any) => void;
+  clear: () => void;
+}
 
 export class Storage {
   USER_KEY = 'lb/user';
@@ -19,11 +26,11 @@ export class Storage {
     return this.adapter.get(this.USER_KEY);
   }
 
-  async storeKeys(keysObj: KeyStore): Promise<void> {
+  async storeKeys(keysObj: StoredKey): Promise<void> {
     this.adapter.set(this.OTHER_KEYS_KEY, { ...keysObj });
   }
 
-  async loadKeys(): Promise<KeyStore> {
+  async loadKeys(): Promise<StoredKey> {
     return this.adapter.get(this.OTHER_KEYS_KEY);
   }
 

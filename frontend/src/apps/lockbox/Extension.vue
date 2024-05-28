@@ -7,12 +7,12 @@ import init from '@/lib/init';
 
 import Popup from './views/Popup.vue';
 
-const { user } = useUserStore();
+const userStore = useUserStore();
 const { keychain } = useKeychainStore();
 const folderStore = useFolderStore();
 
 onMounted(async () => {
-  await init(user, keychain, folderStore);
+  await init(userStore, keychain, folderStore);
 });
 </script>
 
