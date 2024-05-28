@@ -11,10 +11,10 @@ pros: (more) reactivity?
 
 // Providing just enough typing for a keychain-store to be passed
 // to init() (in init.ts).
-export interface KeychainStore {
+type KeychainStore = {
   keychain: Keychain;
   resetKeychain: () => void;
-}
+};
 
 const useKeychainStore: () => KeychainStore = defineStore('keychain', () => {
   const storage = new Storage();
