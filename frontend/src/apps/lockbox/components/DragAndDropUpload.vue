@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
-
+import { NamedBlob } from '@/lib/filesync';
 import { useDropZone } from '@vueuse/core';
-import { NamedBlob } from '@/types';
 const folderStore = useFolderStore();
 
 const dropZoneRef = ref();

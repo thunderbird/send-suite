@@ -1,13 +1,16 @@
-import { ECE_RECORD_SIZE } from './ece';
 import {
   delay,
   streamToArrayBuffer,
   asyncInitWebSocket,
   listenForResponse,
-} from './utils';
-import { blobStream } from './streams';
-import { encryptStream, decryptStream } from './ece';
-import { Canceler, JsonResponse } from '@/types';
+} from '@/lib/utils';
+import { blobStream } from '@/lib/streams';
+import { ECE_RECORD_SIZE, encryptStream, decryptStream } from '@/lib/ece';
+import { JsonResponse } from '@/lib/api';
+
+export type NamedBlob = Blob & { name: string };
+
+export type Canceler = Record<string, () => void>;
 
 async function _upload(
   stream: ReadableStream,
