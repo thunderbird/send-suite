@@ -3,7 +3,7 @@ import { User } from '@/lib/user';
 import { Keychain } from '@/lib/keychain';
 import { ApiConnection } from '@/lib/api';
 import { CONTAINER_TYPE } from '@/lib/const';
-import { Folder, Item } from '@/types';
+import { Item, FolderResponse } from '@/apps/lockbox/stores/folder-store.types';
 
 export default class Sharer {
   user: User;
@@ -108,7 +108,7 @@ export default class Sharer {
     const parentId = 0;
     const shareOnly = true;
 
-    const response = await this.api.call<{ container: Folder }>(
+    const response = await this.api.call<{ container: FolderResponse }>(
       `containers`,
       {
         name: currentContainer.name,

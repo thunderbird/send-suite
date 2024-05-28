@@ -5,36 +5,14 @@ import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
 import Uploader from '@/lib/upload';
 import Downloader from '@/lib/download';
-import { User } from '@/lib/user';
-import { Keychain } from '@/lib/keychain';
 import { CONTAINER_TYPE } from '@/lib/const';
-import { Folder, Item } from '@/types';
-
-export interface FolderStore {
-  rootFolder: Folder;
-  defaultFolder: Folder | null;
-  visibleFolders: Folder[];
-  selectedFolder: Folder;
-  selectedFile: Item;
-  createFolder: () => Promise<Folder>;
-  sync: () => Promise<void>;
-  init: () => void;
-  print: () => void;
-  goToRootFolder: (folderId: number) => Promise<void>;
-  setSelectedFolder: (folderId: number) => void;
-  setSelectedFile: (itemId: number) => Promise<void>;
-  renameFolder: (folderId: number, name: string) => Promise<Folder>;
-  deleteFolder: (folderId: number) => Promise<void>;
-  uploadItem: (fileBlob: Blob, folderId: number) => Promise<Item>;
-  deleteItem: (itemId: number, folderId: number) => Promise<void>;
-  renameItem: (folderId: number, itemId: number, name: string) => Promise<Item>;
-  downloadContent: (
-    uploadId: string,
-    containerId: number,
-    wrappedKeyStr: string,
-    name: string
-  ) => Promise<void>;
-}
+import {
+  Folder,
+  FolderResponse,
+  Item,
+  ItemResponse,
+  FolderStore,
+} from '@/apps/lockbox/stores/folder-store.types';
 
 const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
   const { api } = useApiStore();
@@ -80,13 +58,13 @@ const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
   }
 
   async function fetchSubtree(rootFolderId: number): Promise<void> {
-    const tree = await api.call<Folder>(`containers/${rootFolderId}/`);
+    const tree = await api.call<FolderResponse>(`containers/${rootFolderId}/`);
     folders.value = tree.children;
     rootFolder.value = tree;
   }
 
   async function fetchUserFolders(): Promise<void> {
-    const userFolders = await api.call<Folder[]>(`users/folders`);
+    const userFolders = await api.call<FolderResponse[]>(`users/folders`);
     folders.value = userFolders;
     rootFolder.value = null;
   }
@@ -141,7 +119,7 @@ const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
   }
 
   async function renameFolder(folderId: number, name: string): Promise<Folder> {
-    const result = await api.call<Folder>(
+    const result = await api.call<FolderResponse>(
       `containers/${folderId}/rename`,
       { name },
       'POST'
@@ -159,7 +137,7 @@ const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
     itemId: number,
     name: string
   ): Promise<Item> {
-    const result = await api.call<Item>(
+    const result = await api.call<ItemResponse>(
       `containers/${folderId}/item/${itemId}/rename`,
       { name },
       'POST'
@@ -218,8 +196,8 @@ const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
     containerId: number,
     wrappedKeyStr: string,
     name: string
-  ): Promise<void> {
-    const success = await downloader.doDownload(
+  ): Promise<boolean> {
+    return await downloader.doDownload(
       uploadId,
       containerId,
       wrappedKeyStr,

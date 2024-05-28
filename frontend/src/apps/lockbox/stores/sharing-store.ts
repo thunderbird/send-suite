@@ -6,7 +6,7 @@ import useKeychainStore from '@/stores/keychain-store';
 import { Keychain, Util } from '@/lib/keychain';
 import { getContainerKeyFromChallenge } from '@/lib/challenge';
 import Sharer from '@/lib/share';
-import { Container, Item } from '@/types';
+import { Item, FolderResponse } from '@/apps/lockbox/stores/folder-store.types';
 import { User } from '@/lib/user';
 
 const useSharingStore = defineStore('sharingManager', () => {
@@ -120,7 +120,7 @@ const useSharingStore = defineStore('sharingManager', () => {
   }
 
   async function getSharedFolder(hash: string) {
-    return await api.call<Container>(`sharing/${hash}/`);
+    return await api.call<FolderResponse>(`sharing/${hash}/`);
   }
 
   async function getInvitations(userId: number) {
