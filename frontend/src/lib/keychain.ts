@@ -1,5 +1,12 @@
-import { JwkKeyPair, KeyStore } from '@/types';
-import { Storage } from './storage';
+import { Storage } from '@/lib/storage';
+
+export type JwkKeyPair = Record<'publicKey' | 'privateKey', string>;
+
+// Stored keys are always strings.
+// They are parsed as needed for encrypting/decrypting.
+export type StoredKey = {
+  [key: number]: string;
+};
 
 // Bring in node crypto for use with automated tests.
 // When running in the browser, we use window.crypto
@@ -347,7 +354,7 @@ export class Keychain {
   rsa: Rsa;
   challenge: Challenge;
   backup: Backup;
-  _keys: KeyStore;
+  _keys: StoredKey;
   _storage: Storage;
   constructor(storage: Storage) {
     this._init(storage);
