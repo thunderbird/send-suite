@@ -1,4 +1,4 @@
-import { JsonResponse } from '@/types';
+import { JsonResponse } from '@/lib/api';
 
 export function delay(delay = 100): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, delay));
