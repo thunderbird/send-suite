@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer';
-import { transformStream } from './streams';
+import { transformStream } from '@/lib/streams';
 
 // Polyfill necessary after tsconfig.json chnages
 import getRandomValues from 'get-random-values';

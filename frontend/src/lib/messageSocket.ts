@@ -1,4 +1,4 @@
-import { connectToWebSocketServer } from './utils';
+import { connectToWebSocketServer } from '@/lib/utils';
 
 export async function createMessageSocket(
   endpoint: string
