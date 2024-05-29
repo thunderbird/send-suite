@@ -5,7 +5,7 @@ import { UserStore } from '@/stores/user-store';
 
 /**
  * Loads user and keychain from storage; creates default folder if necessary.
- * @param {UserStore} userStore - Instance of User class.
+ * @param {UserStore} userStore - Pinia store for managing user.
  * @param {Keychain} keychain - Instance of Keychain class.
  * @param {FolderStore} folderStore - Pinia store for managing folders.
  * @return {Promise<INIT_ERRORS>} - Returns Promise of 0 (success) or an error code typed by INIT_ERRORS.

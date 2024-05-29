@@ -6,6 +6,7 @@ import useKeychainStore from '@/stores/keychain-store';
 import Uploader from '@/lib/upload';
 import Downloader from '@/lib/download';
 import { CONTAINER_TYPE } from '@/lib/const';
+
 import {
   Folder,
   FolderResponse,
@@ -13,6 +14,7 @@ import {
   ItemResponse,
   FolderStore,
 } from '@/apps/lockbox/stores/folder-store.types';
+import { NamedBlob } from '@/lib/filesync';
 
 const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
   const { api } = useApiStore();
@@ -149,7 +151,10 @@ const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
     return result;
   }
 
-  async function uploadItem(fileBlob: Blob, folderId: number): Promise<Item> {
+  async function uploadItem(
+    fileBlob: NamedBlob,
+    folderId: number
+  ): Promise<Item> {
     const newItem = await uploader.doUpload(fileBlob, folderId);
     if (newItem && rootFolder.value) {
       rootFolder.value.items = [...rootFolder.value.items, newItem];

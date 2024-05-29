@@ -23,6 +23,6 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["vite/client", "@types/firefox-webext-browser"]
+    "types": ["vite/client", "vitest/globals", "@types/firefox-webext-browser"]
   }
 }

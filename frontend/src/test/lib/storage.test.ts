@@ -1,5 +1,6 @@
 import { expect, describe, it } from 'vitest';
-import { Storage } from './index';
+import { Storage } from '@/lib/storage/index';
+import { UserTier } from '@/lib/user';
 
 describe('User storage', () => {
   it('can store a user without error', async () => {
@@ -7,6 +8,7 @@ describe('User storage', () => {
     const userObj = {
       id: 12345,
       email: 'ned@ryerson.com',
+      tier: UserTier.PRO,
     };
     expect(async () => {
       await storage.storeUser(userObj);
@@ -17,6 +19,7 @@ describe('User storage', () => {
     const userObj = {
       id: 12345,
       email: 'ned@ryerson.com',
+      tier: UserTier.PRO,
     };
     const storedUser = await storage.loadUser();
     expect(userObj).toEqual(storedUser);

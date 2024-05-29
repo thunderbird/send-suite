@@ -50,7 +50,7 @@ export default class Uploader {
       wrappingKey
     );
 
-    const blob = fileBlob;
+    const blob = fileBlob as NamedBlob;
     const filename = blob.name;
 
     // Blob is encrypted as it is uploaded through a websocket connection

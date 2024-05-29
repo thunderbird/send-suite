@@ -356,7 +356,7 @@ export class Keychain {
   backup: Backup;
   _keys: StoredKey;
   _storage: Storage;
-  constructor(storage: Storage) {
+  constructor(storage?: Storage) {
     this._init(storage);
   }
 

@@ -31,6 +31,9 @@ export class ApiConnection {
    * @template T - The expected shape of the response object. If not provided, defaults to any object shape.
    *
    * @param {string} path - The path of the API endpoint. (Should not include `/api/`.)
+   * @param {Record<string, any>} body - Optional Request body to submit to the API.
+   * @param {string} method - The HTTP Request method.
+   * @param {Record<string, any>} headers - Optional Request headers to include.
    * @returns {AsyncJsonResponse<T>} Returns a Promise that resolves to the response data (or null).
    *
    */
