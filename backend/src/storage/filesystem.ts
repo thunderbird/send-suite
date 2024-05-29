@@ -6,7 +6,7 @@ import { Config, Logger } from '../types/custom';
 const stat = promisify(fs.stat);
 
 export default class FSStorage {
-  private dir: string;
+  dir: string;
 
   constructor(config: Config) {
     this.dir = config.file_dir;
