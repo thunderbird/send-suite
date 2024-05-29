@@ -41,9 +41,10 @@ test('writes a file to disk', async (t) => {
   const storage = new FSStorage(config);
   await storage.set(randomFileName, fs.createReadStream(filePath));
   t.truthy(fs.existsSync(`/tmp/${randomFileName}`));
-
-  // clean up
-  fs.unlinkSync(`/tmp/${randomFileName}`);
+  t.teardown(() => {
+    // clean up
+    fs.unlinkSync(`/tmp/${randomFileName}`);
+  });
 });
 
 test('deletes a file from disk', async (t) => {
