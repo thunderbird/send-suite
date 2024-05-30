@@ -39,12 +39,13 @@ test('writes a file to disk', async (t) => {
   const filePath = path.join(mockDataDir, fname);
   const config = { file_dir: '/tmp' };
   const storage = new FSStorage(config);
-  await storage.set(randomFileName, fs.createReadStream(filePath));
-  t.truthy(fs.existsSync(`/tmp/${randomFileName}`));
   t.teardown(() => {
     // clean up
     fs.unlinkSync(`/tmp/${randomFileName}`);
   });
+
+  await storage.set(randomFileName, fs.createReadStream(filePath));
+  t.truthy(fs.existsSync(`/tmp/${randomFileName}`));
 });
 
 test('deletes a file from disk', async (t) => {
