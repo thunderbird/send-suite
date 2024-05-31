@@ -1,4 +1,4 @@
-import fs from 'fs';
+import { ReadStream } from 'fs';
 import { Readable } from 'stream';
 import logger from '../logger';
 import {
@@ -38,7 +38,7 @@ export class FileStore {
     this.client = new Storage(config);
   }
 
-  async set(id: string, stream: fs.ReadStream): Promise<boolean> {
+  async set(id: string, stream: ReadStream): Promise<boolean> {
     const result = await this.client.addFileFromStream({
       stream,
       targetPath: id,
