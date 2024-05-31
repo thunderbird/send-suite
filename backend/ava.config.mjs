@@ -2,5 +2,5 @@
 export default {
   files: ['src/test/**/*.test.ts'],
   extensions: ['ts'],
-  require: ['ts-node/register'],
+  require: ['ts-node/register', 'dotenv/config'],
 };
