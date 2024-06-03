@@ -36,6 +36,17 @@ export class FileStore {
           };
           logger.info(`Initializing Backblaze storage ☁️`);
           break;
+        case 's3':
+          config = {
+            type: StorageType.S3,
+            region: process.env.S3_REGION || 'auto',
+            bucketName: process.env.S3_BUCKET_NAME,
+            endpoint: process.env.S3_ENDPOINT,
+            accessKeyId: process.env.S3_ACCESS_KEY,
+            secretAccessKey: process.env.S3_SECRET_KEY,
+          };
+          logger.info(`Initializing S3 storage ☁️`);
+          break;
         case 'fs':
         // intentional fall-through;
         // fs is default
