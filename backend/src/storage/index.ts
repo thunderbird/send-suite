@@ -8,7 +8,7 @@ import {
 } from '@tweedegolf/storage-abstraction';
 
 /**
- * Storage adapter for various storage backends including filesystem and backblaze.
+ * Storage adapter for various storage backends including filesystem and Backblaze.
  */
 export class FileStore {
   /**
@@ -19,6 +19,9 @@ export class FileStore {
   /**
    * Initialize the adapter.
    * @param config: StorageAdapterConfig - Optional configuration information. If omitted, we fall back to the filesystem.
+   *
+   * When configured for Backblaze, uses the native API instead of the S3-compatible API
+   * (As of 2024-06-01, there were errors when accessing Backblaze via its S3 API.)
    */
   constructor(config?: StorageAdapterConfig) {
     if (!config) {
