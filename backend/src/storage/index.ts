@@ -6,6 +6,7 @@ import {
   StorageType,
   StorageAdapterConfig,
 } from '@tweedegolf/storage-abstraction';
+import { FileStreamParams } from '@tweedegolf/storage-abstraction/dist/types/add_file_params';
 
 /**
  * Storage adapter for various storage backends including filesystem and Backblaze.
@@ -57,11 +58,19 @@ export class FileStore {
    * @param stream: ReadStream - A readable stream of the file's contents.
    * @returns True if the file was added without error; otherwise false.
    */
-  async set(id: string, stream: ReadStream): Promise<boolean> {
-    const result = await this.client.addFileFromStream({
+  async set(id: string, stream: ReadStream, size?: number): Promise<boolean> {
+    const params: FileStreamParams = {
       stream,
       targetPath: id,
-    });
+    };
+
+    if (size) {
+      params.options = {
+        ContentLength: size,
+      };
+    }
+
+    const result = await this.client.addFileFromStream(params);
     if (result.error) {
       logger.error(`Error writing to storage: ${result.error}`);
     }

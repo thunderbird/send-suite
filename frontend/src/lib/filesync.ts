@@ -1,7 +1,7 @@
 import { streamToArrayBuffer } from '@/lib/utils';
 import { blobStream } from '@/lib/streams';
 import { decryptStream } from '@/lib/ece';
-import { _download, _upload } from '@/lib/helpers';
+import { _download, _upload, calculateEncryptedSize } from '@/lib/helpers';
 
 export type NamedBlob = Blob & { name: string };
 
@@ -59,7 +59,8 @@ export async function getBlob(
 
 export async function sendBlob(blob: Blob, aesKey: CryptoKey): Promise<string> {
   const stream = blobStream(blob);
-  const result = await _upload(stream, aesKey);
+  const encryptedSize = calculateEncryptedSize(blob.size);
+  const result = await _upload(stream, aesKey, encryptedSize);
   // Using a type guard since a JsonResponse can be a single object or an array
   if (Array.isArray(result)) {
     return result[0].id;

@@ -36,6 +36,7 @@ export async function _download(
 export async function _upload(
   stream: ReadableStream,
   key: CryptoKey,
+  encryptedSize: number = -1,
   canceler: Canceler = {}
 ): Promise<JsonResponse> {
   let host = import.meta.env.VITE_SEND_SERVER_URL;
@@ -51,6 +52,7 @@ export async function _upload(
     // Send a preamble
     const fileMeta = {
       name: 'filename',
+      size: encryptedSize,
     };
 
     // Set up handler for the response to the preamble.
