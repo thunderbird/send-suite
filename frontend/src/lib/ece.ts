@@ -10,6 +10,8 @@ const KEY_LENGTH = 16;
 const MODE_ENCRYPT = 'encrypt';
 const MODE_DECRYPT = 'decrypt';
 export const ECE_RECORD_SIZE = 1024 * 64;
+export const OVERHEAD_SIZE = TAG_LENGTH + 1;
+export const HEADER_SIZE = 21;
 
 const encoder = new TextEncoder();
 
@@ -102,7 +104,7 @@ class ECETransformer {
   }
 
   readHeader(buffer: Buffer) {
-    if (buffer.length < 21) {
+    if (buffer.length < HEADER_SIZE) {
       throw new Error('chunk too small for reading header');
     }
     const header: {
@@ -200,14 +202,14 @@ class StreamSlicer {
   constructor(rs: number, mode: string) {
     this.mode = mode;
     this.rs = rs;
-    this.chunkSize = mode === MODE_ENCRYPT ? rs - 17 : 21;
+    this.chunkSize = mode === MODE_ENCRYPT ? rs - OVERHEAD_SIZE : HEADER_SIZE;
     this.partialChunk = new Uint8Array(this.chunkSize); //where partial chunks are saved
     this.offset = 0;
   }
 
   send(buf, controller) {
     controller.enqueue(buf);
-    if (this.chunkSize === 21 && this.mode === MODE_DECRYPT) {
+    if (this.chunkSize === HEADER_SIZE && this.mode === MODE_DECRYPT) {
       this.chunkSize = this.rs;
     }
     this.partialChunk = new Uint8Array(this.chunkSize);

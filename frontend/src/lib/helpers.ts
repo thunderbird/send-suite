@@ -1,6 +1,10 @@
-import { ECE_RECORD_SIZE } from './ece';
+import {
+  encryptStream,
+  ECE_RECORD_SIZE,
+  OVERHEAD_SIZE,
+  HEADER_SIZE,
+} from './ece';
 import { delay, asyncInitWebSocket, listenForResponse } from './utils';
-import { encryptStream } from './ece';
 import { Canceler, JsonResponse } from '@/types';
 export async function _download(
   id: string,
@@ -102,4 +106,27 @@ export async function _upload(
       ws.close();
     }
   }
+}
+
+/**
+ * Calculates the size of a file after encrypting.
+ *
+ * @param originalSize: number - the original file size.
+ * @param recordSize: number - the size of each chunk of data that gets encrypted.
+ * @returns number - the total size of the file after encryption.
+ */
+export function calculateEncryptedSize(
+  originalSize: number,
+  recordSize = ECE_RECORD_SIZE
+) {
+  // To get the original chunk size, subtract the overhead (which is tag size + padding)
+  const chunkSize = recordSize - OVERHEAD_SIZE;
+
+  // Calculate the number of chunks produced while slicing up the original file.
+  const numChunks = Math.ceil(originalSize / chunkSize);
+
+  // Add the overhead per chunk; add the header.
+  const totalSize = originalSize + numChunks * OVERHEAD_SIZE + HEADER_SIZE;
+
+  return totalSize;
 }
