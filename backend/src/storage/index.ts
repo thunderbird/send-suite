@@ -7,9 +7,19 @@ import {
   StorageAdapterConfig,
 } from '@tweedegolf/storage-abstraction';
 
+/**
+ * Storage adapter for various storage backends including filesystem and backblaze.
+ */
 export class FileStore {
+  /**
+   * A storage client instance.
+   */
   private client: Storage;
 
+  /**
+   * Initialize the adapter.
+   * @param config: StorageAdapterConfig - Optional configuration information. If omitted, we fall back to the filesystem.
+   */
   constructor(config?: StorageAdapterConfig) {
     if (!config) {
       switch (process.env.STORAGE_BACKEND) {
@@ -38,6 +48,12 @@ export class FileStore {
     this.client = new Storage(config);
   }
 
+  /**
+   * Add a new file to storage.
+   * @param id: string - The unique identifier for the file.
+   * @param stream: ReadStream - A readable stream of the file's contents.
+   * @returns True if the file was added without error; otherwise false.
+   */
   async set(id: string, stream: ReadStream): Promise<boolean> {
     const result = await this.client.addFileFromStream({
       stream,
@@ -49,16 +65,35 @@ export class FileStore {
     return !result.error;
   }
 
+  /**
+   * Returns the size of the file in bytes.
+   * @param id: string - The unique identifier for the file.
+   * @returns The size of the file in bytes.
+   *
+   * Note that an encrypted file's size is greater than or equal to the unencrypted file's size.
+   */
   async length(id: string): Promise<number> {
     const result = await this.client.sizeOf(id);
     return result.value;
   }
 
+  /**
+   * Returns a readable stream for a file in storage.
+   * @param id: string - The unique identifier for the file.
+   * @returns A readable stream for the file.
+   */
   async get(id: string): Promise<Readable> {
     const result = await this.client.getFileAsStream(id);
     return result.value;
   }
 
+  /**
+   * Removes a file from storage.
+   * @param id: string - The unique identifier for the file.
+   * @returns True if the file was successfully removed; otherwise false.
+   *
+   * No error is thrown if the file is not found.
+   */
   del(id: string): Promise<boolean> {
     return new Promise(async (resolve, reject) => {
       const result = await this.client.removeFile(id);
