@@ -1,5 +1,5 @@
 import anyTest, { TestFn } from 'ava';
-import { FileStore } from '../../storage';
+import { FileStore } from '../../storage/';
 import {
   StorageType,
   StorageAdapterConfig,
@@ -19,9 +19,10 @@ test.before((t) => {
   const filePath = path.join(mockDataDir, fileName);
 
   const config: StorageAdapterConfig = {
-    type: StorageType.LOCAL,
-    directory: process.env.TEST_FS_LOCAL_DIR,
-    bucketName: process.env.TEST_FS_LOCAL_BUCKET,
+    type: StorageType.B2,
+    bucketName: process.env.TEST_B2_BUCKET_NAME,
+    applicationKeyId: process.env.TEST_B2_APPLICATION_KEY_ID,
+    applicationKey: process.env.TEST_B2_APPLICATION_KEY,
   };
 
   t.context = {
@@ -33,7 +34,7 @@ test.before((t) => {
   };
 });
 
-test.serial('writes a file to fs', async (t) => {
+test.serial('writes a file to bucket', async (t) => {
   const { randomFileName, filePath, config } = t.context;
   const storage = new FileStore(config);
   const result = await storage.set(
@@ -44,17 +45,14 @@ test.serial('writes a file to fs', async (t) => {
   t.true(result);
 });
 
-test.serial('returns a valid read stream from fs', async (t) => {
+test.serial('returns a valid read stream from bucket', async (t) => {
   const { randomFileName, config } = t.context;
   const storage = new FileStore(config);
   const result = await storage.get(randomFileName);
   t.truthy(result);
 });
 
-// Even though actually works (and deletes the file)
-// the test throws an error.
-// Skipping for now.
-test.serial.skip('deletes file from fs', async (t) => {
+test.serial('deletes file from bucket', async (t) => {
   const { randomFileName, config } = t.context;
   const storage = new FileStore(config);
   const result = await storage.del(randomFileName);
