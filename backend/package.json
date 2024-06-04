@@ -10,10 +10,9 @@
     "db:migrate": "prisma migrate dev",
     "db:update": "prisma db push",
     "db:reset": "prisma migrate reset",
-    "test": "ava",
-    "test:vite": "vitest",
     "lint:all": "eslint . --fix",
-    "prettier:all": "prettier --write ."
+    "prettier:all": "prettier --write .",
+    "test": "vitest"
   },
   "keywords": [],
   "author": "",
@@ -57,7 +56,6 @@
     "@types/ws": "^8.5.5",
     "@typescript-eslint/parser": "^7.13.1",
     "@vitest/coverage-v8": "^1.6.0",
-    "ava": "^6.1.3",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "globals": "^15.6.0",
