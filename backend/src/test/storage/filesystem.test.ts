@@ -1,4 +1,5 @@
-import anyTest, { TestFn } from 'ava';
+import { expect, describe, it } from 'vitest';
+
 import { FileStore } from '../../storage';
 import {
   StorageType,
@@ -7,16 +8,10 @@ import {
 import path from 'path';
 import fs from 'fs';
 
-// Allow any property to be added to `t.context`
-// https://github.com/avajs/ava/blob/main/docs/recipes/typescript.md#typing-tcontext
-const test = anyTest as TestFn<Record<string, any>>;
-
-// Put file and path names in test context before running any tests.
-test.before((t) => {
-  const randomFileName = `${new Date().getTime()}.txt`;
-  const fileName = 'file.txt';
+describe(`Storage: Filesystem`, () => {
+  const mockFile = 'file.txt';
   const mockDataDir = path.join(__dirname, 'data/');
-  const filePath = path.join(mockDataDir, fileName);
+  const mockFilePath = path.join(mockDataDir, mockFile);
 
   const config: StorageAdapterConfig = {
     type: StorageType.LOCAL,
@@ -24,39 +19,47 @@ test.before((t) => {
     bucketName: process.env.TEST_FS_LOCAL_BUCKET,
   };
 
-  t.context = {
-    config,
-    randomFileName,
-    fileName,
-    mockDataDir,
-    filePath,
-  };
-});
-
-test.serial('writes a file to fs', async (t) => {
-  const { randomFileName, filePath, config } = t.context;
   const storage = new FileStore(config);
-  const result = await storage.set(
-    randomFileName,
-    fs.createReadStream(filePath)
-  );
 
-  t.true(result);
-});
+  it('should write a file to local filesystem', async () => {
+    const fileName = `write-${new Date().getTime()}.txt`;
 
-test.serial('returns a valid read stream from fs', async (t) => {
-  const { randomFileName, config } = t.context;
-  const storage = new FileStore(config);
-  const result = await storage.get(randomFileName);
-  t.truthy(result);
-});
+    const result = await storage.set(
+      fileName,
+      fs.createReadStream(mockFilePath)
+    );
+    expect(result).toBeTruthy();
+  });
 
-// Even though actually works (and deletes the file)
-// the test throws an error.
-// Skipping for now.
-test.serial.skip('deletes file from fs', async (t) => {
-  const { randomFileName, config } = t.context;
-  const storage = new FileStore(config);
-  const result = await storage.del(randomFileName);
-  t.truthy(result);
+  it('should read a file from local filesystem', async () => {
+    const fileName = `read-${new Date().getTime()}.txt`;
+
+    const writeResult = await storage.set(
+      fileName,
+      fs.createReadStream(mockFilePath)
+    );
+    expect(writeResult).toBeTruthy();
+
+    const readResult = await storage.get(fileName);
+    expect(readResult).toBeTruthy();
+  });
+
+  it('should delete a file from local filesystem', async () => {
+    const fileName = `delete-${new Date().getTime()}.txt`;
+
+    const writeResult = await storage.set(
+      fileName,
+      fs.createReadStream(mockFilePath)
+    );
+    expect(writeResult).toBeTruthy();
+
+    const readResult = await storage.get(fileName);
+    expect(readResult).toBeTruthy();
+
+    // Test fails unless we wait for the next tick in the event loop.
+    setTimeout(async () => {
+      const deleteResult = await storage.del(fileName);
+      expect(deleteResult).toBeTruthy();
+    }, 0);
+  });
 });

@@ -1,5 +1,6 @@
-import anyTest, { TestFn } from 'ava';
-import { FileStore } from '../../storage/';
+import { expect, describe, it } from 'vitest';
+
+import { FileStore } from '../../storage';
 import {
   StorageType,
   StorageAdapterConfig,
@@ -7,16 +8,10 @@ import {
 import path from 'path';
 import fs from 'fs';
 
-// Allow any property to be added to `t.context`
-// https://github.com/avajs/ava/blob/main/docs/recipes/typescript.md#typing-tcontext
-const test = anyTest as TestFn<Record<string, any>>;
-
-// Put file and path names in test context before running any tests.
-test.before((t) => {
-  const randomFileName = `${new Date().getTime()}.txt`;
-  const fileName = 'file.txt';
+describe(`Storage: S3-compatible`, () => {
+  const mockFile = 'file.txt';
   const mockDataDir = path.join(__dirname, 'data/');
-  const filePath = path.join(mockDataDir, fileName);
+  const mockFilePath = path.join(mockDataDir, mockFile);
 
   const config: StorageAdapterConfig = {
     type: StorageType.S3,
@@ -27,36 +22,44 @@ test.before((t) => {
     secretAccessKey: process.env.TEST_S3_SECRET_KEY,
   };
 
-  t.context = {
-    config,
-    randomFileName,
-    fileName,
-    mockDataDir,
-    filePath,
-  };
-});
-
-test.serial('writes a file to bucket', async (t) => {
-  const { randomFileName, filePath, config } = t.context;
   const storage = new FileStore(config);
-  const result = await storage.set(
-    randomFileName,
-    fs.createReadStream(filePath)
-  );
 
-  t.true(result);
-});
+  it('should write a file to s3 bucket', async () => {
+    const fileName = `write.txt`;
 
-test.serial('returns a valid read stream from bucket', async (t) => {
-  const { randomFileName, config } = t.context;
-  const storage = new FileStore(config);
-  const result = await storage.get(randomFileName);
-  t.truthy(result);
-});
+    const result = await storage.set(
+      fileName,
+      fs.createReadStream(mockFilePath)
+    );
+    expect(result).toBeTruthy();
+  });
 
-test.serial('deletes file from bucket', async (t) => {
-  const { randomFileName, config } = t.context;
-  const storage = new FileStore(config);
-  const result = await storage.del(randomFileName);
-  t.truthy(result);
+  it('should read a file from s3 bucket', async () => {
+    const fileName = `read.txt`;
+
+    const writeResult = await storage.set(
+      fileName,
+      fs.createReadStream(mockFilePath)
+    );
+    expect(writeResult).toBeTruthy();
+
+    const readResult = await storage.get(fileName);
+    expect(readResult).toBeTruthy();
+  });
+
+  it('should delete a file from s3 bucket', async () => {
+    const fileName = `delete.txt`;
+
+    const writeResult = await storage.set(
+      fileName,
+      fs.createReadStream(mockFilePath)
+    );
+    expect(writeResult).toBeTruthy();
+
+    const readResult = await storage.get(fileName);
+    expect(readResult).toBeTruthy();
+
+    const deleteResult = await storage.del(fileName);
+    expect(deleteResult).toBeTruthy();
+  });
 });
