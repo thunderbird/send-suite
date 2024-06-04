@@ -23,7 +23,7 @@ describe(`Storage: Backblaze B2`, () => {
   const storage = new FileStore(config);
 
   it('should write a file to b2 bucket', async () => {
-    const fileName = `write.txt`;
+    const fileName = `write-${new Date().getTime()}.txt`;
 
     const result = await storage.set(
       fileName,
@@ -33,7 +33,7 @@ describe(`Storage: Backblaze B2`, () => {
   });
 
   it('should read a file from b2 bucket', async () => {
-    const fileName = `read.txt`;
+    const fileName = `read-${new Date().getTime()}.txt`;
 
     const writeResult = await storage.set(
       fileName,
@@ -46,7 +46,7 @@ describe(`Storage: Backblaze B2`, () => {
   });
 
   it('should delete a file from b2 bucket', async () => {
-    const fileName = `delete.txt`;
+    const fileName = `delete-${new Date().getTime()}.txt`;
 
     const writeResult = await storage.set(
       fileName,
