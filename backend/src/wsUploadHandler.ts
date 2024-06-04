@@ -72,7 +72,7 @@ async function handleUpload(ws, message, fileStream) {
 
   // Remember: storage is `storage/index.js`
   // which hands off to the underlying storage mechanism.
-  await storage.set(uploadId, fileStream);
+  await storage.set(uploadId, fileStream, fileInfo.size);
   if (ws.readyState === 1) {
     // if the socket is closed by a canceled upload the stream
     // ends without an error so we need to check the state

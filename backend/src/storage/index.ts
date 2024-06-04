@@ -6,6 +6,7 @@ import {
   StorageType,
   StorageAdapterConfig,
 } from '@tweedegolf/storage-abstraction';
+import { FileStreamParams } from '@tweedegolf/storage-abstraction/dist/types/add_file_params';
 
 /**
  * Storage adapter for various storage backends including filesystem and Backblaze.
@@ -35,6 +36,17 @@ export class FileStore {
           };
           logger.info(`Initializing Backblaze storage ☁️`);
           break;
+        case 's3':
+          config = {
+            type: StorageType.S3,
+            region: process.env.S3_REGION || 'auto',
+            bucketName: process.env.S3_BUCKET_NAME,
+            endpoint: process.env.S3_ENDPOINT,
+            accessKeyId: process.env.S3_ACCESS_KEY,
+            secretAccessKey: process.env.S3_SECRET_KEY,
+          };
+          logger.info(`Initializing S3 storage ☁️`);
+          break;
         case 'fs':
         // intentional fall-through;
         // fs is default
@@ -57,11 +69,19 @@ export class FileStore {
    * @param stream: ReadStream - A readable stream of the file's contents.
    * @returns True if the file was added without error; otherwise false.
    */
-  async set(id: string, stream: ReadStream): Promise<boolean> {
-    const result = await this.client.addFileFromStream({
+  async set(id: string, stream: ReadStream, size?: number): Promise<boolean> {
+    const params: FileStreamParams = {
       stream,
       targetPath: id,
-    });
+    };
+
+    if (size) {
+      params.options = {
+        ContentLength: size,
+      };
+    }
+
+    const result = await this.client.addFileFromStream(params);
     if (result.error) {
       logger.error(`Error writing to storage: ${result.error}`);
     }
