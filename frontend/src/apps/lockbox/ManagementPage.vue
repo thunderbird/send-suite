@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, toRaw } from 'vue';
 import init from '@/lib/init';
-import { Storage } from '@/lib/storage';
 import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
 import useConfigurationStore from '@/stores/configuration-store';
@@ -14,7 +13,6 @@ import Btn from '@/apps/lockbox/elements/Btn.vue';
 const DEBUG = true;
 const SERVER = `server`;
 
-const storage = new Storage();
 const userStore = useUserStore();
 const { keychain, resetKeychain } = useKeychainStore();
 const { api } = useApiStore();
@@ -187,23 +185,26 @@ async function dbUserSetup() {
     }
   }
 
-  // Existing init() handles
+  // When we call `init()`, it takes care of:
+  // - loading user from storage
+  // - loading keychain from storage
+  // - creating the default folder
   await init(userStore, keychain, folderStore);
+
+  // Save values to the ref variables.
+  // Really only for debugging purposes.
+  userId.value = userStore.user.id;
+  email.value = userStore.user.email;
 }
 
 async function loginToMozAccount() {
-  // waitaminit...do I get a different session or the same if I open a new window?
-  // Let's find out!
-  // Get the auth url
   const resp = await api.call(`lockbox/fxa/login`);
   if (resp.url) {
     authUrl.value = resp.url;
     openPopup();
-    // redirect (can't open popup: you get a different session)
-    // window.location = resp.url;
   }
 }
-async function pingSession() {
+async function showCurrentServerSession() {
   sessionInfo.value = (await api.call(`users/me`)) ?? `You need to log into your mozilla account`;
 }
 
@@ -228,7 +229,6 @@ function formatSessionInfo(info) {
 async function openPopup() {
   try {
     await browser.windows.create({
-      // url: browser.runtime.getURL(`${serverUrl.value}/lockbox/fxa/login?from=${window.location}`),
       url: authUrl.value,
       type: 'popup',
       allowScriptsToClose: true,
