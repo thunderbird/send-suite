@@ -1,12 +1,19 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { onMounted, ref } from 'vue';
+
+import init from '@/lib/init';
+
 import useUserStore from '@/stores/user-store';
+import useKeychainStore from '@/stores/keychain-store';
+
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import useSharingStore from '@/apps/lockbox/stores/sharing-store';
 
 import { EXTENSION_READY, SHARE_COMPLETE, SHARE_ABORTED, SELECTION_COMPLETE } from '@/lib/const';
 
-const { user } = useUserStore();
+const userStore = useUserStore();
+const { keychain } = useKeychainStore();
+
 const folderStore = useFolderStore();
 const sharingStore = useSharingStore();
 
@@ -57,27 +64,32 @@ function shareAborted() {
   window.close();
 }
 
-watch(
-  () => user.id,
-  () => {
-    try {
-      console.log(`adding listener in Popup for runtime messages`);
-      browser.runtime.onMessage.addListener(async (message, sender) => {
-        console.log(message);
-        const { data } = message;
-        fileBlob.value = data;
-        console.log(`We set the fileBlob to:`);
-        console.log(data);
-      });
+onMounted(async () => {
+  try {
+    await init(userStore, keychain, folderStore);
+    console.log(`
 
-      browser.runtime.sendMessage({
-        type: EXTENSION_READY,
-      });
-    } catch (e) {
-      console.log(`Cannot access browser.runtime, probably not running as an extension`);
-    }
+Just initialized and now we have:
+userStore.user.id ${userStore.user.id}
+
+
+`);
+    console.log(`adding listener in Popup for runtime messages`);
+    browser.runtime.onMessage.addListener(async (message, sender) => {
+      console.log(message);
+      const { data } = message;
+      fileBlob.value = data;
+      console.log(`We set the fileBlob to:`);
+      console.log(data);
+    });
+
+    browser.runtime.sendMessage({
+      type: EXTENSION_READY,
+    });
+  } catch (e) {
+    console.log(`Cannot access browser.runtime, probably not running as an extension`);
   }
-);
+});
 </script>
 
 <template>
