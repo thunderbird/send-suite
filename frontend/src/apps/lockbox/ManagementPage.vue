@@ -75,8 +75,6 @@ async function configureExtension() {
       DEBUG &&
         browser.storage.local.get(accountId).then((accountInfo) => {
           if (accountInfo[accountId] && SERVER in accountInfo[accountId]) {
-            // const isSame = currentServerUrl.value == accountInfo[accountId][SERVER];
-            // console.log(`Saved is same as current?? e.g., did we update? ${isSame}`);
             configurationStore.setServerUrl(accountInfo[accountId][SERVER]);
             setAccountConfigured(accountId);
           } else {
@@ -222,7 +220,11 @@ async function finishLogin() {
 </script>
 
 <template>
-  <h1>Settings</h1>
+  <h1>{{ salutation }}</h1>
+  <button @click.prevent="loginToMozAccount">Log into Mozilla Account</button>
+  <button @click.prevent="finishLogin">Click after moz login</button>
+  <br />
+  <h1>Debug Info</h1>
   <form>
     <label>
       Server URL:
@@ -237,9 +239,6 @@ async function finishLogin() {
       <input disabled v-model="userId" />
     </label>
   </form>
-  <h1>{{ salutation }}</h1>
-  <button @click.prevent="loginToMozAccount">Log into Mozilla Account</button>
-  <button @click.prevent="finishLogin">Click after moz login</button>
   <br />
   <BackupAndRestore />
   <Btn @click.prevent="showCurrentServerSession">ping session</Btn>
