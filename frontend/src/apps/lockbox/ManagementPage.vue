@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, toRaw } from 'vue';
 import init from '@/lib/init';
-import { Storage } from '@/lib/storage';
 import useUserStore from '@/stores/user-store';
 import useKeychainStore from '@/stores/keychain-store';
 import useConfigurationStore from '@/stores/configuration-store';
@@ -14,7 +13,6 @@ import Btn from '@/apps/lockbox/elements/Btn.vue';
 const DEBUG = true;
 const SERVER = `server`;
 
-const storage = new Storage();
 const userStore = useUserStore();
 const { keychain, resetKeychain } = useKeychainStore();
 const { api } = useApiStore();
@@ -24,15 +22,15 @@ const configurationStore = useConfigurationStore();
 const authUrl = ref('');
 const sessionInfo = ref(null);
 
-configurationStore.$onAction((actionInfo) => {
-  // console.log(actionInfo);
+const salutation = ref('');
+
+configurationStore.$onAction(() => {
   console.log(`the serverUrl is ${configurationStore.serverUrl}`);
 });
 
 const currentServerUrl = ref(configurationStore.serverUrl);
 const email = ref(null);
 const userId = ref(null);
-const jwkPublicKey = ref('');
 
 // This specifies the id of the provider chosen in the
 // "Composition > Attachments" window.
@@ -40,8 +38,9 @@ const jwkPublicKey = ref('');
 const accountId = new URL(location.href).searchParams.get('accountId');
 
 function setAccountConfigured(accountId) {
+  // Let TB know that extension is ready for use with cloudFile API.
   try {
-    //@ts-ignore
+    // @ts-ignore
     browser.cloudFile.updateAccount(accountId, {
       configured: true,
     });
@@ -50,28 +49,17 @@ function setAccountConfigured(accountId) {
   }
 }
 
-// Initialize the settings
-onMounted(async () => {
-  try {
-    // app-sepcific initialization
-    await init(userStore, keychain, folderStore);
-    email.value = userStore.user.email;
-    userId.value = userStore.user.id;
-
-    // extension-specific initialization
-    browser.storage.local.get(accountId).then((accountInfo) => {
-      if (accountInfo[accountId] && SERVER in accountInfo[accountId]) {
-        configurationStore.setServerUrl(accountInfo[accountId][SERVER]);
-        setAccountConfigured(accountId);
-      }
-    });
-  } catch (e) {
-    console.log(`extension init: You're probably running this outside of Thundebird`);
-  }
-});
-
 async function configureExtension() {
-  // TODO: disable the input and submit button
+  console.log(`
+
+  Configuring extension with:
+
+  accountId: ${accountId}
+  SERVER: ${SERVER}
+  currentServerUrl.value: ${currentServerUrl.value}
+
+  `);
+
   return browser.storage.local
     .set({
       [accountId]: {
@@ -82,14 +70,13 @@ async function configureExtension() {
       console.log(error);
     })
     .then(() => {
-      // TODO: enable the input and submit button
       setAccountConfigured(accountId);
       configurationStore.setServerUrl(currentServerUrl.value);
       DEBUG &&
         browser.storage.local.get(accountId).then((accountInfo) => {
           if (accountInfo[accountId] && SERVER in accountInfo[accountId]) {
-            const isSame = currentServerUrl.value == accountInfo[accountId][SERVER];
-            console.log(`Saved is same as current?? e.g., did we update? ${isSame}`);
+            configurationStore.setServerUrl(accountInfo[accountId][SERVER]);
+            setAccountConfigured(accountId);
           } else {
             console.log(`You probably need to wait longer`);
           }
@@ -97,86 +84,60 @@ async function configureExtension() {
     });
 }
 
+// Initialize the settings
+onMounted(async () => {
+  salutation.value = 'Please log in.';
+  try {
+    // See if we already have a valid session.
+    // If so, hydrate our user using session data.
+    const didPopulate = await userStore.populateFromSession();
+    if (!didPopulate) {
+      console.warn(`DEBUG: could not retrieve user; did mozilla login fail?`);
+      return;
+    }
+    // app-sepcific initialization
+    await init(userStore, keychain, folderStore);
+    // If init found anything in storage, populate our
+    // debug ref vars with those values.
+    email.value = userStore.user.email;
+    userId.value = userStore.user.id;
+  } catch (e) {
+    console.log(e);
+  }
+  try {
+    // extension-specific initialization
+    await configureExtension();
+  } catch (e) {
+    console.log(`extension init: You're probably running this outside of Thundebird`);
+  }
+  salutation.value = 'You are logged into your Mozilla Account';
+});
+
+// Unused for now, but will need when implementing logout.
 function clean() {
-  storage.clear();
+  // TODO: make sure we clear the stored user and stored keychain.
+  // Might need to add functions to keychainStore.
+
   resetKeychain();
   folderStore.init();
   folderStore.print();
 }
 
-async function logout() {
-  await clean();
-  email.value = '';
-  userId.value = '';
-  jwkPublicKey.value = '';
-}
-
-async function login() {
-  if (!email.value) {
-    alert('email address is required for login');
-    return;
-  }
-  if (email.value !== userStore.user.email) {
-    console.log(`we're logging in as a different user. cleaning up and starting fresh`);
-    await clean();
-    await keychain.rsa.generateKeyPair();
-    await keychain.store();
-  }
-
-  const loginResp = await userStore.login(email.value);
-  if (!loginResp) {
-    console.log(`could not log in, trying to create`);
-
-    jwkPublicKey.value = JSON.stringify(await keychain.rsa.getPublicKeyJwk());
-    const createUserResp = await userStore.createUser(email.value, jwkPublicKey.value);
-    if (!createUserResp) {
-      console.log(`could not create user either. that's pretty bad`);
-      alert(`could neither log in nor create user`);
-      return;
-    }
-
-    userStore.user.id = createUserResp.id;
-    userStore.user.email = createUserResp.email;
-  }
-  // save user to storage
-  console.log(`storing new user with id ${userStore.user.id}`);
-  await userStore.store();
-  // then do the normal init (which should also log us in, possibly for a second time)
-  await init(userStore, keychain, folderStore);
-
-  // put our results in the form
-  email.value = userStore.user.email;
-  userId.value = userStore.user.id;
-  console.log(`finished login on ManagementPage.vue`);
-}
-
-async function save() {
-  try {
-    // app-specific config
-    await login();
-
-    // extension-specific config
-    await configureExtension();
-  } catch (e) {
-    console.log(`save: You're probably running this outside of Thundebird`);
-  }
-}
-
 async function dbUserSetup() {
-  // Populate the user if they exist
+  // Populate the user from the session.
   const didPopulate = await userStore.populateFromSession();
   if (!didPopulate) {
     console.warn(`DEBUG: could not retrieve user; did mozilla login fail?`);
     return;
   }
+  // Store the user we got by populating from session.
   userStore.store();
-  userStore.user.id = userStore.user.id;
-  userStore.user.email = userStore.user.email;
 
-  // Check if the user has a public key.
+  // Check if we got our public key from the session.
   // If not, this is almost certainly a new user.
   const publicKey = await userStore.getPublicKey();
   if (!publicKey) {
+    // New user needs a keypair.
     await keychain.rsa.generateKeyPair();
     await keychain.store();
 
@@ -187,23 +148,26 @@ async function dbUserSetup() {
     }
   }
 
-  // Existing init() handles
+  // When we call `init()`, it takes care of:
+  // - loading user from storage
+  // - loading keychain from storage
+  // - creating the default folder
   await init(userStore, keychain, folderStore);
+
+  // Save values to the ref variables.
+  // Really only for debugging purposes.
+  userId.value = userStore.user.id;
+  email.value = userStore.user.email;
 }
 
 async function loginToMozAccount() {
-  // waitaminit...do I get a different session or the same if I open a new window?
-  // Let's find out!
-  // Get the auth url
   const resp = await api.call(`lockbox/fxa/login`);
   if (resp.url) {
     authUrl.value = resp.url;
     openPopup();
-    // redirect (can't open popup: you get a different session)
-    // window.location = resp.url;
   }
 }
-async function pingSession() {
+async function showCurrentServerSession() {
   sessionInfo.value = (await api.call(`users/me`)) ?? `You need to log into your mozilla account`;
 }
 
@@ -228,7 +192,6 @@ function formatSessionInfo(info) {
 async function openPopup() {
   try {
     await browser.windows.create({
-      // url: browser.runtime.getURL(`${serverUrl.value}/lockbox/fxa/login?from=${window.location}`),
       url: authUrl.value,
       type: 'popup',
       allowScriptsToClose: true,
@@ -247,36 +210,38 @@ And, we should show that information here instead of showing the login button.
 }
 
 async function finishLogin() {
-  await pingSession();
+  await showCurrentServerSession();
   await dbUserSetup();
   await configureExtension();
+
+  // TODO: confirm that I am saving the user and keys when I init() (which is in dbUserSetup)
+  salutation.value = 'You are logged into your Mozilla Account';
 }
 </script>
 
 <template>
-  <h1>Settings</h1>
+  <h1>{{ salutation }}</h1>
+  <button @click.prevent="loginToMozAccount">Log into Mozilla Account</button>
+  <button @click.prevent="finishLogin">Click after moz login</button>
+  <br />
+  <h1>Debug Info</h1>
   <form>
     <label>
       Server URL:
-      <input type="url" v-model="currentServerUrl" />
+      <input disabled v-model="currentServerUrl" />
     </label>
     <label>
       Email:
-      <input type="url" v-model="email" />
+      <input disabled v-model="email" />
     </label>
-    <p v-if="userId">User ID: {{ userId }}</p>
-    <div style="text-align: right">
-      <button type="submit" @click.prevent="save">Save</button>
-    </div>
+    <label>
+      User ID:
+      <input disabled v-model="userId" />
+    </label>
   </form>
-  <h1>Hi.</h1>
-  <button @click.prevent="loginToMozAccount">Log into Mozilla Account</button>
-  <button @click.prevent="finishLogin">Click after moz login</button>
-  <!-- <br />
-  <button v-if="authUrl" @click.prevent="openPopup">Click this button Moz Acct with {{ authUrl }}</button> -->
   <br />
   <BackupAndRestore />
-  <Btn @click.prevent="pingSession">ping session</Btn>
+  <Btn @click.prevent="showCurrentServerSession">ping session</Btn>
   <br />
   <pre v-if="sessionInfo">
     {{ formatSessionInfo(sessionInfo) }}
