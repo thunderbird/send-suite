@@ -17,24 +17,5 @@ logs
 .env
 .env.*
 
-# Configuration files
-vue.config.js
-babel.config.js
-
-# Test files
-/tests
-/__tests__
-/__mocks__
-
-# Storybook directory
-/.storybook
-
-# Coverage directory
-/coverage
-
-# Ignore specific files or folders
-/src/some-folder-to-ignore
-/src/some-file-to-ignore.js
-
 /.pnpm-store/
 .pnpm-lock.yaml
