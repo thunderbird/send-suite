@@ -51,7 +51,7 @@ export interface Api {
 }
 
 // interfaces used for API responses
-export interface User {
+export interface UserType {
   id: number;
   email: string;
   tier?: string;
@@ -62,7 +62,7 @@ export interface User {
 export interface Profile {
   mozid: string;
   avatar: string;
-  user?: User;
+  user?: UserType;
   userId?: number;
 }
 
@@ -71,7 +71,7 @@ export interface Share {
   containerId?: number;
   container?: Container;
   senderId: number;
-  sender?: User;
+  sender?: UserType;
 }
 
 export interface Container {
@@ -84,7 +84,7 @@ export interface Container {
   shareOnly?: boolean;
   shares?: Share[];
   ownerId?: number;
-  owner?: User;
+  owner?: UserType;
   wrappedKey?: string;
   parentId?: number;
   parent?: Container;
