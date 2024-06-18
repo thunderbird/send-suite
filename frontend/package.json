@@ -28,6 +28,7 @@
     "@types/firefox-webext-browser": "^120.0.3",
     "@types/ws": "^8.5.5",
     "@vitejs/plugin-vue": "^4.2.3",
+    "@vitest/coverage-v8": "^1.6.0",
     "@vueuse/core": "^10.5.0",
     "autoprefixer": "^10.4.15",
     "buffer": "^6.0.3",
@@ -47,7 +48,7 @@
     "typescript-eslint": "^7.13.0",
     "typescript-language-server": "^3.3.2",
     "vite": "^4.4.5",
-    "vitest": "^0.34.5",
+    "vitest": "^1.6.0",
     "vitest-localstorage-mock": "^0.0.1",
     "vitest-websocket-mock": "^0.3.0",
     "vue-eslint-parser": "^8.0.0"
