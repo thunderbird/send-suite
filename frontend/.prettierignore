@@ -1,0 +1,21 @@
+# Dependency directories
+node_modules
+/dist
+
+# Version control directories
+.git
+
+# Build outputs
+*.min.js
+*.min.css
+
+# Logs
+logs
+*.log
+
+# Environment files
+.env
+.env.*
+
+/.pnpm-store/
+.pnpm-lock.yaml

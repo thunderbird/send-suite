@@ -8,7 +8,9 @@
     "build": "./scripts/build.sh",
     "preview": "vite preview",
     "test": "vitest",
-    "test-debug": "vitest --inspect-brk --single-thread"
+    "test-debug": "vitest --inspect-brk --single-thread",
+    "lint:all": "eslint . --fix",
+    "prettier:all": "prettier --write ."
   },
   "dependencies": {
     "@tabler/icons-vue": "^2.40.0",
@@ -20,7 +22,9 @@
     "vue-router": "4"
   },
   "devDependencies": {
+    "@eslint/js": "^9.5.0",
     "@tailwindcss/forms": "^0.5.6",
+    "@types/eslint-config-prettier": "^6.11.3",
     "@types/firefox-webext-browser": "^120.0.3",
     "@types/ws": "^8.5.5",
     "@vitejs/plugin-vue": "^4.2.3",
@@ -28,16 +32,20 @@
     "@vueuse/core": "^10.5.0",
     "autoprefixer": "^10.4.15",
     "buffer": "^6.0.3",
-    "eslint": "^8.7.0",
+    "eslint": "^9.5.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-vue": "^9.26.0",
+    "globals": "^15.6.0",
     "happy-dom": "^14.10.1",
     "mock-socket": "^9.3.1",
     "msw": "^2.3.0",
     "postcss": "^8.4.28",
     "postcss-import": "^15.1.0",
-    "prettier": "^2.5.1",
+    "prettier": "^3.0.0",
     "tailwindcss": "^3.3.3",
     "tsx": "^4.7.0",
     "typescript": "^5.2.2",
+    "typescript-eslint": "^7.13.0",
     "typescript-language-server": "^3.3.2",
     "vite": "^4.4.5",
     "vitest": "^1.6.0",
