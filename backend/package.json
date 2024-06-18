@@ -10,7 +10,9 @@
     "db:migrate": "prisma migrate dev",
     "db:update": "prisma migrate deploy",
     "db:reset": "prisma migrate reset",
-    "test": "ava"
+    "test": "ava",
+    "lint:all": "eslint . --fix",
+    "prettier:all": "prettier --write ."
   },
   "keywords": [],
   "author": "",
