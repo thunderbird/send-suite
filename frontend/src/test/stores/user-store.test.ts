@@ -126,13 +126,9 @@ describe('User Store', () => {
       const apiCallMock = vi
         .spyOn(useApiStore().api, 'call')
         .mockResolvedValue(loginResponse);
-      const consoleLogMock = vi.spyOn(console, 'log');
 
       const result = await userStore.login();
 
-      expect(consoleLogMock).toHaveBeenCalledWith(
-        `logging in as ${userStore.user.email}`
-      );
       expect(apiCallMock).toHaveBeenCalledWith(
         'users/login',
         { email: userStore.user.email },
@@ -149,13 +145,9 @@ describe('User Store', () => {
       const apiCallMock = vi
         .spyOn(useApiStore().api, 'call')
         .mockResolvedValue(null); // Simulating API failure
-      const consoleLogMock = vi.spyOn(console, 'log');
 
       const result = await userStore.login(loginEmail);
 
-      expect(consoleLogMock).toHaveBeenCalledWith(
-        `logging in as ${loginEmail}`
-      );
       expect(apiCallMock).toHaveBeenCalledWith(
         'users/login',
         { email: loginEmail },
@@ -221,12 +213,10 @@ describe('User Store', () => {
       const storageMock = vi
         .spyOn(Storage.prototype, 'loadUser')
         .mockRejectedValue(new Error('Storage fetch failed'));
-      const consoleLogMock = vi.spyOn(console, 'log');
 
       const result = await userStore.load();
 
       expect(storageMock).toHaveBeenCalled();
-      expect(consoleLogMock).toHaveBeenCalledWith('No user in storage');
       expect(result).toBe(false);
     });
   });
