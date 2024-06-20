@@ -1,0 +1,14 @@
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🐺 Running pre commit hooks..."
+
+# Run lint-staged on frontend
+echo "🧶 Running lint-staged on frontend..."
+cd frontend && pnpx lint-staged
+
+# Back to root
+cd ..
+
+# Run lint-staged on backend
+echo "🧶 Running lint-staged on backend..."
+cd backend && pnpx lint-staged

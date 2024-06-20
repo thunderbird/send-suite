@@ -37,6 +37,7 @@
     "eslint-plugin-vue": "^9.26.0",
     "globals": "^15.6.0",
     "happy-dom": "^14.10.1",
+    "lint-staged": "^15.2.7",
     "mock-socket": "^9.3.1",
     "msw": "^2.3.0",
     "postcss": "^8.4.28",
@@ -52,5 +53,14 @@
     "vitest-localstorage-mock": "^0.0.1",
     "vitest-websocket-mock": "^0.3.0",
     "vue-eslint-parser": "^8.0.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,vue}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.json": [
+      "prettier --write"
+    ]
   }
 }
