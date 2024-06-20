@@ -1,4 +1,5 @@
-const mockApiCall = vi.fn();
+// eslint-disable-next-line no-var
+var mockApiCall = vi.fn();
 
 vi.mock('../lib/api', () => ({
   ApiConnection: vi.fn(() => ({
@@ -20,9 +21,14 @@ describe('Logger module', () => {
     const consoleSpy = vi.spyOn(console, 'log');
 
     await logger.info(message);
+    expect(mockApiCall).toHaveBeenCalledWith(
+      'logger',
+      expect.objectContaining({ message: JSON.stringify(message) }),
+      'POST'
+    );
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('LOGGER INFO')
+      expect.stringContaining('LOGGER INFO:')
     );
 
     consoleSpy.mockRestore();
@@ -34,6 +40,30 @@ describe('Logger module', () => {
     const consoleErrorSpy = vi.spyOn(console, 'error');
 
     await logger.info(message);
+
+    expect(consoleErrorSpy).toHaveBeenCalled();
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('should log log error messages', async () => {
+    const message = 'A bad error occurred';
+    mockApiCall.mockResolvedValue({ message: 'success' });
+
+    await logger.error(message);
+
+    expect(mockApiCall).toHaveBeenCalledWith(
+      'logger',
+      expect.objectContaining({ message: JSON.stringify(message) }),
+      'POST'
+    );
+  });
+
+  it('should handle failure to log info', async () => {
+    mockApiCall.mockRejectedValue({ message: 'bad error' });
+    const message = { content: 'test message' };
+    const consoleErrorSpy = vi.spyOn(console, 'error');
+
+    await logger.error(message);
 
     expect(consoleErrorSpy).toHaveBeenCalled();
     consoleErrorSpy.mockRestore();

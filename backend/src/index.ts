@@ -114,7 +114,17 @@ app.use('/api/tags', tags);
 app.use('/lockbox/fxa', fxa);
 app.use('/api/lockbox/fxa', fxa);
 app.post('/api/logger', (req, res) => {
-  logger.info(`📳 CLIENT: ${req.body.message}`);
+  const { type, message } = req.body;
+
+  switch (type) {
+    case 'info':
+      logger.info(`📳 CLIENT INFO: ${message}`);
+      break;
+    default:
+      logger.error(`📳 CLIENT ERROR: ${message}`);
+      break;
+  }
+
   res.status(200).json({
     message: 'Logged successfully',
   });
