@@ -10,7 +10,10 @@ const logger = winston.createLogger({
   format: combine(timestamp(), errors({ stack: true }), prettyPrint()),
   defaultMeta: { service: 'user-service' },
   transports: [
-    new File({ filename: ERROR_LOG, level: 'error' }),
+    new File({
+      filename: ERROR_LOG,
+      level: 'error',
+    }),
     new File({ filename: COMBINED_LOG }),
   ],
 });

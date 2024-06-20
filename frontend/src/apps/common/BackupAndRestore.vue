@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
+import { computed, ref } from 'vue';
 
-import useUserStore from '@/stores/user-store';
-import useKeychainStore from '@/stores/keychain-store';
 import useApiStore from '@/stores/api-store';
+import useKeychainStore from '@/stores/keychain-store';
+import useUserStore from '@/stores/user-store';
 
 // move the following imports elsewhere
 import { Util } from '@/lib/keychain';
+import logger from '@/logger';
 
 const PHRASE_SIZE = 12;
 const MIN_WORD_LENGTH = 5;
@@ -35,11 +36,12 @@ const passphrase = computed(() => {
 const msg = ref('');
 const { user, createBackup, getBackup } = useUserStore();
 const { keychain } = useKeychainStore();
-const { api } = useApiStore();
+useApiStore();
 
 async function makeBackup() {
   msg.value = '';
-  console.log(passphrase.value);
+  logger.info(passphrase.value);
+  logger.info(passphrase.value);
 
   if (!passphraseIsComplex(passphrase.value)) {
     msg.value = MSG_NOT_COMPLEX;
@@ -50,13 +52,21 @@ async function makeBackup() {
   const containerKeys = await keychain.exportKeys();
 
   // let's encrypt them with a password
-  const { protectedContainerKeysStr, protectedKeypairStr, passwordWrappedKeyStr, saltStr } = await encryptAll(
+  const {
+    protectedContainerKeysStr,
+    protectedKeypairStr,
+    passwordWrappedKeyStr,
+    saltStr,
+  } = await encryptAll(
     keypair.publicKey,
     keypair.privateKey,
     containerKeys,
     passphrase.value
   );
-  const resp = await createBackup(
+  /* 
+    We should try/catch this
+   */
+  await createBackup(
     user.id,
     protectedContainerKeysStr,
     protectedKeypairStr,
@@ -80,7 +90,8 @@ async function restoreFromBackup() {
 
   msg.value = '';
 
-  const { backupContainerKeys, backupKeypair, backupKeystring, backupSalt } = resp;
+  const { backupContainerKeys, backupKeypair, backupKeystring, backupSalt } =
+    resp;
   try {
     const { publicKeyJwk, privateKeyJwk, containerKeys } = await decryptAll(
       backupContainerKeys,
@@ -100,7 +111,7 @@ async function restoreFromBackup() {
 
     msg.value = 'Restore complete';
   } catch (e) {
-    console.log(e);
+    logger.info(e);
     msg.value = MSG_INCORRECT_PASSPHRASE;
   }
 }
@@ -117,7 +128,11 @@ async function encryptKeys(containerKeysObj, key, salt) {
   const obj = {};
   await Promise.all(
     Object.keys(containerKeysObj).map(async (k) => {
-      const encrypted = await keychain.backup.encryptBackup(containerKeysObj[k], key, salt);
+      const encrypted = await keychain.backup.encryptBackup(
+        containerKeysObj[k],
+        key,
+        salt
+      );
       obj[k] = encrypted;
       return true;
     })
@@ -129,7 +144,11 @@ async function decryptKeys(protectedContainerKeysObj, key, salt) {
   const obj = {};
   await Promise.all(
     Object.keys(protectedContainerKeysObj).map(async (k) => {
-      const decrypted = await keychain.backup.decryptBackup(protectedContainerKeysObj[k], key, salt);
+      const decrypted = await keychain.backup.decryptBackup(
+        protectedContainerKeysObj[k],
+        key,
+        salt
+      );
       obj[k] = decrypted;
       return true;
     })
@@ -138,15 +157,28 @@ async function decryptKeys(protectedContainerKeysObj, key, salt) {
   return obj;
 }
 
-async function encryptAll(publicKeyJwk, privateKeyJwk, containerKeys, password) {
+async function encryptAll(
+  publicKeyJwk,
+  privateKeyJwk,
+  containerKeys,
+  password
+) {
   const key = await keychain.generateBackupKey();
   const salt = Util.generateSalt();
 
   const protectedContainerKeys = await encryptKeys(containerKeys, key, salt);
   const protectedContainerKeysStr = JSON.stringify(protectedContainerKeys);
 
-  const publicKeyCiphertext = await keychain.backup.encryptBackup(publicKeyJwk, key, salt);
-  const privateKeyCiphertext = await keychain.backup.encryptBackup(privateKeyJwk, key, salt);
+  const publicKeyCiphertext = await keychain.backup.encryptBackup(
+    publicKeyJwk,
+    key,
+    salt
+  );
+  const privateKeyCiphertext = await keychain.backup.encryptBackup(
+    privateKeyJwk,
+    key,
+    salt
+  );
 
   const protectedKeypair = {
     publicKey: publicKeyCiphertext,
@@ -154,7 +186,11 @@ async function encryptAll(publicKeyJwk, privateKeyJwk, containerKeys, password) 
   };
   const protectedKeypairStr = JSON.stringify(protectedKeypair);
 
-  const passwordWrappedKeyStr = await keychain.password.wrapContentKey(key, password, salt);
+  const passwordWrappedKeyStr = await keychain.password.wrapContentKey(
+    key,
+    password,
+    salt
+  );
   const saltStr = Util.arrayBufferToBase64(salt);
   return {
     protectedContainerKeysStr,
@@ -172,29 +208,41 @@ async function decryptAll(
   password: string
 ) {
   const salt = Util.base64ToArrayBuffer(saltStr);
-  console.log(`got salt`);
-  console.log(salt);
+  logger.info(`got salt`);
+  logger.info(salt);
 
-  const key = await keychain.password.unwrapContentKey(passwordWrappedKeyStr, password, salt);
-  console.log(`got key`);
-  console.log(key);
+  const key = await keychain.password.unwrapContentKey(
+    passwordWrappedKeyStr,
+    password,
+    salt
+  );
+  logger.info(`got key`);
+  logger.info(key);
 
   const protectedKeypair = JSON.parse(protectedKeypairStr);
-  console.log(`got keypair`);
-  console.log(protectedKeypair);
+  logger.info(`got keypair`);
+  logger.info(protectedKeypair);
   const publicKeyCiphertext = protectedKeypair.publicKey;
   const privateKeyCiphertext = protectedKeypair.privateKey;
 
-  const publicKeyJwk = await keychain.backup.decryptBackup(publicKeyCiphertext, key, salt);
-  console.log(`got public key`);
-  console.log(publicKeyJwk);
-  const privateKeyJwk = await keychain.backup.decryptBackup(privateKeyCiphertext, key, salt);
-  console.log(`got private key`);
-  console.log(privateKeyJwk);
+  const publicKeyJwk = await keychain.backup.decryptBackup(
+    publicKeyCiphertext,
+    key,
+    salt
+  );
+  logger.info(`got public key`);
+  logger.info(publicKeyJwk);
+  const privateKeyJwk = await keychain.backup.decryptBackup(
+    privateKeyCiphertext,
+    key,
+    salt
+  );
+  logger.info(`got private key`);
+  logger.info(privateKeyJwk);
 
   const protectedContainerKeys = JSON.parse(protectedContainerKeysStr);
   const containerKeys = await decryptKeys(protectedContainerKeys, key, salt);
-  console.log(containerKeys);
+  logger.info(containerKeys);
 
   return {
     publicKeyJwk,
@@ -210,19 +258,26 @@ async function decryptAll(
       <header class="flex flex-col gap-4 px-4 py-4">
         <h1>Key Recovery</h1>
         <p>
-          Need informative text telling the user that they need to type in a long passphrase. We'll use that passphrase
-          to encrypt their backup. When logging into another device, they'll visit this page to "install" their keys
-          onto the new device.
+          Need informative text telling the user that they need to type in a
+          long passphrase. We'll use that passphrase to encrypt their backup.
+          When logging into another device, they'll visit this page to "install"
+          their keys onto the new device.
         </p>
       </header>
       <div class="w-full flex flex-col gap-3 px-4">
         <p>Enter your {{ PHRASE_SIZE }} word pass phrase:</p>
         <div>
-          <input v-for="(n, index) in PHRASE_SIZE" :key="index" v-model="words[index]" />
+          <input
+            v-for="(n, index) in PHRASE_SIZE"
+            :key="index"
+            v-model="words[index]"
+          />
         </div>
         <p v-if="msg">{{ msg }}</p>
         <Btn primary @click.prevent="makeBackup">Encrypt and backup keys</Btn>
-        <Btn danger @click.prevent="restoreFromBackup">Restore keys from backup</Btn>
+        <Btn danger @click.prevent="restoreFromBackup"
+          >Restore keys from backup</Btn
+        >
       </div>
     </div>
   </div>
