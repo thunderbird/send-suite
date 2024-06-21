@@ -3,15 +3,20 @@ import { Router } from 'express';
 
 const router: Router = Router();
 
+const loggerPrefix = {
+  info: '📳 CLIENT INFO',
+  error: '📳 CLIENT ERROR',
+};
+
 router.post('/api/logger', (req, res) => {
   const { type, message } = req.body;
 
   switch (type) {
     case 'info':
-      logger.info(`📳 CLIENT INFO: ${message}`);
+      logger.info(`${loggerPrefix.info}: ${message}`);
       break;
     case 'error':
-      logger.error(`📳 CLIENT ERROR: ${message}`);
+      logger.error(`${loggerPrefix.error}: ${message}`);
       break;
   }
 

@@ -9,31 +9,6 @@ const { mockInfoLogger, mockErrorLogger } = vi.hoisted(() => ({
   mockErrorLogger: vi.fn(),
 }));
 
-vi.mock('winston', () => {
-  const mFormat = {
-    combine: vi.fn(),
-    timestamp: vi.fn(),
-    printf: vi.fn(),
-    errors: vi.fn(),
-    prettyPrint: vi.fn(),
-  };
-  const mTransports = {
-    Console: vi.fn(),
-    File: vi.fn(),
-  };
-  const mLogger = {
-    info: vi.fn(),
-    add: vi.fn(),
-  };
-  return {
-    default: {
-      format: mFormat,
-      transports: mTransports,
-      createLogger: vi.fn(() => mLogger),
-    },
-  };
-});
-
 vi.mock('@/logger', () => {
   const mLogger = {
     info: mockInfoLogger,
@@ -44,24 +19,10 @@ vi.mock('@/logger', () => {
   };
 });
 
+// Set up express app with logger router
 const app = express();
-
 app.use(express.json({ limit: '5mb' }));
-
 app.use(router);
-
-app.get('/user', function (req, res) {
-  res.status(200).json({ name: 'john' });
-});
-
-describe('GET /user', () => {
-  it('SANITY GET', async () => {
-    const response = await request(app).get('/user');
-
-    expect(response.body).toEqual({ name: 'john' });
-    expect(response.status).toBe(200);
-  });
-});
 
 describe('POST /api/logger', () => {
   it('should log information from client', async () => {
@@ -88,11 +49,5 @@ describe('POST /api/logger', () => {
     expect(response.status).toBe(200);
 
     expect(mockErrorLogger).toBeCalledWith('📳 CLIENT ERROR: Client error');
-  });
-});
-
-describe('stupid test', () => {
-  it('should pass for sanity', async () => {
-    expect(true).toBe(true);
   });
 });

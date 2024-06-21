@@ -41,7 +41,6 @@ useApiStore();
 async function makeBackup() {
   msg.value = '';
   logger.info(passphrase.value);
-  logger.info(passphrase.value);
 
   if (!passphraseIsComplex(passphrase.value)) {
     msg.value = MSG_NOT_COMPLEX;

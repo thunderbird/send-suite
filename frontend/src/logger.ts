@@ -1,6 +1,11 @@
 import { ApiConnection } from './lib/api';
 type Logger = unknown;
 
+const loggerPrefix = {
+  info: 'LOGGER INFO',
+  error: 'LOGGER ERROR',
+};
+
 export default {
   info: async (message: Logger) => {
     try {
@@ -11,11 +16,12 @@ export default {
         { message: JSON.stringify(message), type: 'info' },
         'POST'
       );
-      console.log(`LOGGER INFO: ${message}`);
+      console.log(`${loggerPrefix.info}: ${message}`);
     } catch {
       console.error('Failed to log message');
     }
   },
+
   error: async (message: Logger) => {
     const url = import.meta.env.VITE_SEND_SERVER_URL;
     const api = new ApiConnection(url);
@@ -25,7 +31,7 @@ export default {
         { message: JSON.stringify(message), type: 'error' },
         'POST'
       );
-      console.log(`LOGGER ERROR: ${message}`);
+      console.log(`${loggerPrefix.error} ${message}`);
     } catch {
       console.error('Failed to log error message');
     }
