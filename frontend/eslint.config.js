@@ -7,6 +7,9 @@ import tseslint from 'typescript-eslint';
 export default [
   {
     languageOptions: {
+      parserOptions: {
+        parser: '@typescript-eslint/parser',
+      },
       globals: {
         ...globals.browser, // Existing browser globals
         __dirname: 'readonly', // Setting __dirname as a global variable
@@ -18,6 +21,6 @@ export default [
   },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
-  ...pluginVue.configs['flat/essential'],
+  ...pluginVue.configs['flat/recommended'],
   eslintConfigPrettier,
 ];
