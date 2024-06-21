@@ -1,18 +1,20 @@
 // mock logger module
-import router from '@/routes/logger';
+import router, { loggerPrefix, loggerResponse } from '@/routes/logger';
 import express from 'express';
 import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
 
-const { mockInfoLogger, mockErrorLogger } = vi.hoisted(() => ({
+const { mockInfoLogger, mockErrorLogger, mockWarnLogger } = vi.hoisted(() => ({
   mockInfoLogger: vi.fn(),
   mockErrorLogger: vi.fn(),
+  mockWarnLogger: vi.fn(),
 }));
 
 vi.mock('@/logger', () => {
   const mLogger = {
     info: mockInfoLogger,
     error: mockErrorLogger,
+    warn: mockWarnLogger,
   };
   return {
     default: mLogger,
@@ -26,28 +28,44 @@ app.use(router);
 
 describe('POST /api/logger', () => {
   it('should log information from client', async () => {
+    const message = 'Test message';
     const response = await request(app)
       .post('/api/logger')
-      .send({ type: 'info', message: 'Test message' })
+      .send({ type: 'info', message })
       .set('Content-Type', 'application/json')
       .set('Accept', 'application/json');
 
-    expect(response.body).toEqual({ message: 'Logged successfully' });
+    expect(response.body).toEqual({ message: loggerResponse });
     expect(response.status).toBe(200);
 
-    expect(mockInfoLogger).toBeCalledWith('📳 CLIENT INFO: Test message');
+    expect(mockInfoLogger).toBeCalledWith(`${loggerPrefix.info}: ${message}`);
   });
 
   it('should log errors from client', async () => {
+    const message = 'Client error';
     const response = await request(app)
       .post('/api/logger')
-      .send({ type: 'error', message: 'Client error' })
+      .send({ type: 'error', message })
       .set('Content-Type', 'application/json')
       .set('Accept', 'application/json');
 
-    expect(response.body).toEqual({ message: 'Logged successfully' });
+    expect(response.body).toEqual({ message: loggerResponse });
     expect(response.status).toBe(200);
 
-    expect(mockErrorLogger).toBeCalledWith('📳 CLIENT ERROR: Client error');
+    expect(mockErrorLogger).toBeCalledWith(`${loggerPrefix.error}: ${message}`);
+  });
+
+  it('should log warnings from client', async () => {
+    const message = 'Client warning';
+    const response = await request(app)
+      .post('/api/logger')
+      .send({ type: 'warn', message })
+      .set('Content-Type', 'application/json')
+      .set('Accept', 'application/json');
+
+    expect(response.body).toEqual({ message: loggerResponse });
+    expect(response.status).toBe(200);
+
+    expect(mockWarnLogger).toBeCalledWith(`${loggerPrefix.warn}: ${message}`);
   });
 });

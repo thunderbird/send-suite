@@ -3,10 +3,13 @@ import { Router } from 'express';
 
 const router: Router = Router();
 
-const loggerPrefix = {
+export const loggerPrefix = {
   info: '📳 CLIENT INFO',
   error: '📳 CLIENT ERROR',
+  warn: '📳 CLIENT WARNING',
 };
+
+export const loggerResponse = 'Logged successfully';
 
 router.post('/api/logger', (req, res) => {
   const { type, message } = req.body;
@@ -18,10 +21,13 @@ router.post('/api/logger', (req, res) => {
     case 'error':
       logger.error(`${loggerPrefix.error}: ${message}`);
       break;
+    case 'warn':
+      logger.warn(`${loggerPrefix.warn}: ${message}`);
+      break;
   }
 
   res.status(200).json({
-    message: 'Logged successfully',
+    message: loggerResponse,
   });
 });
 
