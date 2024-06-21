@@ -6,7 +6,7 @@ vi.mock('../lib/api', () => ({
   })),
 }));
 
-import logger from '@/logger';
+import logger, { loggerPrefix } from '@/logger';
 import { describe, expect, it, vi } from 'vitest';
 
 describe('Logger module', () => {
@@ -26,10 +26,7 @@ describe('Logger module', () => {
       'POST'
     );
 
-    expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('LOGGER INFO:')
-    );
-
+    expect(consoleSpy).toBeCalledWith(`${loggerPrefix.info} ${message}`);
     consoleSpy.mockRestore();
   });
 
@@ -47,6 +44,7 @@ describe('Logger module', () => {
   it('should log log error messages', async () => {
     const message = 'A bad error occurred';
     mockApiCall.mockResolvedValue({ message: 'success' });
+    const consoleErrorSpy = vi.spyOn(console, 'error');
 
     await logger.error(message);
 
@@ -55,6 +53,7 @@ describe('Logger module', () => {
       expect.objectContaining({ message: JSON.stringify(message) }),
       'POST'
     );
+    expect(consoleErrorSpy).toBeCalledWith(`${loggerPrefix.error} ${message}`);
   });
 
   it('should handle failure to log info', async () => {
@@ -63,6 +62,32 @@ describe('Logger module', () => {
     const consoleErrorSpy = vi.spyOn(console, 'error');
 
     await logger.error(message);
+
+    expect(consoleErrorSpy).toHaveBeenCalled();
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('should log log warn messages', async () => {
+    const message = 'A warning was issued';
+    const consoleWarnSpy = vi.spyOn(console, 'warn');
+    mockApiCall.mockResolvedValue({ message: 'success' });
+
+    await logger.warn(message);
+
+    expect(mockApiCall).toHaveBeenCalledWith(
+      'logger',
+      expect.objectContaining({ message: JSON.stringify(message) }),
+      'POST'
+    );
+    expect(consoleWarnSpy).toBeCalledWith(`${loggerPrefix.warn} ${message}`);
+  });
+
+  it('should handle failure to log info', async () => {
+    mockApiCall.mockRejectedValue({ message: 'bad warn' });
+    const message = { content: 'test message' };
+    const consoleErrorSpy = vi.spyOn(console, 'error');
+
+    await logger.warn(message);
 
     expect(consoleErrorSpy).toHaveBeenCalled();
     consoleErrorSpy.mockRestore();
