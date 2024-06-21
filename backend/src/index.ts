@@ -19,6 +19,7 @@ import wsUploadHandler from './wsUploadHandler';
 
 import { errorHandler } from './errors/routes';
 import logger from './logger';
+import loggerRoute from './routes/logger';
 
 type Profile = {
   mozid: string;
@@ -113,23 +114,7 @@ app.use('/api/sharing', sharing);
 app.use('/api/tags', tags);
 app.use('/lockbox/fxa', fxa);
 app.use('/api/lockbox/fxa', fxa);
-app.post('/api/logger', (req, res) => {
-  const { type, message } = req.body;
-
-  switch (type) {
-    case 'info':
-      logger.info(`📳 CLIENT INFO: ${message}`);
-      break;
-    default:
-      logger.error(`📳 CLIENT ERROR: ${message}`);
-      break;
-  }
-
-  res.status(200).json({
-    message: 'Logged successfully',
-  });
-});
-
+app.use(loggerRoute);
 app.get(`*`, (req, res) => {
   res.status(404);
 });

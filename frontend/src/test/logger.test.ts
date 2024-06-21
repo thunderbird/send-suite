@@ -1,5 +1,4 @@
-// eslint-disable-next-line no-var
-var mockApiCall = vi.fn();
+const { mockApiCall } = vi.hoisted(() => ({ mockApiCall: vi.fn() }));
 
 vi.mock('../lib/api', () => ({
   ApiConnection: vi.fn(() => ({
