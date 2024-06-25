@@ -2,7 +2,6 @@
 import Btn from '@/apps/lockbox/elements/Btn.vue';
 import { computed, ref } from 'vue';
 
-import useApiStore from '@/stores/api-store';
 import useKeychainStore from '@/stores/keychain-store';
 import useUserStore from '@/stores/user-store';
 
@@ -36,7 +35,6 @@ const passphrase = computed(() => {
 const msg = ref('');
 const { user, createBackup, getBackup } = useUserStore();
 const { keychain } = useKeychainStore();
-useApiStore();
 
 async function makeBackup() {
   msg.value = '';
