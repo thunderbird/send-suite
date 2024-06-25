@@ -1,5 +1,5 @@
-import type { InjectionKey } from 'vue';
 import dayjs from 'dayjs';
+import type { InjectionKey } from 'vue';
 export const DayJsKey = Symbol() as InjectionKey<typeof dayjs>;
 
 export enum UserTier {
@@ -54,7 +54,7 @@ export interface Api {
 export interface UserType {
   id: number;
   email: string;
-  tier?: string;
+  tier?: UserTier;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -93,7 +93,7 @@ export interface Container {
   size?: number;
 }
 
-export interface Folder extends Container {}
+export interface Folder extends Container { }
 
 export interface Item {
   id: number;

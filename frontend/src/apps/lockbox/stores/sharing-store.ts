@@ -1,20 +1,21 @@
-import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
-import useApiStore from '@/stores/api-store';
-import useUserStore from '@/stores/user-store';
-import useKeychainStore from '@/stores/keychain-store';
-import { Keychain, Util } from '@/lib/keychain';
+import { FolderResponse, Item } from '@/apps/lockbox/stores/folder-store.types';
 import { getContainerKeyFromChallenge } from '@/lib/challenge';
+import { Keychain, Util } from '@/lib/keychain';
 import Sharer from '@/lib/share';
-import { Item, FolderResponse } from '@/apps/lockbox/stores/folder-store.types';
-import { User } from '@/lib/user';
+import useApiStore from '@/stores/api-store';
+import useKeychainStore from '@/stores/keychain-store';
+import useUserStore from '@/stores/user-store';
+import { UserType } from '@/types';
+import { defineStore } from 'pinia';
+import { computed, ref } from 'vue';
+
 
 const useSharingStore = defineStore('sharingManager', () => {
   const { api } = useApiStore();
   const { user } = useUserStore();
   const { keychain } = useKeychainStore();
 
-  const sharer = new Sharer(user as User, keychain as Keychain, api);
+  const sharer = new Sharer(user as UserType, keychain as Keychain, api);
 
   const _links = ref([]);
 

@@ -1,19 +1,18 @@
-import { expect, describe, it, vi } from 'vitest';
 import Sharer from '@/lib/share';
+import { describe, expect, it, vi } from 'vitest';
 
-import { User } from '@/lib/user';
 import { ApiConnection } from '@/lib/api';
-import { Keychain, Util } from '@/lib/keychain';
+import { Keychain } from '@/lib/keychain';
 
-import { setupServer } from 'msw/node';
+import { UserTier, UserType } from '@/types';
 import { HttpResponse, http } from 'msw';
+import { setupServer } from 'msw/node';
 
-vi.mock('@/lib/user', () => {
-  const User = vi.fn();
-  return {
-    User,
-  };
-});
+const defaultUser: UserType = {
+  id: 0,
+  tier: UserTier.FREE,
+  email: ''
+}
 
 vi.mock('@/lib/keychain', () => {
   const Keychain = vi.fn(() => ({
@@ -80,7 +79,7 @@ describe(`Sharer`, () => {
     it(`Returns a containerId if successful`, async () => {
       const keychain = new Keychain();
       const api = new ApiConnection(API_URL);
-      const user = new User();
+      const user = defaultUser;
       const sharer = new Sharer(user, keychain, api);
 
       const items = [
@@ -96,7 +95,7 @@ describe(`Sharer`, () => {
     it(`Returns null if items.length is 0 and no containerId is provided`, async () => {
       const keychain = new Keychain();
       const api = new ApiConnection(API_URL);
-      const user = new User();
+      const user = defaultUser;
       const sharer = new Sharer(user, keychain, api);
 
       const items = [];
@@ -106,8 +105,7 @@ describe(`Sharer`, () => {
     });
 
     it(`Returns null if invalid api argument is provided`, async () => {
-      const api = new ApiConnection(API_URL);
-      const user = new User();
+      const user = defaultUser;
       const keychain = new Keychain();
       const sharer = new Sharer(user, keychain, null);
 
@@ -124,7 +122,7 @@ describe(`Sharer`, () => {
 
     it(`Returns null if invalid keychain argument is provided`, async () => {
       const api = new ApiConnection(API_URL);
-      const user = new User();
+      const user = defaultUser;
       const sharer = new Sharer(user, null, api);
 
       const items = [
@@ -145,7 +143,7 @@ describe(`Sharer`, () => {
       );
       const keychain = new Keychain();
       const api = new ApiConnection(API_URL);
-      const user = new User();
+      const user = defaultUser;
       const sharer = new Sharer(user, keychain, api);
 
       const items = [
@@ -169,7 +167,7 @@ describe(`Sharer`, () => {
 
       const keychain = new Keychain();
       const api = new ApiConnection(API_URL);
-      const user = new User();
+      const user = defaultUser;
       const sharer = new Sharer(user, keychain, api);
       const result = await sharer.requestAccessLink(1, 'abc');
 
@@ -190,7 +188,7 @@ describe(`Sharer`, () => {
 
       const keychain = new Keychain();
       const api = new ApiConnection(API_URL);
-      const user = new User();
+      const user = defaultUser;
       const sharer = new Sharer(user, keychain, api);
       const result = await sharer.requestAccessLink(1, 'abc');
 

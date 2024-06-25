@@ -1,6 +1,7 @@
-import { expect, describe, it } from 'vitest';
 import { Storage } from '@/lib/storage/index';
-import { UserTier } from '@/lib/user';
+import { UserTier } from '@/types';
+import { describe, expect, it } from 'vitest';
+
 
 describe('User storage', () => {
   it('can store a user without error', async () => {

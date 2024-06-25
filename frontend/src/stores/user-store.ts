@@ -1,18 +1,18 @@
-import { defineStore } from 'pinia';
-import { User, UserTier } from '@/lib/user';
-import useApiStore from '@/stores/api-store';
-import { Storage } from '@/lib/storage';
-import { Backup, UserResponse } from '@/stores/user-store.types';
 import { AsyncJsonResponse } from '@/lib/api';
+import { Storage } from '@/lib/storage';
+import useApiStore from '@/stores/api-store';
+import { Backup } from '@/stores/user-store.types';
+import { UserTier, UserType } from '@/types';
+import { defineStore } from 'pinia';
 
 export interface UserStore {
-  user: User;
+  user: UserType;
   createUser: (
     email: string,
     jwkPublicKey: string,
     isEphemeral?: boolean
-  ) => Promise<UserResponse>;
-  login: (loginEmail?: string) => Promise<UserResponse>;
+  ) => Promise<UserType>;
+  login: (loginEmail?: string) => Promise<UserType>;
   load: () => Promise<boolean>;
   store: (
     newId?: number,
@@ -37,14 +37,18 @@ const useUserStore: () => UserStore = defineStore('user', () => {
   const { api } = useApiStore();
   const storage = new Storage();
 
-  const user = new User();
+  const user: UserType = {
+    id: 0,
+    tier: UserTier.FREE,
+    email: '',
+  };
 
   async function createUser(
     email: string,
     jwkPublicKey: string,
     isEphemeral = false
-  ): Promise<UserResponse> {
-    const resp = await api.call<UserResponse>(
+  ): Promise<UserType> {
+    const resp = await api.call<{ user: UserType | null }>(
       `users`,
       {
         email,
@@ -57,7 +61,7 @@ const useUserStore: () => UserStore = defineStore('user', () => {
       return null;
     }
 
-    const { user } = resp as Record<string, any>;
+    const { user } = resp;
     const { id, tier } = user;
 
     user.id = id;
@@ -69,9 +73,9 @@ const useUserStore: () => UserStore = defineStore('user', () => {
 
   // TODO: delete this in favor of using the user store's populate()
   // which retrieves the user from the backend session.
-  async function login(loginEmail = user.email): Promise<UserResponse> {
+  async function login(loginEmail = user.email): Promise<UserType> {
     console.log(`logging in as ${loginEmail}`);
-    const resp = await api.call<UserResponse>(
+    const resp = await api.call<UserType | null>(
       `users/login`,
       { email: loginEmail },
       'POST'
@@ -128,7 +132,7 @@ const useUserStore: () => UserStore = defineStore('user', () => {
   // After login, get user from backend and save it locally.
   // Returns a boolean signaling whether successfully populated the user.
   async function populateFromSession() {
-    const userResp = await api.call<{ user: any }>(`users/me`);
+    const userResp = await api.call<{ user: UserType }>(`users/me`);
     if (!userResp?.user) {
       // Either we didn't get a response or it doesn't have a .user
       return false;
@@ -146,7 +150,7 @@ const useUserStore: () => UserStore = defineStore('user', () => {
   async function getPublicKey(): Promise<string> {
     // Explicitly passing user id; this route is for retrieving
     // any user's public key, not just the currently logged in user
-    const resp = await api.call<{ publicKey: any }>(
+    const resp = await api.call<{ publicKey: string }>(
       `users/publickey/${user.id}`
     );
     return resp.publicKey;
