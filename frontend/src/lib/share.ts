@@ -1,15 +1,14 @@
-import { Util } from '@/lib/keychain';
-import { User } from '@/lib/user';
-import { Keychain } from '@/lib/keychain';
+import { FolderResponse, Item } from '@/apps/lockbox/stores/folder-store.types';
 import { ApiConnection } from '@/lib/api';
 import { CONTAINER_TYPE } from '@/lib/const';
-import { Item, FolderResponse } from '@/apps/lockbox/stores/folder-store.types';
+import { Keychain, Util } from '@/lib/keychain';
+import { UserType } from '@/types';
 
 export default class Sharer {
-  user: User;
+  user: UserType;
   keychain: Keychain;
   api: ApiConnection;
-  constructor(user: User, keychain: Keychain, api: ApiConnection) {
+  constructor(user: UserType, keychain: Keychain, api: ApiConnection) {
     this.user = user;
     this.keychain = keychain;
     this.api = api;
@@ -23,10 +22,11 @@ export default class Sharer {
 
   // Creates Invitation
   async shareContainerWithInvitation(containerId: number, email: string) {
-    let user = await this.api.call(`users/lookup/${email}/`);
+    const user = await this.api.call(`users/lookup/${email}/`);
 
     if (user) {
-      let { publicKey, id: recipientId } = user;
+      let publicKey = user.publicKey;
+      const recipientId = user.id;
       if (!publicKey) {
         console.log(`Could not find public key for user ${email}`);
       }
@@ -89,7 +89,7 @@ export default class Sharer {
       return null;
     }
 
-    let itemsToShare = [...items];
+    const itemsToShare = [...items];
 
     let currentContainer = { name: 'untitled' };
     if (containerId) {
@@ -227,7 +227,6 @@ export default class Sharer {
     }
 
     const accessLink = resp.id;
-    const { origin } = new URL(window.location.href);
     // const url = `${origin}/share/${accessLink}`;
     // TODO: need the server url from...elsewhere
     // Using `origin` works fine for web application, but not for extension

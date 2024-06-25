@@ -1,19 +1,19 @@
-import { sendBlob, NamedBlob } from '@/lib/filesync';
-import { User } from '@/lib/user';
-import { Keychain } from '@/lib/keychain';
-import { ApiConnection } from '@/lib/api';
-import { retryUntilSuccessOrTimeout } from '@/lib/utils';
 import {
   Item,
   ItemResponse,
   UploadResponse,
 } from '@/apps/lockbox/stores/folder-store.types';
+import { ApiConnection } from '@/lib/api';
+import { NamedBlob, sendBlob } from '@/lib/filesync';
+import { Keychain } from '@/lib/keychain';
+import { retryUntilSuccessOrTimeout } from '@/lib/utils';
+import { UserType } from '@/types';
 
 export default class Uploader {
-  user: User;
+  user: UserType;
   keychain: Keychain;
   api: ApiConnection;
-  constructor(user: User, keychain: Keychain, api: ApiConnection) {
+  constructor(user: UserType, keychain: Keychain, api: ApiConnection) {
     this.user = user;
     // Even though we only need the user.id, we must receive the entire,
     // reactive `user` object. This gives enough time for it to "hydrate"
