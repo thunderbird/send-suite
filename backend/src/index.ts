@@ -1,24 +1,25 @@
-import 'dotenv/config';
-import cors from 'cors';
-import express from 'express';
-import WebSocket from 'ws';
-import session from 'express-session';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import 'dotenv/config';
+import express from 'express';
+import session from 'express-session';
 import sessionFileStore from 'session-file-store';
+import WebSocket from 'ws';
 
-import users from './routes/users';
 import containers from './routes/containers';
-import uploads from './routes/uploads';
 import download from './routes/download';
+import fxa from './routes/fxa';
 import sharing from './routes/sharing';
 import tags from './routes/tags';
-import fxa from './routes/fxa';
+import uploads from './routes/uploads';
+import users from './routes/users';
 
-import wsUploadHandler from './wsUploadHandler';
 import wsMsgHandler from './wsMsgHandler';
+import wsUploadHandler from './wsUploadHandler';
 
 import { errorHandler } from './errors/routes';
 import logger from './logger';
+import loggerRoute from './routes/logger';
 
 type Profile = {
   mozid: string;
@@ -55,10 +56,10 @@ const app = express();
 app.use(express.static('public'));
 app.use(express.json({ limit: '5mb' }));
 
-let allowedOrigins = ['http://localhost:5173'];
+const allowedOrigins = ['http://localhost:5173'];
 
 app.use((req, res, next) => {
-  let origin = req.headers.origin;
+  const origin = req.headers.origin;
 
   // Check if it's a Thunderbird extension origin
   if (origin && origin.startsWith('moz-extension://')) {
@@ -113,7 +114,7 @@ app.use('/api/sharing', sharing);
 app.use('/api/tags', tags);
 app.use('/lockbox/fxa', fxa);
 app.use('/api/lockbox/fxa', fxa);
-
+app.use(loggerRoute);
 app.get(`*`, (req, res) => {
   res.status(404);
 });

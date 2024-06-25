@@ -12,6 +12,9 @@ WORKDIR /app
 # As root, install `pnpm` globally
 RUN npm install -g pnpm
 
+# Install Bun from npm as root
+RUN npm install -g bun
+
 # Run subsequent steps as unprivileged user
 USER node
 COPY --chown=node:node package.json pnpm-lock.yaml ./
