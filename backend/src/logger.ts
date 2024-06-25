@@ -2,19 +2,16 @@ import winston from 'winston';
 const { combine, errors, prettyPrint, timestamp } = winston.format;
 const { File, Console } = winston.transports;
 
-const ERROR_LOG = 'logs/error.log';
-const COMBINED_LOG = 'logs/combined.log';
-
 const logger = winston.createLogger({
   level: 'info',
   format: combine(timestamp(), errors({ stack: true }), prettyPrint()),
   defaultMeta: { service: 'user-service' },
   transports: [
     new File({
-      filename: ERROR_LOG,
+      filename: process.env.ERROR_LOG,
       level: 'error',
     }),
-    new File({ filename: COMBINED_LOG }),
+    new File({ filename: process.env.COMBINED_LOG }),
   ],
 });
 

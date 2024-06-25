@@ -12,13 +12,8 @@ WORKDIR /app
 # As root, install `pnpm` globally
 RUN npm install -g pnpm
 
-# Install Bun as root and ensure permissions and location are accessible to 'node' user
-RUN curl https://bun.sh/install | bash && \
-    mv /root/.bun /usr/local/ && \
-    chown -R node:node /usr/local/.bun
-
-# Add Bun to PATH for all users
-ENV PATH="/usr/local/.bun/bin:${PATH}"
+# Install Bun from npm as root
+RUN npm install -g bun
 
 # Run subsequent steps as unprivileged user
 USER node

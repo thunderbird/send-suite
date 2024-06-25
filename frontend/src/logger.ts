@@ -12,13 +12,26 @@ export const loggerPrefix = {
 const url = import.meta.env.VITE_SEND_SERVER_URL;
 const api = new ApiConnection(url);
 
+type LoggerType = 'info' | 'error' | 'warn';
+
+function loggerApiCall({
+  message,
+  type,
+}: {
+  message: Logger;
+  type: LoggerType;
+}) {
+  const timeStamp = new Date();
+  return api.call(
+    'logger',
+    { message: JSON.stringify(message), type, timeStamp },
+    'POST'
+  );
+}
+
 const info = async (message: Logger) => {
   try {
-    await api.call(
-      'logger',
-      { message: JSON.stringify(message), type: 'info' },
-      'POST'
-    );
+    await loggerApiCall({ message, type: 'info' });
     console.log(`${loggerPrefix.info} ${message}`);
   } catch {
     console.error('Failed to log message');
@@ -27,11 +40,7 @@ const info = async (message: Logger) => {
 
 const error = async (message: Logger) => {
   try {
-    await api.call(
-      'logger',
-      { message: JSON.stringify(message), type: 'error' },
-      'POST'
-    );
+    await loggerApiCall({ message, type: 'error' });
     console.error(`${loggerPrefix.error} ${message}`);
   } catch {
     console.error('Failed to log error message');
@@ -40,11 +49,7 @@ const error = async (message: Logger) => {
 
 const warn = async (message: Logger) => {
   try {
-    await api.call(
-      'logger',
-      { message: JSON.stringify(message), type: 'warn' },
-      'POST'
-    );
+    await loggerApiCall({ message, type: 'warn' });
     console.warn(`${loggerPrefix.warn} ${message}`);
   } catch {
     console.error('Failed to log warn message');

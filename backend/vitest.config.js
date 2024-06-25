@@ -1,3 +1,4 @@
+import { config } from 'dotenv';
 import path from 'path';
 import { defineConfig } from 'vite';
 
@@ -12,5 +13,8 @@ export default defineConfig({
     include: ['**/routes/*.test.{js,ts}'],
     environment: 'node',
     setupFiles: ['dotenv/config'],
+    env: {
+      ...config({ path: './env' }).parsed,
+    },
   },
 });

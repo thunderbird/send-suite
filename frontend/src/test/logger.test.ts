@@ -18,11 +18,16 @@ describe('Logger module', () => {
     mockApiCall.mockResolvedValue({ message: 'success' });
     const message = { content: 'test message' };
     const consoleSpy = vi.spyOn(console, 'log');
+    const timeStamp = new Date();
 
     await logger.info(message);
     expect(mockApiCall).toHaveBeenCalledWith(
       'logger',
-      expect.objectContaining({ message: JSON.stringify(message) }),
+      expect.objectContaining({
+        message: JSON.stringify(message),
+        type: 'info',
+        timeStamp,
+      }),
       'POST'
     );
 
@@ -44,13 +49,18 @@ describe('Logger module', () => {
   it('should log log error messages', async () => {
     const message = 'A bad error occurred';
     mockApiCall.mockResolvedValue({ message: 'success' });
+    const timeStamp = new Date();
     const consoleErrorSpy = vi.spyOn(console, 'error');
 
     await logger.error(message);
 
     expect(mockApiCall).toHaveBeenCalledWith(
       'logger',
-      expect.objectContaining({ message: JSON.stringify(message) }),
+      expect.objectContaining({
+        message: JSON.stringify(message),
+        type: 'error',
+        timeStamp,
+      }),
       'POST'
     );
     expect(consoleErrorSpy).toBeCalledWith(`${loggerPrefix.error} ${message}`);
@@ -71,12 +81,17 @@ describe('Logger module', () => {
     const message = 'A warning was issued';
     const consoleWarnSpy = vi.spyOn(console, 'warn');
     mockApiCall.mockResolvedValue({ message: 'success' });
+    const timeStamp = new Date();
 
     await logger.warn(message);
 
     expect(mockApiCall).toHaveBeenCalledWith(
       'logger',
-      expect.objectContaining({ message: JSON.stringify(message) }),
+      expect.objectContaining({
+        message: JSON.stringify(message),
+        type: 'warn',
+        timeStamp,
+      }),
       'POST'
     );
     expect(consoleWarnSpy).toBeCalledWith(`${loggerPrefix.warn} ${message}`);

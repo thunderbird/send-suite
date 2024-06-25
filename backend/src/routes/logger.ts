@@ -11,20 +11,37 @@ export const loggerPrefix = {
 
 export const loggerResponse = 'Logged successfully';
 
-router.post('/api/logger', (req, res) => {
-  const { type, message } = req.body;
-
+function createLog({ type, message, timestamp }) {
+  const commonArgs = {
+    logGroup: 'client',
+    timestamp,
+  };
   switch (type) {
     case 'info':
-      logger.info(`${loggerPrefix.info}: ${message}`);
+      logger.info({
+        message: `${loggerPrefix.info}: ${message}`,
+        ...commonArgs,
+      });
       break;
     case 'error':
-      logger.error(`${loggerPrefix.error}: ${message}`);
+      logger.error({
+        message: `${loggerPrefix.error}: ${message}`,
+        ...commonArgs,
+      });
       break;
     case 'warn':
-      logger.warn(`${loggerPrefix.warn}: ${message}`);
+      logger.warn({
+        message: `${loggerPrefix.warn}: ${message}`,
+        ...commonArgs,
+      });
       break;
   }
+}
+
+router.post('/api/logger', (req, res) => {
+  const { type, message, timestamp } = req.body;
+
+  createLog({ type, message, timestamp });
 
   res.status(200).json({
     message: loggerResponse,
