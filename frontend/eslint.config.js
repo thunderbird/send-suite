@@ -23,4 +23,11 @@ export default [
   ...tseslint.configs.recommended,
   ...pluginVue.configs['flat/recommended'],
   eslintConfigPrettier,
+  {
+    rules: {
+      "@typescript-eslint/ban-ts-comment": "off",
+      "@typescript-eslint/no-explicit-any": "warn",
+      "no-extra-boolean-cast": "off",
+    }
+  }
 ];

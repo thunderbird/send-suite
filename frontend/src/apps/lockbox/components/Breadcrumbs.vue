@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
+import { ref, watchEffect } from 'vue';
+import { useRouter } from 'vue-router';
 const folderStore = useFolderStore();
 
 const path = ref([]);
+
+const router = useRouter();
 
 watchEffect(() => {
   path.value = [folderStore.rootFolder];
@@ -18,11 +21,19 @@ watchEffect(() => {
 <template>
   <ul>
     <li class="inline-block pl-1">
-      <button @click="folderStore.goToRootFolder(null)">🏠</button>
+      <button @click="router.push('/lockbox')">🏠</button>
     </li>
-    <li v-if="folderStore.rootFolder" v-for="node of path" class="inline-block pl-1">
+    <li
+      v-for="node of path"
+      v-if="folderStore.rootFolder"
+      class="inline-block pl-1"
+    >
       &nbsp;&gt;&nbsp;
-      <button @click.prevent="folderStore.goToRootFolder(node.id)">
+      <button
+        @click.prevent="
+          router.push({ name: 'folder', params: { id: node.id } })
+        "
+      >
         {{ node.name }}
       </button>
     </li>

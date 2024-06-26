@@ -1,18 +1,18 @@
-import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
-import useApiStore from '@/stores/api-store';
-import useUserStore from '@/stores/user-store';
-import useKeychainStore from '@/stores/keychain-store';
-import Uploader from '@/lib/upload';
-import Downloader from '@/lib/download';
 import { CONTAINER_TYPE } from '@/lib/const';
+import Downloader from '@/lib/download';
+import Uploader from '@/lib/upload';
+import useApiStore from '@/stores/api-store';
+import useKeychainStore from '@/stores/keychain-store';
+import useUserStore from '@/stores/user-store';
+import { defineStore } from 'pinia';
+import { computed, ref } from 'vue';
 
 import {
   Folder,
   FolderResponse,
+  FolderStore,
   Item,
   ItemResponse,
-  FolderStore,
 } from '@/apps/lockbox/stores/folder-store.types';
 import { NamedBlob } from '@/lib/filesync';
 
@@ -255,7 +255,7 @@ function calculateFolderSizes(folders: Folder[]): Folder[] {
   // Otherwise, we'd have to fetch all descendents in order
   // to do the full calculation.
   const foldersWithSizes = folders.map((folder) => {
-    let size =
+    const size =
       folder.items?.reduce(
         (total, { upload }) => total + upload?.size || 0,
         0
@@ -275,7 +275,7 @@ function findNode(
     return null;
   }
 
-  for (let node of collection) {
+  for (const node of collection) {
     if (node.id === id) {
       return node;
     }

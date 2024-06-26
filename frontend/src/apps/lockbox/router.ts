@@ -1,15 +1,15 @@
 import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router';
 
-import Lockbox from '@/apps/lockbox/pages/Web.vue';
 import FolderView from '@/apps/lockbox/components/FolderView.vue';
 import Profile from '@/apps/lockbox/components/Profile.vue';
-import Sent from '@/apps/lockbox/components/Sent.vue';
 import Received from '@/apps/lockbox/components/Received.vue';
+import Sent from '@/apps/lockbox/components/Sent.vue';
+import Lockbox from '@/apps/lockbox/pages/Web.vue';
 
-import Share from '@/apps/lockbox/pages/Share.vue';
 import Recovery from '@/apps/common/Recovery.vue';
+import Share from '@/apps/lockbox/pages/Share.vue';
 
-const routes: RouteRecordRaw[] = [
+export const routes: RouteRecordRaw[] = [
   {
     path: '/lockbox',
     component: Lockbox,
@@ -18,6 +18,12 @@ const routes: RouteRecordRaw[] = [
       { path: 'profile', component: Profile },
       { path: 'sent', component: Sent },
       { path: 'received', component: Received },
+      {
+        path: 'folder/:id',
+        component: FolderView,
+        props: true,
+        name: 'folder',
+      },
     ],
   },
 
