@@ -1,8 +1,8 @@
 // mock logger module
-import router, { loggerPrefix, loggerResponse } from '@/routes/logger';
 import express from 'express';
 import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
+import router, { loggerPrefix, loggerResponse } from '../../routes/logger';
 
 const { mockInfoLogger, mockErrorLogger, mockWarnLogger } = vi.hoisted(() => ({
   mockInfoLogger: vi.fn(),

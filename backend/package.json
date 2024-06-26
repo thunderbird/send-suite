@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "bun run --watch src/index.ts",
+    "dev": "nodemon -e js,ts src/index.ts",
     "db:generate": "prisma generate",
     "db:browse": "prisma studio",
     "db:migrate": "prisma migrate dev",
@@ -62,6 +62,7 @@
     "eslint-config-prettier": "^9.1.0",
     "globals": "^15.6.0",
     "lint-staged": "^15.2.7",
+    "nodemon": "^3.0.1",
     "prettier": "^3.0.0",
     "supertest": "^7.0.0",
     "ts-node": "^10.9.1",
