@@ -116,7 +116,6 @@ See the `docs/` folder for a draft of the detailed documentation.
 
 [Here](https://typicode.github.io/husky/how-to.html#testing-hooks-without-committing) you can read more.
 
-
 ## Pre-commit hooks
 
 We use `lint-staged` + `husky` to run prettier and eslint on staged files.
@@ -124,13 +123,15 @@ We use `lint-staged` + `husky` to run prettier and eslint on staged files.
 The shell script lives on [.husky/pre-commit](./.husky/pre-commit)
 
 ### Testing hooks
+
 Add this line to the end of [.husky/pre-commit](./.husky/pre-commit)
 
-```exit 1```
+`exit 1`
 
 Make sure you commit a file you want to run `lint-staged` on
 
 Run this command:
+
 ```
 git commit -m "testing pre-commit code"
 # A commit will not be created
@@ -139,5 +140,9 @@ git commit -m "testing pre-commit code"
 You should see the output of the hook as if you actually commited your files.
 
 ### Skipping hooks
+
 If for some reason you're confident on a change and would like to skip pre-commit hooks. Add `--no-verify` at the end of your commit command.
 
+## Sentry
+
+Make sure you ask the team for `VITE_SENTRY_AUTH_TOKEN`
