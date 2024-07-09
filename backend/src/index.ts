@@ -1,3 +1,6 @@
+// Configure sentry
+import './sentry';
+
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import 'dotenv/config';
@@ -17,6 +20,7 @@ import users from './routes/users';
 import wsMsgHandler from './wsMsgHandler';
 import wsUploadHandler from './wsUploadHandler';
 
+import * as Sentry from '@sentry/node';
 import { errorHandler } from './errors/routes';
 import logger from './logger';
 import loggerRoute from './routes/logger';
@@ -118,6 +122,10 @@ app.use(loggerRoute);
 app.get(`*`, (req, res) => {
   res.status(404);
 });
+
+// Add this after all routes,
+// but before any and other error-handling middlewares are defined
+Sentry.setupExpressErrorHandler(app);
 
 // errorHandler needs to be final middleware registered.
 app.use(errorHandler);

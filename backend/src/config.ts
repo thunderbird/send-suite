@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 const appConfig = {
   // file_dir: `${tmpdir()}${path.sep}send-${randomBytes(4).toString("hex")}`,
   file_dir: `/tmp/send-suite-dev-dir`,
@@ -7,5 +9,9 @@ const appConfig = {
   // detect_base_url: false,
   max_file_size: 1024 * 1024 * 1024 * 2.5,
 };
+
+const ENVIRONMENT: string = process.env.NODE_ENV || 'development';
+
+export { ENVIRONMENT };
 
 export default appConfig;
