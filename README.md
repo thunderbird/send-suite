@@ -51,7 +51,7 @@ docker compose logs -f
 
 ### Using the webapp
 
-- Visit `http://localhost:8080/` and accept the self-signed certificate
+- Visit `https://localhost:8088/` and accept the self-signed certificate
   - In Firefox, you'll want to add an exception for this certificate
 - Then, you can open `http://localhost:5173/lockbox/`
 - Click the `Profile` link in the sidebar and click `Log into Moz Acct`
