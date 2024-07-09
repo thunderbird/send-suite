@@ -8,7 +8,6 @@
   "main": "index.js",
   "scripts": {
     "build:watch": "tsc -w",
-    "build_and_upload_sourcemaps": "tsc && pnpm sentry:sourcemaps",
     "db:browse": "prisma studio",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
@@ -17,6 +16,7 @@
     "dev": "nodemon -e js,ts src/index.ts",
     "lint:all": "eslint . --fix",
     "prettier:all": "prettier --write .",
+    "prod:build_and_upload_sourcemaps": "tsc && pnpm sentry:sourcemaps",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org thunderbird --project send-suite-backend ./dist && sentry-cli sourcemaps upload --org thunderbird --project send-suite-backend ./dist",
     "test": "vitest"
   },
