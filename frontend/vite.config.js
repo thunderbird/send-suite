@@ -1,10 +1,18 @@
-import { defineConfig } from 'vite';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 import vue from '@vitejs/plugin-vue';
 import path from 'path';
+import { defineConfig } from 'vite';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    sentryVitePlugin({
+      org: 'thunderbird',
+      project: 'send-suite-frontend',
+      authToken: process.env.VITE_SENTRY_AUTH_TOKEN,
+    }),
+  ],
   server: {
     // `https: true` gives `Error code: SSL_ERROR_NO_CYPHER_OVERLAP`
     // https: true,
@@ -39,5 +47,6 @@ export default defineConfig({
       //   // popup: resolve(__dirname, 'index.popup.html'),
       // },
     },
+    sourcemap: true,
   },
 });
