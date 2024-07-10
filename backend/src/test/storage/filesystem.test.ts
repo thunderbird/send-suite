@@ -1,4 +1,4 @@
-import { expect, describe, it } from 'vitest';
+import { expect, describe, it, afterAll } from 'vitest';
 
 import { FileStore } from '../../storage';
 import {
@@ -13,6 +13,8 @@ describe(`Storage: Filesystem`, () => {
   const mockDataDir = path.join(__dirname, 'data/');
   const mockFilePath = path.join(mockDataDir, mockFile);
 
+  const files: string[] = [];
+
   const config: StorageAdapterConfig = {
     type: StorageType.LOCAL,
     directory: process.env.TEST_FS_LOCAL_DIR,
@@ -21,6 +23,12 @@ describe(`Storage: Filesystem`, () => {
 
   const storage = new FileStore(config);
 
+  afterAll(() => {
+    files.forEach(async (file) => {
+      await storage.del(file);
+    });
+  });
+
   it('should write a file to local filesystem', async () => {
     const fileName = `write-${new Date().getTime()}.txt`;
 
@@ -28,6 +36,7 @@ describe(`Storage: Filesystem`, () => {
       fileName,
       fs.createReadStream(mockFilePath)
     );
+    files.push(fileName);
     expect(result).toBeTruthy();
   });
 
@@ -38,6 +47,7 @@ describe(`Storage: Filesystem`, () => {
       fileName,
       fs.createReadStream(mockFilePath)
     );
+    files.push(fileName);
     expect(writeResult).toBeTruthy();
 
     const readResult = await storage.get(fileName);
