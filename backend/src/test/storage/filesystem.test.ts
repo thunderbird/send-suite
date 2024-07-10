@@ -52,14 +52,15 @@ describe(`Storage: Filesystem`, () => {
       fs.createReadStream(mockFilePath)
     );
     expect(writeResult).toBeTruthy();
-
     const readResult = await storage.get(fileName);
     expect(readResult).toBeTruthy();
 
-    // Test fails unless we wait for the next tick in the event loop.
+    // Test fails on Linux unless we wait for the next tick in the event loop.
     setTimeout(async () => {
-      const deleteResult = await storage.del(fileName);
-      expect(deleteResult).toBeTruthy();
+      return new Promise(async () => {
+        const deleteResult = await storage.del(fileName);
+        expect(deleteResult).toBeTruthy();
+      });
     }, 0);
   });
 });
