@@ -2,14 +2,16 @@
   "name": "send-suite",
   "version": "1.0.0",
   "description": "",
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
   "main": "index.js",
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "sort-package-json": "sort-package-json {frontend,backend}/package.json"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
-    "husky": "^9.0.11"
+    "husky": "^9.0.11",
+    "sort-package-json": "^2.10.0"
   }
 }

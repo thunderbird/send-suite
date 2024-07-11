@@ -2,6 +2,9 @@
 
 echo "🐺 Running pre commit hooks..."
 
+# Formatting package.json files
+pnpm sort-package-json
+
 # Run lint-staged on frontend
 echo "🧶 Running lint-staged on frontend..."
 cd frontend && pnpx lint-staged

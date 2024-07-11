@@ -1,16 +1,25 @@
 {
   "name": "frontend",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host",
     "build": "./scripts/build.sh",
+    "dev": "vite --host",
+    "lint:all": "eslint . --fix",
+    "prettier:all": "prettier --write .",
     "preview": "vite preview",
     "test": "vitest",
-    "test-debug": "vitest --inspect-brk --single-thread",
-    "lint:all": "eslint . --fix",
-    "prettier:all": "prettier --write ."
+    "test-debug": "vitest --inspect-brk --single-thread"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,vue}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.json": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@tabler/icons-vue": "^2.40.0",
@@ -54,14 +63,5 @@
     "vitest-localstorage-mock": "^0.0.1",
     "vitest-websocket-mock": "^0.3.0",
     "vue-eslint-parser": "^8.0.0"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,vue}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.json": [
-      "prettier --write"
-    ]
   }
 }

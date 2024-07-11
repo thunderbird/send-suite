@@ -2,21 +2,30 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon -e js,ts src/index.ts",
-    "db:generate": "prisma generate",
     "db:browse": "prisma studio",
+    "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:update": "prisma db push",
     "db:reset": "prisma migrate reset",
+    "db:update": "prisma db push",
+    "dev": "nodemon -e js,ts src/index.ts",
     "lint:all": "eslint . --fix",
     "prettier:all": "prettier --write .",
     "test": "vitest"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "lint-staged": {
+    "*.{js,ts}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.json": [
+      "prettier --write"
+    ]
+  },
   "dependencies": {
     "@prisma/client": "^5.1.1",
     "@tweedegolf/sab-adapter-amazon-s3": "^1.0.17",
@@ -40,7 +49,6 @@
     "ws": "^8.13.0"
   },
   "devDependencies": {
-    "@ava/typescript": "^5.0.0",
     "@eslint/js": "^9.5.0",
     "@types/cookie-parser": "^1.4.5",
     "@types/cors": "^2.8.13",
@@ -67,14 +75,5 @@
     "typescript": "^5.1.6",
     "typescript-eslint": "^7.13.0",
     "vitest": "^1.6.0"
-  },
-  "lint-staged": {
-    "*.{js,ts}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.json": [
-      "prettier --write"
-    ]
   }
 }
