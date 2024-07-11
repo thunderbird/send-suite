@@ -22,6 +22,8 @@
     ]
   },
   "dependencies": {
+    "@sentry/vite-plugin": "^2.20.1",
+    "@sentry/vue": "^8.15.0",
     "@tabler/icons-vue": "^2.40.0",
     "dayjs": "^1.11.10",
     "get-random-values": "^3.0.0",
@@ -39,6 +41,7 @@
     "@typescript-eslint/parser": "^7.13.1",
     "@vitejs/plugin-vue": "^4.2.3",
     "@vitest/coverage-v8": "^1.6.0",
+    "@vue/test-utils": "^2.4.6",
     "@vueuse/core": "^10.5.0",
     "autoprefixer": "^10.4.15",
     "buffer": "^6.0.3",

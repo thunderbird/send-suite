@@ -7,6 +7,7 @@
   "author": "",
   "main": "index.js",
   "scripts": {
+    "build:watch": "tsc -w",
     "db:browse": "prisma studio",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
@@ -15,6 +16,8 @@
     "dev": "nodemon -e js,ts src/index.ts",
     "lint:all": "eslint . --fix",
     "prettier:all": "prettier --write .",
+    "prod:build_and_upload_sourcemaps": "tsc && pnpm sentry:sourcemaps",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org thunderbird --project send-suite-backend ./dist && sentry-cli sourcemaps upload --org thunderbird --project send-suite-backend ./dist",
     "test": "vitest"
   },
   "lint-staged": {
@@ -28,6 +31,9 @@
   },
   "dependencies": {
     "@prisma/client": "^5.1.1",
+    "@sentry/cli": "^2.32.1",
+    "@sentry/node": "^8.15.0",
+    "@sentry/profiling-node": "^8.15.0",
     "@tweedegolf/sab-adapter-amazon-s3": "^1.0.17",
     "@tweedegolf/sab-adapter-backblaze-b2": "^1.0.5",
     "@tweedegolf/sab-adapter-local": "^1.0.7",
