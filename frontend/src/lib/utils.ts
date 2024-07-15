@@ -1,4 +1,5 @@
 import { JsonResponse } from '@/lib/api';
+import JSZip from 'jszip';
 /**
  * Returns a promise that resolves after an amount of time has passed.
  *
@@ -29,7 +30,9 @@ export async function retryUntilSuccessOrTimeout(
     try {
       await fn();
       return;
-    } catch (e) {}
+    } catch (e) {
+      // do nothing
+    }
   }
 }
 
@@ -98,7 +101,7 @@ export async function connectToWebSocketServer(
   serverUrl: string
 ): Promise<WebSocket> {
   const ws = new WebSocket(serverUrl);
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const timer = setInterval(() => {
       if (ws.readyState === 1) {
         clearInterval(timer);
@@ -113,7 +116,7 @@ export async function listenForResponse(
   canceler: Record<string, any>
 ): Promise<JsonResponse> {
   return new Promise((resolve, reject) => {
-    function handleClose(event: CloseEvent) {
+    function handleClose() {
       // a 'close' event before a 'message' event means the request failed
       ws.removeEventListener('message', handleMessage);
       reject(new ConnectionError(canceler.canceled));
@@ -139,9 +142,16 @@ export async function listenForResponse(
 // https://gist.github.com/zentala/1e6f72438796d74531803cc3833c039c
 export function formatBytes(bytes: number, decimals: number = 2): string {
   if (bytes == 0) return '0 Bytes';
-  var k = 1024,
+  const k = 1024,
     dm = decimals,
     sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
     i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+export async function zipBlob(blob: Blob, filename: string) {
+  const zip = new JSZip();
+  zip.file(filename, blob);
+
+  return zip.generateAsync({ type: 'blob' });
 }

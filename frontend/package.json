@@ -28,6 +28,7 @@
     "dayjs": "^1.11.10",
     "get-random-values": "^3.0.0",
     "install": "^0.13.0",
+    "jszip": "^3.10.1",
     "pinia": "^2.1.7",
     "vue": "^3.3.4",
     "vue-router": "4"
