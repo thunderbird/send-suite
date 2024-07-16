@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import { NamedBlob } from '@/lib/filesync';
+import { zipBlob } from '@/lib/utils';
 import { useDropZone } from '@vueuse/core';
+import { ref } from 'vue';
 const folderStore = useFolderStore();
 
 const dropZoneRef = ref();
@@ -34,13 +35,22 @@ function onDrop(files) {
   }
 }
 
-const { isOverDropZone } = useDropZone(dropZoneRef, onDrop);
+useDropZone(dropZoneRef, onDrop);
 
 async function doUpload() {
   const result = await Promise.all(
     fileBlobs.value.map(async (blob) => {
-      console.log(`uploading ${blob.name}`);
-      const uploadResult = await folderStore.uploadItem(blob, folderStore.rootFolder.id);
+      let compressedBlob = null;
+
+      if (blob.type === '') {
+        const zippedBlob = await zipBlob(blob, blob.name);
+        compressedBlob = new Blob([zippedBlob], { type: 'application/zip' });
+        compressedBlob.name = `${blob.name}.zip`;
+      }
+      const uploadResult = await folderStore.uploadItem(
+        compressedBlob || blob,
+        folderStore.rootFolder.id
+      );
       console.log(uploadResult);
       return uploadResult;
     })
