@@ -146,3 +146,37 @@ If for some reason you're confident on a change and would like to skip pre-commi
 ## Sentry
 
 Make sure you ask the team for `VITE_SENTRY_AUTH_TOKEN`
+
+## Debugging
+
+You can use VSCode's debugger for the backend.
+
+1. Add this to your `.vscode/launch.json`
+
+```
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "restart": true,
+      "localRoot": "${workspaceFolder}/backend",
+      "name": "Docker: Attach to Node",
+      "remoteRoot": "/app"
+    },
+  ]
+}
+
+```
+
+2. Add this to your top level `.env` file:
+
+```
+MODE=debug
+```
+
+3. Run `pnpm dev`
+
+4. Run your debug session. If you have multiple configs, make sure you run the one called `Docker: Attach to Node`

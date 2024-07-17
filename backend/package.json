@@ -7,7 +7,7 @@
   "author": "",
   "main": "index.js",
   "scripts": {
-    "build:watch": "tsc -w",
+    "debug": "nodemon -e js,ts --exec 'node --inspect=0.0.0.0:9229 --require ts-node/register src/index.ts'",
     "db:browse": "prisma studio",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
