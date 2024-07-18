@@ -1,13 +1,18 @@
-import { Router } from 'express';
 import axios from 'axios';
-import { getIssuer, getClient, generateState } from '../auth/client';
-import { findOrCreateUserProfileByMozillaId } from '../models/users';
-import logger from '../logger';
+import { Router } from 'express';
 import {
-  wrapAsyncHandler,
+  checkAllowList,
+  generateState,
+  getClient,
+  getIssuer,
+} from '../auth/client';
+import {
   addErrorHandling,
   AUTH_ERRORS,
+  wrapAsyncHandler,
 } from '../errors/routes';
+import logger from '../logger';
+import { findOrCreateUserProfileByMozillaId } from '../models/users';
 
 const FXA_STATE = 'fxa_state';
 
@@ -17,8 +22,9 @@ const router: Router = Router();
 router.get(
   '/login',
   addErrorHandling(AUTH_ERRORS.LOG_IN_FAILED),
-  wrapAsyncHandler(async (req, res, next) => {
+  wrapAsyncHandler(async (req, res) => {
     // Params to include when we request an authorization url
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let additionalParams: Record<string, any> = {
       access_type: 'offline',
       action: 'email',
@@ -67,6 +73,20 @@ router.get(
       scope: 'openid email profile',
       state,
     });
+
+    // First time logins should skip checking the allowlist
+    const shouldCheckAllowlist = !!req?.session?.user?.email;
+
+    if (shouldCheckAllowlist) {
+      try {
+        await checkAllowList(req.session.user.email);
+      } catch (error) {
+        res.status(403).json({
+          msg: 'User not in allow list',
+        });
+        return;
+      }
+    }
 
     // Add state code to session.
     // We'll attempt to match this in the callback.
@@ -133,33 +153,47 @@ router.get(
         params,
         { state: params.state }
       );
-      const {
-        access_token: accessToken,
-        refresh_token: refreshToken,
-        id_token: idToken,
-      } = tokenSet;
+      const { access_token: accessToken, refresh_token: refreshToken } =
+        tokenSet;
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const userinfo: Record<string, any> = await client.userinfo(accessToken);
 
-      const { uid, avatar, email } = userinfo;
-      const user = await findOrCreateUserProfileByMozillaId(
-        uid,
-        avatar,
-        email,
-        accessToken,
-        refreshToken
-      );
+      try {
+        await checkAllowList(userinfo.email);
+        const { uid, avatar, email } = userinfo;
+        const user = await findOrCreateUserProfileByMozillaId(
+          uid,
+          avatar,
+          email,
+          accessToken,
+          refreshToken
+        );
 
-      req.session['user'] = user;
-      req.session.save((err) => {
-        if (err) {
-          logger.error('Could not save session in / callback.');
-          logger.error(err);
-          throw Error(`Could not save session in fxa callback`);
-        }
+        req.session['user'] = user;
+        req.session.save((err) => {
+          if (err) {
+            logger.error('Could not save session in / callback.');
+            logger.error(err);
+            throw Error(`Could not save session in fxa callback`);
+          }
 
-        res.redirect('/login-success.html');
-      });
+          res.redirect('/login-success.html');
+        });
+      } catch (error) {
+        res.redirect('/login-failed.html');
+      }
+    });
+  })
+);
+
+router.get(
+  '/allowlist',
+  addErrorHandling(AUTH_ERRORS.ALLOW_LIST_FAILED),
+  wrapAsyncHandler(async (req, res) => {
+    await checkAllowList(req.session.user.email);
+    res.status(200).json({
+      msg: 'User in allow list',
     });
   })
 );
@@ -167,7 +201,7 @@ router.get(
 router.get(
   '/logout',
   addErrorHandling(AUTH_ERRORS.LOG_OUT_FAILED),
-  wrapAsyncHandler(async (req, res, next) => {
+  wrapAsyncHandler(async (req, res) => {
     /*
 
 Needs to:
