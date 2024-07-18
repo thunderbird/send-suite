@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import init from '@/lib/init';
-import useUserStore from '@/stores/user-store';
-import useKeychainStore from '@/stores/keychain-store';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
+import init from '@/lib/init';
+import useKeychainStore from '@/stores/keychain-store';
+import useUserStore from '@/stores/user-store';
+import { onMounted } from 'vue';
 
 const userStore = useUserStore();
 const { keychain } = useKeychainStore();

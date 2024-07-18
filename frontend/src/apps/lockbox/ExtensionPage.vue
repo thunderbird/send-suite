@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import useUserStore from '@/stores/user-store';
-import useKeychainStore from '@/stores/keychain-store';
+import FeedbackBox from '@/apps/common/FeedbackBox.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import init from '@/lib/init';
+import useKeychainStore from '@/stores/keychain-store';
+import useUserStore from '@/stores/user-store';
+import { onMounted } from 'vue';
 
-import Popup from './views/Popup.vue';
+import PopupView from './views/PopupView.vue';
 
 const userStore = useUserStore();
 const { keychain } = useKeychainStore();
@@ -17,5 +18,6 @@ onMounted(async () => {
 </script>
 
 <template>
-  <Popup />
+  <PopupView />
+  <FeedbackBox />
 </template>

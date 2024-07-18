@@ -51,6 +51,7 @@ router.get(
     // Retrieves the logged-in user from the current session
     // ok, I need to persist the user to the session, don't I?
     // am I not doing that already?
+    console.log('session id: ', req.session.id);
     const user = req.session.user;
     if (!user) {
       return res.status(404).json({});

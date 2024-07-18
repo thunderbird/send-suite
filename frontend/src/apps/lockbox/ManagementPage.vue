@@ -8,6 +8,7 @@ import useUserStore from '@/stores/user-store';
 import { onMounted, ref, toRaw } from 'vue';
 
 import BackupAndRestore from '@/apps/common/BackupAndRestore.vue';
+import FeedbackBox from '@/apps/common/FeedbackBox.vue';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import { CLIENT_MESSAGES } from '@/lib/messages';
@@ -254,6 +255,7 @@ async function finishLogin() {
   <pre v-if="sessionInfo">
     {{ formatSessionInfo(sessionInfo) }}
   </pre>
+  <FeedbackBox />
 </template>
 
 <style scoped>
