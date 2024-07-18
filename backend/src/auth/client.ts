@@ -7,9 +7,7 @@ export function generateState() {
 }
 
 export async function getIssuer() {
-  const mozIssuer = await Issuer.discover(
-    'https://accounts.stage.mozaws.net/.well-known/openid-configuration'
-  );
+  const mozIssuer = await Issuer.discover(process.env.FXA_MOZ_ISSUER);
   return mozIssuer;
 }
 

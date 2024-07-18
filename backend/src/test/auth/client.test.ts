@@ -12,6 +12,7 @@ describe('Auth Client', () => {
     'FXA_ALLOW_LIST',
     '@example.org,@example.com,@example.ai,@examplewatch.com,@examplefoundation.org,@tortillas.com'
   );
+  vi.stubEnv('FXA_MOZ_ISSUER', 'https://accounts.stage.mozaws.net');
 
   describe('generateState', () => {
     it('should generate a random state', () => {

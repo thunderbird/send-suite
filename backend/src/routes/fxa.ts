@@ -74,6 +74,20 @@ router.get(
       state,
     });
 
+    // First time logins should skip checking the allowlist
+    const shouldCheckAllowlist = !!req?.session?.user?.email;
+
+    if (shouldCheckAllowlist) {
+      try {
+        await checkAllowList(req.session.user.email);
+      } catch (error) {
+        res.status(403).json({
+          msg: 'User not in allow list',
+        });
+        return;
+      }
+    }
+
     // Add state code to session.
     // We'll attempt to match this in the callback.
     req.session[FXA_STATE] = state;
