@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { ref, toRaw } from 'vue';
-import useApiStore from '@/stores/api-store';
-import useUserStore from '@/stores/user-store';
-import useKeychainStore from '@/stores/keychain-store';
-import useFolderStore from '@/apps/lockbox/stores/folder-store';
-import init from '@/lib/init';
 import BackupAndRestore from '@/apps/common/BackupAndRestore.vue';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
+import useFolderStore from '@/apps/lockbox/stores/folder-store';
+import init from '@/lib/init';
+import { CLIENT_MESSAGES } from '@/lib/messages';
+import useApiStore from '@/stores/api-store';
+import useKeychainStore from '@/stores/keychain-store';
+import useUserStore from '@/stores/user-store';
+import { ref, toRaw } from 'vue';
 
 const { api } = useApiStore();
 const userStore = useUserStore();
@@ -16,7 +17,8 @@ const folderStore = useFolderStore();
 const sessionInfo = ref(null);
 
 async function pingSession() {
-  sessionInfo.value = (await api.call(`users/me`)) ?? `You need to log into your mozilla account`;
+  sessionInfo.value =
+    (await api.call(`users/me`)) ?? CLIENT_MESSAGES.SHOULD_LOG_IN;
 }
 
 function formatSessionInfo(info) {

@@ -14,6 +14,10 @@ export const AUTH_ERRORS = {
     statusCode: 500,
     message: 'Could not log out.',
   },
+  ALLOW_LIST_FAILED: {
+    statusCode: 401,
+    message: 'Not in allow list.',
+  },
 };
 
 export const CONTAINER_ERRORS = {
@@ -239,7 +243,7 @@ export function wrapAsyncHandler(fn) {
 // if added by `onError`.
 // Falls back to a generic status 500 and the
 // message from the `err` object.
-export function errorHandler(err, req, res, next) {
+export function errorHandler(err, req, res) {
   const status = req[REQ_VAR_STATUS_CODE] ?? 500;
   const message =
     req[REQ_VAR_USER_MESSAGE] ?? err.message ?? 'Internal Server Error';

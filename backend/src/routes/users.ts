@@ -1,11 +1,12 @@
 import { ContainerType, UserTier } from '@prisma/client';
 
+import 'dotenv/config';
 import { Router } from 'express';
 
 import {
-  wrapAsyncHandler,
   addErrorHandling,
   USER_ERRORS,
+  wrapAsyncHandler,
 } from '../errors/routes';
 
 import {
@@ -16,18 +17,19 @@ import {
 
 import {
   createUser,
+  getAllUserGroupContainers,
+  getBackup,
+  getRecentActivity,
   getUserByEmail,
   getUserPublicKey,
-  updateUserPublicKey,
-  getAllUserGroupContainers,
-  getRecentActivity,
   setBackup,
-  getBackup,
+  updateUserPublicKey,
 } from '../models/users';
 
-import { requireLogin } from '../middleware';
-import logger from '../logger';
+import { checkAllowList } from '../auth/client';
 import { BaseError, SESSION_NOT_SAVED } from '../errors/models';
+import logger from '../logger';
+import { requireLogin } from '../middleware';
 
 const router: Router = Router();
 
@@ -36,6 +38,16 @@ router.get(
   requireLogin,
   addErrorHandling(USER_ERRORS.SESSION_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
+    // If an allow list is provided, only allow users in that list
+    // If there is no env variable, we allow all users
+    try {
+      await checkAllowList(req.session.user.email);
+    } catch (error) {
+      return res.status(401).json({
+        msg: 'Not in allow list',
+      });
+    }
+
     // Retrieves the logged-in user from the current session
     // ok, I need to persist the user to the session, don't I?
     // am I not doing that already?
@@ -90,6 +102,18 @@ router.get(
   requireLogin,
   addErrorHandling(USER_ERRORS.FOLDERS_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
+    try {
+      await checkAllowList(req.session.user.email);
+    } catch (error) {
+      /* 
+      TODO: Type this response correctly on the frontend
+      Since the frontend is expecting an array of folders,
+      we need to return an empty array of items.
+       */
+
+      return res.status(401).json([{ id: 0, items: [] }]);
+    }
+
     const { id } = req.session.user;
     const containers = await getAllUserGroupContainers(
       id,
@@ -250,7 +274,8 @@ router.post(
   wrapAsyncHandler(async (req, res) => {
     const { id } = req.params;
     const { keys, keypair, keystring, salt } = req.body;
-    const user = await setBackup(parseInt(id), keys, keypair, keystring, salt);
+    // We're not using the return value, but we want to make sure the backup runs
+    await setBackup(parseInt(id), keys, keypair, keystring, salt);
     res.status(200).json({
       message: 'backup complete',
     });

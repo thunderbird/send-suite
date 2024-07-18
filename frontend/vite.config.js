@@ -23,6 +23,7 @@ export default defineConfig({
       '/api': 'http://localhost:8080',
       '/lockbox/fxa': 'http://backend:8080', // Using `backend` per the docker network name
       '/login-success.html': 'http://backend:8080', // Using `backend` per the docker network name
+      '/login-failed.html': 'http://backend:8080', // Using `backend` per the docker network name
     },
   },
   resolve: {
