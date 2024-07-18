@@ -1,4 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach } from 'node:test';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   checkAllowList,
   generateState,
@@ -8,11 +9,9 @@ import {
 } from '../../auth/client';
 
 describe('Auth Client', () => {
-  vi.stubEnv(
-    'FXA_ALLOW_LIST',
-    '@example.org,@example.com,@example.ai,@examplewatch.com,@examplefoundation.org,@tortillas.com'
-  );
-  vi.stubEnv('FXA_MOZ_ISSUER', 'https://accounts.stage.mozaws.net');
+  beforeAll(() => {
+    vi.unstubAllEnvs();
+  });
 
   describe('generateState', () => {
     it('should generate a random state', () => {
@@ -23,6 +22,10 @@ describe('Auth Client', () => {
   });
 
   describe('getIssuer', () => {
+    beforeEach(() => {
+      vi.stubEnv('FXA_MOZ_ISSUER', 'https://accounts.stage.mozaws.net');
+    });
+
     it('should return the issuer', async () => {
       const issuer = await getIssuer();
       expect(issuer).toBeDefined();
@@ -76,27 +79,47 @@ describe('Auth Client', () => {
       expect(result).toBe(false);
     });
   });
+});
 
-  describe('checkAllowList', () => {
-    it('should not throw errors when user in allow list', async () => {
-      const noErrorHere = await checkAllowList('don@tortillas.com');
-      expect(noErrorHere).toBeUndefined();
-    });
+describe('checkAllowList', () => {
+  beforeAll(() => {
+    vi.unstubAllEnvs();
+    vi.stubEnv(
+      'FXA_ALLOW_LIST',
+      '@example.org,@example.com,@example.ai,@examplewatch.com,@examplefoundation.org,@tortillas.com'
+    );
+  });
 
-    it('should throw when user is not in allow list', async () => {
-      try {
-        await checkAllowList('n@sync.com');
-      } catch (error) {
-        expect(error.message).toBe('User not in allow list');
-      }
-    });
+  it('should not throw errors when user in allow list', async () => {
+    const noErrorHere = await checkAllowList('don@tortillas.com');
+    expect(noErrorHere).toBeUndefined();
+  });
 
-    it('should throw when no email is passed', async () => {
-      try {
-        await checkAllowList('');
-      } catch (error) {
-        expect(error.message).toBe('checkAllowList requires an email');
-      }
-    });
+  it('should throw when user is not in allow list', async () => {
+    try {
+      await checkAllowList('n@sync.com');
+    } catch (error) {
+      expect(error.message).toBe('User not in allow list');
+    }
+  });
+
+  it('should throw when no email is passed', async () => {
+    try {
+      await checkAllowList('');
+    } catch (error) {
+      expect(error.message).toBe('checkAllowList requires an email');
+    }
+  });
+});
+
+describe('checkAllowList no .env', () => {
+  beforeAll(() => {
+    vi.unstubAllEnvs();
+    vi.stubEnv('FXA_ALLOW_LIST', '');
+  });
+
+  it('should not throw when no allow list is provided', async () => {
+    const noErrorHere = await checkAllowList('ham@burger.com');
+    expect(noErrorHere).toBeUndefined();
   });
 });

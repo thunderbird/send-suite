@@ -33,13 +33,15 @@ export async function checkAllowList(email: string) {
   if (!email) {
     throw new Error('checkAllowList requires an email');
   }
+
   // If an allow list is provided, only allow users in that list
   // If there is no env variable, we allow all users
-  if (process.env.FXA_ALLOW_LIST) {
-    const allowList = process.env.FXA_ALLOW_LIST.replace(/\s/g, '').split(',');
+  if (!process.env.FXA_ALLOW_LIST) {
+    return;
+  }
 
-    if (!isEmailInAllowList(email, allowList)) {
-      throw new Error('User not in allow list');
-    }
+  const allowList = process.env.FXA_ALLOW_LIST.replace(/\s/g, '').split(',');
+  if (!isEmailInAllowList(email, allowList)) {
+    throw new Error('User not in allow list');
   }
 }
