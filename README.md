@@ -49,6 +49,15 @@ To watch the backend logs:
 docker compose logs -f
 ```
 
+If you're having any issues with docker (ex: no memory left, or volumes do not contain expected files), prune docker and rebuild containers from scratch:
+
+```sh
+ocker system prune
+docker-compose build --no-cache
+```
+
+Then `docker compose up -d` should work
+
 ### Using the webapp
 
 - Visit `https://localhost:8088/` and accept the self-signed certificate
