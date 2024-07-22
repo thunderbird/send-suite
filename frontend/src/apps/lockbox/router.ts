@@ -4,7 +4,7 @@ import FolderView from '@/apps/lockbox/components/FolderView.vue';
 import ProfileView from '@/apps/lockbox/components/ProfileView.vue';
 import Received from '@/apps/lockbox/components/Received.vue';
 import Sent from '@/apps/lockbox/components/Sent.vue';
-import Lockbox from '@/apps/lockbox/pages/Web.vue';
+import Lockbox from '@/apps/lockbox/pages/WebPage.vue';
 
 import Recovery from '@/apps/common/Recovery.vue';
 import Share from '@/apps/lockbox/pages/Share.vue';

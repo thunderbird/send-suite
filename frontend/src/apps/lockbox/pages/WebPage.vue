@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { provide } from 'vue';
-import Home from '@/apps/lockbox/views/Home.vue';
+import Home from '@/apps/lockbox/views/HomeView.vue';
+import { DayJsKey } from '@/types';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { DayJsKey } from '@/types';
+import { provide } from 'vue';
 
 dayjs.extend(relativeTime);
 provide(DayJsKey, dayjs);

@@ -1,7 +1,7 @@
 import { initSentry } from '@/lib/sentry';
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
-import Extension from './Extension.vue';
+import Extension from './ExtensionPage.vue';
 const pinia = createPinia();
 const app = createApp(Extension);
 
