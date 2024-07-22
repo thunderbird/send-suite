@@ -52,7 +52,7 @@ docker compose logs -f
 If you're having any issues with docker (ex: no memory left, or volumes do not contain expected files), prune docker and rebuild containers from scratch:
 
 ```sh
-ocker system prune
+docker system prune
 docker-compose build --no-cache
 ```
 
