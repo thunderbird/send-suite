@@ -1,7 +1,7 @@
 import { initSentry } from '@/lib/sentry';
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
-import Lockbox from './Lockbox.vue';
+import Lockbox from './LockboxPage.vue';
 import router from './router';
 import './style.css';
 const pinia = createPinia();
