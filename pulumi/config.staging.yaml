@@ -1,0 +1,158 @@
+---
+resources:
+  tb:network:MultiCidrVpc:
+    vpc:
+      cidr_block: 10.0.0.0/16
+      enable_dns_hostnames: True
+      endpoint_interfaces:
+        - ecr.api
+        - ecr.dkr
+        - logs
+        - secretsmanager
+        - ssm
+      endpoint_gateways:
+        - s3
+      subnets:
+        us-east-1a:
+          - 10.0.101.0/24
+        us-east-1b:
+          - 10.0.102.0/24
+        us-east-1c:
+          - 10.0.103.0/24
+
+  tb:network:SecurityGroupWithRules:
+    backend:
+     rules:
+        ingress:
+          - cidr_blocks: ['0.0.0.0/0']
+            description: Backend port
+            protocol: tcp
+            from_port: 8080
+            to_port: 8080
+          - cidr_blocks: ['0.0.0.0/0']
+            description: Prisma Studio port
+            protocol: tcp
+            from_port: 5555
+            to_port: 5555
+        egress:
+          - cidr_blocks: ['0.0.0.0/0']
+            description: Outbound TLS traffic
+            protocol: tcp
+            from_port: 0
+            to_port: 65535
+
+  tb:secrets:PulumiSecretsManager:
+    pulumi:
+      secret_names:
+        - b2-application-key-id
+        - b2-application-key
+        - fxa-client-id
+        - fxa-client-secret
+
+  tb:rds:RdsDatabaseGroup:
+    backend:
+      build_jumphost: False
+      engine_version: 15.7  # 16.x is available, but it's in beta and only supported in certain configs
+      instance_class: db.t3.micro
+      jumphost_public_key: ''
+      jumphost_source_cidrs: []
+      jumphost_user_data: |
+        #!/bin/bash
+        yum update -y
+        yum install -y postgresql15
+      num_instances: 1
+      override_special: '#$%^'  # Some characters don't play nicely with the Prisma DB string format
+      parameter_group_family: postgres15
+      skip_final_snapshot: True
+
+  tb:fargate:FargateClusterWithLogging:
+    backend:
+      internal: True
+      ecr_resources:
+        - arn:aws:ecr:us-east-1:768512802988:repository/send*
+      task_definition:
+        network_mode: awsvpc
+        cpu: 512
+        memory: 1024
+        container_definitions:
+          backend:
+            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:send-backend-latest
+            portMappings:
+              - name: send-suite
+                containerPort: 8080
+                hostPort: 8080
+                protocol: tcp
+                appProtocol: http
+              - name: prisma
+                containerPort: 5555
+                hostPort: 5555
+                protocol: tcp
+                appProtocol: http
+            secrets:
+              # Secrets
+              - name: B2_APPLICATION_KEY
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/b2-application-key-CuITdV
+              - name: B2_APPLICATION_KEY_ID
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/b2-application-key-id-AuMzY7
+              # - name: DATABASE_PASSWORD
+              #   valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/send-suite-staging-rds/root_password-zdt646
+              - name: DATABASE_URL
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/database_url-kyZIUG
+              - name: FXA_CLIENT_ID
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-id-xoj6Dl
+              - name: FXA_CLIENT_SECRET
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-secret-pLPPoG
+              # SSM params
+              # - name: DATABASE_NAME
+              #   valueFrom: arn:aws:ssm:us-east-1:768512802988:parameter/send-suite/staging/db-name
+              # - name: DATABASE_WRITE_HOST
+              #   valueFrom: arn:aws:ssm:us-east-1:768512802988:parameter/send-suite/staging/db-write-host
+              # - name: DATABASE_PORT
+              #   valueFrom: arn:aws:ssm:us-east-1:768512802988:parameter/send-suite/staging/db-port
+              # - name: DATABASE_READ_HOST
+              #   valueFrom: arn:aws:ssm:us-east-1:768512802988:parameter/send-suite/staging/db-read-host
+            environment:
+              - name: APP_ENV
+                value: DEV
+              - name: B2_BUCKET_NAME
+                value: tb-send-staging
+              - name: B2_ENDPOINT
+                value: s3.eu-central-003.backblazeb2.com
+              - name: B2_REGION
+                value: auto
+              - name: BASE_URL
+                value: https://localhost:8088
+              - name: COMBINED_LOG
+                value: logs/combined.log
+              - name: DEVELOPER_TIMEZONE
+                value: US/Eastern
+              - name: DATABASE_ENGINE
+                value: postgres
+              - name: DATABASE_USER
+                value: sendapp
+              - name: ERROR_LOG
+                value: logs/error.log
+              - name: FS_LOCAL_BUCKET
+                value: send-fs-local
+              - name: FXA_ENTRYPOINT
+                value: tblockbox
+              - name: FXA_METRICS_FLOW_URL
+                value: https://accounts.stage.mozaws.net/metrics-flow
+              - name: FXA_MOZ_ISSUER
+                value: https://accounts.stage.mozaws.net
+              - name: FXA_REDIRECT_URI
+                value: http://localhost:5173/lockbox/fxa
+              - name: STORAGE_BACKEND
+                value: b2
+      services:
+        send-suite:
+          listener_port: 80
+          container_port: 8080
+          container_name: backend
+          # "name" field is arbitrary, but must be unique and no longer than 32 chars
+          name: send-suite-staging-api
+        prisma:
+          listener_port: 5555
+          container_port: 5555
+          container_name: backend
+          name: send-suite-staging-prisma

@@ -1,0 +1,10 @@
+encryptionsalt: v1:d0r3xcOdlcg=:v1:h32s5jmwpOkoXvOJ:rB2v23zF1oN3BX/C8u2XG6Ig0O+uQw==
+config:
+  send-suite:b2-application-key:
+    secure: v1:a9ksvtrNB0s7mrJV:Pa5+x2bC0lVBugiob6NFinaGoIQGMlyyzd4Jn41LAUMDsRDCVfkkwU3oDM8LMLI=
+  send-suite:b2-application-key-id:
+    secure: v1:xHEz1yR6coLDHyE/:jnXE40cYZK+5rFzbFSvr/T6BmFy66dRnuZQGfqb0hUCjbk4WE2P2n7I=
+  send-suite:fxa-client-id:
+    secure: v1:Xu+V334NTKSvm/Jd:OCO00E3Y6yuQPzRul5RAuQJB+5vhyeoTqol7W5qN66s=
+  send-suite:fxa-client-secret:
+    secure: v1:XnpcH2k95lV3zpZV:lSBHogbw8+stSY4wqoJ9VyE8dSd5zyWdRRW1b5cLhRVerdXYj5OB5wQH2Ge7wH6Slh4FQtjJclFf2Ld/ubENAxsUVdvhvKqN3NaQDpeVEeE=

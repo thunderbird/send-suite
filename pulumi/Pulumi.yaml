@@ -1,0 +1,14 @@
+---
+# Ref: https://www.pulumi.com/docs/concepts/projects/project-file/
+
+name: send-suite
+runtime:
+  name: python
+  options:
+    toolchain: pip
+    virtualenv: venv
+description: Lockbox/Send
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: aws-python

@@ -35,3 +35,9 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# Pulumi-related things to ignore
+./tb_pulumi/
+pulumi/tb_pulumi/
+pulumi/*.pyc
+pulumi/venv/
