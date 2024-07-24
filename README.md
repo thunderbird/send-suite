@@ -49,6 +49,16 @@ To run the full stack:
 pnpm dev
 ```
 
+When you're done with the project, you can run:
+
+```sh
+docker compose down
+```
+
+This stops containers and removes containers, networks, volumes, and images created by `dev`.
+
+Note: All named volumes are persisted. You can see these expressed as `volumes` on the `compose.yml` file.
+
 ### Using the webapp
 
 - Visit `https://localhost:8088/` and accept the self-signed certificate
