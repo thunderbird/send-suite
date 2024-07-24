@@ -37,17 +37,27 @@ cd ..
 # back out to the main directory before proceeding
 ```
 
-To run the containers:
+Finally, install the dependencies
 
 ```sh
-docker compose up -d
+pnpm install
 ```
 
-To watch the backend logs:
+To run the full stack:
 
 ```sh
-docker compose logs -f
+pnpm dev
 ```
+
+When you're done with the project, you can run:
+
+```sh
+docker compose down
+```
+
+This stops containers and removes containers, networks, volumes, and images created by `dev`.
+
+Note: All named volumes are persisted. You can see these expressed as `volumes` on the `compose.yml` file.
 
 ### Using the webapp
 
@@ -79,6 +89,9 @@ pnpm/yarn/npm run build
 This outputs to `frontend/dist/`.
 
 ### Loading the TB Extension
+
+Make sure you add your localhost certificate. We have an
+[In depth guide](https://github.com/thunderbird/send-suite/issues/190).
 
 To load this in Thunderbird:
 
@@ -149,6 +162,8 @@ Make sure you ask the team for `VITE_SENTRY_AUTH_TOKEN`
 
 ## Debugging
 
+### Backend
+
 You can use VSCode's debugger for the backend.
 
 1. Add this to your `.vscode/launch.json`
@@ -180,3 +195,33 @@ MODE=debug
 3. Run `pnpm dev`
 
 4. Run your debug session. If you have multiple configs, make sure you run the one called `Docker: Attach to Node`
+
+### Frontend
+
+1. Run this command `code frontend` to open a session on the frontend package.
+
+2. Add this to your `.vscode/launch.json` file:
+
+```
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173/lockbox",
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js"
+      ],
+      "enableContentValidation": false,
+      "webRoot": "${workspaceFolder}/src",
+      "pathMapping": { "url": "/src/", "path": "${webRoot}/" }
+    }
+  ]
+}
+
+```
+
+3. Start a new debugging session. This will open a new chrome window that is connected to your VSCode session. Now you can add breakpoints and do all sorts of magic.
