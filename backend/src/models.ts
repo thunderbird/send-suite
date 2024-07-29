@@ -1,40 +1,31 @@
+import { ItemType, PrismaClient } from '@prisma/client';
 import {
-  PrismaClient,
-  ContainerType,
-  ItemType,
-  InvitationStatus,
-  Item,
-  Membership,
-} from '@prisma/client';
-const prisma = new PrismaClient();
-import { PermissionType } from './types/custom';
-import { fromPrisma } from './models/prisma-helper';
-import {
+  ACCESSLINK_NOT_UPDATED,
   BaseError,
-  CONTAINER_NOT_UPDATED,
   CONTAINER_NOT_FOUND,
-  CONTAINER_NOT_CREATED,
-  MEMBERSHIP_NOT_CREATED,
-  GROUP_NOT_CREATED,
+  CONTAINER_NOT_UPDATED,
+  GROUP_NOT_FOUND,
+  INVITATION_NOT_DELETED,
+  INVITATION_NOT_FOUND,
+  INVITATION_NOT_UPDATED,
   ITEM_NOT_CREATED,
   ITEM_NOT_DELETED,
-  ITEM_NOT_UPDATED,
-  INVITATION_NOT_FOUND,
-  INVITATION_NOT_DELETED,
-  UPLOAD_NOT_DELETED,
   ITEM_NOT_FOUND,
-  GROUP_NOT_FOUND,
+  ITEM_NOT_UPDATED,
+  MEMBERSHIP_NOT_CREATED,
   MEMBERSHIP_NOT_DELETED,
-  INVITATION_NOT_UPDATED,
-  ACCESSLINK_NOT_UPDATED,
   TAG_NOT_CREATED,
   TAG_NOT_DELETED,
   TAG_NOT_UPDATED,
+  UPLOAD_NOT_DELETED,
 } from './errors/models';
+import { fromPrisma } from './models/prisma-helper';
+import { PermissionType } from './types/custom';
+const prisma = new PrismaClient();
 
 export async function getSharesForContainer(
-  containerId: number,
-  userId: number
+  containerId: number
+  // userId: number
 ) {
   const query = {
     where: {
@@ -271,7 +262,7 @@ export async function getContainerWithDescendants(id: number) {
       const children = await getContainerWithDescendants(
         container.children[i].id
       );
-      container.children[i]['children'] = children;
+      container.children[i] = children;
     }
   }
 
