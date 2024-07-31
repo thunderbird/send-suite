@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { createHash } from 'crypto';
 import { Router } from 'express';
 import {
   checkAllowList,
@@ -171,6 +172,8 @@ router.get(
         );
 
         req.session['user'] = user;
+        user.hashedEmail = createHash('sha256').update(email).digest('hex');
+
         req.session.save((err) => {
           if (err) {
             logger.error('Could not save session in / callback.');

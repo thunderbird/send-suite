@@ -43,6 +43,18 @@ const useUserStore: () => UserStore = defineStore('user', () => {
     email: '',
   };
 
+  function populateUser(userData: UserType) {
+    user.id = userData.id;
+    user.tier = userData.tier;
+    user.email = userData.email;
+
+    if (!userData.hashedEmail) {
+      console.log('hashedEmail not found in user object');
+    } else {
+      user.hashedEmail = userData.hashedEmail;
+    }
+  }
+
   async function createUser(
     email: string,
     jwkPublicKey: string,
@@ -61,14 +73,12 @@ const useUserStore: () => UserStore = defineStore('user', () => {
       return null;
     }
 
-    const { user } = resp;
-    const { id, tier } = user;
-
-    user.id = id;
-    user.tier = tier;
-    user.email = email;
-
-    return user;
+    return {
+      id: resp.user.id,
+      tier: resp.user.tier,
+      email,
+      hashedEmail: resp.user.hashedEmail,
+    };
   }
 
   // TODO: delete this in favor of using the user store's populate()
@@ -84,23 +94,17 @@ const useUserStore: () => UserStore = defineStore('user', () => {
       return null;
     }
 
-    const { id, tier, email } = resp;
-
-    user.id = id;
-    user.tier = tier as unknown as UserTier;
-    user.email = email;
+    populateUser(resp);
 
     return resp;
   }
 
   async function load(): Promise<boolean> {
     try {
-      const { id, tier, email } = await storage.loadUser();
+      const { id, tier, email, hashedEmail } = await storage.loadUser();
 
       console.table({ id, tier, email });
-      user.id = id;
-      user.tier = tier;
-      user.email = email;
+      populateUser({ id, email, tier, hashedEmail });
 
       return true;
     } catch (e) {
@@ -138,11 +142,7 @@ const useUserStore: () => UserStore = defineStore('user', () => {
       return false;
     }
 
-    const { id, email, tier } = userResp.user;
-
-    user.id = id;
-    user.email = email;
-    user.tier = tier;
+    populateUser(userResp.user);
 
     return true;
   }

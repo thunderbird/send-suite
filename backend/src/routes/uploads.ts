@@ -1,21 +1,22 @@
 import { Router } from 'express';
 
 import {
-  wrapAsyncHandler,
   addErrorHandling,
   UPLOAD_ERRORS,
+  wrapAsyncHandler,
 } from '../errors/routes';
 
 import {
   createUpload,
-  getUploadSize,
   getUploadMetadata,
+  getUploadSize,
   statUpload,
 } from '../models/uploads';
 
+import { useMetrics } from '../metrics';
 import {
-  requireLogin,
   getGroupMemberPermissions,
+  requireLogin,
   requireWritePermission,
 } from '../middleware';
 
@@ -34,6 +35,16 @@ router.post(
   addErrorHandling(UPLOAD_ERRORS.NOT_CREATED),
   wrapAsyncHandler(async (req, res) => {
     const { id, size, ownerId, type } = req.body;
+    const Metrics = useMetrics();
+    const distinctId = req.session.hash;
+
+    Metrics.capture({
+      event: 'upload.size',
+      properties: { size, type },
+      distinctId,
+    });
+
+    await Metrics.shutdown();
 
     const upload = await createUpload(id, size, ownerId, type);
     res.status(201).json({
