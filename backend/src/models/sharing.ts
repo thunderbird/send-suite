@@ -28,7 +28,7 @@ import {
 import { addGroupMember } from '../models';
 import storage from '../storage';
 import { base64url } from '../utils';
-import { fromPrisma } from './prisma-helper';
+import { fromPrismaV2 } from './prisma-helper';
 const prisma = new PrismaClient();
 /**
  * Create Access Link
@@ -57,7 +57,7 @@ export async function createAccessLink(
         senderId,
       },
     };
-    share = await fromPrisma(prisma.share.findFirstOrThrow, findShareQuery);
+    share = await fromPrismaV2(prisma.share.findFirstOrThrow, findShareQuery);
   } catch (err) {
     const createShareQuery = {
       data: {
@@ -68,7 +68,7 @@ export async function createAccessLink(
     const onCreateError = () => {
       throw new Error(`Could not create share for access link`);
     };
-    share = await fromPrisma(
+    share = await fromPrismaV2(
       prisma.share.create,
       createShareQuery,
       onCreateError
@@ -99,7 +99,7 @@ export async function createAccessLink(
   const onAccessLinkError = () => {
     throw new Error(`Could not create access link`);
   };
-  return await fromPrisma(
+  return await fromPrismaV2(
     prisma.accessLink.create,
     accessLinkQuery,
     onAccessLinkError
@@ -118,7 +118,7 @@ export async function getAccessLinkChallenge(linkId: string) {
     },
   };
 
-  return await fromPrisma(
+  return await fromPrismaV2(
     prisma.accessLink.findUniqueOrThrow,
     query,
     ACCESSLINK_NOT_FOUND
@@ -143,7 +143,7 @@ export async function acceptAccessLink(
     },
   };
 
-  return await fromPrisma(
+  return await fromPrismaV2(
     prisma.accessLink.findUniqueOrThrow,
     query,
     ACCESSLINK_NOT_FOUND
@@ -172,7 +172,7 @@ export async function getContainerForAccessLink(linkId: string) {
     },
   };
 
-  const result = await fromPrisma(
+  const result = await fromPrismaV2(
     prisma.accessLink.findUniqueOrThrow,
     query,
     ACCESSLINK_NOT_FOUND
@@ -199,7 +199,7 @@ export async function createInvitation(
         senderId,
       },
     };
-    share = await fromPrisma(prisma.share.findFirstOrThrow, findShareQuery);
+    share = await fromPrismaV2(prisma.share.findFirstOrThrow, findShareQuery);
   } catch (err) {
     const createShareQuery = {
       data: {
@@ -208,7 +208,7 @@ export async function createInvitation(
       },
     };
 
-    share = await fromPrisma(
+    share = await fromPrismaV2(
       prisma.share.create,
       createShareQuery,
       SHARE_NOT_CREATED
@@ -223,7 +223,7 @@ export async function createInvitation(
         recipientId,
       },
     };
-    invitation = await fromPrisma(
+    invitation = await fromPrismaV2(
       prisma.invitation.findFirstOrThrow,
       findInvitationQuery
     );
@@ -245,7 +245,7 @@ export async function createInvitation(
       },
     };
 
-    invitation = await fromPrisma(
+    invitation = await fromPrismaV2(
       prisma.invitation.create,
       createInvitationQuery,
       INVITATION_NOT_CREATED
@@ -275,7 +275,7 @@ export async function createInvitationFromAccessLink(
     },
   };
 
-  const accessLink = await fromPrisma(
+  const accessLink = await fromPrismaV2(
     prisma.accessLink.findUniqueOrThrow,
     findAccessLinkQuery,
     ACCESSLINK_NOT_FOUND
@@ -301,7 +301,7 @@ export async function createInvitationFromAccessLink(
     },
   };
 
-  return await fromPrisma(
+  return await fromPrismaV2(
     prisma.invitation.update,
     updateInvitationQuery,
     INVITATION_NOT_UPDATED
@@ -323,7 +323,7 @@ export async function isAccessLinkValid(linkId: string) {
       id: true,
     },
   };
-  const results = await fromPrisma(prisma.accessLink.findMany, query);
+  const results = await fromPrismaV2(prisma.accessLink.findMany, query);
   return results.length > 0 ? results[0] : null;
 }
 
@@ -334,7 +334,7 @@ export async function removeAccessLink(linkId: string) {
     },
   };
 
-  return await fromPrisma(
+  return await fromPrismaV2(
     prisma.accessLink.delete,
     query,
     ACCESSLINK_NOT_DELETED
@@ -356,7 +356,7 @@ export async function getAllInvitations(userId: number) {
       },
     },
   };
-  return await fromPrisma(prisma.invitation.findMany, query);
+  return await fromPrismaV2(prisma.invitation.findMany, query);
 }
 
 export async function acceptInvitation(invitationId: number) {
@@ -366,7 +366,7 @@ export async function acceptInvitation(invitationId: number) {
     },
   };
 
-  const invitation = await fromPrisma(
+  const invitation = await fromPrismaV2(
     prisma.invitation.findUniqueOrThrow,
     findInvitationQuery,
     INVITATION_NOT_FOUND
@@ -381,7 +381,7 @@ export async function acceptInvitation(invitationId: number) {
   const onFindShareError = () => {
     throw new Error(`Could not find share`);
   };
-  const share = await fromPrisma(
+  const share = await fromPrismaV2(
     prisma.share.findUniqueOrThrow,
     findShareQuery,
     onFindShareError
@@ -390,7 +390,7 @@ export async function acceptInvitation(invitationId: number) {
   const { containerId } = share;
 
   // create a new groupUser for recipientId and group
-  const groupUser = await addGroupMember(containerId, recipientId);
+  await addGroupMember(containerId, recipientId);
 
   // Mark the invitation as accepted, if necessary.
   if (invitation.status !== InvitationStatus.ACCEPTED) {
@@ -403,7 +403,7 @@ export async function acceptInvitation(invitationId: number) {
           status: InvitationStatus.ACCEPTED,
         },
       };
-      await fromPrisma(prisma.invitation.update, updateInvtationQuery);
+      await fromPrismaV2(prisma.invitation.update, updateInvtationQuery);
     } catch (err) {
       throw new Error(`Could not update invitation`);
     }
@@ -416,8 +416,8 @@ export async function acceptInvitation(invitationId: number) {
 }
 
 export async function getContainersSharedByUser(
-  userId: number,
-  type: ContainerType
+  userId: number
+  // _type: ContainerType
 ) {
   const query = {
     where: {
@@ -458,7 +458,7 @@ export async function getContainersSharedByUser(
     },
   };
 
-  const shares = await fromPrisma(prisma.share.findMany, query);
+  const shares = await fromPrismaV2(prisma.share.findMany, query);
 
   // TODO: double check this, might be redundant since
   // findMany returns `[]` if no matching records.
@@ -492,7 +492,7 @@ export async function getContainersSharedWithUser(
       },
     },
   };
-  const invitations = await fromPrisma(prisma.invitation.findMany, query);
+  const invitations = await fromPrismaV2(prisma.invitation.findMany, query);
   return invitations.filter((i) => i.share.container.type === type);
 }
 
@@ -507,7 +507,7 @@ export async function burnFolder(
     },
   };
 
-  const shares = await fromPrisma(
+  const shares = await fromPrismaV2(
     prisma.share.findMany,
     findShareQuery,
     SHARE_NOT_FOUND
@@ -521,7 +521,7 @@ export async function burnFolder(
       },
     };
 
-    await fromPrisma(
+    await fromPrismaV2(
       prisma.accessLink.deleteMany,
       deleteSharesQuery,
       SHARE_NOT_DELETED
@@ -560,7 +560,7 @@ export async function burnFolder(
     },
   };
 
-  const container = await fromPrisma(
+  const container = await fromPrismaV2(
     prisma.container.findUniqueOrThrow,
     findContainersQuery,
     CONTAINER_NOT_FOUND
@@ -578,7 +578,11 @@ export async function burnFolder(
         },
       };
 
-      return fromPrisma(prisma.item.delete, deleteItemQuery, ITEM_NOT_DELETED);
+      return fromPrismaV2(
+        prisma.item.delete,
+        deleteItemQuery,
+        ITEM_NOT_DELETED
+      );
     })
   );
 
@@ -596,7 +600,7 @@ export async function burnFolder(
           },
         };
 
-        return fromPrisma(
+        return fromPrismaV2(
           prisma.upload.delete,
           deleteUploadQuery,
           UPLOAD_NOT_DELETED
@@ -611,14 +615,14 @@ export async function burnFolder(
     },
   };
 
-  await fromPrisma(
+  await fromPrismaV2(
     prisma.container.delete,
     deleteContainerQuery,
     CONTAINER_NOT_DELETED
   );
 
   await Promise.all(
-    users.map(async ({ id, tier }) => {
+    users.map(async (/* { id, tier } */) => {
       const deleteMembershipQuery = {
         where: {
           groupId: container.group.id,
@@ -628,7 +632,7 @@ export async function burnFolder(
         },
       };
 
-      return fromPrisma(
+      return fromPrismaV2(
         prisma.membership.deleteMany,
         deleteMembershipQuery,
         MEMBERSHIP_NOT_DELETED
@@ -640,14 +644,18 @@ export async function burnFolder(
   await Promise.all(
     users
       .filter((user) => user.tier === UserTier.EPHEMERAL)
-      .map(async ({ id, tier }) => {
+      .map(async ({ id /* , tier */ }) => {
         const userDeleteQuery = {
           where: {
             id,
           },
         };
 
-        await fromPrisma(prisma.user.delete, userDeleteQuery, USER_NOT_DELETED);
+        await fromPrismaV2(
+          prisma.user.delete,
+          userDeleteQuery,
+          USER_NOT_DELETED
+        );
       })
   );
 
@@ -657,7 +665,7 @@ export async function burnFolder(
     },
   };
 
-  await fromPrisma(prisma.group.delete, groupDeleteQuery, GROUP_NOT_DELETED);
+  await fromPrismaV2(prisma.group.delete, groupDeleteQuery, GROUP_NOT_DELETED);
 
   // Basically, if we got this far, everything was burned successfully.
   return {

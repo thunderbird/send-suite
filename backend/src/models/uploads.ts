@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
-import { fromPrisma } from './prisma-helper';
 import storage from '../storage';
+import { fromPrismaV2 } from './prisma-helper';
+const prisma = new PrismaClient();
 
 import {
   BaseError,
@@ -32,7 +32,7 @@ export async function createUpload(
       type,
     },
   };
-  return await fromPrisma(prisma.upload.create, query, UPLOAD_NOT_CREATED);
+  return await fromPrismaV2(prisma.upload.create, query, UPLOAD_NOT_CREATED);
 }
 
 export async function statUpload(id: string) {
@@ -51,7 +51,7 @@ export async function getUploadSize(id: string) {
     },
   };
 
-  const upload = await fromPrisma(
+  const upload = await fromPrismaV2(
     prisma.upload.findUniqueOrThrow,
     query,
     UPLOAD_NOT_FOUND
@@ -70,7 +70,7 @@ export async function getUploadMetadata(id: string) {
     },
   };
 
-  const upload = await fromPrisma(
+  const upload = await fromPrismaV2(
     prisma.upload.findUniqueOrThrow,
     query,
     UPLOAD_NOT_FOUND
