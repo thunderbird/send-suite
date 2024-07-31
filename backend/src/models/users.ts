@@ -1,12 +1,12 @@
-import { PrismaClient, UserTier, ContainerType, User } from '@prisma/client';
-const prisma = new PrismaClient();
-import { fromPrisma, itemsIncludeOptions } from './prisma-helper';
+import { ContainerType, PrismaClient, User, UserTier } from '@prisma/client';
 import {
   PROFILE_NOT_CREATED,
   USER_NOT_CREATED,
   USER_NOT_FOUND,
   USER_NOT_UPDATED,
 } from '../errors/models';
+import { fromPrisma, fromPrismaV2, itemsIncludeOptions } from './prisma-helper';
+const prisma = new PrismaClient();
 
 export async function createUser(
   publicKey: string,
@@ -23,7 +23,7 @@ export async function createUser(
     },
   };
 
-  return await fromPrisma(prisma.user.create, query, USER_NOT_CREATED);
+  return await fromPrismaV2(prisma.user.create, query, USER_NOT_CREATED);
 }
 
 export async function getUserByEmail(email: string) {
@@ -34,7 +34,11 @@ export async function getUserByEmail(email: string) {
     },
   };
 
-  const users = await fromPrisma(prisma.user.findMany, query, USER_NOT_CREATED);
+  const users = await fromPrismaV2(
+    prisma.user.findMany,
+    query,
+    USER_NOT_CREATED
+  );
   return users[0];
 }
 
@@ -101,7 +105,7 @@ export async function findOrCreateUserProfileByMozillaId(
     },
   };
 
-  const profile = await fromPrisma(
+  const profile = await fromPrismaV2(
     prisma.profile.upsert,
     profileQuery,
     PROFILE_NOT_CREATED
@@ -124,7 +128,11 @@ export async function getUserPublicKey(id: number) {
     },
   };
 
-  return await fromPrisma(prisma.user.findUniqueOrThrow, query, USER_NOT_FOUND);
+  return await fromPrismaV2(
+    prisma.user.findUniqueOrThrow,
+    query,
+    USER_NOT_FOUND
+  );
 }
 
 export async function updateUserPublicKey(id: number, publicKey: string) {
@@ -137,7 +145,7 @@ export async function updateUserPublicKey(id: number, publicKey: string) {
     },
   };
 
-  return await fromPrisma(prisma.user.update, query, USER_NOT_UPDATED);
+  return await fromPrismaV2(prisma.user.update, query, USER_NOT_UPDATED);
 }
 
 async function _whereContainer(
@@ -160,7 +168,7 @@ async function _whereContainer(
     },
   };
 
-  const user = await fromPrisma(
+  const user = await fromPrismaV2(
     prisma.user.findUniqueOrThrow,
     query,
     USER_NOT_FOUND
@@ -201,7 +209,7 @@ export async function getAllUserGroupContainers(
       ...itemsIncludeOptions,
     },
   };
-  return await fromPrisma(prisma.container.findMany, query);
+  return await fromPrismaV2(prisma.container.findMany, query);
 }
 
 export async function getRecentActivity(
@@ -255,7 +263,11 @@ export async function getBackup(id: number) {
     },
   };
 
-  return await fromPrisma(prisma.user.findUniqueOrThrow, query, USER_NOT_FOUND);
+  return await fromPrismaV2(
+    prisma.user.findUniqueOrThrow,
+    query,
+    USER_NOT_FOUND
+  );
 }
 
 export async function setBackup(
@@ -277,5 +289,5 @@ export async function setBackup(
     },
   };
 
-  return await fromPrisma(prisma.user.update, query, USER_NOT_FOUND);
+  return await fromPrismaV2(prisma.user.update, query, USER_NOT_FOUND);
 }

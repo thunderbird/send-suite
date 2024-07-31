@@ -164,7 +164,8 @@ router.delete(
   wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const root = await getContainerWithDescendants(parseInt(containerId));
-    const idArray = flattenDescendants(root);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const idArray = flattenDescendants(root as any);
 
     const burnPromises = idArray.map((id: number) =>
       burnFolder(id, true /* shouldDeleteUpload */)

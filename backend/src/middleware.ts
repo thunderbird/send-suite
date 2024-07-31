@@ -1,14 +1,14 @@
 import { PrismaClient } from '@prisma/client';
-import { fromPrisma } from './models/prisma-helper';
 
+import logger from './logger';
+import { fromPrismaV2 } from './models/prisma-helper';
 import {
-  hasWrite,
+  allPermissions,
   hasAdmin,
   hasRead,
   hasShare,
-  allPermissions,
+  hasWrite,
 } from './types/custom';
-import logger from './logger';
 
 const prisma = new PrismaClient();
 const PERMISSION_REQUEST_KEY = '_permission';
@@ -19,7 +19,7 @@ function extractMethodAndRoute(req) {
 
 function extractSessionValue(req, path) {
   let val = req.session;
-  for (let item of path) {
+  for (const item of path) {
     if (!val[item]) {
       logger.info(
         `No req.session.${path.join('.')} for ${extractMethodAndRoute(req)}`
@@ -58,6 +58,7 @@ function extractContainerId(req) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function reject(res, status = 403, message = `Not authorized`) {
   res.status(403).json({
     message,
@@ -117,7 +118,7 @@ is a user and containerId === 0
         },
       },
     };
-    const group = await fromPrisma(
+    const group = await fromPrismaV2(
       prisma.group.findFirstOrThrow,
       findGroupQuery
     );
@@ -127,7 +128,7 @@ is a user and containerId === 0
         groupId_userId: { groupId: group.id, userId },
       },
     };
-    const membership = await fromPrisma(
+    const membership = await fromPrismaV2(
       prisma.membership.findUniqueOrThrow,
       findMembershipQuery
     );

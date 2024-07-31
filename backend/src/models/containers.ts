@@ -1,19 +1,18 @@
-import { PrismaClient, ContainerType } from '@prisma/client';
-const prisma = new PrismaClient();
-import { PermissionType } from '../types/custom';
+import { ContainerType, PrismaClient } from '@prisma/client';
 import {
-  childrenIncludeOptions,
-  fromPrisma,
-  itemsIncludeOptions,
-} from './prisma-helper';
-import {
-  BaseError,
-  CONTAINER_NOT_UPDATED,
-  CONTAINER_NOT_FOUND,
   CONTAINER_NOT_CREATED,
+  CONTAINER_NOT_FOUND,
+  CONTAINER_NOT_UPDATED,
   GROUP_NOT_CREATED,
   MEMBERSHIP_NOT_CREATED,
 } from '../errors/models';
+import { PermissionType } from '../types/custom';
+import {
+  childrenIncludeOptions,
+  fromPrismaV2,
+  itemsIncludeOptions,
+} from './prisma-helper';
+const prisma = new PrismaClient();
 
 // Automatically creates a group for container
 // owner is added to new group
@@ -24,10 +23,15 @@ export async function createContainer(
   parentId: number,
   shareOnly: boolean
 ) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let query: Record<string, any> = {
     data: {},
   };
-  const group = await fromPrisma(prisma.group.create, query, GROUP_NOT_CREATED);
+  const group = await fromPrismaV2(
+    prisma.group.create,
+    query,
+    GROUP_NOT_CREATED
+  );
 
   query = {
     data: {
@@ -36,7 +40,7 @@ export async function createContainer(
       permission: PermissionType.ADMIN, // Owner has full permissions
     },
   };
-  await fromPrisma(prisma.membership.create, query, MEMBERSHIP_NOT_CREATED);
+  await fromPrismaV2(prisma.membership.create, query, MEMBERSHIP_NOT_CREATED);
 
   query = {
     data: {
@@ -53,7 +57,7 @@ export async function createContainer(
     query.data['parentId'] = parentId;
   }
 
-  return await fromPrisma(
+  return await fromPrismaV2(
     prisma.container.create,
     query,
     CONTAINER_NOT_CREATED
@@ -74,7 +78,7 @@ export async function getItemsInContainer(id: number) {
     },
   };
 
-  return fromPrisma(
+  return fromPrismaV2(
     prisma.container.findUniqueOrThrow,
     query,
     CONTAINER_NOT_FOUND
@@ -88,7 +92,7 @@ export async function getContainerWithAncestors(id: number) {
     },
   };
 
-  const container = await fromPrisma(
+  const container = await fromPrismaV2(
     prisma.container.findUniqueOrThrow,
     query,
     CONTAINER_NOT_FOUND
@@ -115,7 +119,7 @@ export async function getAccessLinksForContainer(containerId: number) {
     },
   };
 
-  const shares = await fromPrisma(prisma.share.findMany, query);
+  const shares = await fromPrismaV2(prisma.share.findMany, query);
   return shares.flatMap((share) => share.accessLinks.map((link) => link));
 }
 
@@ -130,7 +134,7 @@ export async function updateContainerName(containerId: number, name: string) {
     },
   };
 
-  return await fromPrisma(
+  return await fromPrismaV2(
     prisma.container.update,
     query,
     CONTAINER_NOT_UPDATED
