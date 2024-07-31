@@ -1,16 +1,13 @@
 import {
-  PrismaClient,
-  UserTier,
-  InvitationStatus,
   ContainerType,
-  Share,
   Invitation,
+  InvitationStatus,
+  PrismaClient,
+  Share,
+  UserTier,
 } from '@prisma/client';
-const prisma = new PrismaClient();
 import { randomBytes } from 'crypto';
-import { base64url } from '../utils';
-import { addGroupMember } from '../models';
-import { fromPrisma } from './prisma-helper';
+
 import {
   ACCESSLINK_NOT_DELETED,
   ACCESSLINK_NOT_FOUND,
@@ -28,6 +25,11 @@ import {
   UPLOAD_NOT_DELETED,
   USER_NOT_DELETED,
 } from '../errors/models';
+import { addGroupMember } from '../models';
+import storage from '../storage';
+import { base64url } from '../utils';
+import { fromPrisma } from './prisma-helper';
+const prisma = new PrismaClient();
 /**
  * Create Access Link
  * Creates an access link for a container.
@@ -74,7 +76,7 @@ export async function createAccessLink(
   }
 
   const id = base64url(randomBytes(64));
-  let expiryDate = expiration ? new Date(expiration) : null;
+  const expiryDate = expiration ? new Date(expiration) : null;
 
   const accessLinkQuery = {
     data: {
@@ -581,6 +583,11 @@ export async function burnFolder(
   );
 
   if (shouldDeleteUpload) {
+    const deleteFilePromises = (uploadIds as string[]).map((id) =>
+      storage.del(id)
+    );
+    await Promise.all(deleteFilePromises);
+
     await Promise.all(
       uploadIds.map(async (id) => {
         const deleteUploadQuery = {
