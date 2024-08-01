@@ -20,7 +20,7 @@ const { initializeClientMetrics, sendMetricsToBackend } = useMetricsStore();
 onMounted(async () => {
   await init(userStore, keychain, folderStore);
   // Identify user for analytics
-  const uid = userStore.user.hashedEmail;
+  const uid = userStore.user.uniqueHash;
   initializeClientMetrics(uid);
   await sendMetricsToBackend(api);
 });

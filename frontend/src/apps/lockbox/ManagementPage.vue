@@ -123,7 +123,7 @@ onMounted(async () => {
   }
   salutation.value = 'You are logged into your Mozilla Account';
   // Identify user for analytics
-  const uid = userStore.user.hashedEmail;
+  const uid = userStore.user.uniqueHash;
   initializeClientMetrics(uid);
   await sendMetricsToBackend(api);
 });

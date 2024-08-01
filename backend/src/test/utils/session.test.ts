@@ -1,19 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { getHashedEmail } from '../../utils/session';
+import { getuniqueHash, getUniqueHashFromAnonId } from '../../utils/session';
 
-describe('getHashedEmail', () => {
+describe('getuniqueHash', () => {
   it('should return the hashed email if it exists in the session', () => {
     const req = {
       session: {
         user: {
-          hashedEmail: 'hashedEmail123',
+          uniqueHash: 'uniqueHash123',
         },
       },
     };
 
-    const result = getHashedEmail(req);
+    const result = getuniqueHash(req);
 
-    expect(result).toBe('hashedEmail123');
+    expect(result).toBe('uniqueHash123');
   });
 
   it('should return undefined if the hashed email does not exist in the session', () => {
@@ -23,7 +23,7 @@ describe('getHashedEmail', () => {
       },
     };
 
-    const result = getHashedEmail(req);
+    const result = getuniqueHash(req);
 
     expect(result).toBeUndefined();
   });
@@ -31,8 +31,22 @@ describe('getHashedEmail', () => {
   it('should return undefined if the session does not exist', () => {
     const req = {};
 
-    const result = getHashedEmail(req);
+    const result = getuniqueHash(req);
 
     expect(result).toBeUndefined();
+  });
+});
+
+describe('getUniqueHashFromAnonId', () => {
+  it('should return a unique prefix', () => {
+    const anonId = 'test_id';
+    const expectedPrefix = `f'anon-`;
+    const result = getUniqueHashFromAnonId(anonId);
+
+    // Check if the result starts with the expected prefix
+    expect(result.startsWith(expectedPrefix)).toBe(true);
+
+    // Check if the length of the hash (excluding the prefix) is correct for a sha256 hash
+    expect(result.length).toBe(expectedPrefix.length + 64); // sha256 hash is 64 characters long
   });
 });

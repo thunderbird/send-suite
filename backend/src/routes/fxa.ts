@@ -172,7 +172,7 @@ router.get(
         );
 
         req.session['user'] = user;
-        user.hashedEmail = createHash('sha256').update(email).digest('hex');
+        user.uniqueHash = createHash('sha256').update(uid).digest('hex');
 
         req.session.save((err) => {
           if (err) {

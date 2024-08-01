@@ -236,8 +236,8 @@ router.get(
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
     const containersAndMembers = await getContainersSharedByUser(
-      parseInt(userId),
-      ContainerType.FOLDER
+      parseInt(userId)
+      // ContainerType.FOLDER
     );
 
     res.status(200).json(containersAndMembers);

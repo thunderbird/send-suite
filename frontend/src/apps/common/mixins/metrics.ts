@@ -17,7 +17,7 @@ export function useMetricsUpdate() {
      * if it's there already, skip initializaiton
      */
     await userStore.populateFromSession();
-    const uid = userStore.user.hashedEmail;
+    const uid = userStore.user.uniqueHash;
     initializeClientMetrics(uid);
   };
 

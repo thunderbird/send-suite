@@ -48,10 +48,10 @@ const useUserStore: () => UserStore = defineStore('user', () => {
     user.tier = userData.tier;
     user.email = userData.email;
 
-    if (!userData.hashedEmail) {
-      console.log('hashedEmail not found in user object');
+    if (!userData.uniqueHash) {
+      console.log('uniqueHash not found in user object');
     } else {
-      user.hashedEmail = userData.hashedEmail;
+      user.uniqueHash = userData.uniqueHash;
     }
   }
 
@@ -77,7 +77,7 @@ const useUserStore: () => UserStore = defineStore('user', () => {
       id: resp.user.id,
       tier: resp.user.tier,
       email,
-      hashedEmail: resp.user.hashedEmail,
+      uniqueHash: resp.user.uniqueHash,
     };
   }
 
@@ -101,10 +101,10 @@ const useUserStore: () => UserStore = defineStore('user', () => {
 
   async function load(): Promise<boolean> {
     try {
-      const { id, tier, email, hashedEmail } = await storage.loadUser();
+      const { id, tier, email, uniqueHash } = await storage.loadUser();
 
       console.table({ id, tier, email });
-      populateUser({ id, email, tier, hashedEmail });
+      populateUser({ id, email, tier, uniqueHash });
 
       return true;
     } catch (e) {

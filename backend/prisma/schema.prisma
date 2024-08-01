@@ -25,7 +25,7 @@ model User {
   createdAt           DateTime?
   updatedAt           DateTime?
   activatedAt         DateTime?
-  hashedEmail      String?
+  uniqueHash          String?
 
   profile             Profile?
 

@@ -36,14 +36,11 @@ const sendMetricsToBackend = async (api: ApiConnection) => {
       resolution: deviceRes,
       effective_resolution: effectiveDeviceRes,
       user_agent: navigator.userAgent,
-      locale: localStorage?.getItem('locale') ?? navigator.language,
-      // theme: getPreferredTheme(),
+      locale: navigator.language,
     },
     'POST'
   );
 
-  // const { data } = response;
-  // return data.value?.id ?? false;
   return response;
 };
 

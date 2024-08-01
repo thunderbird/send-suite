@@ -1,18 +1,18 @@
 import { Router } from 'express';
 import { useMetrics } from '../metrics';
-import { getHashedEmail } from '../utils/session';
+import { getuniqueHash, getUniqueHashFromAnonId } from '../utils/session';
 
 const router: Router = Router();
 
 router.post('/api/metrics/page-load', (req, res) => {
   const data = req.body;
-  const uid = getHashedEmail(req);
+  const uniqueHash = getuniqueHash(req);
 
   const metrics = useMetrics();
 
-  const anon_id = [req.hostname, data.browser_version, data.os_version].join(
-    '-'
-  );
+  let anon_id = [req.hostname, data.browser_version, data.os_version].join('-');
+
+  anon_id = getUniqueHashFromAnonId(anon_id);
 
   const event = 'page-load';
   const properties = {
@@ -20,9 +20,9 @@ router.post('/api/metrics/page-load', (req, res) => {
     service: 'send',
   };
 
-  if (uid) {
+  if (uniqueHash) {
     metrics.capture({
-      distinctId: uid,
+      distinctId: uniqueHash,
       event,
       properties,
     });
@@ -34,10 +34,8 @@ router.post('/api/metrics/page-load', (req, res) => {
     });
   }
 
-  console.log(anon_id);
-
   res.status(200).json({
-    message: uid || anon_id,
+    message: uniqueHash || anon_id,
   });
 });
 

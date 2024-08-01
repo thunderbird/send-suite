@@ -4,9 +4,9 @@ import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
 import router from '../../routes/metrics';
 
-const { mockcapture, getHashedEmail } = vi.hoisted(() => ({
+const { mockcapture, getuniqueHash } = vi.hoisted(() => ({
   mockcapture: vi.fn(),
-  getHashedEmail: vi.fn(),
+  getuniqueHash: vi.fn(),
 }));
 
 vi.mock('@/metrics', () => {
@@ -23,7 +23,8 @@ vi.mock('@/metrics', () => {
 
 vi.mock('@/utils/session', () => {
   return {
-    getHashedEmail: getHashedEmail,
+    getuniqueHash: getuniqueHash,
+    getUniqueHashFromAnonId: vi.fn().mockReturnValue('hash'),
   };
 });
 
@@ -52,7 +53,7 @@ describe('POST /api/metrics/page-load', () => {
     };
 
     const expectedResponse = {
-      distinctId: '127.0.0.1-1.0-1.0',
+      distinctId: 'hash',
       event: 'page-load',
       properties: {
         ...mockPayload,
@@ -74,7 +75,7 @@ describe('POST /api/metrics/page-load', () => {
   it('should capture metrics for logged users', async () => {
     const mockedHash = 'mocked-email-hash';
 
-    getHashedEmail.mockReturnValue(mockedHash);
+    getuniqueHash.mockReturnValue(mockedHash);
     const mockPayload = {
       browser_version: '1.0',
       os_version: '1.0',

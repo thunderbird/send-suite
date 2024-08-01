@@ -41,7 +41,7 @@ type User = {
   updatedAt: Date;
   activatedAt: Date;
   profile?: Profile;
-  hashedEmail?: string;
+  uniqueHash?: string;
 };
 declare module 'express-session' {
   interface SessionData {

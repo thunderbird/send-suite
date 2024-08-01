@@ -57,7 +57,7 @@ export interface UserType {
   tier?: UserTier;
   createdAt?: Date;
   updatedAt?: Date;
-  hashedEmail?: string;
+  uniqueHash?: string;
 }
 
 export interface Profile {
