@@ -48,6 +48,15 @@ To run the full stack:
 ```sh
 pnpm dev
 ```
+### Troubleshooting
+If you're having any issues with docker (ex: no memory left, or volumes do not contain expected files), prune docker and rebuild containers from scratch:
+
+```sh
+docker system prune
+docker-compose build --no-cache
+```
+
+Then `docker compose up -d` should work
 
 When you're done with the project, you can run:
 
