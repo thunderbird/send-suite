@@ -1,4 +1,5 @@
 import { initSentry } from '@/lib/sentry';
+import posthogPlugin from '@/plugins/posthog';
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 import Lockbox from './LockboxPage.vue';
@@ -11,4 +12,5 @@ initSentry(app);
 
 app.use(pinia);
 app.use(router);
+app.use(posthogPlugin);
 app.mount('#app');

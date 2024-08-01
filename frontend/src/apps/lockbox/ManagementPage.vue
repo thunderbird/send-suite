@@ -9,9 +9,11 @@ import { onMounted, ref, toRaw } from 'vue';
 
 import BackupAndRestore from '@/apps/common/BackupAndRestore.vue';
 import FeedbackBox from '@/apps/common/FeedbackBox.vue';
+import { useMetricsUpdate } from '@/apps/common/mixins/metrics';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import { CLIENT_MESSAGES } from '@/lib/messages';
+import useMetricsStore from '@/stores/metrics';
 
 const DEBUG = true;
 const SERVER = `server`;
@@ -20,6 +22,8 @@ const userStore = useUserStore();
 const { keychain, resetKeychain } = useKeychainStore();
 const { api } = useApiStore();
 const folderStore = useFolderStore();
+const { initializeClientMetrics, sendMetricsToBackend } = useMetricsStore();
+const { updateMetricsIdentity } = useMetricsUpdate();
 const configurationStore = useConfigurationStore();
 
 const authUrl = ref('');
@@ -118,7 +122,13 @@ onMounted(async () => {
     );
   }
   salutation.value = 'You are logged into your Mozilla Account';
+  // Identify user for analytics
+  const uid = userStore.user.uniqueHash;
+  initializeClientMetrics(uid);
+  await sendMetricsToBackend(api);
 });
+
+updateMetricsIdentity();
 
 // Unused for now, but will need when implementing logout.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -140,6 +150,8 @@ async function dbUserSetup() {
   }
   // Store the user we got by populating from session.
   userStore.store();
+
+  await sendMetricsToBackend(api);
 
   // Check if we got our public key from the session.
   // If not, this is almost certainly a new user.

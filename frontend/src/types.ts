@@ -57,6 +57,7 @@ export interface UserType {
   tier?: UserTier;
   createdAt?: Date;
   updatedAt?: Date;
+  uniqueHash?: string;
 }
 
 export interface Profile {
@@ -93,7 +94,7 @@ export interface Container {
   size?: number;
 }
 
-export interface Folder extends Container { }
+export interface Folder extends Container {}
 
 export interface Item {
   id: number;
