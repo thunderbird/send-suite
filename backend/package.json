@@ -18,7 +18,8 @@
     "prettier:all": "prettier --write .",
     "prod:build_and_upload_sourcemaps": "tsc && pnpm sentry:sourcemaps",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org thunderbird --project send-suite-backend ./dist && sentry-cli sourcemaps upload --org thunderbird --project send-suite-backend ./dist",
-    "test": "vitest"
+    "test": "vitest run --silent",
+    "test:watch": "vitest --watch"
   },
   "lint-staged": {
     "*.{js,ts}": [

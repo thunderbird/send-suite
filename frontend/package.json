@@ -9,8 +9,9 @@
     "lint:all": "eslint . --fix",
     "prettier:all": "prettier --write .",
     "preview": "vite preview",
-    "test": "vitest",
-    "test-debug": "vitest --inspect-brk --single-thread"
+    "test": "vitest run --silent",
+    "test-debug": "vitest --inspect-brk --single-thread",
+    "test:watch": "vitest --watch"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": [
