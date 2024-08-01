@@ -48,7 +48,7 @@ To watch the backend logs:
 ```sh
 docker compose logs -f
 ```
-
+### Troubleshooting
 If you're having any issues with docker (ex: no memory left, or volumes do not contain expected files), prune docker and rebuild containers from scratch:
 
 ```sh
