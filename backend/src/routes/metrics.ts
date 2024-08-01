@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import { useMetrics } from '../metrics';
-import { getuniqueHash, getUniqueHashFromAnonId } from '../utils/session';
+import { getUniqueHash, getUniqueHashFromAnonId } from '../utils/session';
 
 const router: Router = Router();
 
 router.post('/api/metrics/page-load', (req, res) => {
   const data = req.body;
-  const uniqueHash = getuniqueHash(req);
+  const uniqueHash = getUniqueHash(req);
 
   const metrics = useMetrics();
 

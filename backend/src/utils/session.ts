@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 
-export const getuniqueHash = (req): string | undefined => {
+export const getUniqueHash = (req): string | undefined => {
   return req?.session?.user?.uniqueHash;
 };
 

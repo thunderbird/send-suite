@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { getuniqueHash, getUniqueHashFromAnonId } from '../../utils/session';
+import { getUniqueHash, getUniqueHashFromAnonId } from '../../utils/session';
 
-describe('getuniqueHash', () => {
+describe('getUniqueHash', () => {
   it('should return the hashed email if it exists in the session', () => {
     const req = {
       session: {
@@ -11,7 +11,7 @@ describe('getuniqueHash', () => {
       },
     };
 
-    const result = getuniqueHash(req);
+    const result = getUniqueHash(req);
 
     expect(result).toBe('uniqueHash123');
   });
@@ -23,7 +23,7 @@ describe('getuniqueHash', () => {
       },
     };
 
-    const result = getuniqueHash(req);
+    const result = getUniqueHash(req);
 
     expect(result).toBeUndefined();
   });
@@ -31,7 +31,7 @@ describe('getuniqueHash', () => {
   it('should return undefined if the session does not exist', () => {
     const req = {};
 
-    const result = getuniqueHash(req);
+    const result = getUniqueHash(req);
 
     expect(result).toBeUndefined();
   });

@@ -237,6 +237,10 @@ router.get(
     const { userId } = req.params;
     const containersAndMembers = await getContainersSharedByUser(
       parseInt(userId)
+      /*
+       * TODO: This functionality is incomplete. The previous functionality used this second parameter
+       * We're keeping it to pick it up later.
+       */
       // ContainerType.FOLDER
     );
 
