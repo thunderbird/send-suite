@@ -1,9 +1,12 @@
 #!/bin/sh
+pnpm install
+
 echo 'Applying prisma migrations...'
-npm run db:update
+pnpm run db:update
 
 echo 'Generating prisma client...'
-npm run db:generate
+pnpm run db:generate
 
 echo 'Starting dev server 🚀'
-npm run debug
+echo 'Opening db browser on http://localhost:5555/'
+pnpm debug & pnpm db:browse
