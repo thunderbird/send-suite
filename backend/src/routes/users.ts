@@ -1,7 +1,7 @@
 import { ContainerType, UserTier } from '@prisma/client';
 
 import 'dotenv/config';
-import { Router } from 'express';
+import { Request, Router } from 'express';
 
 import {
   addErrorHandling,
@@ -41,7 +41,7 @@ router.get(
     // If an allow list is provided, only allow users in that list
     // If there is no env variable, we allow all users
     try {
-      await checkAllowList(req.session.user.email);
+      await checkAllowList(req.session?.user?.email);
     } catch (error) {
       return res.status(401).json({
         msg: 'Not in allow list',
@@ -87,6 +87,12 @@ router.post(
       publicKey: string;
     } = req.body;
 
+    if (!req.session?.user?.id) {
+      return res.status(401).json({
+        msg: 'User not found in session',
+      });
+    }
+
     const { id } = req.session.user;
     const update = await updateUserPublicKey(
       id,
@@ -104,7 +110,7 @@ router.get(
   addErrorHandling(USER_ERRORS.FOLDERS_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     try {
-      await checkAllowList(req.session.user.email);
+      await checkAllowList(req.session?.user?.email);
     } catch (error) {
       /* 
       TODO: Type this response correctly on the frontend
@@ -115,9 +121,13 @@ router.get(
       return res.status(401).json([{ id: 0, items: [] }]);
     }
 
-    const { id } = req.session.user;
     const containers = await getAllUserGroupContainers(
-      id,
+      /*
+       * This is the type safe way to get the user id from the session
+       * Replacing -> const { id } = req.session.user;
+       * Which would result in a type error at runtime
+       */
+      req.session?.user?.id || 0,
       ContainerType.FOLDER
     );
     res.status(200).json(containers);
@@ -128,7 +138,7 @@ router.get(
   '/lookup/:email',
   requireLogin,
   addErrorHandling(USER_ERRORS.USER_NOT_FOUND),
-  wrapAsyncHandler(async (req, res) => {
+  wrapAsyncHandler(async (req: Request, res) => {
     const { email } = req.params;
     const user = await getUserByEmail(email);
     res.status(200).json(user);
@@ -153,7 +163,7 @@ router.post(
         } else {
           logger.info(`
           session id: ${req.session.id}
-          user id in session ${req.session.user.id}
+          user id in session ${req.session?.user?.id}
           `);
           res.status(200).json(user);
         }
@@ -184,7 +194,7 @@ router.post(
     const user = await createUser(
       JSON.stringify(publicKey).trim(),
       userEmail,
-      tier
+      tier || undefined
     );
     res.status(201).json({
       message: 'User created',
