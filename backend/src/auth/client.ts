@@ -29,7 +29,7 @@ export function isEmailInAllowList(email: string, allowList: string[]) {
   return domains;
 }
 
-export async function checkAllowList(email: string) {
+export async function checkAllowList(email: string | undefined | null) {
   if (!email) {
     throw new Error('checkAllowList requires an email');
   }

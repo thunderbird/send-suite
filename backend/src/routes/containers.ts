@@ -39,6 +39,7 @@ import {
   getItemsInContainer,
   updateContainerName,
 } from '../models/containers';
+import { validSessionOrThrow } from '../utils/session';
 
 const router: Router = Router();
 
@@ -69,6 +70,10 @@ router.get(
   wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const container = await getItemsInContainer(parseInt(containerId));
+
+    if (!container) {
+      throw new Error();
+    }
 
     if (container.parentId) {
       container['parent'] = await getContainerWithAncestors(container.parentId);
@@ -113,7 +118,9 @@ router.post(
       type: ContainerType;
     } = req.body;
 
-    const ownerId = req.session.user.id;
+    validSessionOrThrow(req);
+
+    const ownerId = req.session?.user?.id;
 
     let shareOnly = false;
     if (req.body.shareOnly) {
@@ -127,7 +134,7 @@ router.post(
 
     const container = await createContainer(
       name.trim().toLowerCase(),
-      ownerId,
+      ownerId!,
       type,
       parentId,
       shareOnly

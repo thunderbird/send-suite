@@ -30,6 +30,7 @@ import { checkAllowList } from '../auth/client';
 import { BaseError, SESSION_NOT_SAVED } from '../errors/models';
 import logger from '../logger';
 import { requireLogin } from '../middleware';
+import { validSessionOrThrow } from '../utils/session';
 
 const router: Router = Router();
 
@@ -121,13 +122,11 @@ router.get(
       return res.status(401).json([{ id: 0, items: [] }]);
     }
 
+    validSessionOrThrow(req);
+
+    const { id } = req.session.user!;
     const containers = await getAllUserGroupContainers(
-      /*
-       * This is the type safe way to get the user id from the session
-       * Replacing -> const { id } = req.session.user;
-       * Which would result in a type error at runtime
-       */
-      req.session?.user?.id || 0,
+      id,
       ContainerType.FOLDER
     );
     res.status(200).json(containers);
@@ -155,6 +154,7 @@ router.post(
   wrapAsyncHandler(async (req, res) => {
     const { email } = req.body;
     const user = await getUserByEmail(email);
+
     if (user) {
       req.session.user = user;
       req.session.save((err) => {
