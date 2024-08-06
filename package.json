@@ -9,6 +9,9 @@
   "scripts": {
     "prepare": "husky",
     "sort-package-json": "sort-package-json {frontend,backend}/package.json",
+    "test:frontend": "cd frontend && pnpm test",
+    "test:backend": "cd backend && pnpm test",
+    "test": "pnpm run /^test:.*/",
     "postinstall": "pnpm run install:frontend && pnpm run install:backend",
     "clean": "./clean.sh",
     "dev": "docker compose up --build --force-recreate -d && docker compose logs -f",

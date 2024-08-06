@@ -1,4 +1,6 @@
 #!/bin/sh
+pnpm install
+
 echo 'Applying prisma migrations...'
 npm run db:update
 
