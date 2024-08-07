@@ -1,28 +1,29 @@
 import { Router } from 'express';
 
 import {
+  acceptAccessLink,
+  acceptInvitation,
   burnEphemeralConversation,
   createAccessLink,
-  getAccessLinkChallenge,
-  acceptAccessLink,
-  getContainerForAccessLink,
   createInvitationFromAccessLink,
-  removeAccessLink,
+  getAccessLinkChallenge,
+  getContainerForAccessLink,
   isAccessLinkValid,
-  acceptInvitation,
+  removeAccessLink,
 } from '../models/sharing';
 
 import {
-  wrapAsyncHandler,
   addErrorHandling,
   SHARING_ERRORS,
+  wrapAsyncHandler,
 } from '../errors/routes';
 
 import {
-  requireLogin,
   getGroupMemberPermissions,
+  requireLogin,
   requireSharePermission,
 } from '../middleware';
+import { validSessionOrThrow } from '../utils/session';
 
 const router: Router = Router();
 
@@ -165,8 +166,11 @@ router.post(
   requireLogin,
   addErrorHandling(SHARING_ERRORS.ACCESS_LINK_NOT_ACCEPTED),
   wrapAsyncHandler(async (req, res) => {
+    validSessionOrThrow(req);
+
     const { linkId } = req.params;
-    const { id } = req.session.user;
+    const { id } = req.session.user!;
+
     // We create an Invitation for two reasons:
     // - it allows us to reuse the existing `acceptInvitation()`
     // - it serves as record-keeping (e.g., we can prevent someone

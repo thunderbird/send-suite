@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { createHash } from 'crypto';
-import { Router } from 'express';
+import { Request, Router } from 'express';
 import {
   checkAllowList,
   generateState,
@@ -23,7 +23,7 @@ const router: Router = Router();
 router.get(
   '/login',
   addErrorHandling(AUTH_ERRORS.LOG_IN_FAILED),
-  wrapAsyncHandler(async (req, res) => {
+  wrapAsyncHandler(async (req: Request, res) => {
     // Params to include when we request an authorization url
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let additionalParams: Record<string, any> = {
@@ -80,7 +80,7 @@ router.get(
 
     if (shouldCheckAllowlist) {
       try {
-        await checkAllowList(req.session.user.email);
+        await checkAllowList(req.session?.user?.email);
       } catch (error) {
         res.status(403).json({
           msg: 'User not in allow list',
@@ -194,7 +194,7 @@ router.get(
   '/allowlist',
   addErrorHandling(AUTH_ERRORS.ALLOW_LIST_FAILED),
   wrapAsyncHandler(async (req, res) => {
-    await checkAllowList(req.session.user.email);
+    await checkAllowList(req.session?.user?.email);
     res.status(200).json({
       msg: 'User in allow list',
     });

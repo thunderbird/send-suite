@@ -1,5 +1,10 @@
+import { Request } from 'express';
 import { describe, expect, it } from 'vitest';
-import { getUniqueHash, getUniqueHashFromAnonId } from '../../utils/session';
+import {
+  getUniqueHash,
+  getUniqueHashFromAnonId,
+  validSessionOrThrow,
+} from '../../utils/session';
 
 describe('getUniqueHash', () => {
   it('should return the hashed email if it exists in the session', () => {
@@ -9,7 +14,7 @@ describe('getUniqueHash', () => {
           uniqueHash: 'uniqueHash123',
         },
       },
-    };
+    } as Request;
 
     const result = getUniqueHash(req);
 
@@ -21,7 +26,7 @@ describe('getUniqueHash', () => {
       session: {
         user: {},
       },
-    };
+    } as Request;
 
     const result = getUniqueHash(req);
 
@@ -29,7 +34,7 @@ describe('getUniqueHash', () => {
   });
 
   it('should return undefined if the session does not exist', () => {
-    const req = {};
+    const req = {} as Request;
 
     const result = getUniqueHash(req);
 
@@ -48,5 +53,40 @@ describe('getUniqueHashFromAnonId', () => {
 
     // Check if the length of the hash (excluding the prefix) is correct for a sha256 hash
     expect(result.length).toBe(expectedPrefix.length + 64); // sha256 hash is 64 characters long
+  });
+});
+
+describe('validSessionOrThrow', () => {
+  it('should not throw an error if the session exists', () => {
+    const req = {
+      session: {
+        user: {
+          id: 1,
+          email: 'something@somethin.com',
+        },
+      },
+    } as Request;
+
+    expect(() => {
+      validSessionOrThrow(req);
+    }).not.toThrow();
+  });
+
+  it('should throw an error if the session does not exist', () => {
+    const req = {} as Request;
+
+    expect(() => {
+      validSessionOrThrow(req);
+    }).toThrow();
+  });
+
+  it('should throw an error if the user does not exist in the session', () => {
+    const req = {
+      session: {},
+    } as Request;
+
+    expect(() => {
+      validSessionOrThrow(req);
+    }).toThrow();
   });
 });

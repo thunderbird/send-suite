@@ -19,6 +19,7 @@ import {
   requireLogin,
   requireWritePermission,
 } from '../middleware';
+import { validSessionOrThrow } from '../utils/session';
 
 const router: Router = Router();
 
@@ -36,7 +37,14 @@ router.post(
   wrapAsyncHandler(async (req, res) => {
     const { id, size, ownerId, type } = req.body;
     const Metrics = useMetrics();
-    const distinctId = req.session.hash;
+
+    validSessionOrThrow(req);
+
+    if (!req.session.user?.uniqueHash) {
+      throw new Error('User does not have a unique hash. Log in again.');
+    }
+
+    const distinctId = req.session.user.uniqueHash;
 
     Metrics.capture({
       event: 'upload.size',

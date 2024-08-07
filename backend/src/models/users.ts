@@ -39,6 +39,11 @@ export async function getUserByEmail(email: string) {
     query,
     USER_NOT_CREATED
   );
+
+  if (!users?.length || !users) {
+    return null;
+  }
+
   return users[0];
 }
 

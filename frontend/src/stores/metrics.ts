@@ -5,7 +5,6 @@ import UAParser from 'ua-parser-js';
 
 const initializeClientMetrics = (uid: string | undefined) => {
   if (!uid) {
-    console.error('No UID provided for metrics initialization.');
     return;
   }
   console.log('Initializing metrics with uid:', uid);
