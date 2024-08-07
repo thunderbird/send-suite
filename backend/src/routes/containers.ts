@@ -118,9 +118,9 @@ router.post(
       type: ContainerType;
     } = req.body;
 
-    validSessionOrThrow(req);
+    const { id } = validSessionOrThrow(req);
 
-    const ownerId = req.session?.user?.id;
+    const ownerId = id;
 
     let shareOnly = false;
     if (req.body.shareOnly) {

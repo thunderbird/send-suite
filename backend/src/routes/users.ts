@@ -122,9 +122,8 @@ router.get(
       return res.status(401).json([{ id: 0, items: [] }]);
     }
 
-    validSessionOrThrow(req);
+    const { id } = validSessionOrThrow(req);
 
-    const { id } = req.session.user!;
     const containers = await getAllUserGroupContainers(
       id,
       ContainerType.FOLDER

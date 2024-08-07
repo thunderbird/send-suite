@@ -166,10 +166,9 @@ router.post(
   requireLogin,
   addErrorHandling(SHARING_ERRORS.ACCESS_LINK_NOT_ACCEPTED),
   wrapAsyncHandler(async (req, res) => {
-    validSessionOrThrow(req);
+    const { id } = validSessionOrThrow(req);
 
     const { linkId } = req.params;
-    const { id } = req.session.user!;
 
     // We create an Invitation for two reasons:
     // - it allows us to reuse the existing `acceptInvitation()`

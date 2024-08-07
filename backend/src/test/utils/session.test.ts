@@ -57,7 +57,7 @@ describe('getUniqueHashFromAnonId', () => {
 });
 
 describe('validSessionOrThrow', () => {
-  it('should not throw an error if the session exists', () => {
+  it('should return a user from session', () => {
     const req = {
       session: {
         user: {
@@ -70,6 +70,9 @@ describe('validSessionOrThrow', () => {
     expect(() => {
       validSessionOrThrow(req);
     }).not.toThrow();
+
+    const result = validSessionOrThrow(req);
+    expect(result).toEqual(req.session.user);
   });
 
   it('should throw an error if the session does not exist', () => {
