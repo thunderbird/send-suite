@@ -48,7 +48,9 @@ To run the full stack:
 ```sh
 pnpm dev
 ```
+
 ### Troubleshooting
+
 If you're having any issues with docker (ex: no memory left, or volumes do not contain expected files), prune docker and rebuild containers from scratch:
 
 ```sh
@@ -234,3 +236,22 @@ MODE=debug
 ```
 
 3. Start a new debugging session. This will open a new chrome window that is connected to your VSCode session. Now you can add breakpoints and do all sorts of magic.
+
+## Testing
+
+### E2E testing
+
+### Setting up
+
+1. Run `pnpm dev`
+2. Run `pnpm test:e2e`
+
+This will open the test suite in headed mode so you can log into your moz account.
+
+After you successfully logged in. Make sure you click `My Files` on the sidebar to finish saving your state. This should close the test window.
+
+Afterwards you'll see a new file inside the `data` folder. It should be called `lockbox` + `timestamp`.json`
+
+3. Copy the contents of this new file into `data/lockboxstate.json`
+
+4) Run the tests again and see it fly!
