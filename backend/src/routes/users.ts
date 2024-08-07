@@ -30,7 +30,7 @@ import { checkAllowList } from '../auth/client';
 import { BaseError, SESSION_NOT_SAVED } from '../errors/models';
 import logger from '../logger';
 import { requireLogin } from '../middleware';
-import { validSessionOrThrow } from '../utils/session';
+import { getSessionUserOrThrow } from '../utils/session';
 
 const router: Router = Router();
 
@@ -122,7 +122,7 @@ router.get(
       return res.status(401).json([{ id: 0, items: [] }]);
     }
 
-    const { id } = validSessionOrThrow(req);
+    const { id } = getSessionUserOrThrow(req);
 
     const containers = await getAllUserGroupContainers(
       id,

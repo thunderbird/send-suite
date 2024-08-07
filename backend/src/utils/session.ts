@@ -12,7 +12,7 @@ export const getUniqueHashFromAnonId = (anon_id: string): string => {
   return `f'anon-${hashedString}`;
 };
 
-export const validSessionOrThrow = (req: Request) => {
+export const getSessionUserOrThrow = (req: Request) => {
   if (!req?.session?.user) {
     throw new Error(USER_ERRORS.SESSION_NOT_FOUND.message);
   }

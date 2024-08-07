@@ -39,7 +39,7 @@ import {
   getItemsInContainer,
   updateContainerName,
 } from '../models/containers';
-import { validSessionOrThrow } from '../utils/session';
+import { getSessionUserOrThrow } from '../utils/session';
 
 const router: Router = Router();
 
@@ -118,7 +118,7 @@ router.post(
       type: ContainerType;
     } = req.body;
 
-    const { id } = validSessionOrThrow(req);
+    const { id } = getSessionUserOrThrow(req);
 
     const ownerId = id;
 

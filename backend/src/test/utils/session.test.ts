@@ -1,9 +1,9 @@
 import { Request } from 'express';
 import { describe, expect, it } from 'vitest';
 import {
+  getSessionUserOrThrow,
   getUniqueHash,
   getUniqueHashFromAnonId,
-  validSessionOrThrow,
 } from '../../utils/session';
 
 describe('getUniqueHash', () => {
@@ -56,7 +56,7 @@ describe('getUniqueHashFromAnonId', () => {
   });
 });
 
-describe('validSessionOrThrow', () => {
+describe('getSessionUserOrThrow', () => {
   it('should return a user from session', () => {
     const req = {
       session: {
@@ -68,10 +68,10 @@ describe('validSessionOrThrow', () => {
     } as Request;
 
     expect(() => {
-      validSessionOrThrow(req);
+      getSessionUserOrThrow(req);
     }).not.toThrow();
 
-    const result = validSessionOrThrow(req);
+    const result = getSessionUserOrThrow(req);
     expect(result).toEqual(req.session.user);
   });
 
@@ -79,7 +79,7 @@ describe('validSessionOrThrow', () => {
     const req = {} as Request;
 
     expect(() => {
-      validSessionOrThrow(req);
+      getSessionUserOrThrow(req);
     }).toThrow();
   });
 
@@ -89,7 +89,7 @@ describe('validSessionOrThrow', () => {
     } as Request;
 
     expect(() => {
-      validSessionOrThrow(req);
+      getSessionUserOrThrow(req);
     }).toThrow();
   });
 });

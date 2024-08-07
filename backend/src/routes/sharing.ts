@@ -23,7 +23,7 @@ import {
   requireLogin,
   requireSharePermission,
 } from '../middleware';
-import { validSessionOrThrow } from '../utils/session';
+import { getSessionUserOrThrow } from '../utils/session';
 
 const router: Router = Router();
 
@@ -166,7 +166,7 @@ router.post(
   requireLogin,
   addErrorHandling(SHARING_ERRORS.ACCESS_LINK_NOT_ACCEPTED),
   wrapAsyncHandler(async (req, res) => {
-    const { id } = validSessionOrThrow(req);
+    const { id } = getSessionUserOrThrow(req);
 
     const { linkId } = req.params;
 

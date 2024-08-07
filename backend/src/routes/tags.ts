@@ -12,7 +12,7 @@ import {
   getContainersAndItemsWithTags,
   updateTagName,
 } from '../models';
-import { validSessionOrThrow } from '../utils/session';
+import { getSessionUserOrThrow } from '../utils/session';
 
 const router: Router = Router();
 
@@ -66,7 +66,7 @@ router.get(
   getGroupMemberPermissions,
   addErrorHandling(TAG_ERRORS.NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
-    const { id } = validSessionOrThrow(req);
+    const { id } = getSessionUserOrThrow(req);
     const { tagName } = req.params;
     const result = await getContainersAndItemsWithTags(id, [tagName]);
     res.status(200).json({

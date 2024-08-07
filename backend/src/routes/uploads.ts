@@ -19,7 +19,7 @@ import {
   requireLogin,
   requireWritePermission,
 } from '../middleware';
-import { validSessionOrThrow } from '../utils/session';
+import { getSessionUserOrThrow } from '../utils/session';
 
 const router: Router = Router();
 
@@ -38,7 +38,7 @@ router.post(
     const { id, size, ownerId, type } = req.body;
     const Metrics = useMetrics();
 
-    validSessionOrThrow(req);
+    getSessionUserOrThrow(req);
 
     if (!req.session.user?.uniqueHash) {
       throw new Error('User does not have a unique hash. Log in again.');
