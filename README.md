@@ -252,6 +252,8 @@ After you successfully logged in. Make sure you click `My Files` on the sidebar 
 
 Afterwards you'll see a new file inside the `data` folder. It should be called `lockbox` + `timestamp`.json`
 
-3. Copy the contents of this new file into `data/lockboxstate.json`
+3. Copy the contents of this new file into `data/lockboxstate.json`. Don't worry, this file or the other data files are git ignored.
 
 4) Run the tests again and see it fly!
+
+**Important note**: You probably have to log back in after a day or so. That's just how the app works. Make sure you copy the new data to the `data/lockboxstate.json` file so you don't have to manually log in again on every run.

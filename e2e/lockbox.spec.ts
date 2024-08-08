@@ -19,15 +19,27 @@ async function setup() {
   await page.goto("https://localhost:8088");
   expect(await page.content()).toContain("echo");
 
+  await page.goto("http://localhost:5173/lockbox");
+
+  const loginPromptTImeout = setTimeout(() => {
+    console.log(`
+👀 👀 👀 👀 👀 
+🙀
+Log into Moz Account and click 'My Files' when you're done
+🙀
+👀 👀 👀 👀 👀 
+`);
+  }, 5_000);
+
+  await page.waitForSelector("h2");
+
+  clearTimeout(loginPromptTImeout);
+
   return { context, page };
 }
 
 test("App loads", async () => {
   const { context, page } = await setup();
-
-  await page.goto("http://localhost:5173/lockbox");
-
-  await page.waitForSelector("h2");
 
   // Check that the app opens on my files
   const homeIcon = page.getByText("🏠");
