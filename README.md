@@ -236,3 +236,24 @@ MODE=debug
 ```
 
 3. Start a new debugging session. This will open a new chrome window that is connected to your VSCode session. Now you can add breakpoints and do all sorts of magic.
+
+## Testing
+
+### E2E testing
+
+### Setting up
+
+1. Run `pnpm dev`
+2. Run `pnpm test:e2e`
+
+This will open the test suite in headed mode so you can log into your moz account.
+
+After you successfully logged in. Make sure you click `My Files` on the sidebar to finish saving your state. This should close the test window.
+
+Afterwards you'll see a new file inside the `data` folder. It should be called `lockbox` + `timestamp`.json`
+
+3. Copy the contents of this new file into `data/lockboxstate.json`. Don't worry, this file or the other data files are git ignored.
+
+4) Run the tests again and see it fly!
+
+**Important note**: You probably have to log back in after a day or so. That's just how the app works. Make sure you copy the new data to the `data/lockboxstate.json` file so you don't have to manually log in again on every run.

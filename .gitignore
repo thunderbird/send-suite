@@ -35,3 +35,11 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+
+# E2E
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/data
