@@ -19,7 +19,7 @@ All of these services are end-to-end encrypted.
 ### Create a `.env` file from the `.env.sample`
 
 ```
-cp backend/.env.sample backend/env
+cp backend/.env.sample backend/.env
 
 ```
 
