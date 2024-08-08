@@ -13,6 +13,7 @@
     "test:backend": "cd backend && pnpm test",
     "test": "pnpm run /^test:.*/",
     "test:e2e": "pnpm exec playwright test --headed",
+    "test:e2e:ui": "pnpm exec playwright test --ui",
     "postinstall": "pnpm run install:frontend && pnpm run install:backend",
     "clean": "./clean.sh",
     "dev": "docker compose up --build --force-recreate -d && docker compose logs -f",
