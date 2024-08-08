@@ -16,10 +16,10 @@ All of these services are end-to-end encrypted.
 
 ## Quick start
 
-### Create a `.env` file from the `dev.env`
+### Create a `.env` file from the `.env.sample`
 
 ```
-cp backend/dev.env backend/env
+cp backend/.env.sample backend/.env
 
 ```
 

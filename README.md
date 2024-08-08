@@ -18,7 +18,7 @@ git clone git@github.com:thunderbird/send-suite.git
 cd send-suite
 cd backend
 
-cp dev.env .env
+cp .env.sample .env
 # edit .env, supplying values for the FXA_CLIENT_ID and FXA_CLIENT_SECRET vars
 
 cd ..
@@ -30,7 +30,7 @@ Next, create the `frontend/.env`:
 ```sh
 cd frontend
 
-cp dev.env .env
+cp .env.sample .env
 # for now, you shouldn't need to edit the .env
 
 cd ..
@@ -48,7 +48,9 @@ To run the full stack:
 ```sh
 pnpm dev
 ```
+
 ### Troubleshooting
+
 If you're having any issues with docker (ex: no memory left, or volumes do not contain expected files), prune docker and rebuild containers from scratch:
 
 ```sh
