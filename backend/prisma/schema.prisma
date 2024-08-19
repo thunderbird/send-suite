@@ -25,6 +25,7 @@ model User {
   createdAt           DateTime?
   updatedAt           DateTime?
   activatedAt         DateTime?
+  uniqueHash          String?
 
   profile             Profile?
 

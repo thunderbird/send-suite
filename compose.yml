@@ -11,10 +11,13 @@ services:
   backend:
     build:
       context: ./backend/
-      dockerfile: Dockerfile
+      # This will default to dev unless you set MODE=debug in your top level .env file
+      dockerfile: Dockerfile-${MODE:-dev}
     ports:
       - "8080:8080"
       - "5555:5555" # for browsing db with prisma studio
+      - "9229:9229" # Debugger port
+
     volumes:
       - ./backend:/app
       - backend-node-modules:/app/node_modules

@@ -1,3 +1,4 @@
+import { Request, RequestHandler, Response } from 'express';
 import logger from '../logger';
 
 type ErrorRespInfo = {
@@ -13,6 +14,10 @@ export const AUTH_ERRORS = {
   LOG_OUT_FAILED: {
     statusCode: 500,
     message: 'Could not log out.',
+  },
+  ALLOW_LIST_FAILED: {
+    statusCode: 401,
+    message: 'Not in allow list.',
   },
 };
 
@@ -215,7 +220,7 @@ const REQ_VAR_STATUS_CODE = 'REQ_VAR_STATUS_CODE';
 const REQ_VAR_USER_MESSAGE = 'REQ_VAR_USER_MESSAGE';
 
 // Returns a middleware function that adds error information to the request object
-export function addErrorHandling(err: ErrorRespInfo) {
+export function addErrorHandling(err: ErrorRespInfo): RequestHandler {
   const { statusCode, message } = err;
   return (req, res, next) => {
     req[REQ_VAR_STATUS_CODE] = statusCode;
@@ -228,10 +233,10 @@ export function addErrorHandling(err: ErrorRespInfo) {
  * Accepts an async route handler.
  * Any errors thrown will be passed to the global error handler middleware.
  */
-export function wrapAsyncHandler(fn) {
+export function wrapAsyncHandler(fn: RequestHandler) {
   return function (req, res, next) {
     return Promise.resolve(fn(req, res, next)).catch(next);
-  };
+  } as RequestHandler;
 }
 
 // Global error handler middleware.
@@ -239,7 +244,7 @@ export function wrapAsyncHandler(fn) {
 // if added by `onError`.
 // Falls back to a generic status 500 and the
 // message from the `err` object.
-export function errorHandler(err, req, res, next) {
+export function errorHandler(err: Error, req: Request, res: Response) {
   const status = req[REQ_VAR_STATUS_CODE] ?? 500;
   const message =
     req[REQ_VAR_USER_MESSAGE] ?? err.message ?? 'Internal Server Error';

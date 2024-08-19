@@ -24,8 +24,8 @@ const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
   const uploader = new Uploader(user, keychain, api);
   const downloader = new Downloader(keychain, api);
 
-  const folders = ref([]);
-  const rootFolder = ref(null);
+  const folders = ref<Folder[]>([]);
+  const rootFolder = ref<Folder | null>(null);
 
   const selectedFolderId = ref(0);
   const selectedFileId = ref(0);

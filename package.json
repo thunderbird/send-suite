@@ -8,9 +8,21 @@
   "main": "index.js",
   "scripts": {
     "prepare": "husky",
-    "sort-package-json": "sort-package-json {frontend,backend}/package.json"
+    "sort-package-json": "sort-package-json {frontend,backend}/package.json",
+    "test:frontend": "cd frontend && pnpm test",
+    "test:backend": "cd backend && pnpm test",
+    "test": "pnpm run /^test:.*/",
+    "test:e2e": "pnpm exec playwright test --headed",
+    "test:e2e:ui": "pnpm exec playwright test --ui",
+    "postinstall": "pnpm run install:frontend && pnpm run install:backend",
+    "clean": "./clean.sh",
+    "dev": "docker compose up --build --force-recreate -d && docker compose logs -f",
+    "install:frontend": "cd frontend && pnpm install",
+    "install:backend": "cd backend && pnpm install"
   },
   "devDependencies": {
+    "@playwright/test": "^1.46.0",
+    "@types/node": "^22.1.0",
     "husky": "^9.0.11",
     "sort-package-json": "^2.10.0"
   }

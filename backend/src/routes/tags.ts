@@ -1,17 +1,18 @@
 import { Router } from 'express';
 import {
-  createTagForItem,
-  createTagForContainer,
-  deleteTag,
-  updateTagName,
-  getContainersAndItemsWithTags,
-} from '../models';
-import { getGroupMemberPermissions, requireLogin } from '../middleware';
-import {
-  wrapAsyncHandler,
   addErrorHandling,
   TAG_ERRORS,
+  wrapAsyncHandler,
 } from '../errors/routes';
+import { getGroupMemberPermissions, requireLogin } from '../middleware';
+import {
+  createTagForContainer,
+  createTagForItem,
+  deleteTag,
+  getContainersAndItemsWithTags,
+  updateTagName,
+} from '../models';
+import { getSessionUserOrThrow } from '../utils/session';
 
 const router: Router = Router();
 
@@ -65,8 +66,8 @@ router.get(
   getGroupMemberPermissions,
   addErrorHandling(TAG_ERRORS.NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
+    const { id } = getSessionUserOrThrow(req);
     const { tagName } = req.params;
-    const { id } = req.session.user;
     const result = await getContainersAndItemsWithTags(id, [tagName]);
     res.status(200).json({
       ...result,
