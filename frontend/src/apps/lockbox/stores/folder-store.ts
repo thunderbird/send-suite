@@ -94,7 +94,7 @@ const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
   }
 
   async function createFolder(
-    name = 'Untitled',
+    name = 'Default',
     parentId = 0,
     shareOnly = false
   ): Promise<Folder | null> {

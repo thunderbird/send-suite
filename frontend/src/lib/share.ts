@@ -91,7 +91,7 @@ export default class Sharer {
 
     const itemsToShare = [...items];
 
-    let currentContainer = { name: 'untitled' };
+    let currentContainer = { name: 'default' };
     if (containerId) {
       currentContainer = await this.api.call(`containers/${containerId}/info`);
       // TODO: future enhancement
