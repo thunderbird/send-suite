@@ -7,18 +7,19 @@
   "author": "",
   "main": "index.js",
   "scripts": {
-    "build:watch": "tsc -w",
     "db:browse": "prisma studio",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset",
     "db:update": "prisma db push",
+    "debug": "nodemon -e js,ts --exec 'node --inspect=0.0.0.0:9229 --require ts-node/register src/index.ts'",
     "dev": "nodemon -e js,ts src/index.ts",
     "lint:all": "eslint . --fix",
     "prettier:all": "prettier --write .",
     "prod:build_and_upload_sourcemaps": "tsc && pnpm sentry:sourcemaps",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org thunderbird --project send-suite-backend ./dist && sentry-cli sourcemaps upload --org thunderbird --project send-suite-backend ./dist",
-    "test": "vitest"
+    "test": "vitest run --silent",
+    "test:watch": "vitest --watch"
   },
   "lint-staged": {
     "*.{js,ts}": [
@@ -48,6 +49,7 @@
     "passport": "^0.7.0",
     "passport-oauth2-refresh": "^2.2.0",
     "passport-openidconnect": "^0.1.1",
+    "posthog-node": "^4.0.1",
     "prisma": "^5.1.1",
     "session-file-store": "^1.5.0",
     "vite": "^5.3.1",

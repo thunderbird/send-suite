@@ -1,11 +1,12 @@
 import { ContainerType, UserTier } from '@prisma/client';
 
-import { Router } from 'express';
+import 'dotenv/config';
+import { Request, Router } from 'express';
 
 import {
-  wrapAsyncHandler,
   addErrorHandling,
   USER_ERRORS,
+  wrapAsyncHandler,
 } from '../errors/routes';
 
 import {
@@ -16,18 +17,20 @@ import {
 
 import {
   createUser,
+  getAllUserGroupContainers,
+  getBackup,
+  getRecentActivity,
   getUserByEmail,
   getUserPublicKey,
-  updateUserPublicKey,
-  getAllUserGroupContainers,
-  getRecentActivity,
   setBackup,
-  getBackup,
+  updateUserPublicKey,
 } from '../models/users';
 
-import { requireLogin } from '../middleware';
-import logger from '../logger';
+import { checkAllowList } from '../auth/client';
 import { BaseError, SESSION_NOT_SAVED } from '../errors/models';
+import logger from '../logger';
+import { requireLogin } from '../middleware';
+import { getSessionUserOrThrow } from '../utils/session';
 
 const router: Router = Router();
 
@@ -36,9 +39,20 @@ router.get(
   requireLogin,
   addErrorHandling(USER_ERRORS.SESSION_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
+    // If an allow list is provided, only allow users in that list
+    // If there is no env variable, we allow all users
+    try {
+      await checkAllowList(req.session?.user?.email);
+    } catch (error) {
+      return res.status(401).json({
+        msg: 'Not in allow list',
+      });
+    }
+
     // Retrieves the logged-in user from the current session
     // ok, I need to persist the user to the session, don't I?
     // am I not doing that already?
+    console.log('session id: ', req.session.id);
     const user = req.session.user;
     if (!user) {
       return res.status(404).json({});
@@ -74,6 +88,12 @@ router.post(
       publicKey: string;
     } = req.body;
 
+    if (!req.session?.user?.id) {
+      return res.status(401).json({
+        msg: 'User not found in session',
+      });
+    }
+
     const { id } = req.session.user;
     const update = await updateUserPublicKey(
       id,
@@ -90,7 +110,20 @@ router.get(
   requireLogin,
   addErrorHandling(USER_ERRORS.FOLDERS_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
-    const { id } = req.session.user;
+    try {
+      await checkAllowList(req.session?.user?.email);
+    } catch (error) {
+      /* 
+      TODO: Type this response correctly on the frontend
+      Since the frontend is expecting an array of folders,
+      we need to return an empty array of items.
+       */
+
+      return res.status(401).json([{ id: 0, items: [] }]);
+    }
+
+    const { id } = getSessionUserOrThrow(req);
+
     const containers = await getAllUserGroupContainers(
       id,
       ContainerType.FOLDER
@@ -103,7 +136,7 @@ router.get(
   '/lookup/:email',
   requireLogin,
   addErrorHandling(USER_ERRORS.USER_NOT_FOUND),
-  wrapAsyncHandler(async (req, res) => {
+  wrapAsyncHandler(async (req: Request, res) => {
     const { email } = req.params;
     const user = await getUserByEmail(email);
     res.status(200).json(user);
@@ -120,6 +153,7 @@ router.post(
   wrapAsyncHandler(async (req, res) => {
     const { email } = req.body;
     const user = await getUserByEmail(email);
+
     if (user) {
       req.session.user = user;
       req.session.save((err) => {
@@ -128,7 +162,7 @@ router.post(
         } else {
           logger.info(`
           session id: ${req.session.id}
-          user id in session ${req.session.user.id}
+          user id in session ${req.session?.user?.id}
           `);
           res.status(200).json(user);
         }
@@ -159,7 +193,7 @@ router.post(
     const user = await createUser(
       JSON.stringify(publicKey).trim(),
       userEmail,
-      tier
+      tier || undefined
     );
     res.status(201).json({
       message: 'User created',
@@ -211,8 +245,12 @@ router.get(
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
     const containersAndMembers = await getContainersSharedByUser(
-      parseInt(userId),
-      ContainerType.FOLDER
+      parseInt(userId)
+      /*
+       * TODO: This functionality is incomplete. The previous functionality used this second parameter
+       * We're keeping it to pick it up later.
+       */
+      // ContainerType.FOLDER
     );
 
     res.status(200).json(containersAndMembers);
@@ -250,7 +288,8 @@ router.post(
   wrapAsyncHandler(async (req, res) => {
     const { id } = req.params;
     const { keys, keypair, keystring, salt } = req.body;
-    const user = await setBackup(parseInt(id), keys, keypair, keystring, salt);
+    // We're not using the return value, but we want to make sure the backup runs
+    await setBackup(parseInt(id), keys, keypair, keystring, salt);
     res.status(200).json({
       message: 'backup complete',
     });

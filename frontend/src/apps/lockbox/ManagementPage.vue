@@ -1,14 +1,19 @@
+<!-- eslint-disable no-undef -->
 <script setup lang="ts">
-import { ref, onMounted, toRaw } from 'vue';
 import init from '@/lib/init';
-import useUserStore from '@/stores/user-store';
-import useKeychainStore from '@/stores/keychain-store';
-import useConfigurationStore from '@/stores/configuration-store';
 import useApiStore from '@/stores/api-store';
+import useConfigurationStore from '@/stores/configuration-store';
+import useKeychainStore from '@/stores/keychain-store';
+import useUserStore from '@/stores/user-store';
+import { onMounted, ref, toRaw } from 'vue';
 
-import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import BackupAndRestore from '@/apps/common/BackupAndRestore.vue';
+import FeedbackBox from '@/apps/common/FeedbackBox.vue';
+import { useMetricsUpdate } from '@/apps/common/mixins/metrics';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
+import useFolderStore from '@/apps/lockbox/stores/folder-store';
+import { CLIENT_MESSAGES } from '@/lib/messages';
+import useMetricsStore from '@/stores/metrics';
 
 const DEBUG = true;
 const SERVER = `server`;
@@ -17,6 +22,8 @@ const userStore = useUserStore();
 const { keychain, resetKeychain } = useKeychainStore();
 const { api } = useApiStore();
 const folderStore = useFolderStore();
+const { initializeClientMetrics, sendMetricsToBackend } = useMetricsStore();
+const { updateMetricsIdentity } = useMetricsUpdate();
 const configurationStore = useConfigurationStore();
 
 const authUrl = ref('');
@@ -40,12 +47,14 @@ const accountId = new URL(location.href).searchParams.get('accountId');
 function setAccountConfigured(accountId) {
   // Let TB know that extension is ready for use with cloudFile API.
   try {
-    // @ts-ignore
+    //@ts-ignore
     browser.cloudFile.updateAccount(accountId, {
       configured: true,
     });
   } catch (e) {
-    console.log(`setAccountConfigured: You're probably running this outside of Thundebird`);
+    console.log(
+      `setAccountConfigured: You're probably running this outside of Thundebird`
+    );
   }
 }
 
@@ -108,12 +117,21 @@ onMounted(async () => {
     // extension-specific initialization
     await configureExtension();
   } catch (e) {
-    console.log(`extension init: You're probably running this outside of Thundebird`);
+    console.log(
+      `extension init: You're probably running this outside of Thundebird`
+    );
   }
   salutation.value = 'You are logged into your Mozilla Account';
+  // Identify user for analytics
+  const uid = userStore.user.uniqueHash;
+  initializeClientMetrics(uid);
+  await sendMetricsToBackend(api);
 });
 
+updateMetricsIdentity();
+
 // Unused for now, but will need when implementing logout.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function clean() {
   // TODO: make sure we clear the stored user and stored keychain.
   // Might need to add functions to keychainStore.
@@ -132,6 +150,8 @@ async function dbUserSetup() {
   }
   // Store the user we got by populating from session.
   userStore.store();
+
+  await sendMetricsToBackend(api);
 
   // Check if we got our public key from the session.
   // If not, this is almost certainly a new user.
@@ -168,7 +188,8 @@ async function loginToMozAccount() {
   }
 }
 async function showCurrentServerSession() {
-  sessionInfo.value = (await api.call(`users/me`)) ?? `You need to log into your mozilla account`;
+  sessionInfo.value =
+    (await api.call(`users/me`)) ?? CLIENT_MESSAGES.SHOULD_LOG_IN;
 }
 
 function formatSessionInfo(info) {
@@ -228,15 +249,15 @@ async function finishLogin() {
   <form>
     <label>
       Server URL:
-      <input disabled v-model="currentServerUrl" />
+      <input v-model="currentServerUrl" disabled />
     </label>
     <label>
       Email:
-      <input disabled v-model="email" />
+      <input v-model="email" disabled />
     </label>
     <label>
       User ID:
-      <input disabled v-model="userId" />
+      <input v-model="userId" disabled />
     </label>
   </form>
   <br />
@@ -246,6 +267,7 @@ async function finishLogin() {
   <pre v-if="sessionInfo">
     {{ formatSessionInfo(sessionInfo) }}
   </pre>
+  <FeedbackBox />
 </template>
 
 <style scoped>

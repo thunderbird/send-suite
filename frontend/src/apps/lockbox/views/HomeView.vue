@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import useUserStore from '@/stores/user-store';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
+import useUserStore from '@/stores/user-store';
 
-import NewFolder from '@/apps/lockbox/components/NewFolder.vue';
+import FeedbackBox from '@/apps/common/FeedbackBox.vue';
 import FileInfo from '@/apps/lockbox/components/FileInfo.vue';
 import FolderInfo from '@/apps/lockbox/components/FolderInfo.vue';
 import FolderNavigation from '@/apps/lockbox/components/FolderNavigation.vue';
+import NewFolder from '@/apps/lockbox/components/NewFolder.vue';
 
 const { user } = useUserStore();
 const folderStore = useFolderStore();
@@ -26,6 +27,7 @@ const folderStore = useFolderStore();
       <main class="flex flex-col gap-4 px-4">
         <router-view></router-view>
       </main>
+      <FeedbackBox />
     </div>
     <aside class="w-64 border border-gray-300 bg-gray-50 p-2.5">
       <FileInfo v-if="folderStore.selectedFile" />

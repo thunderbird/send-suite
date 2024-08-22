@@ -24,6 +24,7 @@ import * as Sentry from '@sentry/node';
 import { errorHandler } from './errors/routes';
 import logger from './logger';
 import loggerRoute from './routes/logger';
+import metricsRoute from './routes/metrics';
 
 type Profile = {
   mozid: string;
@@ -40,6 +41,7 @@ type User = {
   updatedAt: Date;
   activatedAt: Date;
   profile?: Profile;
+  uniqueHash?: string;
 };
 declare module 'express-session' {
   interface SessionData {
@@ -119,6 +121,7 @@ app.use('/api/tags', tags);
 app.use('/lockbox/fxa', fxa);
 app.use('/api/lockbox/fxa', fxa);
 app.use(loggerRoute);
+app.use(metricsRoute);
 app.get(`*`, (req, res) => {
   res.status(404);
 });

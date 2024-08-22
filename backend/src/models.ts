@@ -1,40 +1,31 @@
+import { ItemType, PrismaClient } from '@prisma/client';
 import {
-  PrismaClient,
-  ContainerType,
-  ItemType,
-  InvitationStatus,
-  Item,
-  Membership,
-} from '@prisma/client';
-const prisma = new PrismaClient();
-import { PermissionType } from './types/custom';
-import { fromPrisma } from './models/prisma-helper';
-import {
+  ACCESSLINK_NOT_UPDATED,
   BaseError,
-  CONTAINER_NOT_UPDATED,
   CONTAINER_NOT_FOUND,
-  CONTAINER_NOT_CREATED,
-  MEMBERSHIP_NOT_CREATED,
-  GROUP_NOT_CREATED,
+  CONTAINER_NOT_UPDATED,
+  GROUP_NOT_FOUND,
+  INVITATION_NOT_DELETED,
+  INVITATION_NOT_FOUND,
+  INVITATION_NOT_UPDATED,
   ITEM_NOT_CREATED,
   ITEM_NOT_DELETED,
-  ITEM_NOT_UPDATED,
-  INVITATION_NOT_FOUND,
-  INVITATION_NOT_DELETED,
-  UPLOAD_NOT_DELETED,
   ITEM_NOT_FOUND,
-  GROUP_NOT_FOUND,
+  ITEM_NOT_UPDATED,
+  MEMBERSHIP_NOT_CREATED,
   MEMBERSHIP_NOT_DELETED,
-  INVITATION_NOT_UPDATED,
-  ACCESSLINK_NOT_UPDATED,
   TAG_NOT_CREATED,
   TAG_NOT_DELETED,
   TAG_NOT_UPDATED,
+  UPLOAD_NOT_DELETED,
 } from './errors/models';
+import { fromPrismaV2 } from './models/prisma-helper';
+import { PermissionType } from './types/custom';
+const prisma = new PrismaClient();
 
 export async function getSharesForContainer(
-  containerId: number,
-  userId: number
+  containerId: number
+  // userId: number
 ) {
   const query = {
     where: {
@@ -57,7 +48,7 @@ export async function getSharesForContainer(
       },
     },
   };
-  return await fromPrisma(prisma.share.findMany, query);
+  return await fromPrismaV2(prisma.share.findMany, query);
 }
 
 export async function updateItemName(itemId: number, name: string) {
@@ -71,7 +62,7 @@ export async function updateItemName(itemId: number, name: string) {
     },
   };
 
-  return await fromPrisma(prisma.item.update, query, ITEM_NOT_UPDATED);
+  return await fromPrismaV2(prisma.item.update, query, ITEM_NOT_UPDATED);
 }
 
 export async function updateInvitationPermissions(
@@ -89,7 +80,7 @@ export async function updateInvitationPermissions(
     },
   };
 
-  return await fromPrisma(
+  return await fromPrismaV2(
     prisma.invitation.update,
     query,
     INVITATION_NOT_UPDATED
@@ -111,7 +102,7 @@ export async function updateAccessLinkPermissions(
     },
   };
 
-  return await fromPrisma(
+  return await fromPrismaV2(
     prisma.accessLink.update,
     query,
     ACCESSLINK_NOT_UPDATED
@@ -137,7 +128,7 @@ export async function getContainerWithMembers(containerId: number) {
     },
   };
 
-  return await fromPrisma(
+  return await fromPrismaV2(
     prisma.container.findUniqueOrThrow,
     query,
     CONTAINER_NOT_FOUND
@@ -171,7 +162,7 @@ export async function createItem(
     },
   };
 
-  return await fromPrisma(prisma.item.create, query, ITEM_NOT_CREATED);
+  return await fromPrismaV2(prisma.item.create, query, ITEM_NOT_CREATED);
 }
 
 export async function deleteItem(id: number, shouldDeleteUpload = false) {
@@ -185,7 +176,7 @@ export async function deleteItem(id: number, shouldDeleteUpload = false) {
     },
   };
 
-  const item = await fromPrisma(
+  const item = await fromPrismaV2(
     prisma.item.findUniqueOrThrow,
     findItemQuery,
     ITEM_NOT_FOUND
@@ -199,7 +190,7 @@ export async function deleteItem(id: number, shouldDeleteUpload = false) {
       },
     };
 
-    await fromPrisma(
+    await fromPrismaV2(
       prisma.upload.delete,
       uploadDeleteQuery,
       UPLOAD_NOT_DELETED
@@ -212,7 +203,7 @@ export async function deleteItem(id: number, shouldDeleteUpload = false) {
     },
   };
 
-  const result = await fromPrisma(
+  const result = await fromPrismaV2(
     prisma.item.delete,
     itemDeleteQuery,
     ITEM_NOT_DELETED
@@ -229,7 +220,7 @@ export async function deleteItem(id: number, shouldDeleteUpload = false) {
       },
     };
 
-    await fromPrisma(
+    await fromPrismaV2(
       prisma.container.update,
       updateContainerQuery,
       CONTAINER_NOT_UPDATED
@@ -245,7 +236,7 @@ export async function getContainerInfo(id: number) {
       id,
     },
   };
-  return await fromPrisma(
+  return await fromPrismaV2(
     prisma.container.findUniqueOrThrow,
     query,
     CONTAINER_NOT_FOUND
@@ -260,7 +251,7 @@ export async function getContainerWithDescendants(id: number) {
     },
   };
 
-  const container = await fromPrisma(
+  const container = await fromPrismaV2(
     prisma.container.findUniqueOrThrow,
     query,
     CONTAINER_NOT_FOUND
@@ -271,7 +262,7 @@ export async function getContainerWithDescendants(id: number) {
       const children = await getContainerWithDescendants(
         container.children[i].id
       );
-      container.children[i]['children'] = children;
+      container.children[i] = children;
     }
   }
 
@@ -292,7 +283,7 @@ export async function addGroupMember(containerId: number, userId: number) {
     },
   };
 
-  const container = await fromPrisma(
+  const container = await fromPrismaV2(
     prisma.container.findUniqueOrThrow,
     findContainerQuery,
     CONTAINER_NOT_FOUND
@@ -311,7 +302,7 @@ export async function addGroupMember(containerId: number, userId: number) {
       userId,
     },
   };
-  const membership = await fromPrisma(
+  const membership = await fromPrismaV2(
     prisma.membership.findFirst,
     findMembershipQuery
   );
@@ -327,7 +318,7 @@ export async function addGroupMember(containerId: number, userId: number) {
     },
   };
 
-  return await fromPrisma(
+  return await fromPrismaV2(
     prisma.membership.create,
     createMembershipQuery,
     MEMBERSHIP_NOT_CREATED
@@ -345,7 +336,7 @@ export async function removeInvitationAndGroup(invitationId: number) {
     },
   };
 
-  const invitation = await fromPrisma(
+  const invitation = await fromPrismaV2(
     prisma.invitation.findUniqueOrThrow,
     findInvitationQuery,
     INVITATION_NOT_FOUND
@@ -363,7 +354,7 @@ export async function removeInvitationAndGroup(invitationId: number) {
     },
   };
 
-  return await fromPrisma(
+  return await fromPrismaV2(
     prisma.invitation.delete,
     deleteInvitationQuery,
     INVITATION_NOT_DELETED
@@ -379,7 +370,7 @@ export async function removeGroupMember(containerId: number, userId: number) {
     },
   };
 
-  const group = await fromPrisma(
+  const group = await fromPrismaV2(
     prisma.group.findFirstOrThrow,
     findGroupQuery,
     GROUP_NOT_FOUND
@@ -391,7 +382,7 @@ export async function removeGroupMember(containerId: number, userId: number) {
     },
   };
 
-  return await fromPrisma(
+  return await fromPrismaV2(
     prisma.membership.delete,
     deleteMembershipQuery,
     MEMBERSHIP_NOT_DELETED
@@ -425,7 +416,7 @@ export async function createTagForItem(
     },
   };
 
-  return await fromPrisma(prisma.tag.upsert, query, TAG_NOT_CREATED);
+  return await fromPrismaV2(prisma.tag.upsert, query, TAG_NOT_CREATED);
 }
 
 // Create a tag for a container
@@ -456,7 +447,7 @@ export async function createTagForContainer(
     },
   };
 
-  return await fromPrisma(prisma.tag.upsert, query, TAG_NOT_CREATED);
+  return await fromPrismaV2(prisma.tag.upsert, query, TAG_NOT_CREATED);
 }
 
 // Delete a tag
@@ -467,7 +458,7 @@ export async function deleteTag(id: number) {
     },
   };
 
-  return await fromPrisma(prisma.tag.delete, query, TAG_NOT_DELETED);
+  return await fromPrismaV2(prisma.tag.delete, query, TAG_NOT_DELETED);
 }
 
 // Update/rename a tag
@@ -482,7 +473,7 @@ export async function updateTagName(tagId: number, name: string) {
     },
   };
 
-  return await fromPrisma(prisma.tag.update, query, TAG_NOT_UPDATED);
+  return await fromPrismaV2(prisma.tag.update, query, TAG_NOT_UPDATED);
 }
 // Get all items and containers (that I have access to) with a specific tag or tags
 
@@ -494,7 +485,7 @@ export async function getContainersAndItemsWithTags(
   const findMembershipQuery = {
     where: { userId },
   };
-  const memberships = await fromPrisma(
+  const memberships = await fromPrismaV2(
     prisma.membership.findMany,
     findMembershipQuery
   );
@@ -513,7 +504,7 @@ export async function getContainersAndItemsWithTags(
       tags: true, // include related tags
     },
   };
-  const containersWithTags = await fromPrisma(
+  const containersWithTags = await fromPrismaV2(
     prisma.container.findMany,
     findContainersQuery
   );
@@ -531,7 +522,10 @@ export async function getContainersAndItemsWithTags(
       tags: true, // include related tags
     },
   };
-  const itemsWithTags = await fromPrisma(prisma.item.findMany, findItemsQuery);
+  const itemsWithTags = await fromPrismaV2(
+    prisma.item.findMany,
+    findItemsQuery
+  );
 
   return {
     containers: containersWithTags,

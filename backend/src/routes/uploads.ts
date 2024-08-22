@@ -1,23 +1,25 @@
 import { Router } from 'express';
 
 import {
-  wrapAsyncHandler,
   addErrorHandling,
   UPLOAD_ERRORS,
+  wrapAsyncHandler,
 } from '../errors/routes';
 
 import {
   createUpload,
-  getUploadSize,
   getUploadMetadata,
+  getUploadSize,
   statUpload,
 } from '../models/uploads';
 
+import { useMetrics } from '../metrics';
 import {
-  requireLogin,
   getGroupMemberPermissions,
+  requireLogin,
   requireWritePermission,
 } from '../middleware';
+import { getSessionUserOrThrow } from '../utils/session';
 
 const router: Router = Router();
 
@@ -34,6 +36,23 @@ router.post(
   addErrorHandling(UPLOAD_ERRORS.NOT_CREATED),
   wrapAsyncHandler(async (req, res) => {
     const { id, size, ownerId, type } = req.body;
+    const Metrics = useMetrics();
+
+    getSessionUserOrThrow(req);
+
+    if (!req.session.user?.uniqueHash) {
+      throw new Error('User does not have a unique hash. Log in again.');
+    }
+
+    const distinctId = req.session.user.uniqueHash;
+
+    Metrics.capture({
+      event: 'upload.size',
+      properties: { size, type },
+      distinctId,
+    });
+
+    await Metrics.shutdown();
 
     const upload = await createUpload(id, size, ownerId, type);
     res.status(201).json({

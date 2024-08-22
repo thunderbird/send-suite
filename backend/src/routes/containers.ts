@@ -1,54 +1,58 @@
-import { Prisma, ContainerType } from '@prisma/client';
+import { ContainerType } from '@prisma/client';
 import { Router } from 'express';
 import {
+  addGroupMember,
   createItem,
   deleteItem,
-  addGroupMember,
-  removeGroupMember,
   getContainerInfo,
+  getContainerWithDescendants,
   getContainerWithMembers,
   getSharesForContainer,
-  updateInvitationPermissions,
-  updateAccessLinkPermissions,
+  removeGroupMember,
   removeInvitationAndGroup,
+  updateAccessLinkPermissions,
+  updateInvitationPermissions,
   updateItemName,
-  getContainerWithDescendants,
 } from '../models';
 
 import {
-  requireLogin,
-  renameBodyProperty,
   getGroupMemberPermissions,
-  requireWritePermission,
-  requireReadPermission,
+  renameBodyProperty,
   requireAdminPermission,
+  requireLogin,
+  requireReadPermission,
+  requireWritePermission,
 } from '../middleware';
 
 import {
-  wrapAsyncHandler,
   addErrorHandling,
   CONTAINER_ERRORS,
+  wrapAsyncHandler,
 } from '../errors/routes';
 
-import { createInvitation, burnFolder } from '../models/sharing';
+import { burnFolder, createInvitation } from '../models/sharing';
 
 import {
   createContainer,
-  updateContainerName,
-  getItemsInContainer,
-  getContainerWithAncestors,
   getAccessLinksForContainer,
+  getContainerWithAncestors,
+  getItemsInContainer,
+  updateContainerName,
 } from '../models/containers';
+import { getSessionUserOrThrow } from '../utils/session';
 
 const router: Router = Router();
 
-type TreeNode = {
+export type TreeNode = {
   id: number;
-  children: Record<string, any>[];
+  children: TreeNode[] | [];
 };
 
-function flattenDescendants(tree: TreeNode) {
-  const children = tree?.children.length > 0 ? tree.children : [];
+export function flattenDescendants(tree: TreeNode): number[] {
+  if (!tree || !tree.id) {
+    return [];
+  }
+  const children = tree?.children?.length > 0 ? tree.children : [];
   return [
     ...children.flatMap((child: TreeNode) => flattenDescendants(child)),
     tree.id,
@@ -66,6 +70,10 @@ router.get(
   wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const container = await getItemsInContainer(parseInt(containerId));
+
+    if (!container) {
+      throw new Error();
+    }
 
     if (container.parentId) {
       container['parent'] = await getContainerWithAncestors(container.parentId);
@@ -110,7 +118,9 @@ router.post(
       type: ContainerType;
     } = req.body;
 
-    const ownerId = req.session.user.id;
+    const { id } = getSessionUserOrThrow(req);
+
+    const ownerId = id;
 
     let shareOnly = false;
     if (req.body.shareOnly) {
@@ -124,7 +134,7 @@ router.post(
 
     const container = await createContainer(
       name.trim().toLowerCase(),
-      ownerId,
+      ownerId!,
       type,
       parentId,
       shareOnly
@@ -161,10 +171,14 @@ router.delete(
   wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const root = await getContainerWithDescendants(parseInt(containerId));
-    const idArray = flattenDescendants(root);
-    const result = await Promise.all(
-      idArray.map(async (id: number) => await burnFolder(id))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const idArray = flattenDescendants(root as any);
+
+    const burnPromises = idArray.map((id: number) =>
+      burnFolder(id, true /* shouldDeleteUpload */)
     );
+
+    const result = await Promise.all(burnPromises);
     res.status(200).json({
       result,
     });
@@ -197,7 +211,7 @@ router.delete(
   getGroupMemberPermissions,
   addErrorHandling(CONTAINER_ERRORS.ITEM_NOT_DELETED),
   wrapAsyncHandler(async (req, res) => {
-    const { containerId, itemId } = req.params;
+    const { itemId } = req.params;
     // Force req.body.shouldDeleteUpload to a boolean
     const shouldDeleteUpload = !!req.body.shouldDeleteUpload;
     const result = await deleteItem(parseInt(itemId), shouldDeleteUpload);
@@ -210,7 +224,7 @@ router.post(
   getGroupMemberPermissions,
   addErrorHandling(CONTAINER_ERRORS.ITEM_NOT_RENAMED),
   wrapAsyncHandler(async (req, res) => {
-    const { containerId, itemId } = req.params;
+    const { itemId } = req.params;
     const { name } = req.body;
     const item = await updateItemName(parseInt(itemId), name);
     res.status(200).json(item);
@@ -312,10 +326,10 @@ router.get(
   addErrorHandling(CONTAINER_ERRORS.SHARES_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
-    const { userId } = req.body; // TODO: get from session
+    // const { userId } = req.body; // TODO: get from session
     const result = await getSharesForContainer(
-      parseInt(containerId),
-      parseInt(userId)
+      parseInt(containerId)
+      // parseInt(userId)
     );
     res.status(200).json({
       result,
