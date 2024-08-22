@@ -91,17 +91,17 @@ resources:
             secrets:
               # Secrets
               - name: B2_APPLICATION_KEY
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/b2-application-key-CuITdV
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/b2-application-key-OfJfMS
               - name: B2_APPLICATION_KEY_ID
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/b2-application-key-id-AuMzY7
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/b2-application-key-id-5QFZWv
               # - name: DATABASE_PASSWORD
-              #   valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/send-suite-staging-rds/root_password-zdt646
+              #   valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-secret-FGcei3
               - name: DATABASE_URL
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/database_url-kyZIUG
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/database_url-0SLnPL
               - name: FXA_CLIENT_ID
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-id-xoj6Dl
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-id-trDR1r
               - name: FXA_CLIENT_SECRET
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-secret-pLPPoG
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-secret-FGcei3
               # SSM params
               # - name: DATABASE_NAME
               #   valueFrom: arn:aws:ssm:us-east-1:768512802988:parameter/send-suite/staging/db-name
