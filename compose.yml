@@ -1,29 +1,5 @@
 services:
-  frontend:
-    build:
-      context: ./frontend/
-      dockerfile: Dockerfile
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend:/app
-      - frontend-node-modules:/app/node_modules
-  backend:
-    build:
-      context: ./backend/
-      # This will default to dev unless you set MODE=debug in your top level .env file
-      dockerfile: Dockerfile-${MODE:-dev}
-    ports:
-      - "8080:8080"
-      - "5555:5555" # for browsing db with prisma studio
-      - "9229:9229" # Debugger port
 
-    volumes:
-      - ./backend:/app
-      - backend-node-modules:/app/node_modules
-    depends_on:
-      db:
-        condition: service_healthy
   db:
     image: "postgres:15"
     volumes:
@@ -39,6 +15,22 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  backend:
+    build:
+      context: ./backend/
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/send-suite
+    expose:
+      - "8080"
+      - "5555" # for browsing db with prisma studio
+      - "9229" # Debugger port
+    # Uncomment below to enable the debugger
+    # command: "/app/scripts/debug-entry.sh"
+    depends_on:
+      db:
+        condition: service_healthy
+
   reverse-proxy:
     image: nginx:latest
     volumes:
@@ -50,7 +42,12 @@ services:
     depends_on:
       - backend
 
+  frontend:
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+
 volumes:
   postgres-data:
-  backend-node-modules: # do not create on host
-  frontend-node-modules: # do not create on host

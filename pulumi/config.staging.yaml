@@ -129,7 +129,7 @@ resources:
               - name: DATABASE_ENGINE
                 value: postgres
               - name: DATABASE_URL
-                value: replace://with@a.real.db/url
+                value: postgres://postgres:postgres@db:5432/send-suite
               - name: DATABASE_USER
                 value: sendapp
               - name: ERROR_LOG
