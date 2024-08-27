@@ -51,11 +51,11 @@ resources:
 
   tb:rds:RdsDatabaseGroup:
     backend:
-      build_jumphost: False
+      build_jumphost: True
       engine_version: 15.7  # 16.x is available, but it's in beta and only supported in certain configs
       instance_class: db.t3.micro
-      jumphost_public_key: ''
-      jumphost_source_cidrs: []
+      jumphost_public_key: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDCEC4VyJ5rZcCP9g/jbyFz2E/iHpxmjkVTOG0WwzrWi0cL9SxwC5Ij8DINpK73fdInGwh1LFG7RI1JvRvcyiN4eauZuAbeXvfGksZT2hLmCdtdVXOl5ZwXDXVyuhOPCIIRf88g69lG3koA1Q09nHjBuZcshcRQfeTATOqHGenYqheD5ZLotaXsZSrrZx5eiX5bUKQZZFZiA6v80NxbHSISkbZwFPas6X7hgaCPwXVh5Vh1FoB0m6un14TxGV+cbGPmPb083DMWhbjof8UiT+vfGNyDhPmseXw1USGjobLm2vJ/ztS0j93SDP5d7AL7zehAVTHY1IKVwkNtGo/dnL4QMrQ8aon2EQGjMq97ZplpZ0QqC4raGeF9nkav4qbXA9B0nNF8iEFCvG44Ge7GvNTrx8TrZZczNZbhqpHvuRUUI4LGQ8yhvtaC6VTPSRvqBuN7e+wS1wx60pjVBxCrOxTfi8236DstqAX6cj9E90FfQBvXHrXdWynWYEy7+Gs7Vmn9JlFcV0dJ8nxY/wKTi1pJqN6tRMmA1igQRtUk1xBad90WyhXQtyEgXeZMuRvWtVvG7m+UCyM/3DYicu9w2YVt61LIUjgVFtq/UFCNK6BCjycqJuBKKbmYskuJ8UrFpZHxjOcSksmTf424Cqn9HwiQojvEPx8FPRwHgrqemIxarw=='
+      jumphost_source_cidrs: ['38.75.234.35/32']
       jumphost_user_data: |
         #!/bin/bash
         yum update -y
@@ -96,8 +96,8 @@ resources:
                 valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/b2-application-key-id-5QFZWv
               # - name: DATABASE_PASSWORD
               #   valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-secret-FGcei3
-              - name: DATABASE_URL
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/database_url-0SLnPL
+              # - name: DATABASE_URL
+              #   valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/database_url-0SLnPL
               - name: FXA_CLIENT_ID
                 valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-id-trDR1r
               - name: FXA_CLIENT_SECRET
@@ -128,6 +128,8 @@ resources:
                 value: US/Eastern
               - name: DATABASE_ENGINE
                 value: postgres
+              - name: DATABASE_URL
+                value: replace://with@a.real.db/url
               - name: DATABASE_USER
                 value: sendapp
               - name: ERROR_LOG
