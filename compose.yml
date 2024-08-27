@@ -32,11 +32,8 @@ services:
         condition: service_healthy
 
   reverse-proxy:
-    image: nginx:latest
-    volumes:
-      - ./backend/tls-dev-proxy/nginx.conf:/etc/nginx/nginx.conf
-      - ./backend/tls-dev-proxy/certs:/etc/ssl/certs
-      - ./backend/tls-dev-proxy/logs:/var/log/nginx
+    build:
+      context: ./backend/tls-dev-proxy/
     ports:
       - "8088:12345"
     depends_on:
