@@ -197,10 +197,10 @@ You can use VSCode's debugger for the backend.
 
 ```
 
-2. Add this to your top level `.env` file:
+2. Add this to your top level `backend.env` file:
 
 ```
-MODE=debug
+DEBUG=true
 ```
 
 3. Run `pnpm dev`

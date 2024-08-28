@@ -9,4 +9,4 @@ pnpm run db:generate
 
 echo 'Starting dev server 🚀'
 echo 'Opening db browser on http://localhost:5555/'
-pnpm debug & pnpm db:browse
+pnpm debug
