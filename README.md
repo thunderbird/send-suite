@@ -40,6 +40,10 @@ cd ..
 Finally, install the dependencies
 
 ```sh
+curl -fsSL https://bun.sh/install | bash
+```
+
+```sh
 pnpm install
 ```
 

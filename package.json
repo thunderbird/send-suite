@@ -9,6 +9,7 @@
   "scripts": {
     "prepare": "husky",
     "sort-package-json": "sort-package-json {frontend,backend}/package.json",
+    "compare_envs": "bun run scripts/envs.ts",
     "test:frontend": "cd frontend && pnpm test",
     "test:backend": "cd backend && pnpm test",
     "test": "pnpm run /^test:.*/",
@@ -16,9 +17,13 @@
     "test:e2e:ui": "pnpm exec playwright test --ui",
     "postinstall": "pnpm run install:frontend && pnpm run install:backend",
     "clean": "./clean.sh",
+    "predev": "./pre-flight.sh",
     "dev": "docker compose up --build --force-recreate -d && docker compose logs -f",
     "install:frontend": "cd frontend && pnpm install",
     "install:backend": "cd backend && pnpm install"
+  },
+  "engines": {
+    "bun": "1.1.13"
   },
   "devDependencies": {
     "@playwright/test": "^1.46.0",
