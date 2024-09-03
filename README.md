@@ -40,6 +40,16 @@ cd ..
 Finally, install the dependencies
 
 ```sh
+npm install -g bun
+```
+
+Or alternatively
+
+```sh
+curl -fsSL https://bun.sh/install | bash
+```
+
+```sh
 pnpm install
 ```
 
