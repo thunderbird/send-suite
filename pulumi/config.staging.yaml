@@ -51,23 +51,23 @@ resources:
 
   tb:rds:RdsDatabaseGroup:
     backend:
-      build_jumphost: True
       engine_version: 15.7  # 16.x is available, but it's in beta and only supported in certain configs
       instance_class: db.t3.micro
+      num_instances: 1
+      parameter_group_family: postgres15
+      skip_final_snapshot: True
+      # Jumphost options
+      build_jumphost: True
       jumphost_public_key: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDCEC4VyJ5rZcCP9g/jbyFz2E/iHpxmjkVTOG0WwzrWi0cL9SxwC5Ij8DINpK73fdInGwh1LFG7RI1JvRvcyiN4eauZuAbeXvfGksZT2hLmCdtdVXOl5ZwXDXVyuhOPCIIRf88g69lG3koA1Q09nHjBuZcshcRQfeTATOqHGenYqheD5ZLotaXsZSrrZx5eiX5bUKQZZFZiA6v80NxbHSISkbZwFPas6X7hgaCPwXVh5Vh1FoB0m6un14TxGV+cbGPmPb083DMWhbjof8UiT+vfGNyDhPmseXw1USGjobLm2vJ/ztS0j93SDP5d7AL7zehAVTHY1IKVwkNtGo/dnL4QMrQ8aon2EQGjMq97ZplpZ0QqC4raGeF9nkav4qbXA9B0nNF8iEFCvG44Ge7GvNTrx8TrZZczNZbhqpHvuRUUI4LGQ8yhvtaC6VTPSRvqBuN7e+wS1wx60pjVBxCrOxTfi8236DstqAX6cj9E90FfQBvXHrXdWynWYEy7+Gs7Vmn9JlFcV0dJ8nxY/wKTi1pJqN6tRMmA1igQRtUk1xBad90WyhXQtyEgXeZMuRvWtVvG7m+UCyM/3DYicu9w2YVt61LIUjgVFtq/UFCNK6BCjycqJuBKKbmYskuJ8UrFpZHxjOcSksmTf424Cqn9HwiQojvEPx8FPRwHgrqemIxarw=='
       jumphost_source_cidrs: ['38.75.234.35/32']
       jumphost_user_data: |
         #!/bin/bash
         yum update -y
         yum install -y postgresql15
-      num_instances: 1
-      override_special: '#$%^'  # Some characters don't play nicely with the Prisma DB string format
-      parameter_group_family: postgres15
-      skip_final_snapshot: True
 
   tb:fargate:FargateClusterWithLogging:
     backend:
-      internal: True
+      internal: False
       ecr_resources:
         - arn:aws:ecr:us-east-1:768512802988:repository/send*
       task_definition:
@@ -76,7 +76,7 @@ resources:
         memory: 1024
         container_definitions:
           backend:
-            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:send-backend-latest
+            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:staging
             portMappings:
               - name: send-suite
                 containerPort: 8080
@@ -88,29 +88,19 @@ resources:
                 hostPort: 5555
                 protocol: tcp
                 appProtocol: http
+            linuxParameters:
+              initProcessEnabled: True
             secrets:
-              # Secrets
               - name: B2_APPLICATION_KEY
                 valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/b2-application-key-OfJfMS
               - name: B2_APPLICATION_KEY_ID
                 valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/b2-application-key-id-5QFZWv
-              # - name: DATABASE_PASSWORD
-              #   valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-secret-FGcei3
-              # - name: DATABASE_URL
-              #   valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/database_url-0SLnPL
+              - name: DATABASE_URL
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/database_url-5c8zAR
               - name: FXA_CLIENT_ID
                 valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-id-trDR1r
               - name: FXA_CLIENT_SECRET
                 valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-secret-FGcei3
-              # SSM params
-              # - name: DATABASE_NAME
-              #   valueFrom: arn:aws:ssm:us-east-1:768512802988:parameter/send-suite/staging/db-name
-              # - name: DATABASE_WRITE_HOST
-              #   valueFrom: arn:aws:ssm:us-east-1:768512802988:parameter/send-suite/staging/db-write-host
-              # - name: DATABASE_PORT
-              #   valueFrom: arn:aws:ssm:us-east-1:768512802988:parameter/send-suite/staging/db-port
-              # - name: DATABASE_READ_HOST
-              #   valueFrom: arn:aws:ssm:us-east-1:768512802988:parameter/send-suite/staging/db-read-host
             environment:
               - name: APP_ENV
                 value: DEV
@@ -121,15 +111,13 @@ resources:
               - name: B2_REGION
                 value: auto
               - name: BASE_URL
-                value: https://localhost:8088
+                value: https://thunderbird.dev:8088
               - name: COMBINED_LOG
                 value: logs/combined.log
               - name: DEVELOPER_TIMEZONE
                 value: US/Eastern
               - name: DATABASE_ENGINE
                 value: postgres
-              - name: DATABASE_URL
-                value: postgres://postgres:postgres@db:5432/send-suite
               - name: DATABASE_USER
                 value: sendapp
               - name: ERROR_LOG
@@ -143,12 +131,14 @@ resources:
               - name: FXA_MOZ_ISSUER
                 value: https://accounts.stage.mozaws.net
               - name: FXA_REDIRECT_URI
-                value: http://localhost:5173/lockbox/fxa
+                value: http://lockbox.thunderbird.dev:5173/lockbox/fxa
               - name: STORAGE_BACKEND
                 value: b2
       services:
         send-suite:
-          listener_port: 80
+          listener_port: 443
+          listener_proto: HTTPS
+          listener_cert_arn: arn:aws:acm:us-east-1:768512802988:certificate/3a98e226-c4df-4e58-bc0a-aa4ccbf6325e
           container_port: 8080
           container_name: backend
           # "name" field is arbitrary, but must be unique and no longer than 32 chars

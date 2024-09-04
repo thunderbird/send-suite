@@ -1,19 +1,22 @@
 import pulumi
+import pulumi_aws as aws
 import tb_pulumi
 import tb_pulumi.fargate
 import tb_pulumi.network
 import tb_pulumi.rds
 import tb_pulumi.secrets
+import urllib.parse
 
 
-def url_secret(project, secret_name, password, address):
+def url_secret(project, secret_name, password, address, port):
     '''We have to define this resource inside a function so Pulumi will recognize it.
     '''
 
+    password = urllib.parse.quote_plus(password)
     tb_pulumi.secrets.SecretsManagerSecret(f'{project.name_prefix}-secret-rdsurl',
         project,
         secret_name,
-        f'postgresql://root:{password}@{address}/send_suite')
+        f'postgresql://root:{password}@{address}:{port}/send_suite')
 
 project = tb_pulumi.ThunderbirdPulumiProject()
 resources = project.config.get('resources')
@@ -51,7 +54,8 @@ rds_cluster = tb_pulumi.rds.RdsDatabaseGroup(f'{project.name_prefix}-rds',
 
 pulumi.Output.all(
     rds_cluster.resources['password'].result,
-    rds_cluster.resources['instances'][0].address).apply(lambda outputs:
+    rds_cluster.resources['instances'][0].address,
+    rds_cluster.resources['instances'][0].port).apply(lambda outputs:
         url_secret(
             project,
             f'{tb_pulumi.PROJECT}/{tb_pulumi.STACK}/database_url',
@@ -76,3 +80,11 @@ backend_fargate = tb_pulumi.fargate.FargateClusterWithLogging(f'{project.name_pr
         pulumi_sm,
         rds_cluster]),
     **backend_fargate_opts)
+
+# Create a DNS record pointing to the service
+dns = aws.route53.Record(f'{project.name_prefix}-dns',
+    zone_id='Z03528753AZVULC8BFCA',  # thunderbird.dev
+    name='send.thunderbird.dev',
+    type=aws.route53.RecordType.CNAME,
+    ttl=60,
+    records=[backend_fargate.resources['fargate_service_alb']['albs']['send-suite'].dns_name])

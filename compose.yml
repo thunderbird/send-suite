@@ -21,10 +21,10 @@ services:
       context: ./backend/
     environment:
       DATABASE_URL: postgres://postgres:postgres@db:5432/send-suite
-    expose:
-      - "8080"
-      - "5555" # for browsing db with prisma studio
-      - "9229" # Debugger port
+    ports:
+      - "8080:8080"
+      - "5555:5555" # for browsing db with prisma studio
+      - "9229:9229" # Debugger port
     # Uncomment below to enable the debugger
     # command: "/app/scripts/debug-entry.sh"
     depends_on:

@@ -19,4 +19,7 @@ RUN npm install -g pnpm && \
     pnpm install && \
     chown -R node:node /app
 
+# Debug
+RUN apt update -y && apt install -y postgresql net-tools telnet
+
 CMD ["/bin/sh", "/app/scripts/entry.sh"]
