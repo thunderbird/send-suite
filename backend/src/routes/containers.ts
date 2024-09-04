@@ -223,7 +223,7 @@ router.delete(
 router.post(
   '/:containerId/item/:itemId/rename',
   getGroupMemberPermissions,
-  addErrorHandling(CONTAINER_ERRORS.ITEM_NOT_REPORTED),
+  addErrorHandling(CONTAINER_ERRORS.ITEM_NOT_RENAMED),
   wrapAsyncHandler(async (req, res) => {
     const { itemId } = req.params;
     const { name } = req.body;
