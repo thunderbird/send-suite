@@ -18,6 +18,7 @@ import {
   TAG_NOT_DELETED,
   TAG_NOT_UPDATED,
   UPLOAD_NOT_DELETED,
+  UPLOAD_NOT_REPORTED,
 } from './errors/models';
 import { fromPrismaV2 } from './models/prisma-helper';
 import { PermissionType } from './types/custom';
@@ -133,6 +134,22 @@ export async function getContainerWithMembers(containerId: number) {
     query,
     CONTAINER_NOT_FOUND
   );
+}
+
+export async function reportUpload(uploadId: string) {
+  try {
+    return await prisma.upload.update({
+      where: {
+        id: uploadId,
+      },
+      data: {
+        reported: true,
+        reportedAt: new Date(),
+      },
+    });
+  } catch (error) {
+    throw new Error(UPLOAD_NOT_REPORTED);
+  }
 }
 
 export async function createItem(

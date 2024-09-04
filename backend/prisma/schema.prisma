@@ -221,6 +221,8 @@ model Upload {
   items     Item[]        // A single Upload may back multiple Items
   type      String        // mime type
   createdAt DateTime?
+  reported  Boolean       @default(false)
+  reportedAt DateTime?
 }
 
 // A tag can be associated with items and containers
