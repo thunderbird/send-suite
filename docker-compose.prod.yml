@@ -1,0 +1,49 @@
+services:
+  frontend:
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - frontend-node-modules:/app/node_modules
+  backend:
+    build:
+      context: ./backend/
+    ports:
+      - "8080:8080"
+
+    env_file:
+      - ./backend/.env
+    volumes:
+      - backend-node-modules:/app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: "postgres:15"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=send-suite
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  reverse-proxy:
+    build:
+      context: ./backend/tls-dev-proxy/
+    ports:
+      - "8088:12345"
+    depends_on:
+      - backend
+
+volumes:
+  postgres-data:
+  backend-node-modules: # do not create on host
+  frontend-node-modules: # do not create on host

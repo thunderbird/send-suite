@@ -1,5 +1,4 @@
 #!/bin/sh
-# pnpm install
 
 echo 'Applying prisma migrations...'
 pnpm db:update

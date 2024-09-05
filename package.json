@@ -16,7 +16,8 @@
     "test:e2e:ui": "pnpm exec playwright test --ui",
     "postinstall": "pnpm run install:frontend && pnpm run install:backend",
     "clean": "./clean.sh",
-    "dev": "docker compose up --build --force-recreate -d && docker compose logs -f",
+    "dev": "docker compose -f docker-compose.dev.yml up --build --force-recreate",
+    "prod": "docker compose -f docker-compose.prod.yml up --build --force-recreate",
     "install:frontend": "cd frontend && pnpm install",
     "install:backend": "cd backend && pnpm install"
   },

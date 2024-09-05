@@ -5,7 +5,7 @@ import { inject, onMounted, watch } from 'vue';
 
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 
-import Breadcrumbs from '@/apps/lockbox/components/BreadCrumbs.vue';
+import BreadCrumbs from '@/apps/lockbox/components/BreadCrumbs.vue';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
 import FolderTableRowCell from '@/apps/lockbox/elements/FolderTableRowCell.vue';
 import { IconDotsVertical, IconDownload, IconTrash } from '@tabler/icons-vue';
@@ -47,7 +47,7 @@ export default { props: { id: { type: String, default: 'null' } } };
 <template>
   <div class="w-full flex flex-col gap-3">
     <h2 class="font-bold">Your Files</h2>
-    <Breadcrumbs />
+    <BreadCrumbs />
     <table class="w-full border-separate border-spacing-x-0 border-spacing-y-1">
       <thead>
         <tr>
