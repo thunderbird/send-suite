@@ -58,7 +58,7 @@ pulumi.Output.all(
     rds_cluster.resources['instances'][0].port).apply(lambda outputs:
         url_secret(
             project,
-            f'{tb_pulumi.PROJECT}/{tb_pulumi.STACK}/database_url',
+            f'{project.project}/{project.stack}/database_url',
             *outputs))
 
 # NOTE: AWS Secrets Manager doesn't delete secrets right away, in case you accidentally delete

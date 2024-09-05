@@ -1,10 +1,5 @@
 #!/bin/sh
 
-# <debug>
-echo '# curl -I https://mozilla.org/'
-curl -I https://mozilla.org/
-# </debug>
-
 echo 'Applying prisma migrations...'
 pnpm run db:update
 
