@@ -1,10 +1,20 @@
 FROM node:20.10.0
 
-ADD package.json pnpm-lock.yaml /app/
-ADD public /app/public
-ADD scripts /app/scripts
-ADD src /app/src
-RUN npm install -g pnpm && cd /app && pnpm install
-
+# Set the working directory within the container
+# owned by an unprivileged user
+ARG UID=1000
+ARG GID=1000
+RUN \
+  usermod --uid ${UID} node && groupmod --gid ${GID} node &&\
+  mkdir app && chown node:node /app
 WORKDIR /app
-CMD ["pnpm", "run", "dev"]
+
+# As root, install `pnpm` globally
+RUN npm install -g pnpm
+
+# Run subsequent steps as unprivileged user
+USER node
+COPY --chown=node:node package.json pnpm-lock.yaml ./
+RUN pnpm install
+
+CMD ["/bin/sh", "./scripts/entry.sh"]

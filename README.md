@@ -197,7 +197,7 @@ You can use VSCode's debugger for the backend.
 
 ```
 
-2. Add this to your top level `backend.env` file:
+2. Add this to your `backend/.env` file:
 
 ```
 DEBUG=true
