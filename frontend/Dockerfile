@@ -17,4 +17,4 @@ USER node
 COPY --chown=node:node package.json pnpm-lock.yaml ./
 RUN pnpm install
 
-CMD ["/bin/sh", "./scripts/dev-entry.sh"]
+CMD ["/bin/sh", "./scripts/entry.sh"]
