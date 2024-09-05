@@ -161,6 +161,13 @@ export async function getContainerForAccessLink(linkId: string) {
           container: {
             include: {
               items: {
+                where: {
+                  upload: {
+                    isNot: {
+                      reported: true,
+                    },
+                  },
+                },
                 include: {
                   upload: true,
                 },

@@ -58,6 +58,10 @@ export const CONTAINER_ERRORS = {
     statusCode: 500,
     message: 'Could not rename item.',
   },
+  ITEM_NOT_REPORTED: {
+    statusCode: 500,
+    message: 'Could not report item.',
+  },
   INVITATION_NOT_CREATED: {
     statusCode: 500,
     message: 'Could not invite member.',

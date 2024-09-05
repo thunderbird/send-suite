@@ -10,6 +10,7 @@ import {
   getSharesForContainer,
   removeGroupMember,
   removeInvitationAndGroup,
+  reportUpload,
   updateAccessLinkPermissions,
   updateInvitationPermissions,
   updateItemName,
@@ -228,6 +229,16 @@ router.post(
     const { name } = req.body;
     const item = await updateItemName(parseInt(itemId), name);
     res.status(200).json(item);
+  })
+);
+
+router.post(
+  '/:containerId/report',
+  addErrorHandling(CONTAINER_ERRORS.ITEM_NOT_REPORTED),
+  wrapAsyncHandler(async (req, res) => {
+    const { uploadId } = req.body;
+    await reportUpload(uploadId);
+    res.status(200).json({ message: 'reported successfully' });
   })
 );
 
