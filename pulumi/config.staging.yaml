@@ -74,6 +74,8 @@ resources:
         network_mode: awsvpc
         cpu: 512
         memory: 1024
+        requires_compatibilities:
+          - FARGATE
         container_definitions:
           backend:
             image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:staging
