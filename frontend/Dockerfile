@@ -1,20 +1,22 @@
 FROM node:20.10.0
 
-# Set the working directory within the container
-# owned by an unprivileged user
-ARG UID=1000
-ARG GID=1000
-RUN \
-  usermod --uid ${UID} node && groupmod --gid ${GID} node &&\
-  mkdir app && chown node:node /app
 WORKDIR /app
+ADD package.json \
+    pnpm-lock.yaml \
+    tsconfig.json \
+    index.extension.html \
+    index.html \
+    index.management.html \
+    postcss.config.js \
+    tailwind.config.js \
+    vite.config.js \
+    vite.config.extension.js \
+    vite.config.management.js \
+    ./
+ADD public ./public
+ADD scripts ./scripts
+ADD src ./src
 
-# As root, install `pnpm` globally
-RUN npm install -g pnpm
-
-# Run subsequent steps as unprivileged user
-USER node
-COPY --chown=node:node package.json pnpm-lock.yaml ./
-RUN pnpm install
+RUN npm install -g pnpm && pnpm install
 
 CMD ["/bin/sh", "./scripts/entry.sh"]

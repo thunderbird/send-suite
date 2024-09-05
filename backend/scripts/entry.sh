@@ -1,5 +1,4 @@
 #!/bin/sh
-# pnpm install
 
 echo 'Applying prisma migrations...'
 pnpm db:update
@@ -12,7 +11,7 @@ pnpm db:generate
 if [ "$DEBUG" = "true" ]; then
     echo 'Starting dev server with debugger 🚀'
     echo 'Starting db browser on http://localhost:5555 🔎'
-    pnpm debug 
+    pnpm debug
 else
     echo 'Starting dev server 🚀'
     pnpm dev
