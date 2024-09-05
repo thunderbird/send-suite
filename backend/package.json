@@ -12,7 +12,7 @@
     "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset",
     "db:update": "prisma db push",
-    "debug": "pnpm debug:attach & pnpm db:browse",
+    "debug": "pnpm db:browse & pnpm debug:attach",
     "debug:attach": "nodemon -e js,ts --exec 'node --inspect=0.0.0.0:9229 --require ts-node/register src/index.ts'",
     "dev": "nodemon -e js,ts src/index.ts",
     "lint:all": "eslint . --fix",
