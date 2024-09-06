@@ -27,6 +27,9 @@ services:
       - "9229:9229" # Debugger port
     # Uncomment below to enable the debugger
     # command: "/app/scripts/debug-entry.sh"
+    volumes:
+      - ./backend:/app
+      - backend-node-modules:/app/node_modules
     depends_on:
       db:
         condition: service_healthy
@@ -42,11 +45,24 @@ services:
   frontend:
     build:
       context: ./frontend/
-      dockerfile: Dockerfile
     ports:
       - "5173:5173"
     volumes:
-      - .env.sample:/app/.env
+      - ./frontend:/app
+      - frontend-node-modules:/app/node_modules
+    depends_on:
+      - backend
+    # Uncomment/populate to use this instead of/in conjunction with a .env file
+    # environment:
+    #   VUE_BASE_URL:
+    #   VITE_SEND_SERVER_URL:
+    #   VITE_SEND_CLIENT_URL:
+    #   VITE_SENTRY_AUTH_TOKEN:
+    #   VITE_SENTRY_DSN:
+    #   VITE_POSTHOG_PROJECT_KEY:
+    #   VITE_POSTHOG_HOST:
 
 volumes:
   postgres-data:
+  backend-node-modules: # do not create on host
+  frontend-node-modules: # do not create on host

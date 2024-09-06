@@ -145,8 +145,8 @@ resources:
           container_name: backend
           # "name" field is arbitrary, but must be unique and no longer than 32 chars
           name: send-suite-staging-api
-        prisma:
-          listener_port: 5555
-          container_port: 5555
-          container_name: backend
-          name: send-suite-staging-prisma
+        # prisma:
+        #   listener_port: 5555
+        #   container_port: 5555
+        #   container_name: backend
+        #   name: send-suite-staging-prisma
