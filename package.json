@@ -17,6 +17,7 @@
     "postinstall": "pnpm run install:frontend && pnpm run install:backend",
     "clean": "./clean.sh",
     "dev": "docker compose up --build --force-recreate -d && docker compose logs -f",
+    "build:frontend": "cd frontend && pnpm build",
     "install:frontend": "cd frontend && pnpm install",
     "install:backend": "cd backend && pnpm install"
   },
