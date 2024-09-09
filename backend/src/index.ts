@@ -62,8 +62,7 @@ const app = express();
 app.use(express.static('public'));
 app.use(express.json({ limit: '5mb' }));
 
-// TODO: Fix CORS proper (rjung)
-const allowedOrigins = ['*'];
+const allowedOrigins = ['http://localhost:5173', 'http://localhost:4173'];
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;

@@ -1,4 +1,7 @@
+# Remove old builds
 rm -rf dist/*
+rm -rf dist-extension/*
+
 mkdir -p dist/assets
 
 ### this should get copied automatically when compiling a page
@@ -34,9 +37,15 @@ cp -R dist/pages/assets/* dist/assets/
 cp -R dist/pages/*.* dist/
 rm -rf dist/pages
 
+### Rename dist folder to extension
+mv dist dist-extension
+
 ### server download page
 # vite build --config vite.config.service-page.js
 # rm -rf ../service/public/*
 # mv dist/service-page/* ../service/public/
 # this also copies the manifest.json, popup.*, management.*
 # TODO: when building, delete these files from the service/public/ dir
+
+### Build web app
+pnpm exec vite build

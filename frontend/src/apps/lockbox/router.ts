@@ -13,6 +13,10 @@ import useUserStore from '@/stores/user-store';
 
 export const routes: RouteRecordRaw[] = [
   {
+    path: '/',
+    redirect: '/lockbox',
+  },
+  {
     path: '/lockbox',
     component: Lockbox,
     children: [

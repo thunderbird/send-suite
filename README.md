@@ -134,6 +134,20 @@ This could be because the sessions are expiring when the backend reloads (which 
 
 If you're not changing the backend code (and the backend doesn't restart), you might be fine.
 
+## Building
+
+To build the frontend run from the root `pnpm build:frontend`
+This will produce the static assets for deployment. It will generate the following directories:
+
+Web app: `frontend/dist`
+
+TB extension: `frontend/dist-extension`
+
+To test the web client locally, you can run
+`cd frontend`
+and `pnpm serve:build`
+This will create a server on `http://localhost:4173/`
+
 ## Additional documentation
 
 See the `docs/` folder for a draft of the detailed documentation.

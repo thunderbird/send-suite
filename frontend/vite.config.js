@@ -2,6 +2,7 @@ import { sentryVitePlugin } from '@sentry/vite-plugin';
 import vue from '@vitejs/plugin-vue';
 import path from 'path';
 import { defineConfig } from 'vite';
+import { SERVER_BASE_URL } from './config/constants';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -19,11 +20,9 @@ export default defineConfig({
     proxy: {
       // `secure: false` seems to do nothing
       // secure: false,
-      '/echo': 'http://localhost:8080',
-      '/api': 'http://localhost:8080',
-      '/lockbox/fxa': 'http://backend:8080', // Using `backend` per the docker network name
-      '/login-success.html': 'http://backend:8080', // Using `backend` per the docker network name
-      '/login-failed.html': 'http://backend:8080', // Using `backend` per the docker network name
+      '/lockbox/fxa': SERVER_BASE_URL, // Using `backend` per the docker network name
+      '/login-success.html': SERVER_BASE_URL, // Using `backend` per the docker network name
+      '/login-failed.html': SERVER_BASE_URL, // Using `backend` per the docker network name
     },
   },
   resolve: {
@@ -32,7 +31,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: 'dist/pages',
+    outDir: 'dist',
     rollupOptions: {
       // input: {
       //   // background: resolve(__dirname, "src/background.js"),
