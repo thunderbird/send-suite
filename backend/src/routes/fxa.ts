@@ -7,6 +7,7 @@ import {
   getClient,
   getIssuer,
 } from '../auth/client';
+import { ENVIRONMENT } from '../config';
 import {
   addErrorHandling,
   AUTH_ERRORS,
@@ -34,7 +35,7 @@ router.get(
 
     // Set up Metrics Flow
     try {
-      const utm_campaign = `${process.env.FXA_ENTRYPOINT}_${process.env.APP_ENV}`;
+      const utm_campaign = `${process.env.FXA_ENTRYPOINT}_${ENVIRONMENT}`;
       const utm_source = 'login';
 
       // Fetch the flowValues before requesting the auth url
