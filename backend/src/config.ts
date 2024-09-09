@@ -1,8 +1,6 @@
 import 'dotenv/config';
 
-type Environment = 'development' | 'staging' | 'production';
-
-// type EnvironmentConfig = { [key in Environment]: string };
+type Environment = 'development' | 'production';
 
 const appConfig = {
   // file_dir: `${tmpdir()}${path.sep}send-${randomBytes(4).toString("hex")}`,
