@@ -113,7 +113,7 @@ resources:
               - name: B2_REGION
                 value: auto
               - name: BASE_URL
-                value: https://thunderbird.dev:8088
+                value: https://lockbox.thunderbird.dev/
               - name: COMBINED_LOG
                 value: logs/combined.log
               - name: DEVELOPER_TIMEZONE
@@ -133,14 +133,13 @@ resources:
               - name: FXA_MOZ_ISSUER
                 value: https://accounts.stage.mozaws.net
               - name: FXA_REDIRECT_URI
-                value: http://lockbox.thunderbird.dev:5173/lockbox/fxa
+                value: https://lockbox.thunderbird.dev/lockbox/fxa
               - name: STORAGE_BACKEND
                 value: b2
       services:
         send-suite:
-          listener_port: 443
-          listener_proto: HTTPS
-          listener_cert_arn: arn:aws:acm:us-east-1:768512802988:certificate/3a98e226-c4df-4e58-bc0a-aa4ccbf6325e
+          listener_port: 80
+          listener_proto: HTTP
           container_port: 8080
           container_name: backend
           # "name" field is arbitrary, but must be unique and no longer than 32 chars

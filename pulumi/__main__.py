@@ -84,7 +84,10 @@ backend_fargate = tb_pulumi.fargate.FargateClusterWithLogging(f'{project.name_pr
 # Create a DNS record pointing to the service
 dns = aws.route53.Record(f'{project.name_prefix}-dns',
     zone_id='Z03528753AZVULC8BFCA',  # thunderbird.dev
-    name='send.thunderbird.dev',
+    name='lockbox.thunderbird.dev',
+    # Revert to "send" after this is resolved:
+    # https://bugzilla.mozilla.org/show_bug.cgi?id=1866867
+    # name='send.thunderbird.dev',
     type=aws.route53.RecordType.CNAME,
     ttl=60,
     records=[backend_fargate.resources['fargate_service_alb']['albs']['send-suite'].dns_name])
