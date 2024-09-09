@@ -1,5 +1,4 @@
 services:
-
   db:
     image: "postgres:15"
     volumes:
@@ -45,6 +44,8 @@ services:
   frontend:
     build:
       context: ./frontend/
+    environment:
+      - VITE_HTTP_SERVER_URL=http://backend:8080
     ports:
       - "5173:5173"
     volumes:

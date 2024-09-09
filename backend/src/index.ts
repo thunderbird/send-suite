@@ -112,6 +112,10 @@ app.get('/', (req, res) => {
   res.status(200).send('echo');
 });
 
+app.get('/echo', (req, res) => {
+  res.status(200).send('API echo response');
+});
+
 app.get('/api/debug-session', (req, res) => {
   res.status(200).json({
     session: req.session,
