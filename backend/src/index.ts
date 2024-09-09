@@ -21,6 +21,7 @@ import wsMsgHandler from './wsMsgHandler';
 import wsUploadHandler from './wsUploadHandler';
 
 import * as Sentry from '@sentry/node';
+import { IS_ENV_PROD } from './config';
 import { errorHandler } from './errors/routes';
 import logger from './logger';
 import loggerRoute from './routes/logger';
@@ -62,7 +63,7 @@ const app = express();
 app.use(express.static('public'));
 app.use(express.json({ limit: '5mb' }));
 
-const allowedOrigins = ['http://localhost:5173', 'http://localhost:4173'];
+const allowedOrigins = ['https://thunderbird.dev'];
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
@@ -75,7 +76,12 @@ app.use((req, res, next) => {
   // Allow any matching origin
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      if (
+        !origin ||
+        allowedOrigins.indexOf(origin) !== -1 ||
+        /* If the environment is not prod, we allow all origins */
+        !IS_ENV_PROD
+      ) {
         callback(null, true);
       } else {
         callback(new Error('Origin not allowed by CORS'));
@@ -93,7 +99,7 @@ const expressSession = session({
   resave: false,
   saveUninitialized: true,
   cookie: {
-    secure: process.env.APP_ENV === 'production',
+    secure: IS_ENV_PROD,
     sameSite: 'none', // Cannot use 'lax' or 'strict' for local dev.
   },
   store: new FileStore(fileStoreOptions),

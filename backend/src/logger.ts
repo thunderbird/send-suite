@@ -1,4 +1,5 @@
 import winston from 'winston';
+import { IS_ENV_PROD } from './config';
 const { combine, errors, prettyPrint, timestamp } = winston.format;
 const { File, Console } = winston.transports;
 
@@ -26,7 +27,7 @@ function consoleFormat(info) {
   })} ${info.level.toLocaleUpperCase()}: ${info.message}`;
 }
 
-if (process.env.APP_ENV !== 'production') {
+if (!IS_ENV_PROD) {
   logger.add(
     new Console({
       // format: combine(timestamp(), prettyPrint()),
