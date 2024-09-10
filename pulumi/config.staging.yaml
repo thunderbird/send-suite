@@ -48,6 +48,7 @@ resources:
         - b2-application-key
         - fxa-client-id
         - fxa-client-secret
+        - sentry-auth-token
 
   tb:rds:RdsDatabaseGroup:
     backend:
@@ -57,28 +58,29 @@ resources:
       parameter_group_family: postgres15
       skip_final_snapshot: True
       # Jumphost options
-      build_jumphost: False
-      # jumphost_public_key: ''
-      # jumphost_source_cidrs: ['']
-      # jumphost_user_data: |
-      #   #!/bin/bash
-      #   yum update -y
-      #   yum install -y postgresql15
+      build_jumphost: True
+      jumphost_public_key: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDCEC4VyJ5rZcCP9g/jbyFz2E/iHpxmjkVTOG0WwzrWi0cL9SxwC5Ij8DINpK73fdInGwh1LFG7RI1JvRvcyiN4eauZuAbeXvfGksZT2hLmCdtdVXOl5ZwXDXVyuhOPCIIRf88g69lG3koA1Q09nHjBuZcshcRQfeTATOqHGenYqheD5ZLotaXsZSrrZx5eiX5bUKQZZFZiA6v80NxbHSISkbZwFPas6X7hgaCPwXVh5Vh1FoB0m6un14TxGV+cbGPmPb083DMWhbjof8UiT+vfGNyDhPmseXw1USGjobLm2vJ/ztS0j93SDP5d7AL7zehAVTHY1IKVwkNtGo/dnL4QMrQ8aon2EQGjMq97ZplpZ0QqC4raGeF9nkav4qbXA9B0nNF8iEFCvG44Ge7GvNTrx8TrZZczNZbhqpHvuRUUI4LGQ8yhvtaC6VTPSRvqBuN7e+wS1wx60pjVBxCrOxTfi8236DstqAX6cj9E90FfQBvXHrXdWynWYEy7+Gs7Vmn9JlFcV0dJ8nxY/wKTi1pJqN6tRMmA1igQRtUk1xBad90WyhXQtyEgXeZMuRvWtVvG7m+UCyM/3DYicu9w2YVt61LIUjgVFtq/UFCNK6BCjycqJuBKKbmYskuJ8UrFpZHxjOcSksmTf424Cqn9HwiQojvEPx8FPRwHgrqemIxarw=='
+      jumphost_source_cidrs: ['38.75.234.35/32']
+      jumphost_user_data: |
+        #!/bin/bash
+        yum update -y
+        yum install -y postgresql15
 
   tb:fargate:FargateClusterWithLogging:
     backend:
       internal: False
       ecr_resources:
         - arn:aws:ecr:us-east-1:768512802988:repository/send*
+      health_check_grace_period_seconds: 60
       task_definition:
         network_mode: awsvpc
-        cpu: 512
-        memory: 1024
+        cpu: 1024
+        memory: 2048
         requires_compatibilities:
           - FARGATE
         container_definitions:
           backend:
-            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:staging
+            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:prealpha1
             portMappings:
               - name: send-suite
                 containerPort: 8080
@@ -103,6 +105,8 @@ resources:
                 valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-id-trDR1r
               - name: FXA_CLIENT_SECRET
                 valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-secret-FGcei3
+              - name: SENTRY_AUTH_TOKEN
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/sentry-auth-token-esyr6P
             environment:
               - name: APP_ENV
                 value: DEV
@@ -133,7 +137,13 @@ resources:
               - name: FXA_MOZ_ISSUER
                 value: https://accounts.stage.mozaws.net
               - name: FXA_REDIRECT_URI
-                value: https://lockbox.thunderbird.dev/lockbox/fxa
+                value: https://send.thunderbird.dev/lockbox/fxa
+              - name: SENTRY_DSN
+                value: https://85b7b08be94b8991ed121578d807f755@o4505428107853824.ingest.us.sentry.io/4507567071232000
+              - name: SENTRY_ORG
+                value: thunderbird
+              - name: SENTRY_PROJECT
+                value: send-suite-backend
               - name: STORAGE_BACKEND
                 value: b2
       services:
@@ -145,3 +155,7 @@ resources:
           container_name: backend
           # "name" field is arbitrary, but must be unique and no longer than 32 chars
           name: send-suite-staging-api
+          health_check:
+            healthy_threshold: 2
+            unhealthy_threshold: 5
+            interval: 15

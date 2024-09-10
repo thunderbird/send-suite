@@ -76,16 +76,17 @@ app.use((req, res, next) => {
   // Allow any matching origin
   cors({
     origin: (origin, callback) => {
-      if (
-        !origin ||
-        allowedOrigins.indexOf(origin) !== -1 ||
-        /* If the environment is not prod, we allow all origins */
-        !IS_ENV_PROD
-      ) {
-        callback(null, true);
-      } else {
-        callback(new Error('Origin not allowed by CORS'));
-      }
+      callback(null, true);
+      // if (
+      //   !origin ||
+      //   allowedOrigins.indexOf(origin) !== -1 ||
+      //   /* If the environment is not prod, we allow all origins */
+      //   !IS_ENV_PROD
+      // ) {
+      //   callback(null, true);
+      // } else {
+      //   callback(new Error('Origin not allowed by CORS'));
+      // }
     },
     credentials: true,
   })(req, res, next);

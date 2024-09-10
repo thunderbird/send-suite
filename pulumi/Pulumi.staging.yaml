@@ -8,3 +8,5 @@ config:
     secure: v1:Xu+V334NTKSvm/Jd:OCO00E3Y6yuQPzRul5RAuQJB+5vhyeoTqol7W5qN66s=
   send-suite:fxa-client-secret:
     secure: v1:XnpcH2k95lV3zpZV:lSBHogbw8+stSY4wqoJ9VyE8dSd5zyWdRRW1b5cLhRVerdXYj5OB5wQH2Ge7wH6Slh4FQtjJclFf2Ld/ubENAxsUVdvhvKqN3NaQDpeVEeE=
+  send-suite:sentry-auth-token:
+    secure: v1:dcPe+Y0zi9nVY7wU:+Uy72pqkZTz81wiM3oX815qhhNBP1JuPO8exD+X1b+b27ofnWJCVqn60nc0hBgMD4SOYrP8luBKxMajhGRF16cJU353fbPYWPV8JBX1I+B5UoJjhbxZzgWyNaZlRhlPZwhOw5UvkfpGsdsGXbGcktP4iaKlD13mK1AZ98vI4j6EQlgKTIqtKtFG+SDYqh8fWOujnAAo55lKKa+nCa1fTFHv8CXmbbHkrjLbGvNqW/c0bEGBj9u4hPZA9NnDMJpRf4epeUkjCbU/gCEAaiQ1uvvVveA==
