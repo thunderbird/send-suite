@@ -130,6 +130,8 @@ resources:
                 value: logs/error.log
               - name: FS_LOCAL_BUCKET
                 value: send-fs-local
+              - name: FXA_ALLOW_LIST
+                value: @thunderbird.net,@devmount.com,@devmount.de,@mozilla.org,@mozilla.com,@mozilla.ai,@pocket.com,@mozillafoundation.org,@mozilla.vc,@sipes.us,schmidt@pm.me,Callek@gmail.com,seburo3@gmail.com
               - name: FXA_ENTRYPOINT
                 value: tblockbox
               - name: FXA_METRICS_FLOW_URL
