@@ -12,6 +12,12 @@ export async function getIssuer() {
 }
 
 export function getClient(issuer: Issuer) {
+  console.log('evaluating FXA_CLIENT_ID, FXA_CLIENT_SECRET, FXA_REDIRECT_URI', {
+    FXA_CLIENT_ID: process.env.FXA_CLIENT_ID,
+    FXA_CLIENT_SECRET: process.env.FXA_CLIENT_SECRET,
+    FXA_REDIRECT_URI: process.env.FXA_REDIRECT_URI,
+  });
+  console.log('getting client');
   const client = new issuer.Client({
     client_id: process.env.FXA_CLIENT_ID,
     client_secret: process.env.FXA_CLIENT_SECRET,

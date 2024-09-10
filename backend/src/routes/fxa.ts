@@ -39,8 +39,14 @@ router.get(
       const utm_source = 'login';
 
       // Fetch the flowValues before requesting the auth url
+      console.log(
+        'Evaluating FXA_METRICS_FLOW_URL =>',
+        process.env.FXA_METRICS_FLOW_URL
+      );
+      console.log('Calling metrics for 5s');
       const flow_values = await axios
         .get(process.env.FXA_METRICS_FLOW_URL, {
+          timeout: 5000,
           params: {
             entrypoint: process.env.FXA_ENTRYPOINT,
             form_type: 'email',
@@ -64,6 +70,8 @@ router.get(
       logger.error(err);
     }
 
+    console.log('Evaluating FXA_MOZ_ISSUER', process.env.FXA_MOZ_ISSUER);
+    console.log('getting moz issuer');
     // Set up client
     const mozIssuer = await getIssuer();
     const client = getClient(mozIssuer);
@@ -92,10 +100,12 @@ router.get(
 
     // Add state code to session.
     // We'll attempt to match this in the callback.
+    console.log('evaluating FXA_STATE', state);
     req.session[FXA_STATE] = state;
 
     // Save session and send the auth url to the front end
     // so they can do the redirect.
+    console.log('saving session... last step');
     req.session.save((err) => {
       if (err) {
         logger.error('Could not save session in /login.');
@@ -195,8 +205,14 @@ router.get(
   '/allowlist',
   addErrorHandling(AUTH_ERRORS.ALLOW_LIST_FAILED),
   wrapAsyncHandler(async (req, res) => {
-    await checkAllowList(req.session?.user?.email);
-    res.status(200).json({
+    try {
+      await checkAllowList(req.session?.user?.email);
+    } catch (error) {
+      return res.status(200).json({
+        msg: 'No email in session, cannot check allow list',
+      });
+    }
+    return res.status(200).json({
       msg: 'User in allow list',
     });
   })
