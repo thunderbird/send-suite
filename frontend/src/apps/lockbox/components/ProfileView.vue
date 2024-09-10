@@ -7,7 +7,7 @@ import { CLIENT_MESSAGES } from '@/lib/messages';
 import useApiStore from '@/stores/api-store';
 import useKeychainStore from '@/stores/keychain-store';
 import useUserStore from '@/stores/user-store';
-import { ref, toRaw } from 'vue';
+import { onMounted, ref, toRaw } from 'vue';
 
 const { api } = useApiStore();
 const userStore = useUserStore();
@@ -16,10 +16,35 @@ const folderStore = useFolderStore();
 
 const sessionInfo = ref(null);
 
+async function pingAPI() {
+  try {
+    const res = await fetch('/api/echo');
+    const data = await res.text();
+    console.log(`🧱 Pinging proxied API using "/api/echo":`, data);
+  } catch (error) {
+    console.error(`🧱 Error pinging API via rewrite:`, error);
+  }
+
+  try {
+    const res2 = await fetch('https://lockbox.thunderbird.dev/echo');
+    const data2 = await res2.text();
+    console.log(
+      `🧱 Pinging proxied API using "https://lockbox.thunderbird.dev/echo":`,
+      data2
+    );
+  } catch (error) {
+    console.error(`🧱 Error pinging API directly:`, error);
+  }
+}
+
 async function pingSession() {
   sessionInfo.value =
     (await api.call(`users/me`)) ?? CLIENT_MESSAGES.SHOULD_LOG_IN;
 }
+
+onMounted(() => {
+  pingAPI();
+});
 
 function formatSessionInfo(info) {
   console.log(info);
