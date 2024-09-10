@@ -133,8 +133,8 @@ app.use('/lockbox/fxa', fxa);
 app.use('/api/lockbox/fxa', fxa);
 app.use(loggerRoute);
 app.use(metricsRoute);
-app.get(`*`, (req, res) => {
-  res.status(404);
+app.use((_, res) => {
+  res.status(404).send('404 Not Found');
 });
 
 // Add this after all routes,
