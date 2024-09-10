@@ -138,14 +138,10 @@ resources:
                 value: b2
       services:
         send-suite:
-          listener_port: 80
-          listener_proto: HTTP
+          listener_port: 443
+          listener_proto: HTTPS
+          listener_cert_arn: arn:aws:acm:us-east-1:768512802988:certificate/17ae6d4f-0f30-4e92-b243-74bce7ea5f90
           container_port: 8080
           container_name: backend
           # "name" field is arbitrary, but must be unique and no longer than 32 chars
           name: send-suite-staging-api
-        # prisma:
-        #   listener_port: 5555
-        #   container_port: 5555
-        #   container_name: backend
-        #   name: send-suite-staging-prisma
