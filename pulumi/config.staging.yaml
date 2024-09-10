@@ -126,8 +126,8 @@ resources:
                 value: postgres
               - name: DATABASE_USER
                 value: sendapp
-              - name: ERROR_LOG
-                value: logs/error.log
+              # - name: ERROR_LOG
+              #   value: logs/error.log
               - name: FS_LOCAL_BUCKET
                 value: send-fs-local
               - name: FXA_ALLOW_LIST
@@ -147,7 +147,8 @@ resources:
               - name: SENTRY_PROJECT
                 value: send-suite-backend
               - name: STORAGE_BACKEND
-                value: b2
+                # value: b2
+                value: fs
       services:
         send-suite:
           listener_port: 443
