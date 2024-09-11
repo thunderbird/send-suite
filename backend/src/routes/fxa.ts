@@ -114,8 +114,14 @@ router.get(
         return;
       }
 
+      /* TODO: We have to replace send for lockbox because fxa isn't enabled for send
+      We should remove this and return the actual url once fxa is enabled 
+      https://github.com/thunderbird/send-suite/issues/216
+       */
+      const responseURL = url.replace('send', 'lockbox');
+
       res.status(200).json({
-        url,
+        url: responseURL,
       });
     });
   })
