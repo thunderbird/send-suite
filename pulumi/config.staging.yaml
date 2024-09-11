@@ -48,6 +48,7 @@ resources:
         - b2-application-key
         - fxa-client-id
         - fxa-client-secret
+        - posthog-api-key
         - sentry-auth-token
 
   tb:rds:RdsDatabaseGroup:
@@ -94,7 +95,7 @@ resources:
           - FARGATE
         container_definitions:
           backend:
-            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:prealpha5
+            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:prealpha6
             portMappings:
               - name: send-suite
                 containerPort: 8080
@@ -119,6 +120,8 @@ resources:
                 valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-id-trDR1r
               - name: FXA_CLIENT_SECRET
                 valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-secret-FGcei3
+              - name: POSTHOG_API_KEY
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/posthog-api-key-gnIFgZ
               - name: SENTRY_AUTH_TOKEN
                 valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/sentry-auth-token-esyr6P
             environment:
@@ -156,6 +159,8 @@ resources:
                 value: https://lockbox.thunderbird.dev/lockbox/fxa
               - name: NODE_ENV
                 value: prod
+              - name: POSTHOG_HOST
+                value: https://us.i.posthog.com
               - name: SENTRY_DSN
                 value: https://85b7b08be94b8991ed121578d807f755@o4505428107853824.ingest.us.sentry.io/4507567071232000
               - name: SENTRY_ORG
