@@ -1,5 +1,11 @@
 #!/bin/sh
 
+echo "Paging Mozilla..."
+curl -i https://accounts.stage.mozaws.net/
+
+echo "Paging Sentry..."
+curl -i https://85b7b08be94b8991ed121578d807f755@o4505428107853824.ingest.us.sentry.io/4507567071232000/
+
 echo 'Applying prisma migrations...'
 pnpm db:update
 

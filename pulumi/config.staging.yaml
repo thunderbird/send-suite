@@ -25,15 +25,15 @@ resources:
      rules:
         ingress:
           - cidr_blocks: ['0.0.0.0/0']
+            description: TLS port for the load balancer
+            protocol: tcp
+            from_port: 443
+            to_port: 443
+          - cidr_blocks: ['10.0.0.0/16']
             description: Backend port
             protocol: tcp
             from_port: 8080
             to_port: 8080
-          - cidr_blocks: ['0.0.0.0/0']
-            description: Prisma Studio port
-            protocol: tcp
-            from_port: 5555
-            to_port: 5555
         egress:
           - cidr_blocks: ['0.0.0.0/0']
             description: Outbound TLS traffic
@@ -68,10 +68,24 @@ resources:
 
   tb:fargate:FargateClusterWithLogging:
     backend:
-      internal: False
+      assign_public_ip: True
       ecr_resources:
         - arn:aws:ecr:us-east-1:768512802988:repository/send*
       health_check_grace_period_seconds: 60
+      internal: False
+      services:
+        send-suite:
+          listener_port: 443
+          listener_proto: HTTPS
+          listener_cert_arn: arn:aws:acm:us-east-1:768512802988:certificate/17ae6d4f-0f30-4e92-b243-74bce7ea5f90
+          container_port: 8080
+          container_name: backend
+          # "name" field is arbitrary, but must be unique and no longer than 32 chars
+          name: send-suite-staging-api
+          health_check:
+            healthy_threshold: 2
+            unhealthy_threshold: 5
+            interval: 15
       task_definition:
         network_mode: awsvpc
         cpu: 1024
@@ -80,7 +94,7 @@ resources:
           - FARGATE
         container_definitions:
           backend:
-            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:prealpha2
+            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:prealpha3
             portMappings:
               - name: send-suite
                 containerPort: 8080
@@ -139,7 +153,7 @@ resources:
               - name: FXA_MOZ_ISSUER
                 value: https://accounts.stage.mozaws.net
               - name: FXA_REDIRECT_URI
-                value: https://send.thunderbird.dev/lockbox/fxa
+                value: https://lockbox.thunderbird.dev/lockbox/fxa
               - name: SENTRY_DSN
                 value: https://85b7b08be94b8991ed121578d807f755@o4505428107853824.ingest.us.sentry.io/4507567071232000
               - name: SENTRY_ORG
@@ -149,16 +163,3 @@ resources:
               - name: STORAGE_BACKEND
                 # value: b2
                 value: fs
-      services:
-        send-suite:
-          listener_port: 443
-          listener_proto: HTTPS
-          listener_cert_arn: arn:aws:acm:us-east-1:768512802988:certificate/17ae6d4f-0f30-4e92-b243-74bce7ea5f90
-          container_port: 8080
-          container_name: backend
-          # "name" field is arbitrary, but must be unique and no longer than 32 chars
-          name: send-suite-staging-api
-          health_check:
-            healthy_threshold: 2
-            unhealthy_threshold: 5
-            interval: 15
