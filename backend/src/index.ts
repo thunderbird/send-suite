@@ -130,6 +130,7 @@ app.use('/api/download', download);
 app.use('/api/sharing', sharing);
 app.use('/api/tags', tags);
 app.use('/lockbox/fxa', fxa);
+app.use('/fxa', fxa);
 app.use('/api/lockbox/fxa', fxa);
 app.use(loggerRoute);
 app.use(metricsRoute);
