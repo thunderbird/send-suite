@@ -154,6 +154,8 @@ resources:
                 value: https://accounts.stage.mozaws.net
               - name: FXA_REDIRECT_URI
                 value: https://lockbox.thunderbird.dev/lockbox/fxa
+              - name: NODE_ENV
+                value: prod
               - name: SENTRY_DSN
                 value: https://85b7b08be94b8991ed121578d807f755@o4505428107853824.ingest.us.sentry.io/4507567071232000
               - name: SENTRY_ORG
