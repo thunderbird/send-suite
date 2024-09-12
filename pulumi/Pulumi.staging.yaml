@@ -1,9 +1,9 @@
 encryptionsalt: v1:d0r3xcOdlcg=:v1:h32s5jmwpOkoXvOJ:rB2v23zF1oN3BX/C8u2XG6Ig0O+uQw==
 config:
   send-suite:b2-application-key:
-    secure: v1:a9ksvtrNB0s7mrJV:Pa5+x2bC0lVBugiob6NFinaGoIQGMlyyzd4Jn41LAUMDsRDCVfkkwU3oDM8LMLI=
+    secure: v1:LSxn/FHZEG5QWIAy:7IXYILINLLdIpw9GvPSU4/EbHK0/nVYHLMzkNku9+5lkXPVp9cjeXpxRqbROMY0=
   send-suite:b2-application-key-id:
-    secure: v1:xHEz1yR6coLDHyE/:jnXE40cYZK+5rFzbFSvr/T6BmFy66dRnuZQGfqb0hUCjbk4WE2P2n7I=
+    secure: v1:0KCqmOKXQ/QXO330:heYEJm/7xcvI853r/Y1k3rcsxbJlc+odaRtQ93YXdhP6g0vN8PDrfgM=
   send-suite:fxa-client-id:
     secure: v1:Xu+V334NTKSvm/Jd:OCO00E3Y6yuQPzRul5RAuQJB+5vhyeoTqol7W5qN66s=
   send-suite:fxa-client-secret:

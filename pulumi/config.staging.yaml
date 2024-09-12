@@ -128,9 +128,9 @@ resources:
               - name: APP_ENV
                 value: DEV
               - name: B2_BUCKET_NAME
-                value: tb-send-staging
+                value: tb-send-suite-staging-object-store
               - name: B2_ENDPOINT
-                value: s3.eu-central-003.backblazeb2.com
+                value: s3.us-east-005.backblazeb2.com
               - name: B2_REGION
                 value: auto
               - name: BASE_URL
@@ -168,5 +168,5 @@ resources:
               - name: SENTRY_PROJECT
                 value: send-suite-backend
               - name: STORAGE_BACKEND
-                # value: b2
-                value: fs
+                value: b2
+                # value: fs
