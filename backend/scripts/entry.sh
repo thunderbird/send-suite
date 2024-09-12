@@ -13,6 +13,7 @@ if [ "$DEBUG" = "true" ]; then
     echo 'Starting db browser on http://localhost:5555 🔎'
     pnpm debug
 else
-    echo 'Starting dev server 🚀'
-    pnpm dev
+    # We should add some logic to tell if we're starting prod or dev
+    echo 'Starting prod server 🚀'
+    pnpm start
 fi

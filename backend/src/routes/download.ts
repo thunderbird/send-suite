@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import storage from '../storage';
+import { TRANSFER_ERROR } from '../errors/models';
 import {
-  wrapAsyncHandler,
   addErrorHandling,
   DOWNLOAD_ERRORS,
+  wrapAsyncHandler,
 } from '../errors/routes';
-import { BaseError, TRANSFER_ERROR } from '../errors/models';
+import storage from '../storage';
 
 const router: Router = Router();
 
@@ -24,7 +24,11 @@ router.get(
 
       req.on('aborted', () => {
         canceled = true;
-        fileStream.destroy();
+        try {
+          fileStream.destroy();
+        } catch (error) {
+          console.error(error);
+        }
       });
 
       res.writeHead(200, {
@@ -39,7 +43,7 @@ router.get(
         }
       });
     } catch (e) {
-      throw new BaseError(TRANSFER_ERROR);
+      return res.status(404).send(TRANSFER_ERROR);
     }
   })
 );
