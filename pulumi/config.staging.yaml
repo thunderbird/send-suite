@@ -3,7 +3,9 @@ resources:
   tb:network:MultiCidrVpc:
     vpc:
       cidr_block: 10.0.0.0/16
+      egress_via_internet_gateway: True
       enable_dns_hostnames: True
+      enable_internet_gateway: True
       endpoint_interfaces:
         - ecr.api
         - ecr.dkr
