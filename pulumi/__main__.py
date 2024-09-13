@@ -1,3 +1,5 @@
+#!/bin/env python3
+
 import pulumi
 import pulumi_aws as aws
 import tb_pulumi
