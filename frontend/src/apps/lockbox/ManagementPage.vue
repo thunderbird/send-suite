@@ -12,6 +12,7 @@ import FeedbackBox from '@/apps/common/FeedbackBox.vue';
 import { useMetricsUpdate } from '@/apps/common/mixins/metrics';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
+import { formatLoginURL } from '@/lib/helpers';
 import { CLIENT_MESSAGES } from '@/lib/messages';
 import useMetricsStore from '@/stores/metrics';
 
@@ -213,7 +214,7 @@ function formatSessionInfo(info) {
 async function openPopup() {
   try {
     await browser.windows.create({
-      url: authUrl.value,
+      url: formatLoginURL(authUrl.value),
       type: 'popup',
       allowScriptsToClose: true,
     });

@@ -20,6 +20,11 @@ router.get(
 
       const fileStream = await storage.get(id);
 
+      if (!fileStream) {
+        console.error('fileStream is null');
+        return res.status(404).send(TRANSFER_ERROR);
+      }
+
       let canceled = false;
 
       req.on('aborted', () => {

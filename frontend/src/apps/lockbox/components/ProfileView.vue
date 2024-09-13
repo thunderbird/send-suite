@@ -2,6 +2,7 @@
 import BackupAndRestore from '@/apps/common/BackupAndRestore.vue';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
+import { formatLoginURL } from '@/lib/helpers';
 import init from '@/lib/init';
 import { CLIENT_MESSAGES } from '@/lib/messages';
 import useApiStore from '@/stores/api-store';
@@ -100,7 +101,7 @@ async function mozAcctLogin() {
   if (!url) {
     console.warn(`DEBUG: couldn't get a mozilla auth url`);
   }
-  const win = window.open(url);
+  const win = window.open(formatLoginURL(url));
   const timer = setInterval(() => {
     if (win.closed) {
       clearInterval(timer);
