@@ -265,3 +265,8 @@ TODO:
 );
 
 export default router;
+// "https://accounts.stage.mozaws.net/authorization?client_id=e26781120ec9677a&scope=openid%20email%20profile&response_type=code&redirect_uri=https%3A%2F%2Flockbox.thunderbird.dev%2Flockbox%2Ffxa&access_type=offline&action=email&entrypoint=tblockbox&flow_begin_time=1726077258350&flow_id=6918661adac5978b61e5e400f689147c9ea83e32c7e2c260e93a5a504c0e6a2f&utm_campaign=tblockbox_development&utm_source=login&state=RDUcGXsrlWMrxZo7E3HqzzDZPyK9HWBLIstUlZ0gMec"
+// "https://accounts.stage.mozaws.net/authorization?client_id=e26781120ec9677a&scope=openid%20email%20profile&response_type=code&redirect_uri=https%3A%2F%2Flockbox.thunderbird.dev%2Flockbox%2Ffxa&access_type=offline&action=email&entrypoint=tblockbox&flow_begin_time=1726077258350&flow_id=6918661adac5978b61e5e400f689147c9ea83e32c7e2c260e93a5a504c0e6a2f&utm_campaign=tblockbox_development&utm_source=login&state=RDUcGXsrlWMrxZo7E3HqzzDZPyK9HWBLIstUlZ0gMec"
+// "https://accounts.stage.mozaws.net/authorization?client_id=e26781120ec9677a&scope=openid%20email%20profile&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A5173%2Flockbox%2Ffxa&access_type=offline&action=email&entrypoint=tblockbox&flow_begin_time=1726077547294&flow_id=e83ed5bd44d9e51133a5e2e298788c4c0ad6209ab0e3d90791ec97db91764c35&utm_campaign=tblockbox_development&utm_source=login&state=BM9d28O80w-LBYLF0_NwAOxHjmKbmJnIhAY6HECRfXQ"
+
+// https://lockbox.thunderbird.dev/fxa?code=5203202272a19d29e2e95f746e0858b6712bc4a89053d00ab55a8331639938af&state=8xSeGiOviRP2bGWhWN-cUGaz4Yz971jbA6Mnr6tLG2k&action=signin&gid=110174056382366451527&utm_campaign=tblockbox_development&utm_source=login&flow_id=6cb4c77900df8e8786b436baa7575a75f8188b546bc84716933fab3aef7061b3&flow_begin_time=1726078886855
