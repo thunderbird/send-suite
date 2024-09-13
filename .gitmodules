@@ -1,4 +1,0 @@
-[submodule "tb_pulumi"]
-	path = tb_pulumi
-	url = git@github.com:thunderbird/pulumi.git
-	branch = initial-commit

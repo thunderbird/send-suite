@@ -1,1 +1,1 @@
-../tb_pulumi/requirements.txt
+git+https://github.com/thunderbird/pulumi.git@initial-commit
