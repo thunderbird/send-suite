@@ -145,7 +145,7 @@ TB extension: `frontend/dist-extension`
 
 To test the web client locally, you can run
 `cd frontend`
-and `pnpm serve:build`
+and `pnpm preview`
 This will create a server on `http://localhost:4173/`
 
 ## Additional documentation

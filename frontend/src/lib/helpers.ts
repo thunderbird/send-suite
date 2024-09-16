@@ -141,5 +141,8 @@ export function calculateEncryptedSize(
   https://github.com/thunderbird/send-suite/issues/216
 */
 export const formatLoginURL = (url: string) => {
+  if (url.includes('localhost')) {
+    return url;
+  }
   return url.replace('%2Flockbox%2Ffxa', '%2Ffxa');
 };

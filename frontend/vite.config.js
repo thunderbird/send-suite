@@ -37,12 +37,6 @@ export default defineConfig(({ mode }) => {
         '/lockbox/fxa': SERVER_BASE_URL, // Using `backend` per the docker network name
         '/login-success.html': SERVER_BASE_URL, // Using `backend` per the docker network name
         '/login-failed.html': SERVER_BASE_URL, // Using `backend` per the docker network name
-        // with options
-        '/api': {
-          target: SERVER_BASE_URL,
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, ''),
-        },
       },
     },
     resolve: {
