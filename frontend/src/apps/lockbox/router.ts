@@ -10,8 +10,18 @@ import Recovery from '@/apps/common/Recovery.vue';
 import Share from '@/apps/lockbox/pages/Share.vue';
 import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
+import LoginPage from './LoginPage.vue';
 
 export const routes: RouteRecordRaw[] = [
+  {
+    path: '/',
+    redirect: '/lockbox',
+  },
+  {
+    path: '/login',
+    component: LoginPage,
+    meta: { redirectOnValidSession: true },
+  },
   {
     path: '/lockbox',
     component: Lockbox,
@@ -20,29 +30,49 @@ export const routes: RouteRecordRaw[] = [
         path: '',
         component: FolderView,
         meta: {
-          requiresAuth: true,
-          allowListCheck: true,
-          requiredPermissions: ['loginSuccess'],
+          requiresSessionAndAuth: true,
         },
       },
-      { path: 'profile', component: ProfileView },
-      { path: 'sent', component: Sent },
-      { path: 'received', component: Received },
+      {
+        path: 'profile',
+        component: ProfileView,
+        meta: {
+          requiresSessionAndAuth: true,
+        },
+      },
+      {
+        path: 'sent',
+        component: Sent,
+        meta: {
+          requiresSessionAndAuth: true,
+        },
+      },
+      {
+        path: 'received',
+        component: Received,
+        meta: {
+          requiresSessionAndAuth: true,
+        },
+      },
       {
         path: 'folder/:id',
         component: FolderView,
         props: true,
         name: 'folder',
         meta: {
-          requiresAuth: true,
-          requiredPermissions: ['loginSuccess'],
+          requiresSessionAndAuth: true,
         },
       },
     ],
   },
-
   // Accept share link
-  { path: '/share/:linkId', component: Share },
+  {
+    path: '/share/:linkId',
+    component: Share,
+    meta: {
+      requireFreshSession: true,
+    },
+  },
 
   // Backup and Recovery for keypair and keys
   { path: '/recovery', component: Recovery },
@@ -56,35 +86,51 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const { user } = useUserStore();
   const { api } = useApiStore();
-  const routeRequiresAuth = to.matched.some(
-    (record) => record.meta.requiresAuth
+  //  requiresSession - means that even if the user has a session in local storage, it must be valid in the backend
+  const requiresSession = to.matched.some(
+    (record) => record.meta.requiresSession
   );
-  const isLoggedIn = user.id === 0 ? 'shouldLogin' : 'loginSuccess';
-  const requiresAllowListCheck = to.matched.some(
-    (record) => record.meta.allowListCheck
+  // requiresAuth - means that the user must have a session in local storage
+  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+  // requiresSessionAndAuth - means that the user must have a session in local storage and it must be valid in the backend
+  const requiresSessionAndAuth = to.matched.some(
+    (record) => record.meta.requiresSessionAndAuth
   );
-  console.log('requiresAllowListCheck', requiresAllowListCheck);
-  console.log(user);
+  //  redirectOnValidSession - means that if the user has a session in local storage, they will be redirected to the lockbox page
+  const redirectOnValidSession = to.matched.some(
+    (record) => record.meta.redirectOnValidSession
+  );
+  const requireFreshSession = to.matched.some(
+    (record) => record.meta.requireFreshSession
+  );
 
-  if (routeRequiresAuth) {
-    const requiredPermissions = to.meta?.requiredPermissions as string[];
-    const hasPermission = requiredPermissions.every((permission) =>
-      isLoggedIn.includes(permission)
-    );
+  // Check local storage
+  const hasLocalStorageSession = user?.id === 0 ? false : true;
 
-    if (!hasPermission) {
-      // Redirect to profile so they can log in
-      return next('/lockbox/profile');
+  if (requiresAuth && !hasLocalStorageSession) {
+    return next('/login');
+  }
+
+  const isSessionValid = await api.call('users/me');
+
+  if (requiresSessionAndAuth) {
+    if (!hasLocalStorageSession || !isSessionValid) {
+      return next('/login');
     }
   }
 
-  if (requiresAllowListCheck) {
-    const isAllowed = await api.call<{ msg: string }>('lockbox/fxa/allowlist');
+  if (requiresSession && !isSessionValid) {
+    return next('/login');
+  }
 
-    if (isAllowed?.msg !== 'User in allow list') {
-      return next('/lockbox/profile');
+  if (requireFreshSession) {
+    if (hasLocalStorageSession && !isSessionValid) {
+      return next('/login');
     }
-    console.log('checking allow list');
+  }
+
+  if (redirectOnValidSession && hasLocalStorageSession && isSessionValid) {
+    return next('/lockbox/profile');
   }
 
   next();

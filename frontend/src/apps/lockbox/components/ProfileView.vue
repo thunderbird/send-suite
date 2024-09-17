@@ -2,12 +2,13 @@
 import BackupAndRestore from '@/apps/common/BackupAndRestore.vue';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
+import { formatSessionInfo, mozAcctLogin } from '@/lib/fxa';
 import init from '@/lib/init';
 import { CLIENT_MESSAGES } from '@/lib/messages';
 import useApiStore from '@/stores/api-store';
 import useKeychainStore from '@/stores/keychain-store';
 import useUserStore from '@/stores/user-store';
-import { ref, toRaw } from 'vue';
+import { ref } from 'vue';
 
 const { api } = useApiStore();
 const userStore = useUserStore();
@@ -19,24 +20,6 @@ const sessionInfo = ref(null);
 async function pingSession() {
   sessionInfo.value =
     (await api.call(`users/me`)) ?? CLIENT_MESSAGES.SHOULD_LOG_IN;
-}
-
-function formatSessionInfo(info) {
-  console.log(info);
-  if (!info) {
-    return null;
-  }
-  const val = structuredClone(toRaw(info));
-  if (!val.user) {
-    return info;
-  }
-  for (let key in val.user) {
-    console.log(`inspecting ${key}`);
-    if (typeof val.user[key] == 'string' && val.user[key].length > 20) {
-      val.user[key] = val.user[key].substring(0, 20) + '...';
-    }
-  }
-  return JSON.stringify(val, null, 4);
 }
 
 // After mozilla account login, confirm that
@@ -70,25 +53,13 @@ async function dbUserSetup() {
   await init(userStore, keychain, folderStore);
 }
 
-async function mozAcctLogin() {
-  const url = await userStore.getMozAccountAuthUrl();
-  if (!url) {
-    console.warn(`DEBUG: couldn't get a mozilla auth url`);
-  }
-  const win = window.open(url);
-  const timer = setInterval(() => {
-    if (win.closed) {
-      clearInterval(timer);
-
-      // debug: show fresh login info from session
-      pingSession();
-      dbUserSetup();
-    }
-  }, 500);
+function onSuccess() {
+  pingSession();
+  dbUserSetup();
 }
 </script>
 <template>
-  <Btn @click.prevent="mozAcctLogin">Log into Moz Acct</Btn>
+  <Btn @click.prevent="mozAcctLogin(onSuccess)">Log into Moz Acct</Btn>
   <br />
   <BackupAndRestore />
   <br />
