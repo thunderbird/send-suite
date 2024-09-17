@@ -8,10 +8,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
 
   const SERVER_BASE_URLS = {
-    /* 
-    backend is the docker network name by default
-    if you want to specify a different server URL, you can do so by setting the VITE_HTTP_SERVER_URL VITE_HTTP_SERVER_URL
-     */
+    // backend is the docker network name by default
     development: 'http://backend:8080',
     production: 'https://lockbox.thunderbird.dev',
   };

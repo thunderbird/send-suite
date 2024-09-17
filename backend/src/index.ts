@@ -21,6 +21,7 @@ import wsMsgHandler from './wsMsgHandler';
 import wsUploadHandler from './wsUploadHandler';
 
 import * as Sentry from '@sentry/node';
+import { IS_ENV_PROD } from './config';
 import { errorHandler } from './errors/routes';
 import logger from './logger';
 import loggerRoute from './routes/logger';
@@ -62,7 +63,12 @@ const app = express();
 app.use(express.static('public'));
 app.use(express.json({ limit: '5mb' }));
 
-const allowedOrigins = ['http://localhost:5173'];
+const allowedOrigins = [
+  'https://thunderbird.dev',
+  'https://send.thunderbird.dev',
+  'http://localhost:5173',
+  'http://localhost:4173',
+];
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
@@ -93,7 +99,7 @@ const expressSession = session({
   resave: false,
   saveUninitialized: true,
   cookie: {
-    secure: process.env.APP_ENV === 'production',
+    secure: IS_ENV_PROD,
     sameSite: 'none', // Cannot use 'lax' or 'strict' for local dev.
   },
   store: new FileStore(fileStoreOptions),
@@ -104,6 +110,10 @@ app.use(cookieParser());
 
 app.get('/', (req, res) => {
   res.status(200).send('echo');
+});
+
+app.get('/echo', (req, res) => {
+  res.status(200).json({ message: 'API echo response' });
 });
 
 app.get('/api/debug-session', (req, res) => {
@@ -119,11 +129,12 @@ app.use('/api/download', download);
 app.use('/api/sharing', sharing);
 app.use('/api/tags', tags);
 app.use('/lockbox/fxa', fxa);
+app.use('/fxa', fxa);
 app.use('/api/lockbox/fxa', fxa);
 app.use(loggerRoute);
 app.use(metricsRoute);
-app.get(`*`, (req, res) => {
-  res.status(404);
+app.use((_, res) => {
+  res.status(404).send('404 Not Found');
 });
 
 // Add this after all routes,

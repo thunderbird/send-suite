@@ -7,6 +7,7 @@ import {
   getClient,
   getIssuer,
 } from '../auth/client';
+import { ENVIRONMENT } from '../config';
 import {
   addErrorHandling,
   AUTH_ERRORS,
@@ -34,12 +35,15 @@ router.get(
 
     // Set up Metrics Flow
     try {
-      const utm_campaign = `${process.env.FXA_ENTRYPOINT}_${process.env.APP_ENV}`;
+      const utm_campaign = `${process.env.FXA_ENTRYPOINT}_${ENVIRONMENT}`;
       const utm_source = 'login';
 
       // Fetch the flowValues before requesting the auth url
+
+      console.log('Calling metrics for 5s');
       const flow_values = await axios
         .get(process.env.FXA_METRICS_FLOW_URL, {
+          timeout: 5000,
           params: {
             entrypoint: process.env.FXA_ENTRYPOINT,
             form_type: 'email',
@@ -103,8 +107,14 @@ router.get(
         return;
       }
 
+      /* TODO: We have to replace send for lockbox because fxa isn't enabled for send
+      We should remove this and return the actual url once fxa is enabled 
+      https://github.com/thunderbird/send-suite/issues/216
+       */
+      const responseURL = url.replace('send', 'lockbox');
+
       res.status(200).json({
-        url,
+        url: responseURL,
       });
     });
   })
@@ -194,8 +204,14 @@ router.get(
   '/allowlist',
   addErrorHandling(AUTH_ERRORS.ALLOW_LIST_FAILED),
   wrapAsyncHandler(async (req, res) => {
-    await checkAllowList(req.session?.user?.email);
-    res.status(200).json({
+    try {
+      await checkAllowList(req.session?.user?.email);
+    } catch (error) {
+      return res.status(200).json({
+        msg: 'No email in session, cannot check allow list',
+      });
+    }
+    return res.status(200).json({
       msg: 'User in allow list',
     });
   })
