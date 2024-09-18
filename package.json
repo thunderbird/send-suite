@@ -18,7 +18,8 @@
     "test:e2e:ci": "pnpm exec playwright test",
     "postinstall": "pnpm run install:frontend && pnpm run install:backend",
     "clean": "./clean.sh",
-    "predev": "./pre-flight.sh",
+    "setup:backend": "cd backend && pnpm run setup",
+    "predev": "./pre-flight.sh && pnpm setup:backend",
     "dev": "docker compose up --build --force-recreate -d && docker compose logs -f",
     "install:frontend": "cd frontend && pnpm install",
     "install:backend": "cd backend && pnpm install"
