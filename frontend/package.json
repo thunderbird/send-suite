@@ -1,41 +1,75 @@
 {
   "name": "frontend",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
+    "build": "NODE_ENV=production ./scripts/build.sh",
     "dev": "vite --host",
-    "build": "./build.sh",
+    "lint:all": "eslint . --fix",
+    "prettier:all": "prettier --write .",
     "preview": "vite preview",
-    "test": "vitest",
-    "test-debug": "vitest --inspect-brk --single-thread"
+    "test": "vitest run --silent",
+    "test-debug": "vitest --inspect-brk --single-thread",
+    "test:watch": "vitest --watch"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,vue}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.json": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
+    "@sentry/vite-plugin": "^2.20.1",
+    "@sentry/vue": "^8.15.0",
     "@tabler/icons-vue": "^2.40.0",
+    "@types/ua-parser-js": "^0.7.39",
     "dayjs": "^1.11.10",
+    "get-random-values": "^3.0.0",
     "install": "^0.13.0",
+    "jszip": "^3.10.1",
     "pinia": "^2.1.7",
+    "posthog-js": "^1.150.1",
+    "ua-parser-js": "^1.0.38",
     "vue": "^3.3.4",
     "vue-router": "4"
   },
   "devDependencies": {
+    "@eslint/js": "^9.5.0",
     "@tailwindcss/forms": "^0.5.6",
+    "@types/eslint-config-prettier": "^6.11.3",
+    "@types/firefox-webext-browser": "^120.0.3",
     "@types/ws": "^8.5.5",
+    "@typescript-eslint/parser": "^7.13.1",
     "@vitejs/plugin-vue": "^4.2.3",
+    "@vitest/coverage-v8": "^1.6.0",
+    "@vue/test-utils": "^2.4.6",
     "@vueuse/core": "^10.5.0",
     "autoprefixer": "^10.4.15",
     "buffer": "^6.0.3",
-    "eslint": "^8.7.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-vue": "^9.26.0",
+    "globals": "^15.6.0",
+    "happy-dom": "^14.10.1",
+    "lint-staged": "^15.2.7",
+    "mock-socket": "^9.3.1",
+    "msw": "^2.3.0",
     "postcss": "^8.4.28",
     "postcss-import": "^15.1.0",
-    "prettier": "^2.5.1",
+    "prettier": "^3.0.0",
     "tailwindcss": "^3.3.3",
     "tsx": "^4.7.0",
     "typescript": "^5.2.2",
+    "typescript-eslint": "^7.13.0",
     "typescript-language-server": "^3.3.2",
     "vite": "^4.4.5",
-    "vitest": "^0.34.5",
+    "vitest": "^1.6.0",
     "vitest-localstorage-mock": "^0.0.1",
+    "vitest-websocket-mock": "^0.3.0",
     "vue-eslint-parser": "^8.0.0"
   }
 }

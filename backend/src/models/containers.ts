@@ -1,6 +1,18 @@
-import { PrismaClient, ContainerType } from '@prisma/client';
-const prisma = new PrismaClient();
+import { ContainerType, PrismaClient } from '@prisma/client';
+import {
+  CONTAINER_NOT_CREATED,
+  CONTAINER_NOT_FOUND,
+  CONTAINER_NOT_UPDATED,
+  GROUP_NOT_CREATED,
+  MEMBERSHIP_NOT_CREATED,
+} from '../errors/models';
 import { PermissionType } from '../types/custom';
+import {
+  childrenIncludeOptions,
+  fromPrismaV2,
+  itemsIncludeOptions,
+} from './prisma-helper';
+const prisma = new PrismaClient();
 
 // Automatically creates a group for container
 // owner is added to new group
@@ -11,21 +23,26 @@ export async function createContainer(
   parentId: number,
   shareOnly: boolean
 ) {
-  const group = await prisma.group.create({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let query: Record<string, any> = {
     data: {},
-  });
+  };
+  const group = await fromPrismaV2(
+    prisma.group.create,
+    query,
+    GROUP_NOT_CREATED
+  );
 
-  console.log(`👿 just created group`);
-  await prisma.membership.create({
+  query = {
     data: {
       groupId: group.id,
       userId: ownerId,
       permission: PermissionType.ADMIN, // Owner has full permissions
     },
-  });
-  console.log(`👿 just added owner to group`);
+  };
+  await fromPrismaV2(prisma.membership.create, query, MEMBERSHIP_NOT_CREATED);
 
-  const createArgs = {
+  query = {
     data: {
       name,
       ownerId,
@@ -37,104 +54,50 @@ export async function createContainer(
     },
   };
   if (parentId !== 0) {
-    createArgs.data['parentId'] = parentId;
+    query.data['parentId'] = parentId;
   }
 
-  const container = await prisma.container.create(createArgs);
-  console.log(`👿 just created container, connected to group`);
-
-  return container;
+  return await fromPrismaV2(
+    prisma.container.create,
+    query,
+    CONTAINER_NOT_CREATED
+  );
 }
 
 export async function getItemsInContainer(id: number) {
-  return prisma.container.findUnique({
+  // Nested include syntax
+  // per https://github.com/prisma/prisma/discussions/5810#discussioncomment-400341
+
+  const query = {
     where: {
       id,
     },
-    select: {
-      id: true,
-      name: true,
-      createdAt: true,
-      updatedAt: true,
-      type: true,
-      shareOnly: true,
-      ownerId: true,
-      groupId: true,
-      wrappedKey: true,
-      parentId: true,
-      children: {
-        select: {
-          id: true,
-          name: true,
-          createdAt: true,
-          updatedAt: true,
-          type: true,
-          shareOnly: true,
-          ownerId: true,
-          groupId: true,
-          wrappedKey: true,
-          parentId: true,
-          items: {
-            select: {
-              name: true,
-              wrappedKey: true,
-              uploadId: true,
-              createdAt: true,
-              updatedAt: true,
-              type: true,
-              upload: {
-                select: {
-                  size: true,
-                  type: true,
-                  owner: {
-                    select: {
-                      email: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      items: {
-        select: {
-          id: true,
-          name: true,
-          wrappedKey: true,
-          uploadId: true,
-          createdAt: true,
-          updatedAt: true,
-          containerId: true,
-          type: true,
-          tags: true,
-          upload: {
-            select: {
-              size: true,
-              type: true,
-              owner: {
-                select: {
-                  email: true,
-                },
-              },
-            },
-          },
-        },
-      },
-      tags: true,
+    include: {
+      ...childrenIncludeOptions,
+      ...itemsIncludeOptions,
     },
-    // include: {
-    //   items: true,
-    // },
-  });
+  };
+
+  return fromPrismaV2(
+    prisma.container.findUniqueOrThrow,
+    query,
+    CONTAINER_NOT_FOUND
+  );
 }
 
 export async function getContainerWithAncestors(id: number) {
-  const container = await prisma.container.findUnique({
+  const query = {
     where: {
       id,
     },
-  });
+  };
+
+  const container = await fromPrismaV2(
+    prisma.container.findUniqueOrThrow,
+    query,
+    CONTAINER_NOT_FOUND
+  );
+
   if (container.parentId) {
     container['parent'] = await getContainerWithAncestors(container.parentId);
   }
@@ -142,7 +105,7 @@ export async function getContainerWithAncestors(id: number) {
 }
 
 export async function getAccessLinksForContainer(containerId: number) {
-  const shares = await prisma.share.findMany({
+  const query = {
     where: {
       containerId,
     },
@@ -154,13 +117,14 @@ export async function getAccessLinksForContainer(containerId: number) {
         },
       },
     },
-  });
+  };
 
+  const shares = await fromPrismaV2(prisma.share.findMany, query);
   return shares.flatMap((share) => share.accessLinks.map((link) => link));
 }
 
 export async function updateContainerName(containerId: number, name: string) {
-  const result = await prisma.container.update({
+  const query = {
     where: {
       id: containerId,
     },
@@ -168,6 +132,11 @@ export async function updateContainerName(containerId: number, name: string) {
       name,
       updatedAt: new Date(),
     },
-  });
-  return result;
+  };
+
+  return await fromPrismaV2(
+    prisma.container.update,
+    query,
+    CONTAINER_NOT_UPDATED
+  );
 }

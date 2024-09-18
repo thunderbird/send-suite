@@ -1,32 +1,40 @@
 import { Router } from 'express';
 
 import {
+  acceptAccessLink,
+  acceptInvitation,
   burnEphemeralConversation,
   createAccessLink,
+  createInvitationFromAccessLink,
   getAccessLinkChallenge,
-  acceptAccessLink,
   getContainerForAccessLink,
-  createInvitationForAccessLink,
-  removeAccessLink,
   isAccessLinkValid,
+  removeAccessLink,
 } from '../models/sharing';
 
 import {
-  requireLogin,
+  addErrorHandling,
+  SHARING_ERRORS,
+  wrapAsyncHandler,
+} from '../errors/routes';
+
+import {
   getGroupMemberPermissions,
-  canShare,
+  requireLogin,
+  requireSharePermission,
 } from '../middleware';
+import { getSessionUserOrThrow } from '../utils/session';
 
 const router: Router = Router();
 
-// Request a new hash for a shared container,
-// previously only used for "ephemeral chat"
+// Request a new hash for a shared container
 router.post(
   '/',
   requireLogin,
   getGroupMemberPermissions,
-  canShare,
-  async (req, res) => {
+  requireSharePermission,
+  addErrorHandling(SHARING_ERRORS.ACCESS_LINK_NOT_CREATED),
+  wrapAsyncHandler(async (req, res) => {
     const {
       containerId,
       senderId,
@@ -52,41 +60,37 @@ router.post(
     if (req.body.permission) {
       permission = req.body.permission;
     }
-    try {
-      const accessLink = await createAccessLink(
-        containerId,
-        senderId,
-        wrappedKey,
-        salt,
-        challengeKey,
-        challengeSalt,
-        challengeCiphertext,
-        challengePlaintext,
-        parseInt(permission),
-        expiration
-      );
+    const accessLink = await createAccessLink(
+      containerId,
+      senderId,
+      wrappedKey,
+      salt,
+      challengeKey,
+      challengeSalt,
+      challengeCiphertext,
+      challengePlaintext,
+      parseInt(permission),
+      expiration
+    );
 
-      res.status(200).json({
-        id: accessLink.id,
-        expiryDate: accessLink.expiryDate,
-      });
-    } catch (e) {
-      res.status(500).json({
-        message: 'Server error',
-      });
-    }
-  }
+    res.status(200).json({
+      id: accessLink.id,
+      expiryDate: accessLink.expiryDate,
+    });
+  })
 );
 
 // Get the challenge for this hash
-router.get('/:linkId/challenge', async (req, res) => {
-  const { linkId } = req.params;
-  if (!linkId) {
-    res.status(400).json({
-      message: 'linkId is required',
-    });
-  }
-  try {
+router.get(
+  '/:linkId/challenge',
+  addErrorHandling(SHARING_ERRORS.CHALLENGE_NOT_FOUND),
+  wrapAsyncHandler(async (req, res) => {
+    const { linkId } = req.params;
+    if (!linkId) {
+      res.status(400).json({
+        message: 'linkId is required',
+      });
+    }
     const { challengeKey, challengeSalt, challengeCiphertext } =
       await getAccessLinkChallenge(linkId);
     res.status(200).json({
@@ -94,60 +98,39 @@ router.get('/:linkId/challenge', async (req, res) => {
       challengeSalt,
       challengeCiphertext,
     });
-  } catch (e) {
-    res.status(500).json({
-      message: 'Server error.',
-    });
-  }
-});
+  })
+);
 
 // Respond to the challenge.
 // If plaintext matches, we respond with wrapped key
 // associated salt
-router.post('/:linkId/challenge', async (req, res) => {
-  const { linkId } = req.params;
-  const { challengePlaintext } = req.body;
-  if (!linkId) {
-    res.status(400).json({
-      message: 'linkId is required',
-    });
-  }
-  try {
+router.post(
+  '/:linkId/challenge',
+  addErrorHandling(SHARING_ERRORS.CHALLENGE_FAILED),
+  wrapAsyncHandler(async (req, res) => {
+    const { linkId } = req.params;
+    const { challengePlaintext } = req.body;
+
     const link = await acceptAccessLink(linkId, challengePlaintext);
-    if (link) {
-      // console.log(link);
-      console.log(
-        `challenge success, sending back the containerId, wrappedKey, and salt`
-      );
-      const { share, wrappedKey, salt } = link;
-      res.status(200).json({
-        status: 'success',
-        containerId: share.containerId,
-        wrappedKey,
-        salt,
-      });
-    } else {
-      res.status(400).json({});
-    }
-  } catch (e) {
-    res.status(500).json({
-      message: 'Server error.',
+    const { share, wrappedKey, salt } = link;
+    res.status(200).json({
+      status: 'success',
+      containerId: share.containerId,
+      wrappedKey,
+      salt,
     });
-  }
-});
+  })
+);
 
 // Get an AccessLink's container and items
-router.get('/exists/:linkId', async (req, res) => {
-  const { linkId } = req.params;
-
-  try {
+router.get(
+  '/exists/:linkId',
+  addErrorHandling(SHARING_ERRORS.ACCESS_LINK_NOT_FOUND),
+  wrapAsyncHandler(async (req, res) => {
+    const { linkId } = req.params;
     res.status(200).json(await isAccessLinkValid(linkId));
-  } catch (error) {
-    res.status(500).json({
-      message: 'Server error.',
-    });
-  }
-});
+  })
+);
 
 // Get an AccessLink's container and items
 /*
@@ -156,71 +139,58 @@ If I want to protect this with permissions, I'd need to:
 - get the permissions off of the access link (which points to a share, which points to a container)
 - confirm it canRead
 */
-router.get('/:linkId', async (req, res) => {
-  const { linkId } = req.params;
-
-  try {
-    // Get the containerId associated with the
+router.get(
+  '/:linkId',
+  addErrorHandling(SHARING_ERRORS.CONTAINER_NOT_FOUND),
+  wrapAsyncHandler(async (req, res) => {
+    const { linkId } = req.params;
     const containerWithItems = await getContainerForAccessLink(linkId);
-    console.log(`here is the container with items:`);
-    console.log(containerWithItems);
     res.status(200).json(containerWithItems);
-  } catch (error) {
-    res.status(500).json({
-      message: 'Server error.',
-    });
-  }
-});
-
-// Remove accessLink
-router.delete('/:linkId', async (req, res) => {
-  const { linkId } = req.params;
-  try {
-    const result = await removeAccessLink(linkId);
-    res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({
-      message: 'Server error.',
-    });
-  }
-});
-
-// For record keeping purposes, create a corresponding invitation
-router.post(
-  '/:linkId/member/:recipientId/accept',
-  getGroupMemberPermissions,
-  async (req, res) => {
-    const { linkId, recipientId } = req.params;
-
-    try {
-      const result = await createInvitationForAccessLink(
-        linkId,
-        parseInt(recipientId)
-      );
-      res.status(200).json(result);
-    } catch (error) {
-      res.status(500).json({
-        message: 'Server error.',
-      });
-    }
-  }
+  })
 );
 
-//
-router.post('/burn', async (req, res) => {
-  const { containerId } = req.body;
-  console.log(`🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥`);
-  try {
+// Remove accessLink
+router.delete(
+  '/:linkId',
+  addErrorHandling(SHARING_ERRORS.ACCESS_LINK_NOT_DELETED),
+  wrapAsyncHandler(async (req, res) => {
+    const { linkId } = req.params;
+    const result = await removeAccessLink(linkId);
+    res.status(200).json(result);
+  })
+);
+
+// Allow user to use an AccessLink to become a group member for a container
+router.post(
+  '/:linkId/member/accept',
+  requireLogin,
+  addErrorHandling(SHARING_ERRORS.ACCESS_LINK_NOT_ACCEPTED),
+  wrapAsyncHandler(async (req, res) => {
+    const { id } = getSessionUserOrThrow(req);
+
+    const { linkId } = req.params;
+
+    // We create an Invitation for two reasons:
+    // - it allows us to reuse the existing `acceptInvitation()`
+    // - it serves as record-keeping (e.g., we can prevent someone
+    // from re-joining after their access has been revoked)
+    const newInvitation = await createInvitationFromAccessLink(linkId, id);
+    const result = await acceptInvitation(newInvitation.id);
+    res.status(200).json(result);
+  })
+);
+
+// Destroy a folder, its items, and any record of group memberships
+router.post(
+  '/burn',
+  addErrorHandling(SHARING_ERRORS.NOT_BURNED),
+  wrapAsyncHandler(async (req, res) => {
+    const { containerId } = req.body;
     const result = await burnEphemeralConversation(parseInt(containerId));
     res.status(200).json({
       result,
     });
-  } catch (e) {
-    console.log(e);
-    res.status(500).json({
-      message: 'Server error',
-    });
-  }
-});
+  })
+);
 
 export default router;

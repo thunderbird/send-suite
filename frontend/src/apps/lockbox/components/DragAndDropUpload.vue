@@ -1,0 +1,78 @@
+<script setup lang="ts">
+import useFolderStore from '@/apps/lockbox/stores/folder-store';
+import { NamedBlob } from '@/lib/filesync';
+import { zipBlob } from '@/lib/utils';
+import { useDropZone } from '@vueuse/core';
+import { ref } from 'vue';
+const folderStore = useFolderStore();
+
+const dropZoneRef = ref();
+
+const filesMetadata = ref(null);
+const fileBlobs = ref([]);
+function onDrop(files) {
+  filesMetadata.value = [];
+  fileBlobs.value = [];
+
+  if (files) {
+    filesMetadata.value = files.map((file) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const buffer = reader.result;
+        const blob = new Blob([buffer], { type: file.type }) as NamedBlob;
+        blob.name = file.name;
+        fileBlobs.value.push(blob);
+      };
+      reader.readAsArrayBuffer(file);
+
+      return {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: file.lastModified,
+      };
+    });
+  }
+}
+
+useDropZone(dropZoneRef, onDrop);
+
+async function doUpload() {
+  const result = await Promise.all(
+    fileBlobs.value.map(async (blob) => {
+      let compressedBlob = null;
+
+      if (blob.type === '') {
+        const zippedBlob = await zipBlob(blob, blob.name);
+        compressedBlob = new Blob([zippedBlob], { type: 'application/zip' });
+        compressedBlob.name = `${blob.name}.zip`;
+      }
+      const uploadResult = await folderStore.uploadItem(
+        compressedBlob || blob,
+        folderStore.rootFolder.id
+      );
+      console.log(uploadResult);
+      return uploadResult;
+    })
+  );
+
+  if (result?.length === fileBlobs.value.length) {
+    filesMetadata.value = null;
+  }
+}
+</script>
+
+<template>
+  <div ref="dropZoneRef" class="h-full">
+    <slot></slot>
+  </div>
+
+  <button
+    v-if="folderStore.rootFolder && filesMetadata"
+    type="submit"
+    class="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none"
+    @click="doUpload"
+  >
+    <span class="font-bold">Upload</span>
+  </button>
+</template>

@@ -1,95 +1,106 @@
 import { Router } from 'express';
 
-import storage from '../storage';
+import {
+  addErrorHandling,
+  UPLOAD_ERRORS,
+  wrapAsyncHandler,
+} from '../errors/routes';
 
 import {
   createUpload,
-  getUploadSize,
   getUploadMetadata,
+  getUploadSize,
+  statUpload,
 } from '../models/uploads';
 
+import { useMetrics } from '../metrics';
 import {
-  requireLogin,
-  renameBodyProperty,
   getGroupMemberPermissions,
-  canWrite,
-  canRead,
-  canAdmin,
+  requireLogin,
+  requireWritePermission,
 } from '../middleware';
+import { getSessionUserOrThrow } from '../utils/session';
 
 const router: Router = Router();
 
+/**
+ * This is actually the second step when uploading an encrypted file.
+ * The first part is the actual upload via WebSockets.
+ * This step creates the database entity for that uploaded file.
+ */
 router.post(
   '/',
   requireLogin,
   getGroupMemberPermissions,
-  canWrite,
-  async (req, res) => {
+  requireWritePermission,
+  addErrorHandling(UPLOAD_ERRORS.NOT_CREATED),
+  wrapAsyncHandler(async (req, res) => {
     const { id, size, ownerId, type } = req.body;
+    const Metrics = useMetrics();
 
-    try {
-      // Confirm that file `id` exists and what's on disk
-      // is at least as large as the stated size.
-      // (Encrypted files are larger than the decrypted contents)
-      // storage.length(id) >= size
+    getSessionUserOrThrow(req);
 
-      const sizeOnDisk = await storage.length(id);
-      if (sizeOnDisk >= size) {
-        const upload = await createUpload(id, size, ownerId, type);
-        res.status(201).json({
-          message: 'Upload created',
-          upload,
-        });
-      } else {
-        res.status(400).json({
-          message: 'File does not exist.',
-          // error: error.message,
-        });
-      }
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({
-        message: 'Server error.',
-        // error: error.message,
-      });
+    if (!req.session.user?.uniqueHash) {
+      throw new Error('User does not have a unique hash. Log in again.');
     }
-  }
+
+    const distinctId = req.session.user.uniqueHash;
+
+    Metrics.capture({
+      event: 'upload.size',
+      properties: { size, type },
+      distinctId,
+    });
+
+    await Metrics.shutdown();
+
+    const upload = await createUpload(id, size, ownerId, type);
+    res.status(201).json({
+      message: 'Upload created',
+      upload,
+    });
+  })
+);
+
+router.get(
+  '/:id/stat',
+  addErrorHandling(UPLOAD_ERRORS.FILE_NOT_FOUND),
+  wrapAsyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const size = await statUpload(id);
+    res.status(201).json({
+      size,
+    });
+  })
+);
+// TODO: decide whether it's a security risk not to protect this route.
+// I feel like it is, but it doesn't pertain to anything "perimssion-able".
+// i.e., permissions are applied to containers, not to uploads.
+router.get(
+  '/:id/size',
+  addErrorHandling(UPLOAD_ERRORS.FILE_NOT_FOUND),
+  wrapAsyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const size = await getUploadSize(id);
+    res.status(201).json({
+      size,
+    });
+  })
 );
 
 // TODO: decide whether it's a security risk not to protect this route.
 // I feel like it is, but it doesn't pertain to anything "perimssion-able".
 // i.e., permissions are applied to containers, not to uploads.
-router.get('/:id/size', async (req, res) => {
-  const { id } = req.params;
-  try {
-    const size = await getUploadSize(id);
-    res.status(201).json({
-      size,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      message: 'Server error.',
-    });
-  }
-});
-
-// TODO: decide whether it's a security risk not to protect this route.
-// I feel like it is, but it doesn't pertain to anything "perimssion-able".
-// i.e., permissions are applied to containers, not to uploads.
-router.get('/:id/metadata', async (req, res) => {
-  const { id } = req.params;
-  try {
+router.get(
+  '/:id/metadata',
+  addErrorHandling(UPLOAD_ERRORS.FILE_NOT_FOUND),
+  wrapAsyncHandler(async (req, res) => {
+    const { id } = req.params;
     const metadata = await getUploadMetadata(id);
     res.status(201).json({
       ...metadata,
     });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      message: 'Server error.',
-    });
-  }
-});
+  })
+);
 
 export default router;

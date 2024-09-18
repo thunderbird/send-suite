@@ -1,69 +1,133 @@
-import config from '../config';
-// import Metadata from "../lib/metadata";
-import FSStorage from './filesystem';
-import { Config } from '../types/custom';
-// import { createUpload, getUpload, updateUpload } from "../models";
+import { ReadStream } from 'fs';
+import { Readable } from 'stream';
+import logger from '../logger';
+import {
+  Storage,
+  StorageType,
+  StorageAdapterConfig,
+} from '@tweedegolf/storage-abstraction';
+import { FileStreamParams } from '@tweedegolf/storage-abstraction/dist/types/add_file_params';
 
-// function getPrefix(seconds) {
-//   return Math.max(Math.floor(seconds / 86400), 1);
-// }
+/**
+ * Storage adapter for various storage backends including filesystem and Backblaze.
+ */
+export class FileStore {
+  /**
+   * A storage client instance.
+   */
+  private client: Storage;
 
-class FileStore {
-  private storage: FSStorage;
-  private kv: Map<string, any>;
-
-  constructor(config: Config) {
-    this.storage = new FSStorage(config);
-    this.kv = new Map();
+  /**
+   * Initialize the adapter.
+   * @param config: StorageAdapterConfig - Optional configuration information. If omitted, we fall back to the filesystem.
+   *
+   * When configured for Backblaze, uses the native API instead of the S3-compatible API
+   * (As of 2024-06-01, there were errors when accessing Backblaze via its S3 API.)
+   */
+  constructor(config?: StorageAdapterConfig) {
+    if (!config) {
+      switch (process.env.STORAGE_BACKEND) {
+        case 'b2':
+          config = {
+            type: StorageType.B2,
+            bucketName: process.env.B2_BUCKET_NAME,
+            applicationKeyId: process.env.B2_APPLICATION_KEY_ID,
+            applicationKey: process.env.B2_APPLICATION_KEY,
+          };
+          logger.info(`Initializing Backblaze storage ☁️`);
+          break;
+        case 's3':
+          config = {
+            type: StorageType.S3,
+            region: process.env.S3_REGION || 'auto',
+            bucketName: process.env.S3_BUCKET_NAME,
+            endpoint: process.env.S3_ENDPOINT,
+            accessKeyId: process.env.S3_ACCESS_KEY,
+            secretAccessKey: process.env.S3_SECRET_KEY,
+          };
+          logger.info(`Initializing S3 storage ☁️`);
+          break;
+        case 'fs':
+        // intentional fall-through;
+        // fs is default
+        default:
+          config = {
+            type: StorageType.LOCAL,
+            directory: process.env.FS_LOCAL_DIR,
+            bucketName: process.env.FS_LOCAL_BUCKET,
+          };
+          logger.info(`Initializing local filesystem storage 💾`);
+          break;
+      }
+    }
+    this.client = new Storage(config);
   }
-  /*
-  getPrefixedId() is only used when querying for the file or its length.
-  Those are the `get()` and `length()` methods.
 
-  Originally, the prefix was likely used (or intended to be used for)
-  some kind of sharding of the physical storage (and/or for distributing
-  the load among several Redis servers.)
+  /**
+   * Add a new file to storage.
+   * @param id: string - The unique identifier for the file.
+   * @param stream: ReadStream - A readable stream of the file's contents.
+   * @returns True if the file was added without error; otherwise false.
+   */
+  async set(id: string, stream: ReadStream, size?: number): Promise<boolean> {
+    const params: FileStreamParams = {
+      stream,
+      targetPath: id,
+    };
 
-  For the 2023 version, we're storing upload metadata in Postgres.
-  */
-  async get(id: string) {
-    return this.storage.getStream(id);
+    if (size) {
+      params.options = {
+        ContentLength: size,
+      };
+    }
+
+    const result = await this.client.addFileFromStream(params);
+    if (result.error) {
+      logger.error(`Error writing to storage: ${result.error}`);
+    }
+    return !result.error;
   }
 
-  async length(id: string) {
-    return this.storage.length(id);
+  /**
+   * Returns the size of the file in bytes.
+   * @param id: string - The unique identifier for the file.
+   * @returns The size of the file in bytes.
+   *
+   * Note that an encrypted file's size is greater than or equal to the unencrypted file's size.
+   */
+  async length(id: string): Promise<number> {
+    const result = await this.client.sizeOf(id);
+    return result.value;
   }
 
-  // Note: only called from wsHandler.handleUpload()
-  // prev args: , meta, expireSeconds
-  async set(id: string, file) {
-    const filePath = id;
-    console.log('in storage/index.ts, about to pass off to fs.set()');
-    await this.storage.set(filePath, file);
-    // const { owner, metadata, dlimit, auth, nonce } = meta;
-    // return createUpload(id, owner, metadata, dlimit, auth, nonce);
+  /**
+   * Returns a readable stream for a file in storage.
+   * @param id: string - The unique identifier for the file.
+   * @returns A readable stream for the file.
+   */
+  async get(id: string): Promise<Readable> {
+    const result = await this.client.getFileAsStream(id);
+    return result.value;
   }
 
-  // // Called from auth.hmac()
-  // // and for setting the password on an Upload
-  // async setField(id: string, key: string, value: any) {
-  //   console.log(`In storage.set(), doing setField() for ${id}`);
-  //   console.log(`   setting ${key} to ${value}`);
-  //   return updateUpload(id, {
-  //     [key]: value,
-  //   });
-  // }
-
-  // // The metadata is the hash we were storing under the file's ID.
-  // // We use this in:
-  // // - auth.owner (currently unused)
-  // // And it's originally generated in `wsHandler.handleUpload()`
-  // async metadata(id: string) {
-  //   // const result = await this.redis.hgetallAsync(id);
-  //   console.log(`🥡 trying to get metadata for ${id} from the db`);
-  //   // const hash = await this.kv.get(id);
-  //   return await getUpload(id);
-  // }
+  /**
+   * Removes a file from storage.
+   * @param id: string - The unique identifier for the file.
+   * @returns True if the file was successfully removed; otherwise false.
+   *
+   * No error is thrown if the file is not found.
+   */
+  del(id: string): Promise<boolean> {
+    return new Promise(async (resolve, reject) => {
+      const result = await this.client.removeFile(id);
+      if (result.value === 'ok') {
+        resolve(true);
+      } else {
+        reject(result.error);
+      }
+    });
+  }
 }
 
-export default new FileStore(config);
+// export a FileStore based on .env vars
+export default new FileStore();

@@ -7,10 +7,7 @@ export function generateState() {
 }
 
 export async function getIssuer() {
-  const mozIssuer = await Issuer.discover(
-    'https://accounts.stage.mozaws.net/.well-known/openid-configuration'
-  );
-  console.log('Discovered issuer %s %O', mozIssuer.issuer, mozIssuer.metadata);
+  const mozIssuer = await Issuer.discover(process.env.FXA_MOZ_ISSUER);
   return mozIssuer;
 }
 
@@ -24,4 +21,27 @@ export function getClient(issuer: Issuer) {
   });
 
   return client;
+}
+
+export function isEmailInAllowList(email: string, allowList: string[]) {
+  // check against @domans
+  const domains = allowList.some((entry) => email.endsWith(entry));
+  return domains;
+}
+
+export async function checkAllowList(email: string | undefined | null) {
+  if (!email) {
+    throw new Error('checkAllowList requires an email');
+  }
+
+  // If an allow list is provided, only allow users in that list
+  // If there is no env variable, we allow all users
+  if (!process.env.FXA_ALLOW_LIST) {
+    return;
+  }
+
+  const allowList = process.env.FXA_ALLOW_LIST.replace(/\s/g, '').split(',');
+  if (!isEmailInAllowList(email, allowList)) {
+    throw new Error('User not in allow list');
+  }
 }

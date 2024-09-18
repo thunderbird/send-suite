@@ -1,14 +1,16 @@
 import { PrismaClient } from '@prisma/client';
 
+import logger from './logger';
+import { fromPrismaV2 } from './models/prisma-helper';
 import {
-  hasWrite,
+  allPermissions,
   hasAdmin,
   hasRead,
   hasShare,
-  allPermissions,
+  hasWrite,
 } from './types/custom';
-const prisma = new PrismaClient();
 
+const prisma = new PrismaClient();
 const PERMISSION_REQUEST_KEY = '_permission';
 
 function extractMethodAndRoute(req) {
@@ -17,12 +19,11 @@ function extractMethodAndRoute(req) {
 
 function extractSessionValue(req, path) {
   let val = req.session;
-  for (let item of path) {
+  for (const item of path) {
     if (!val[item]) {
-      console.error(
-        `Could not find ${path} in session for ${extractMethodAndRoute(req)}`
+      logger.info(
+        `No req.session.${path.join('.')} for ${extractMethodAndRoute(req)}`
       );
-
       return null;
     }
     val = val[item];
@@ -41,7 +42,7 @@ function extractUserId(req) {
     const userId = parseInt(val, 10);
     return userId;
   } catch (e) {
-    console.error(`Could  ${path} for ${extractMethodAndRoute(req)}`);
+    logger.error(`Could  ${path} for ${extractMethodAndRoute(req)}`);
     return null;
   }
 }
@@ -52,13 +53,13 @@ function extractContainerId(req) {
   try {
     return parseInt(val, 10);
   } catch (e) {
-    console.error(`Could not find ${prop} for ${extractMethodAndRoute(req)}`);
+    logger.error(`Could not find ${prop} for ${extractMethodAndRoute(req)}`);
     return null;
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function reject(res, status = 403, message = `Not authorized`) {
-  console.trace();
   res.status(403).json({
     message,
   });
@@ -68,9 +69,6 @@ export function reject(res, status = 403, message = `Not authorized`) {
 export async function requireLogin(req, res, next) {
   const id = extractUserId(req);
   if (!id) {
-    console.log(`requireLogin: no req.session.user.id`);
-    console.log(`current session:`);
-    console.log(req.session);
     reject(res);
     return;
   }
@@ -92,19 +90,10 @@ export function renameBodyProperty(from: string, to: string) {
 export async function getGroupMemberPermissions(req, res, next) {
   const userId = extractUserId(req);
   const containerId = extractContainerId(req);
-  console.log(
-    `begin permissions ====================================================`
-  );
-  console.log(`route: ${extractMethodAndRoute(req)}`);
-  console.log(`userId:`, userId);
-  console.log(`containerId:`, containerId);
-  console.log(
-    `end permissions  ====================================================`
-  );
 
   if (userId && containerId === 0) {
     // Users have full permissions to their own top-level
-    console.log(`
+    logger.info(`
 *************************************************************************************
 WARNING: this check needs to be more robust (in middleware.getGroupMemberPermissions)
 Adding full permissions assuming user is operating on their own top-level, when there
@@ -121,62 +110,65 @@ is a user and containerId === 0
     return;
   }
 
-  const group = await prisma.group.findFirst({
-    where: {
-      container: {
-        id: containerId,
+  try {
+    const findGroupQuery = {
+      where: {
+        container: {
+          id: containerId,
+        },
       },
-    },
-  });
+    };
+    const group = await fromPrismaV2(
+      prisma.group.findFirstOrThrow,
+      findGroupQuery
+    );
 
-  if (!group) {
+    const findMembershipQuery = {
+      where: {
+        groupId_userId: { groupId: group.id, userId },
+      },
+    };
+    const membership = await fromPrismaV2(
+      prisma.membership.findUniqueOrThrow,
+      findMembershipQuery
+    );
+
+    // Attach it to the request
+    req[PERMISSION_REQUEST_KEY] = membership.permission;
+    next();
+  } catch (err) {
     reject(res);
     return;
   }
-  // Find the GroupUser
-  const membership = await prisma.membership.findUnique({
-    where: {
-      groupId_userId: { groupId: group.id, userId },
-    },
-  });
-
-  if (!membership) {
-    reject(res);
-    return;
-  }
-
-  // Attach it to the request
-  req[PERMISSION_REQUEST_KEY] = membership.permission;
-  next();
 }
 
-export function canRead(req, res, next) {
+export function requireReadPermission(req, res, next) {
   if (!hasRead(req[PERMISSION_REQUEST_KEY])) {
-    console.warn(`Missing read permission`);
+    logger.warn(`Missing read permission`);
     reject(res);
     return;
   }
   next();
 }
-export function canWrite(req, res, next) {
+export function requireWritePermission(req, res, next) {
   if (!hasWrite(req[PERMISSION_REQUEST_KEY])) {
-    console.warn(`Missing write permission`);
+    logger.warn(`Missing write permission`);
     reject(res);
     return;
   }
   next();
 }
-export function canAdmin(req, res, next) {
+export function requireAdminPermission(req, res, next) {
   if (!hasAdmin(req[PERMISSION_REQUEST_KEY])) {
-    console.warn(`Missing admin permission`);
+    logger.warn(`Missing admin permission`);
     reject(res);
     return;
   }
   next();
 }
-export function canShare(req, res, next) {
+export function requireSharePermission(req, res, next) {
   if (!hasShare(req[PERMISSION_REQUEST_KEY])) {
-    console.warn(`Missing share permission`);
+    logger.warn(`Missing share permission`);
     reject(res);
     return;
   }

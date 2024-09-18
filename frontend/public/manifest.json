@@ -1,17 +1,14 @@
 {
   "manifest_version": 3,
-  "version": "0.1",
-  "author": "Chris Aquino",
+  "version": "0.1alpha",
+  "author": "Thunderbird Team",
   "name": "Thunderbird Send",
-  "description": "Lockbox and friends",
+  "description": "Thunderbird and friends",
   "browser_specific_settings": {
     "gecko": {
       "id": "lockbox@services.thunderbird.net",
       "strict_min_version": "110.0a1"
     }
-  },
-  "action": {
-    "default_title": "Send-ish"
   },
   "background": {
     "scripts": ["background.js"]

@@ -43,7 +43,6 @@ async function handleUpload(ws, message, fileStream) {
   const uploadId = crypto.randomBytes(24).toString('hex');
   const fileInfo = JSON.parse(message);
 
-  console.log(fileInfo);
   ws.send(
     JSON.stringify({
       id: uploadId,
@@ -73,7 +72,7 @@ async function handleUpload(ws, message, fileStream) {
 
   // Remember: storage is `storage/index.js`
   // which hands off to the underlying storage mechanism.
-  await storage.set(uploadId, fileStream);
+  await storage.set(uploadId, fileStream, fileInfo.size);
   if (ws.readyState === 1) {
     // if the socket is closed by a canceled upload the stream
     // ends without an error so we need to check the state
@@ -94,7 +93,6 @@ async function handleUpload(ws, message, fileStream) {
 }
 
 export default function (ws, req) {
-  console.log(`wsHandler initialized`);
   let fileStream;
 
   ws.on('close', (e) => {

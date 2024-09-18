@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "es2022",
+    "moduleResolution": "Node",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -21,6 +22,8 @@
     "allowJs": true,
     "paths": {
       "@/*": ["./src/*"]
-    }
-  }
+    },
+    "types": ["vite/client", "vitest/globals", "@types/firefox-webext-browser"]
+  },
+  "exclude": ["node_modules", "dist"]
 }
