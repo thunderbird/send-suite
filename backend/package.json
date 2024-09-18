@@ -7,6 +7,7 @@
   "author": "",
   "main": "index.js",
   "scripts": {
+    "build": "pnpm exec tsc",
     "db:browse": "prisma studio",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
@@ -20,7 +21,6 @@
     "prod:build_and_upload_sourcemaps": "tsc && pnpm sentry:sourcemaps",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org thunderbird --project send-suite-backend ./dist && sentry-cli sourcemaps upload --org thunderbird --project send-suite-backend ./dist",
     "setup": "./scripts/environments.sh",
-    "build": "pnpm exec tsc",
     "prestart": "NODE_ENV=production pnpm run setup && pnpm run build",
     "start": "NODE_ENV=production node dist/index.js",
     "test": "vitest run --silent",
