@@ -1,29 +1,4 @@
 services:
-  frontend:
-    build:
-      context: ./frontend/
-      dockerfile: Dockerfile
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend:/app
-      - frontend-node-modules:/app/node_modules
-  backend:
-    build:
-      context: ./backend/
-      # This will default to dev unless you set MODE=debug in your top level .env file
-      dockerfile: Dockerfile-${MODE:-dev}
-    ports:
-      - "8080:8080"
-      - "5555:5555" # for browsing db with prisma studio
-      - "9229:9229" # Debugger port
-
-    volumes:
-      - ./backend:/app
-      - backend-node-modules:/app/node_modules
-    depends_on:
-      db:
-        condition: service_healthy
   db:
     image: "postgres:15"
     volumes:
@@ -39,17 +14,39 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-  reverse-proxy:
-    image: nginx:latest
+
+  backend:
+    build:
+      context: ./backend/
+    ports:
+      - "8080:8080"
+      - "5555:5555" # for browsing db with prisma studio
+      - "9229:9229" # Debugger port
     volumes:
-      - ./backend/tls-dev-proxy/nginx.conf:/etc/nginx/nginx.conf
-      - ./backend/tls-dev-proxy/certs:/etc/ssl/certs
-      - ./backend/tls-dev-proxy/logs:/var/log/nginx
+      - ./backend:/app
+      - backend-node-modules:/app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+
+  reverse-proxy:
+    build:
+      context: ./backend/tls-dev-proxy/
     ports:
       - "8088:12345"
     depends_on:
       - backend
 
+  frontend:
+    build:
+      context: ./frontend/
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - frontend-node-modules:/app/node_modules
+    depends_on:
+      - backend
 volumes:
   postgres-data:
   backend-node-modules: # do not create on host

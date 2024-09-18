@@ -1,11 +1,11 @@
-import {
-  encryptStream,
-  ECE_RECORD_SIZE,
-  OVERHEAD_SIZE,
-  HEADER_SIZE,
-} from './ece';
-import { delay, asyncInitWebSocket, listenForResponse } from './utils';
 import { Canceler, JsonResponse } from '@/types';
+import {
+  ECE_RECORD_SIZE,
+  encryptStream,
+  HEADER_SIZE,
+  OVERHEAD_SIZE,
+} from './ece';
+import { asyncInitWebSocket, delay, listenForResponse } from './utils';
 export async function _download(
   id: string,
   canceler: Canceler = {}
@@ -84,6 +84,7 @@ export async function _upload(
       ws.send(buf);
 
       size += buf.length;
+      console.log('Uploaded', size, 'bytes');
       state = await reader.read();
       while (
         ws.bufferedAmount > ECE_RECORD_SIZE * 2 &&
@@ -99,6 +100,7 @@ export async function _upload(
 
     return await completedResponse;
   } catch (e) {
+    console.error(e);
     throw e;
   } finally {
     if (
@@ -132,3 +134,15 @@ export function calculateEncryptedSize(
 
   return totalSize;
 }
+
+/* 
+  TODO: We have to replace send for lockbox because fxa isn't enabled for send
+  We should remove this and return the actual url once fxa is enabled 
+  https://github.com/thunderbird/send-suite/issues/216
+*/
+export const formatLoginURL = (url: string) => {
+  if (url.includes('localhost')) {
+    return url;
+  }
+  return url.replace('%2Flockbox%2Ffxa', '%2Ffxa');
+};

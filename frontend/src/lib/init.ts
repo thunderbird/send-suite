@@ -27,7 +27,7 @@ async function init(
   }
 
   await folderStore.sync();
-  if (!folderStore.defaultFolder) {
+  if (!folderStore?.defaultFolder) {
     const createFolderResp = await folderStore.createFolder();
     if (!createFolderResp?.id) {
       return INIT_ERRORS.COULD_NOT_CREATE_DEFAULT_FOLDER;

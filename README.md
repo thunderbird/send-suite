@@ -59,6 +59,10 @@ To run the full stack:
 pnpm dev
 ```
 
+## Important note about .env.sendbackend
+
+We generate this file from your local .env file to build the docker container for development. You don't need to modify this file directly as it will be overwritten every time you run `pnpm dev`.
+
 ### Troubleshooting
 
 If you're having any issues with docker (ex: no memory left, or volumes do not contain expected files), prune docker and rebuild containers from scratch:
@@ -207,13 +211,7 @@ You can use VSCode's debugger for the backend.
 
 ```
 
-2. Add this to your top level `.env` file:
-
-```
-MODE=debug
-```
-
-3. Run `pnpm dev`
+3. From the root, run `pnpm dev`
 
 4. Run your debug session. If you have multiple configs, make sure you run the one called `Docker: Attach to Node`
 

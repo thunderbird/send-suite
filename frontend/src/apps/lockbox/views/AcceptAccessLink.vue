@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import useUserStore from '@/stores/user-store';
 import useSharingStore from '@/apps/lockbox/stores/sharing-store';
+import useUserStore from '@/stores/user-store';
+import { onMounted, ref } from 'vue';
 
 import { useRoute, useRouter } from 'vue-router';
 
@@ -17,13 +17,18 @@ const { user } = useUserStore();
 const sharingStore = useSharingStore();
 
 async function accept() {
-  const isValid = await sharingStore.isAccessLinkValid(route.params.linkId as string);
+  const isValid = await sharingStore.isAccessLinkValid(
+    route.params.linkId as string
+  );
   if (!isValid) {
     message.value = 'Access Link is no longer valid';
     return;
   }
 
-  const success = await sharingStore.acceptAccessLink(route.params.linkId as string, password.value);
+  const success = await sharingStore.acceptAccessLink(
+    route.params.linkId as string,
+    password.value
+  );
   if (success) {
     message.value = `and this is where we add the container to the group and then redirect`;
 
@@ -34,6 +39,7 @@ async function accept() {
       // Non-users stay at this route
       emit('acceptAccessLinkComplete');
     }
+    emit('acceptAccessLinkComplete');
   }
 }
 

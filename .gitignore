@@ -6,11 +6,14 @@ seed.ts
 
 # Dev droppings
 .env
+.env.production
+.env.sendbackend
 dev.db*
 shell.nix*
 node_modules
 dist
 dist-ssr
+dist-extension
 *.local
 sessions
 .pnpm-store
@@ -36,6 +39,13 @@ lerna-debug.log*
 *.sln
 *.sw?
 
+# Pulumi-related things to ignore
+./tb_pulumi/
+pulumi/tb_pulumi/
+pulumi/*.pyc
+pulumi/venv/
+pulumi/__pycache__/
+.venv
 
 # E2E
 /test-results/
