@@ -3,7 +3,7 @@ FROM node:20.10.0
 RUN apt update -y && apt upgrade -y
 
 WORKDIR /app
-ADD .env.sample ./.env
+ADD .env.local ./.env
 ADD package.json \
     pnpm-lock.yaml \
     tsconfig.json \
