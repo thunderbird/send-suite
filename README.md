@@ -59,10 +59,6 @@ To run the full stack:
 pnpm dev
 ```
 
-## Important note about .env.sendbackend
-
-We generate this file from your local .env file to build the docker container for development. You don't need to modify this file directly as it will be overwritten every time you run `pnpm dev`.
-
 ### Troubleshooting
 
 If you're having any issues with docker (ex: no memory left, or volumes do not contain expected files), prune docker and rebuild containers from scratch:
@@ -147,6 +143,20 @@ The TB Extension loses the login session pretty quickly, requiring you to go cli
 This could be because the sessions are expiring when the backend reloads (which it does automatically when code changes).
 
 If you're not changing the backend code (and the backend doesn't restart), you might be fine.
+
+## Building
+
+To build the frontend run from the root `pnpm build:frontend`
+This will produce the static assets for deployment. It will generate the following directories:
+
+Web app: `frontend/dist`
+
+TB extension: `frontend/dist-extension`
+
+To test the web client locally, you can run
+`cd frontend`
+and `pnpm preview`
+This will create a server on `http://localhost:4173/`
 
 ## Additional documentation
 

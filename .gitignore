@@ -7,7 +7,6 @@ seed.ts
 # Dev droppings
 .env
 .env.production
-.env.sendbackend
 dev.db*
 shell.nix*
 node_modules
@@ -46,6 +45,7 @@ pulumi/*.pyc
 pulumi/venv/
 pulumi/__pycache__/
 .venv
+venv
 
 # E2E
 /test-results/

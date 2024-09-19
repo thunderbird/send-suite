@@ -25,6 +25,7 @@ services:
     volumes:
       - ./backend:/app
       - backend-node-modules:/app/node_modules
+      - ./backend/.env:/app/.env
     depends_on:
       db:
         condition: service_healthy
