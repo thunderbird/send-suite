@@ -3,11 +3,15 @@
 import pulumi
 import pulumi_aws as aws
 import tb_pulumi
+import tb_pulumi.cloudfront
 import tb_pulumi.fargate
 import tb_pulumi.network
 import tb_pulumi.rds
 import tb_pulumi.secrets
 import urllib.parse
+
+
+CLOUDFRONT_REWRITE_CODE_FILE = 'cloudfront-rewrite.js'
 
 
 def url_secret(project, secret_name, password, address, port):
@@ -82,8 +86,8 @@ backend_fargate = tb_pulumi.fargate.FargateClusterWithLogging(
     **backend_fargate_opts,
 )
 
-# Create a DNS record pointing to the service
-dns = aws.route53.Record(
+# Create a DNS record pointing to the backend service
+backend_dns = aws.route53.Record(
     f'{project.name_prefix}-dns',
     zone_id='Z03528753AZVULC8BFCA',  # thunderbird.dev
     name='lockbox.thunderbird.dev',
@@ -93,4 +97,58 @@ dns = aws.route53.Record(
     type=aws.route53.RecordType.CNAME,
     ttl=60,
     records=[backend_fargate.resources['fargate_service_alb']['albs']['send-suite'].dns_name],
+)
+
+# Manage the CloudFront rewrite function; the code is managed in cloudfront-rewrite.js
+rewrite_code = None
+try:
+    with open(CLOUDFRONT_REWRITE_CODE_FILE, 'r') as fh:
+        rewrite_code = fh.read()
+except IOError:
+    pulumi.error(f'Could not read file {CLOUDFRONT_REWRITE_CODE_FILE}')
+
+cf_func = aws.cloudfront.Function(
+    f'{project.name_prefix}-func-rewrite',
+    code=rewrite_code,
+    # comment=f'Rewrite URLs for {project.name_prefix}',
+    comment='Rewrites inbound requests to direct them to the staging send-suite backend API',
+    name=f'{project.name_prefix}-rewrite',
+    publish=False,
+    runtime='cloudfront-js-2.0',
+    opts=pulumi.ResourceOptions(import_='send-suite-staging-rewrite'),
+)
+
+# Deliver frontend content via CloudFront; Ref:
+# https://www.pulumi.com/registry/packages/aws/api-docs/cloudfront/distribution/#distributionorigincustomoriginconfig
+api_origin = {
+    'origin_id': f'{project.name_prefix}-api',
+    'domain_name': backend_fargate.resources['fargate_service_alb']['albs']['send-suite'].dns_name,
+    'custom_origin_config': {
+        'http_port': 80,
+        'https_port': 443,
+        'origin_protocol_policy': 'https-only',
+        'origin_ssl_protocols': ['TLSv1.2'],
+    },
+}
+
+behaviors = [
+    {
+        'allowed_methods': ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'PATCH', 'POST', 'PUT'],
+        'cache_policy_id': tb_pulumi.cloudfront.CACHE_POLICY_ID_DISABLED,
+        'cached_methods': ['GET', 'HEAD', 'OPTIONS'],
+        'function_associations': [{'event_type': 'viewer-request', 'function_arn': cf_func.arn}],
+        'origin_request_policy_id': tb_pulumi.cloudfront.ORIGIN_REQUEST_POLICY_ID_ALLVIEWER,
+        'path_pattern': '/api/*',
+        'target_origin_id': f'{project.name_prefix}-api',
+        'viewer_protocol_policy': 'redirect-to-https',
+    }
+]
+
+frontend_opts = resources['tb:cloudfront:CloudFrontS3Service']['frontend']
+frontend = tb_pulumi.cloudfront.CloudFrontS3Service(
+    behaviors=behaviors,
+    name=f'{project.name_prefix}-frontend',
+    project=project,
+    origins=[api_origin],
+    **frontend_opts,
 )

@@ -1,6 +1,6 @@
 [project]
 name = "send-suite-pulumi"
-version = "0.0.1"
+version = "0.0.2"
 description = "Pulumi-built infrastructure for send-suite"
 requires-python = ">3.12"
 dynamic = ["dependencies"]
