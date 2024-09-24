@@ -16,9 +16,9 @@ export default defineConfig({
     },
   },
   build: {
-    sourcemap: 'inline',
+    sourcemap: false,
     outDir: 'dist/pages',
-    minify: true,
+    minify: false,
     rollupOptions: {
       input: {
         management: path.resolve(__dirname, 'index.management.html'),

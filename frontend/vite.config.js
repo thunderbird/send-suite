@@ -45,7 +45,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     build: {
-      outDir: 'dist',
+      outDir: 'dist-web',
       rollupOptions: {
         // input: {
         //   // background: resolve(__dirname, "src/background.js"),

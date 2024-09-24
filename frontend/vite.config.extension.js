@@ -10,8 +10,8 @@ export default defineConfig({
     },
   },
   build: {
-    minify: true,
-    sourcemap: 'inline',
+    minify: false,
+    sourcemap: false,
     outDir: 'dist/extension',
     rollupOptions: {
       // external: ["vue"],
