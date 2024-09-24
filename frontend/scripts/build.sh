@@ -4,7 +4,8 @@ if [ "$NODE_ENV" = "production" ]; then
 fi
 
 # Remove old builds
-rm -rf dist && rm -rf dist-extension
+rm -rf dist && rm -rf dist-web
+rm ../send-suite-alpha.xpi
 rm -rf send-suite-alpha
 
 mkdir -p dist/assets
