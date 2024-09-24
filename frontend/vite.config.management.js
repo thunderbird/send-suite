@@ -23,6 +23,11 @@ export default defineConfig({
       input: {
         management: path.resolve(__dirname, 'index.management.html'),
       },
+      output: {
+        entryFileNames: '[name].js',
+        chunkFileNames: 'chunks/[name].js',
+        assetFileNames: 'assets/[name].[ext]',
+      },
     },
   },
 });

@@ -13,6 +13,7 @@ node_modules
 dist
 dist-ssr
 dist-extension
+*.xpi
 *.local
 sessions
 .pnpm-store

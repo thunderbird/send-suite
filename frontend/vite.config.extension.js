@@ -18,6 +18,11 @@ export default defineConfig({
       input: {
         extension: resolve(__dirname, 'index.extension.html'),
       },
+      output: {
+        entryFileNames: '[name].js',
+        chunkFileNames: 'chunks/[name].js',
+        assetFileNames: 'assets/[name].[ext]',
+      },
     },
   },
 });
