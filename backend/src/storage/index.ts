@@ -1,12 +1,21 @@
+import {
+  Storage,
+  StorageAdapterConfig,
+  StorageType,
+} from '@tweedegolf/storage-abstraction';
+import { FileStreamParams } from '@tweedegolf/storage-abstraction/dist/types/add_file_params';
 import { ReadStream } from 'fs';
 import { Readable } from 'stream';
 import logger from '../logger';
-import {
-  Storage,
-  StorageType,
-  StorageAdapterConfig,
-} from '@tweedegolf/storage-abstraction';
-import { FileStreamParams } from '@tweedegolf/storage-abstraction/dist/types/add_file_params';
+
+const TWELVE_HOURS = 12 * 60 * 60 * 1000;
+
+const B2_CONFIG = {
+  type: StorageType.B2,
+  bucketName: process.env.B2_BUCKET_NAME,
+  applicationKeyId: process.env.B2_APPLICATION_KEY_ID,
+  applicationKey: process.env.B2_APPLICATION_KEY,
+};
 
 /**
  * Storage adapter for various storage backends including filesystem and Backblaze.
@@ -28,12 +37,7 @@ export class FileStore {
     if (!config) {
       switch (process.env.STORAGE_BACKEND) {
         case 'b2':
-          config = {
-            type: StorageType.B2,
-            bucketName: process.env.B2_BUCKET_NAME,
-            applicationKeyId: process.env.B2_APPLICATION_KEY_ID,
-            applicationKey: process.env.B2_APPLICATION_KEY,
-          };
+          config = B2_CONFIG;
           logger.info(`Initializing Backblaze storage ☁️`);
           break;
         case 's3':
@@ -50,6 +54,7 @@ export class FileStore {
         case 'fs':
         // intentional fall-through;
         // fs is default
+        // eslint-disable-next-line no-fallthrough
         default:
           config = {
             type: StorageType.LOCAL,
@@ -59,6 +64,14 @@ export class FileStore {
           logger.info(`Initializing local filesystem storage 💾`);
           break;
       }
+    }
+
+    /* Backblaze's token only lasts 24 hours, so we renew it before that */
+    if (process.env.STORAGE_BACKEND === 'b2') {
+      setInterval(() => {
+        console.log('Renewing client');
+        this.client = new Storage(B2_CONFIG);
+      }, TWELVE_HOURS);
     }
     this.client = new Storage(config);
   }
@@ -118,6 +131,7 @@ export class FileStore {
    * No error is thrown if the file is not found.
    */
   del(id: string): Promise<boolean> {
+    // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       const result = await this.client.removeFile(id);
       if (result.value === 'ok') {
