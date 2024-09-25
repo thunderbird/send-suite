@@ -168,3 +168,14 @@ resources:
                 value: send-suite-backend
               - name: STORAGE_BACKEND
                 value: b2
+
+  tb:cloudfront:CloudFrontS3Service:
+    frontend:
+      service_bucket_name: tb-send-suite-staging-frontend
+      certificate_arn: arn:aws:acm:us-east-1:768512802988:certificate/3a98e226-c4df-4e58-bc0a-aa4ccbf6325e
+      distribution:
+        aliases:
+          - send.thunderbird.dev
+        comment: send-suite staging frontend
+        logging_config:
+          include_cookies: True
