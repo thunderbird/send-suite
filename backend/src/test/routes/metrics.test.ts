@@ -39,7 +39,6 @@ const expressSession = session({
   },
 });
 
-// Set up express app with logger router
 const app = express();
 app.use(expressSession);
 app.use(express.json());

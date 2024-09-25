@@ -6,7 +6,6 @@ import {
 import { FileStreamParams } from '@tweedegolf/storage-abstraction/dist/types/add_file_params';
 import { ReadStream } from 'fs';
 import { Readable } from 'stream';
-import logger from '../logger';
 
 const TWELVE_HOURS = 12 * 60 * 60 * 1000;
 
@@ -38,7 +37,7 @@ export class FileStore {
       switch (process.env.STORAGE_BACKEND) {
         case 'b2':
           config = B2_CONFIG;
-          logger.info(`Initializing Backblaze storage ☁️`);
+          console.log(`Initializing Backblaze storage ☁️`);
           break;
         case 's3':
           config = {
@@ -49,7 +48,7 @@ export class FileStore {
             accessKeyId: process.env.S3_ACCESS_KEY,
             secretAccessKey: process.env.S3_SECRET_KEY,
           };
-          logger.info(`Initializing S3 storage ☁️`);
+          console.log(`Initializing S3 storage ☁️`);
           break;
         case 'fs':
         // intentional fall-through;
@@ -61,7 +60,7 @@ export class FileStore {
             directory: process.env.FS_LOCAL_DIR,
             bucketName: process.env.FS_LOCAL_BUCKET,
           };
-          logger.info(`Initializing local filesystem storage 💾`);
+          console.log(`Initializing local filesystem storage 💾`);
           break;
       }
     }
@@ -96,7 +95,7 @@ export class FileStore {
 
     const result = await this.client.addFileFromStream(params);
     if (result.error) {
-      logger.error(`Error writing to storage: ${result.error}`);
+      console.error(`Error writing to storage: ${result.error}`);
     }
     return !result.error;
   }

@@ -1,4 +1,3 @@
-// mock logger module
 import { describe, expect, it, vi } from 'vitest';
 import { useMetrics } from '../../metrics';
 
