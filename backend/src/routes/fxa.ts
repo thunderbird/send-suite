@@ -13,7 +13,6 @@ import {
   AUTH_ERRORS,
   wrapAsyncHandler,
 } from '../errors/routes';
-import logger from '../logger';
 import {
   findOrCreateUserProfileByMozillaId,
   updateUniqueHash,
@@ -66,8 +65,8 @@ router.get(
       };
     } catch (err) {
       // Log the error, but continue with OIDC auth
-      logger.error(`Could not initialize metrics flow.`);
-      logger.error(err);
+      console.error(`Could not initialize metrics flow.`);
+      console.error(err);
     }
 
     // Set up client
@@ -104,8 +103,8 @@ router.get(
     // so they can do the redirect.
     req.session.save((err) => {
       if (err) {
-        logger.error('Could not save session in /login.');
-        logger.error(err);
+        console.error('Could not save session in /login.');
+        console.error(err);
         res.status(500).json(err);
         return;
       }
@@ -150,8 +149,8 @@ router.get(
     delete req.session[FXA_STATE];
     req.session.save(async (err) => {
       if (err) {
-        logger.error('Could not save session in / callback.');
-        logger.error(err);
+        console.error('Could not save session in / callback.');
+        console.error(err);
         res.status(500).json(err);
         return;
       }
@@ -196,8 +195,8 @@ router.get(
 
         req.session.save((err) => {
           if (err) {
-            logger.error('Could not save session in / callback.');
-            logger.error(err);
+            console.error('Could not save session in / callback.');
+            console.error(err);
             throw Error(`Could not save session in fxa callback`);
           }
 

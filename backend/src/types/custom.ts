@@ -1,7 +1,3 @@
-export type Logger = {
-  log: (message: string) => void;
-};
-
 // Container permissions
 // These are modeled as a bitfield, i.e., 0b00000110
 // Allows us to mix and match permissions without

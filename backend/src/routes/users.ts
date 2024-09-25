@@ -28,7 +28,6 @@ import {
 
 import { checkAllowList } from '../auth/client';
 import { BaseError, SESSION_NOT_SAVED } from '../errors/models';
-import logger from '../logger';
 import { requireLogin } from '../middleware';
 import { getSessionUserOrThrow } from '../utils/session';
 
@@ -160,7 +159,7 @@ router.post(
         if (err) {
           throw new BaseError(SESSION_NOT_SAVED);
         } else {
-          logger.info(`
+          console.log(`
           session id: ${req.session.id}
           user id in session ${req.session?.user?.id}
           `);

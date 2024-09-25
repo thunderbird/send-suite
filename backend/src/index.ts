@@ -23,8 +23,6 @@ import wsUploadHandler from './wsUploadHandler';
 import * as Sentry from '@sentry/node';
 import { IS_ENV_PROD } from './config';
 import { errorHandler } from './errors/routes';
-import logger from './logger';
-import loggerRoute from './routes/logger';
 import metricsRoute from './routes/metrics';
 
 type Profile = {
@@ -131,7 +129,6 @@ app.use('/api/tags', tags);
 app.use('/lockbox/fxa', fxa);
 app.use('/fxa', fxa);
 app.use('/api/lockbox/fxa', fxa);
-app.use(loggerRoute);
 app.use(metricsRoute);
 app.use((_, res) => {
   res.status(404).send('404 Not Found');
@@ -145,7 +142,7 @@ Sentry.setupExpressErrorHandler(app);
 app.use(errorHandler);
 
 const server = app.listen(PORT, HOST, async () => {
-  logger.info(`🚀 Server ready at: http://${HOST}:${PORT}`);
+  console.log(`🚀 Server ready at: http://${HOST}:${PORT}`);
 });
 
 const messageClients = new Map();
@@ -157,11 +154,11 @@ server.on('upgrade', (req, socket, head) => {
       wsUploadHandler(ws, req);
     });
   } else if (req.url.startsWith(WS_MESSAGE_PATH)) {
-    logger.info(`upgrading ${WS_MESSAGE_PATH}`);
+    console.info(`upgrading ${WS_MESSAGE_PATH}`);
     wsMessageServer.handleUpgrade(req, socket, head, (ws) => {
       const parts = req.url.split('/');
       const id = parts[parts.length - 1];
-      logger.info(id);
+      console.info(id);
       messageClients.set(id, ws);
       wsMsgHandler(ws, messageClients);
     });
