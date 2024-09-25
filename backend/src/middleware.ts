@@ -1,6 +1,5 @@
 import { PrismaClient } from '@prisma/client';
 
-import logger from './logger';
 import { fromPrismaV2 } from './models/prisma-helper';
 import {
   allPermissions,
@@ -21,7 +20,7 @@ function extractSessionValue(req, path) {
   let val = req.session;
   for (const item of path) {
     if (!val[item]) {
-      logger.info(
+      console.log(
         `No req.session.${path.join('.')} for ${extractMethodAndRoute(req)}`
       );
       return null;
@@ -42,7 +41,7 @@ function extractUserId(req) {
     const userId = parseInt(val, 10);
     return userId;
   } catch (e) {
-    logger.error(`Could  ${path} for ${extractMethodAndRoute(req)}`);
+    console.error(`Could  ${path} for ${extractMethodAndRoute(req)}`);
     return null;
   }
 }
@@ -53,7 +52,7 @@ function extractContainerId(req) {
   try {
     return parseInt(val, 10);
   } catch (e) {
-    logger.error(`Could not find ${prop} for ${extractMethodAndRoute(req)}`);
+    console.error(`Could not find ${prop} for ${extractMethodAndRoute(req)}`);
     return null;
   }
 }
@@ -93,7 +92,7 @@ export async function getGroupMemberPermissions(req, res, next) {
 
   if (userId && containerId === 0) {
     // Users have full permissions to their own top-level
-    logger.info(`
+    console.log(`
 *************************************************************************************
 WARNING: this check needs to be more robust (in middleware.getGroupMemberPermissions)
 Adding full permissions assuming user is operating on their own top-level, when there
@@ -144,7 +143,7 @@ is a user and containerId === 0
 
 export function requireReadPermission(req, res, next) {
   if (!hasRead(req[PERMISSION_REQUEST_KEY])) {
-    logger.warn(`Missing read permission`);
+    console.warn(`Missing read permission`);
     reject(res);
     return;
   }
@@ -152,7 +151,7 @@ export function requireReadPermission(req, res, next) {
 }
 export function requireWritePermission(req, res, next) {
   if (!hasWrite(req[PERMISSION_REQUEST_KEY])) {
-    logger.warn(`Missing write permission`);
+    console.warn(`Missing write permission`);
     reject(res);
     return;
   }
@@ -160,7 +159,7 @@ export function requireWritePermission(req, res, next) {
 }
 export function requireAdminPermission(req, res, next) {
   if (!hasAdmin(req[PERMISSION_REQUEST_KEY])) {
-    logger.warn(`Missing admin permission`);
+    console.warn(`Missing admin permission`);
     reject(res);
     return;
   }
@@ -168,7 +167,7 @@ export function requireAdminPermission(req, res, next) {
 }
 export function requireSharePermission(req, res, next) {
   if (!hasShare(req[PERMISSION_REQUEST_KEY])) {
-    logger.warn(`Missing share permission`);
+    console.warn(`Missing share permission`);
     reject(res);
     return;
   }

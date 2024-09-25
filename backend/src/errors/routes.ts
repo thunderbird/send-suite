@@ -1,5 +1,4 @@
 import { Request, RequestHandler, Response } from 'express';
-import logger from '../logger';
 
 type ErrorRespInfo = {
   statusCode: number;
@@ -259,7 +258,7 @@ export function errorHandler(err: Error, req: Request, res: Response) {
     message: message,
   });
 
-  logger.error(
+  console.error(
     `${status} - ${req.method} ${req.originalUrl} - ${req.ip} - ${message} `
   );
 }

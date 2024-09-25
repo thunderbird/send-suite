@@ -7,7 +7,6 @@ const { mockReportUpload } = vi.hoisted(() => ({
   mockReportUpload: vi.fn(),
 }));
 
-// Set up express app with logger router
 const app = express();
 app.use(express.json({ limit: '5mb' }));
 app.use(router);
