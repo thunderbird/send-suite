@@ -30,7 +30,7 @@ export interface UserStore {
     keystring: string,
     salt: string
   ) => AsyncJsonResponse;
-  getBackup: (id: number) => Promise<Backup>;
+  getBackup: () => Promise<Backup>;
 }
 
 const useUserStore: () => UserStore = defineStore('user', () => {
@@ -49,7 +49,7 @@ const useUserStore: () => UserStore = defineStore('user', () => {
     user.email = userData.email;
 
     if (!userData.uniqueHash) {
-      console.log('uniqueHash not found in user object');
+      console.log('uniqueHash not found in user object', userData);
     } else {
       user.uniqueHash = userData.uniqueHash;
     }
@@ -186,8 +186,8 @@ const useUserStore: () => UserStore = defineStore('user', () => {
   }
 
   // TODO: shift the userId from frontend argument to backend session
-  async function getBackup(userId) {
-    return await api.call<Backup>(`users/${userId}/backup`);
+  async function getBackup() {
+    return await api.call<Backup>(`users/backup`);
   }
 
   return {

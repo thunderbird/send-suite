@@ -8,7 +8,9 @@ import Lockbox from '@/apps/lockbox/pages/WebPage.vue';
 
 import Recovery from '@/apps/common/Recovery.vue';
 import Share from '@/apps/lockbox/pages/Share.vue';
+import { restoreKeysUsingLocalStorage } from '@/lib/keychain';
 import useApiStore from '@/stores/api-store';
+import useKeychainStore from '@/stores/keychain-store';
 import useUserStore from '@/stores/user-store';
 import LoginPage from './LoginPage.vue';
 
@@ -85,6 +87,7 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const { user } = useUserStore();
+  const { keychain } = useKeychainStore();
   const { api } = useApiStore();
   //  requiresSession - means that even if the user has a session in local storage, it must be valid in the backend
   const requiresSession = to.matched.some(
@@ -133,6 +136,7 @@ router.beforeEach(async (to, from, next) => {
     return next('/lockbox/profile');
   }
 
+  await restoreKeysUsingLocalStorage(keychain, api);
   next();
 });
 

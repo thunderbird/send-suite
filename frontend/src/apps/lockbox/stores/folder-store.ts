@@ -15,6 +15,7 @@ import {
   ItemResponse,
 } from '@/apps/lockbox/stores/folder-store.types';
 import { NamedBlob } from '@/lib/filesync';
+import { backupKeys } from '@/lib/keychain';
 
 const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
   const { api } = useApiStore();
@@ -26,6 +27,7 @@ const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
 
   const folders = ref<Folder[]>([]);
   const rootFolder = ref<Folder | null>(null);
+  const msg = ref('');
 
   const selectedFolderId = ref(0);
   const selectedFileId = ref(0);
@@ -118,6 +120,7 @@ const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
     if (container) {
       folders.value = [...folders.value, container];
       await keychain.newKeyForContainer(container.id);
+      await backupKeys(keychain, api, msg);
       await keychain.store();
       return container;
     }

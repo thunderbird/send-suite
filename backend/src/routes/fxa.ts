@@ -14,7 +14,10 @@ import {
   wrapAsyncHandler,
 } from '../errors/routes';
 import logger from '../logger';
-import { findOrCreateUserProfileByMozillaId } from '../models/users';
+import {
+  findOrCreateUserProfileByMozillaId,
+  updateUniqueHash,
+} from '../models/users';
 
 const FXA_STATE = 'fxa_state';
 
@@ -181,8 +184,15 @@ router.get(
           refreshToken
         );
 
-        req.session['user'] = user;
-        user.uniqueHash = createHash('sha256').update(uid).digest('hex');
+        const uniqueHash = createHash('sha256').update(uid).digest('hex');
+
+        req.session['user'] = {
+          ...user,
+          uniqueHash,
+        };
+        user.uniqueHash = uniqueHash;
+
+        await updateUniqueHash(user.id, uniqueHash);
 
         req.session.save((err) => {
           if (err) {

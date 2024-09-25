@@ -296,12 +296,36 @@ router.post(
   })
 );
 
+router.post(
+  '/backup',
+  addErrorHandling(USER_ERRORS.BACKUP_FAILED),
+  wrapAsyncHandler(async (req, res) => {
+    const { id } = getSessionUserOrThrow(req);
+    const { keys, keypair, keystring, salt } = req.body;
+    // We're not using the return value, but we want to make sure the backup runs
+    await setBackup(id, keys, keypair, keystring, salt);
+    res.status(200).json({
+      message: 'backup complete',
+    });
+  })
+);
+
+router.get(
+  '/backup',
+  addErrorHandling(USER_ERRORS.BACKUP_NOT_FOUND),
+  wrapAsyncHandler(async (req, res) => {
+    const userIDFomSession = getSessionUserOrThrow(req);
+    const backup = await getBackup(userIDFomSession.id);
+    res.status(200).json(backup);
+  })
+);
+
 router.get(
   '/:id/backup',
   addErrorHandling(USER_ERRORS.BACKUP_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const backup = await getBackup(parseInt(id));
+    const userIDFomSession = getSessionUserOrThrow(req);
+    const backup = await getBackup(userIDFomSession.id);
     res.status(200).json(backup);
   })
 );
