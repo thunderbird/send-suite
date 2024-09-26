@@ -9,7 +9,6 @@ import { UserType } from '@/types';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
-
 const useSharingStore = defineStore('sharingManager', () => {
   const { api } = useApiStore();
   const { user } = useUserStore();
@@ -64,16 +63,15 @@ const useSharingStore = defineStore('sharingManager', () => {
     );
 
     if (user.id) {
-      // Use the AccessLink to make the User a member of the shared folder.
-      const acceptAccessLinkResp = await api.call(
-        `sharing/${linkId}/member/accept`,
-        {},
-        'POST'
-      );
-
-      if (!acceptAccessLinkResp) {
-        return false;
-      }
+      // // Use the AccessLink to make the User a member of the shared folder.
+      // const acceptAccessLinkResp = await api.call(
+      //   `sharing/${linkId}/member/accept`,
+      //   {},
+      //   'POST'
+      // );
+      // if (!acceptAccessLinkResp) {
+      //   return false;
+      // }
     } else {
       // TODO: consider switching to sessionStorage.
       // Generate a temporary keypair for encrypting containerKey in keychain.
