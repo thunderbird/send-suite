@@ -1,3 +1,6 @@
+import { FolderStore } from '@/apps/lockbox/stores/folder-store.types';
+import init from '@/lib/init';
+import { UserStore } from '@/stores/user-store';
 import { Canceler, JsonResponse } from '@/types';
 import {
   ECE_RECORD_SIZE,
@@ -5,6 +8,7 @@ import {
   HEADER_SIZE,
   OVERHEAD_SIZE,
 } from './ece';
+import { Keychain } from './keychain';
 import { asyncInitWebSocket, delay, listenForResponse } from './utils';
 export async function _download(
   id: string,
@@ -146,3 +150,38 @@ export const formatLoginURL = (url: string) => {
   }
   return url.replace('%2Flockbox%2Ffxa', '%2Ffxa');
 };
+
+// After mozilla account login, confirm that
+// - we have a db user
+// - the user has a public key
+// - the user has a default folder for email attachments
+export async function dbUserSetup(
+  userStore: UserStore,
+  keychain: Keychain,
+  folderStore: FolderStore
+) {
+  // Populate the user if they exist
+  const didPopulate = await userStore.populateFromSession();
+  if (!didPopulate) {
+    console.warn(`DEBUG: could not retrieve user; did mozilla login fail?`);
+    return;
+  }
+  userStore.store();
+
+  // Check if the user has a public key.
+  // If not, this is almost certainly a new user.
+  const publicKey = await userStore.getPublicKey();
+  if (!publicKey) {
+    await keychain.rsa.generateKeyPair();
+    await keychain.store();
+
+    const jwkPublicKey = await keychain.rsa.getPublicKeyJwk();
+    const didUpdate = await userStore.updatePublicKey(jwkPublicKey);
+    if (!didUpdate) {
+      console.warn(`DEBUG: could not update user's public key`);
+    }
+  }
+
+  // Existing init() handles
+  await init(userStore, keychain, folderStore);
+}

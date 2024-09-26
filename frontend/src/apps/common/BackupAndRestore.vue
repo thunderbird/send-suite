@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Btn from '@/apps/lockbox/elements/Btn.vue';
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 import useKeychainStore from '@/stores/keychain-store';
 
@@ -8,6 +8,7 @@ import useKeychainStore from '@/stores/keychain-store';
 import { backupKeys, restoreKeys } from '@/lib/keychain';
 import logger from '@/logger';
 import useApiStore from '@/stores/api-store';
+import useUserStore from '@/stores/user-store';
 
 const PHRASE_SIZE = 12;
 const MIN_WORD_LENGTH = 5;
@@ -30,36 +31,43 @@ const passphrase = computed(() => {
   return words.value.join(' ');
 });
 
-const msg = ref('');
 const { api } = useApiStore();
+const { getBackup } = useUserStore();
 const { keychain } = useKeychainStore();
+const bigMessageDisplay = ref('');
+const hasBackedUpKeys = ref<string>(null);
 
-if (!keychain.getPassphraseValue()) {
-  msg.value = 'Please restore your keys from backup';
-}
+onMounted(async () => {
+  const keybackup = await getBackup();
+  hasBackedUpKeys.value = keybackup?.backupKeypair;
+  if (!hasBackedUpKeys.value) {
+    bigMessageDisplay.value =
+      '⚠️ Please write down your backup keys and click "Encrypt and backup keys" ⚠️';
+  } else {
+    if (!keychain.getPassphraseValue()) {
+      bigMessageDisplay.value = '⚠️ Please restore your keys from backup ⚠️';
+    }
+  }
+});
 
 const userSetPassword = keychain.getPassphraseValue();
-console.log(userSetPassword, 'setPassword');
 
 if (!!userSetPassword && userSetPassword !== passphrase.value) {
   words.value = userSetPassword.split(' ');
 }
 
 async function makeBackup() {
-  msg.value = '';
+  bigMessageDisplay.value = '';
   logger.info(passphrase.value);
 
   if (!passphraseIsComplex(passphrase.value)) {
-    msg.value = MSG_NOT_COMPLEX;
+    bigMessageDisplay.value = MSG_NOT_COMPLEX;
     return;
   }
 
   keychain.storePassPhrase(passphrase.value);
 
-  await backupKeys(keychain, api, msg);
-
-  // Save password to local storage
-  msg.value = 'Backup complete';
+  await backupKeys(keychain, api, bigMessageDisplay);
 }
 
 async function restoreFromBackup() {
@@ -67,13 +75,13 @@ async function restoreFromBackup() {
     return;
   }
 
-  msg.value = '';
+  bigMessageDisplay.value = '';
 
   try {
-    await restoreKeys(keychain, api, msg, passphrase.value);
+    await restoreKeys(keychain, api, bigMessageDisplay, passphrase.value);
     keychain.storePassPhrase(passphrase.value);
   } catch (e) {
-    msg.value = e;
+    bigMessageDisplay.value = e;
   }
 }
 
@@ -91,6 +99,9 @@ function passphraseIsComplex(phrase) {
     <div class="flex flex-col gap-4">
       <header class="flex flex-col gap-4 px-4 py-4">
         <h1>Key Recovery</h1>
+        <p v-if="bigMessageDisplay" style="font-size: x-large">
+          {{ bigMessageDisplay }}
+        </p>
         <p>
           Need informative text telling the user that they need to type in a
           long passphrase. We'll use that passphrase to encrypt their backup.
@@ -107,7 +118,7 @@ function passphraseIsComplex(phrase) {
             v-model="words[index]"
           />
         </div>
-        <p v-if="msg">{{ msg }}</p>
+
         <Btn primary @click.prevent="makeBackup">Encrypt and backup keys</Btn>
         <Btn danger @click.prevent="restoreFromBackup"
           >Restore keys from backup</Btn

@@ -34,7 +34,6 @@ const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
 
   const defaultFolder = computed(() => {
     if (!folders?.value) {
-      console.error('folders is null');
       return null;
     }
     const total = folders.value.length;

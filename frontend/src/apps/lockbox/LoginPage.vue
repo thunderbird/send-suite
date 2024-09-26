@@ -1,14 +1,20 @@
 <script setup lang="ts">
 import Btn from '@/apps/lockbox/elements/Btn.vue';
 import { formatSessionInfo, mozAcctLogin } from '@/lib/fxa';
+import { dbUserSetup } from '@/lib/helpers';
 import { CLIENT_MESSAGES } from '@/lib/messages';
 import useApiStore from '@/stores/api-store';
+import useKeychainStore from '@/stores/keychain-store';
 import useUserStore from '@/stores/user-store';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import useFolderStore from './stores/folder-store';
 
 const { api } = useApiStore();
 const { user } = useUserStore();
+const userStore = useUserStore();
+const { keychain } = useKeychainStore();
+const folderStore = useFolderStore();
 
 const router = useRouter();
 
@@ -22,8 +28,9 @@ async function pingSession() {
   }
 }
 
-function onSuccess() {
-  pingSession();
+async function onSuccess() {
+  await dbUserSetup(userStore, keychain, folderStore);
+  await pingSession();
 }
 </script>
 <template>

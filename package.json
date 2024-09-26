@@ -1,6 +1,6 @@
 {
   "name": "send-suite",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
   "keywords": [],
   "license": "ISC",
@@ -18,8 +18,7 @@
     "test:e2e:ci": "pnpm exec playwright test",
     "postinstall": "pnpm run install:frontend && pnpm run install:backend",
     "clean": "./clean.sh",
-    "setup:backend": "cd backend && pnpm run setup",
-    "predev": "./pre-flight.sh && pnpm setup:backend",
+    "predev": "./pre-flight.sh",
     "dev": "docker compose up --build --force-recreate -d && docker compose logs -f",
     "install:frontend": "cd frontend && pnpm install",
     "install:backend": "cd backend && pnpm install"

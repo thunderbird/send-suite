@@ -10,13 +10,18 @@ export default defineConfig({
     },
   },
   build: {
-    minify: true,
-    sourcemap: 'inline',
+    minify: false,
+    sourcemap: false,
     outDir: 'dist/extension',
     rollupOptions: {
       // external: ["vue"],
       input: {
         extension: resolve(__dirname, 'index.extension.html'),
+      },
+      output: {
+        entryFileNames: '[name].js',
+        chunkFileNames: 'chunks/[name].js',
+        assetFileNames: 'assets/[name].[ext]',
       },
     },
   },

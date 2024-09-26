@@ -749,9 +749,18 @@ export async function restoreKeys(
   if (!password) {
     console.error('Keychain is not initialized');
   }
-  const getBackupAPIResponse = await api.call<BackupUserStore>(`users/backup`);
+
+  let getBackupAPIResponse = null;
+  try {
+    getBackupAPIResponse = await api.call<BackupUserStore>(`users/backup`);
+  } catch (error) {
+    console.error('Could not retrieve backup from the server.', error);
+    return;
+  }
+
   if (!getBackupAPIResponse) {
     msg.value = MSG_COULD_NOT_RETRIEVE;
+    return;
   }
 
   const { backupContainerKeys, backupKeypair, backupKeystring, backupSalt } =
@@ -779,9 +788,12 @@ export async function restoreKeys(
     await keychain.load(keypair, containerKeys);
     await keychain.store();
 
-    msg.value = 'Restore complete';
+    msg.value = '✅ Restore complete';
   } catch (e) {
-    logger.info(e);
+    console.error(
+      `Could not restore keys. Please make sure your backup prase hasn't changed.`,
+      e
+    );
     msg.value = MSG_INCORRECT_PASSPHRASE;
   }
 }
@@ -878,11 +890,12 @@ export async function backupKeys(
 ) {
   const password = keychain.getPassphraseValue();
   msg.value = '';
-  console.log('backing up keys', password);
+  console.log('🔐 auto-backing up keys');
 
   // Validate keychain
   if (!password) {
-    throw new Error('Keychain is not initialized');
+    console.warn('Keychain is not initialized, cannot backup keys');
+    return;
   }
   const keypair = await keychain.exportKeypair();
   const containerKeys = await keychain.exportKeys();
@@ -913,6 +926,6 @@ export async function backupKeys(
 
   // Save password to local storage
   // keychain.storePassPhrase(passphrase.value);
-  msg.value = 'Backup complete';
-  console.log('Backup complete');
+  msg.value = '✅ Backup complete';
+  console.log('🔒 Backup complete');
 }

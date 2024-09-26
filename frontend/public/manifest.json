@@ -1,19 +1,17 @@
 {
   "manifest_version": 3,
-  "version": "0.1.1",
+  "version": "0.1.6",
   "author": "Thunderbird Team",
   "name": "Thunderbird Send",
   "description": "Thunderbird and friends",
   "browser_specific_settings": {
     "gecko": {
-      "id": "lockbox@services.thunderbird.net",
+      "id": "send@thunderbird.net",
       "strict_min_version": "128.0"
     }
   },
   "background": {
-    "scripts": [
-      "background.js"
-    ]
+    "scripts": ["background.js"]
   },
   "options_ui": {
     "page": "index.management.html",

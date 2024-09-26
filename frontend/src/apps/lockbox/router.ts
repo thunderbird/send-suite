@@ -33,6 +33,7 @@ export const routes: RouteRecordRaw[] = [
         component: FolderView,
         meta: {
           requiresSessionAndAuth: true,
+          autoRestoresKeys: true,
         },
       },
       {
@@ -40,6 +41,7 @@ export const routes: RouteRecordRaw[] = [
         component: ProfileView,
         meta: {
           requiresSessionAndAuth: true,
+          autoRestoresKeys: true,
         },
       },
       {
@@ -63,6 +65,7 @@ export const routes: RouteRecordRaw[] = [
         name: 'folder',
         meta: {
           requiresSessionAndAuth: true,
+          autoRestoresKeys: true,
         },
       },
     ],
@@ -106,6 +109,9 @@ router.beforeEach(async (to, from, next) => {
   const requireFreshSession = to.matched.some(
     (record) => record.meta.requireFreshSession
   );
+  const autoRestoresKeys = to.matched.some(
+    (record) => record.meta.autoRestoresKeys
+  );
 
   // Check local storage
   const hasLocalStorageSession = user?.id === 0 ? false : true;
@@ -136,7 +142,9 @@ router.beforeEach(async (to, from, next) => {
     return next('/lockbox/profile');
   }
 
-  await restoreKeysUsingLocalStorage(keychain, api);
+  if (autoRestoresKeys) {
+    await restoreKeysUsingLocalStorage(keychain, api);
+  }
   next();
 });
 

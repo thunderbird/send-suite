@@ -1,6 +1,6 @@
 {
-  "name": "frontend",
-  "version": "0.0.1",
+  "name": "thunderbird-send",
+  "version": "0.1.6",
   "private": true,
   "type": "module",
   "scripts": {
