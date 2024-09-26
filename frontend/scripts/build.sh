@@ -25,9 +25,6 @@ cp -R dist/pages/assets/* dist/assets/
 cp -R dist/pages/*.* dist/
 rm -rf dist/pages
 
-### Rename dist folder to extension
-# mv dist dist-extension
-
 cd dist
 
 # Create xpi
