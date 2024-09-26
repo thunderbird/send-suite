@@ -30,7 +30,6 @@
     "notifications",
     "activeTab",
     "tabs",
-    "tabHide",
     "messagesRead",
     "messagesModify"
   ]
