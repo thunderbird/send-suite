@@ -88,12 +88,11 @@ backend_fargate = tb_pulumi.fargate.FargateClusterWithLogging(
 
 # Create a DNS record pointing to the backend service
 backend_dns = aws.route53.Record(
-    f'{project.name_prefix}-dns',
+    f'{project.name_prefix}-dns-backend',
     zone_id='Z03528753AZVULC8BFCA',  # thunderbird.dev
     name='lockbox.thunderbird.dev',
-    # Revert to "send" after this is resolved:
+    # Delete this record once this issue is resolved, deferring to the CloudFront rewrite instead
     # https://bugzilla.mozilla.org/show_bug.cgi?id=1866867
-    # name='send.thunderbird.dev',
     type=aws.route53.RecordType.CNAME,
     ttl=60,
     records=[backend_fargate.resources['fargate_service_alb']['albs']['send-suite'].dns_name],
@@ -151,4 +150,14 @@ frontend = tb_pulumi.cloudfront.CloudFrontS3Service(
     project=project,
     origins=[api_origin],
     **frontend_opts,
+)
+
+# Create a DNS record pointing to the frontend service
+frontend_dns = aws.route53.Record(
+    f'{project.name_prefix}-dns-frontend',
+    zone_id='Z03528753AZVULC8BFCA',  # thunderbird.dev
+    name='send.thunderbird.dev',
+    type=aws.route53.RecordType.CNAME,
+    ttl=60,
+    records=[frontend.resources['cloudfront_distribution'].domain_name],
 )
