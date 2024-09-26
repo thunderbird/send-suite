@@ -3,7 +3,7 @@ import useSharingStore from '@/apps/lockbox/stores/sharing-store';
 import useUserStore from '@/stores/user-store';
 import { onMounted, ref } from 'vue';
 
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 
 const emit = defineEmits(['acceptAccessLinkComplete']);
 
@@ -11,7 +11,6 @@ const password = ref('');
 const message = ref('');
 
 const route = useRoute();
-const router = useRouter();
 
 const { user } = useUserStore();
 const sharingStore = useSharingStore();
@@ -32,13 +31,17 @@ async function accept() {
   if (success) {
     message.value = `and this is where we add the container to the group and then redirect`;
 
-    if (user.id) {
-      // Users will go to lockbox home
-      router.push(`/lockbox`);
-    } else {
-      // Non-users stay at this route
-      emit('acceptAccessLinkComplete');
-    }
+    /* 
+    This functionality has been disabled until we test it
+    We want users to be able to download files without adding them to their folers
+     */
+    // if (user.id) {
+    //   // Users will go to lockbox home
+    //   router.push(`/lockbox`);
+    // } else {
+    //   // Non-users stay at this route
+    //   emit('acceptAccessLinkComplete');
+    // }
     emit('acceptAccessLinkComplete');
   }
 }
