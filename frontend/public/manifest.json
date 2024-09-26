@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "version": "0.1.7",
+  "version": "0.1.8",
   "author": "Thunderbird Team",
   "name": "Thunderbird Send",
   "description": "Thunderbird and friends",
@@ -11,7 +11,9 @@
     }
   },
   "background": {
-    "scripts": ["background.js"]
+    "scripts": [
+      "background.js"
+    ]
   },
   "options_ui": {
     "page": "index.management.html",
