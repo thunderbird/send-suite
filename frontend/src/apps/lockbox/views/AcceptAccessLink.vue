@@ -24,26 +24,26 @@ async function accept() {
     return;
   }
 
-  const success = await sharingStore.acceptAccessLink(
-    route.params.linkId as string,
-    password.value
-  );
-  if (success) {
-    message.value = `and this is where we add the container to the group and then redirect`;
+  // const success = await sharingStore.acceptAccessLink(
+  //   route.params.linkId as string,
+  //   password.value
+  // );
+  // if (success) {
+  //   message.value = `and this is where we add the container to the group and then redirect`;
 
-    /* 
-    This functionality has been disabled until we test it
-    We want users to be able to download files without adding them to their folers
-     */
-    // if (user.id) {
-    //   // Users will go to lockbox home
-    //   router.push(`/lockbox`);
-    // } else {
-    //   // Non-users stay at this route
-    //   emit('acceptAccessLinkComplete');
-    // }
-    emit('acceptAccessLinkComplete');
-  }
+  //   /*
+  //   This functionality has been disabled until we test it
+  //   We want users to be able to download files without adding them to their folers
+  //    */
+  //   // if (user.id) {
+  //   //   // Users will go to lockbox home
+  //   //   router.push(`/lockbox`);
+  //   // } else {
+  //   //   // Non-users stay at this route
+  //   //   emit('acceptAccessLinkComplete');
+  //   // }
+  // }
+  emit('acceptAccessLinkComplete');
 }
 
 onMounted(() => {
