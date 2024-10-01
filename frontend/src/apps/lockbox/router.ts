@@ -74,9 +74,6 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/share/:linkId',
     component: Share,
-    meta: {
-      requireFreshSession: true,
-    },
   },
 
   // Backup and Recovery for keypair and keys
