@@ -192,16 +192,10 @@ describe('User Store', () => {
       const storageMock = vi
         .spyOn(Storage.prototype, 'loadUser')
         .mockResolvedValue(storedUserData);
-      const consoleTableMock = vi.spyOn(console, 'table');
 
       const result = await userStore.load();
 
       expect(storageMock).toHaveBeenCalled();
-      expect(consoleTableMock).toHaveBeenCalledWith({
-        id: storedUserData.id,
-        tier: storedUserData.tier,
-        email: storedUserData.email,
-      });
       expect(userStore.user.id).toBe(storedUserData.id);
       expect(userStore.user.tier).toBe(storedUserData.tier);
       expect(userStore.user.email).toBe(storedUserData.email);

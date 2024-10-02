@@ -59,12 +59,20 @@ export default class Uploader {
       return null;
     }
 
+    const ONE_SECOND = 1_000;
+    const ONE_MINUTE = 60_000;
+
+    // Poll the api to check if the file is in storage
     await retryUntilSuccessOrTimeout(
       async () => {
-        await this.api.call(`uploads/${id}/stat`);
+        const { size } = await this.api.call<{ size: null | number }>(
+          `uploads/${id}/stat`
+        );
+        // Return a boolean, telling us if the size is null or not
+        return !!size;
       },
-      1000,
-      5000
+      ONE_SECOND,
+      ONE_MINUTE
     );
 
     // Create a Content entry in the database

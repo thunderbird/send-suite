@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import ErrorUploading from '@/apps/lockbox/components/ErrorUploading.vue';
+import UploadingProgress from '@/apps/lockbox/components/UploadingProgress.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import { NamedBlob } from '@/lib/filesync';
 import { zipBlob } from '@/lib/utils';
@@ -10,6 +12,9 @@ const dropZoneRef = ref();
 
 const filesMetadata = ref(null);
 const fileBlobs = ref([]);
+const isUploading = ref(false);
+const isError = ref(false);
+
 function onDrop(files) {
   filesMetadata.value = [];
   fileBlobs.value = [];
@@ -47,12 +52,21 @@ async function doUpload() {
         compressedBlob = new Blob([zippedBlob], { type: 'application/zip' });
         compressedBlob.name = `${blob.name}.zip`;
       }
-      const uploadResult = await folderStore.uploadItem(
-        compressedBlob || blob,
-        folderStore.rootFolder.id
-      );
-      console.log(uploadResult);
-      return uploadResult;
+      isUploading.value = true;
+
+      try {
+        const uploadResult = await folderStore.uploadItem(
+          compressedBlob || blob,
+          folderStore.rootFolder.id
+        );
+        isUploading.value = false;
+        console.log(uploadResult);
+        return uploadResult;
+      } catch (e) {
+        isError.value = true;
+        isUploading.value = false;
+        return;
+      }
     })
   );
 
@@ -63,16 +77,26 @@ async function doUpload() {
 </script>
 
 <template>
-  <div ref="dropZoneRef" class="h-full">
-    <slot></slot>
+  <div v-if="isError">
+    <ErrorUploading />
   </div>
 
-  <button
-    v-if="folderStore.rootFolder && filesMetadata"
-    type="submit"
-    class="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none"
-    @click="doUpload"
-  >
-    <span class="font-bold">Upload</span>
-  </button>
+  <div v-if="isUploading">
+    <UploadingProgress />
+  </div>
+
+  <div v-else>
+    <div ref="dropZoneRef" class="h-full">
+      <slot></slot>
+    </div>
+
+    <button
+      v-if="folderStore.rootFolder && filesMetadata"
+      type="submit"
+      class="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none"
+      @click="doUpload"
+    >
+      <span class="font-bold">Upload</span>
+    </button>
+  </div>
 </template>

@@ -7,6 +7,7 @@ import {
   BaseError,
   UPLOAD_NOT_CREATED,
   UPLOAD_NOT_FOUND,
+  UPLOAD_SIZE_ERROR,
 } from '../errors/models';
 
 export async function createUpload(
@@ -18,21 +19,32 @@ export async function createUpload(
   // Confirm that file `id` exists and what's on disk
   // is at least as large as the stated size.
   // (Encrypted files are larger than the decrypted contents)
-  const sizeOnDisk = await storage.length(id);
-  if (sizeOnDisk < size) {
-    throw new BaseError(UPLOAD_NOT_CREATED);
+
+  let sizeOnDisk = 0;
+
+  try {
+    sizeOnDisk = await storage.length(id);
+  } catch (error) {
+    console.error('ERROR reading storage length:', error);
   }
 
-  const query = {
-    data: {
-      id,
-      size,
-      ownerId,
-      createdAt: new Date(),
-      type,
-    },
-  };
-  return await fromPrismaV2(prisma.upload.create, query, UPLOAD_NOT_CREATED);
+  if (sizeOnDisk < size) {
+    throw new BaseError(UPLOAD_SIZE_ERROR);
+  }
+
+  try {
+    return await prisma.upload.create({
+      data: {
+        id,
+        size,
+        ownerId,
+        createdAt: new Date(),
+        type,
+      },
+    });
+  } catch (error) {
+    throw new BaseError(UPLOAD_NOT_CREATED);
+  }
 }
 
 export async function statUpload(id: string) {

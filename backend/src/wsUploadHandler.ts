@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { Transform } from 'stream';
-import storage from './storage';
 import config from './config';
+import storage from './storage';
 
 const ECE_RECORD_SIZE = 1024 * 64;
 const TAG_LENGTH = 16;
@@ -72,7 +72,11 @@ async function handleUpload(ws, message, fileStream) {
 
   // Remember: storage is `storage/index.js`
   // which hands off to the underlying storage mechanism.
-  await storage.set(uploadId, fileStream, fileInfo.size);
+  try {
+    await storage.set(uploadId, fileStream, fileInfo.size);
+  } catch (error) {
+    console.error('storage set error', error);
+  }
   if (ws.readyState === 1) {
     // if the socket is closed by a canceled upload the stream
     // ends without an error so we need to check the state
@@ -92,7 +96,7 @@ async function handleUpload(ws, message, fileStream) {
   }
 }
 
-export default function (ws, req) {
+export default function (ws) {
   let fileStream;
 
   ws.on('close', (e) => {

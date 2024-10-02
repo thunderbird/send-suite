@@ -6,6 +6,7 @@ import init from '@/lib/init';
 import useKeychainStore from '@/stores/keychain-store';
 import useUserStore from '@/stores/user-store';
 
+import ErrorUploading from '@/apps/lockbox/components/ErrorUploading.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import useSharingStore from '@/apps/lockbox/stores/sharing-store';
 
@@ -20,6 +21,9 @@ const { api } = useApiStore();
 const folderStore = useFolderStore();
 const sharingStore = useSharingStore();
 
+const isUploading = ref(false);
+const isError = ref(false);
+
 const password = ref('');
 const fileBlob = ref(null);
 
@@ -29,21 +33,33 @@ const fileBlob = ref(null);
 // Need to decide if you should be able to designate
 // the location of the file from the lockbox popup.
 async function uploadAndShare() {
-  const itemObj = await folderStore.uploadItem(
-    fileBlob.value,
-    folderStore.defaultFolder.id
-  );
-  if (!itemObj) {
-    uploadAborted();
+  try {
+    isUploading.value = true;
+    const itemObj = await folderStore.uploadItem(
+      fileBlob.value,
+      folderStore.defaultFolder.id
+    );
+    if (!itemObj) {
+      uploadAborted();
+      isError.value = true;
+      isUploading.value = false;
+      return;
+    }
+    fileBlob.value = null;
+    const url = await sharingStore.shareItems([itemObj], password.value);
+    if (!url) {
+      shareAborted();
+      isError.value = true;
+      isUploading.value = false;
+      return;
+    }
+    shareComplete(url);
+    isUploading.value = false;
+  } catch (error) {
+    isError.value = true;
+    isUploading.value = false;
     return;
   }
-  fileBlob.value = null;
-  const url = await sharingStore.shareItems([itemObj], password.value);
-  if (!url) {
-    shareAborted();
-    return;
-  }
-  shareComplete(url);
 }
 
 function uploadAborted() {
@@ -106,13 +122,21 @@ userStore.user.id ${userStore.user.id}
 
 <template>
   <h1>Attach via Lockbox</h1>
+  <div v-if="isError">
+    <ErrorUploading />
+  </div>
+
+  <div v-if="isUploading">
+    <p>Uploading...</p>
+  </div>
+
   <form @submit.prevent="uploadAndShare">
     <br />
     <label>
       Password for sharing:
-      <input v-model="password" type="password" />
+      <input v-model="password" type="password" :disabled="isUploading" />
     </label>
     <br />
-    <input type="submit" value="Encrypt and Upload" />
+    <input type="submit" value="Encrypt and Upload" :disabled="isUploading" />
   </form>
 </template>

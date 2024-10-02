@@ -54,11 +54,18 @@ router.post(
 
     await Metrics.shutdown();
 
-    const upload = await createUpload(id, size, ownerId, type);
-    res.status(201).json({
-      message: 'Upload created',
-      upload,
-    });
+    try {
+      const upload = await createUpload(id, size, ownerId, type);
+      res.status(201).json({
+        message: 'Upload created',
+        upload,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        message: 'Upload not created',
+      });
+    }
   })
 );
 
