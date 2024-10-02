@@ -21,8 +21,10 @@ const router = useRouter();
 const sessionInfo = ref(null);
 
 async function pingSession() {
-  sessionInfo.value =
-    (await api.call(`users/me`)) ?? CLIENT_MESSAGES.SHOULD_LOG_IN;
+  const session = await api.call<null | string>(`users/me`);
+
+  sessionInfo.value = session ?? CLIENT_MESSAGES.SHOULD_LOG_IN;
+
   if (sessionInfo.value) {
     router.push('/lockbox/profile');
   }

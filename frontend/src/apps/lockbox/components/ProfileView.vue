@@ -23,8 +23,8 @@ async function pingSession() {
 }
 
 async function onSuccess() {
-  await pingSession();
   await dbUserSetup(userStore, keychain, folderStore);
+  await pingSession();
 }
 </script>
 <template>

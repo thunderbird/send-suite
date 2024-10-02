@@ -21,6 +21,7 @@ import getRandomValues from 'get-random-values';
 import { Ref } from 'vue';
 import { ApiConnection } from './api';
 
+const SALT_LENGTH = 128;
 let crypto: Crypto | typeof nodeCrypto = nodeCrypto;
 
 try {
@@ -271,10 +272,9 @@ class Rsa {
     return unwrappedKey;
   }
 }
-
 class Challenge {
   createChallenge(): string {
-    return Util.arrayBufferToBase64(Util.generateSalt(128));
+    return Util.arrayBufferToBase64(Util.generateSalt(SALT_LENGTH));
   }
 
   async generateKey(): Promise<CryptoKey> {
@@ -447,7 +447,7 @@ export class Keychain {
   }
 
   async storePassPhrase(passphrase: string) {
-    await this._storage.storeKeyPhrase(passphrase);
+    await this._storage.storePassPhrase(passphrase);
   }
 
   async store(): Promise<void> {
@@ -740,7 +740,10 @@ export async function restoreKeys(
   msg?: Ref<string>,
   passPhrase?: string
 ) {
-  /* Deprecate this */
+  /* 
+  TODO: Deprecate this
+  The function should not have side effects, it should return the message so it can be handled or displayed by the caller.
+   */
   if (!msg) {
     msg = { value: '' } as Ref<string>;
   }

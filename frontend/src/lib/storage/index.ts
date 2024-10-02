@@ -31,7 +31,7 @@ export class Storage {
     this.adapter.set(this.OTHER_KEYS_KEY, { ...keysObj });
   }
 
-  async storeKeyPhrase(passPhrase: string): Promise<void> {
+  async storePassPhrase(passPhrase: string): Promise<void> {
     this.adapter.set(this.PASS_PHRASE, { passPhrase });
   }
 
