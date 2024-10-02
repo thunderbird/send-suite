@@ -153,6 +153,10 @@ export async function updateUserPublicKey(id: number, publicKey: string) {
   return await fromPrismaV2(prisma.user.update, query, USER_NOT_UPDATED);
 }
 
+export async function updateUniqueHash(id: number, uniqueHash: string) {
+  await prisma.user.update({ where: { id }, data: { uniqueHash } });
+}
+
 async function _whereContainer(
   userId: number,
   type: ContainerType | null,

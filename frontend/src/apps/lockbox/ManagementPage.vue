@@ -31,6 +31,7 @@ const authUrl = ref('');
 const sessionInfo = ref(null);
 
 const salutation = ref('');
+const isLoggedIn = ref(false);
 
 configurationStore.$onAction(() => {
   console.log(`the serverUrl is ${configurationStore.serverUrl}`);
@@ -123,6 +124,7 @@ onMounted(async () => {
     );
   }
   salutation.value = 'You are logged into your Mozilla Account';
+  isLoggedIn.value = true;
   // Identify user for analytics
   const uid = userStore.user.uniqueHash;
   initializeClientMetrics(uid);
@@ -238,6 +240,7 @@ async function finishLogin() {
 
   // TODO: confirm that I am saving the user and keys when I init() (which is in dbUserSetup)
   salutation.value = 'You are logged into your Mozilla Account';
+  isLoggedIn.value = true;
 }
 </script>
 
@@ -262,7 +265,9 @@ async function finishLogin() {
     </label>
   </form>
   <br />
-  <BackupAndRestore />
+  <div v-if="isLoggedIn">
+    <BackupAndRestore />
+  </div>
   <Btn @click.prevent="showCurrentServerSession">ping session</Btn>
   <br />
   <pre v-if="sessionInfo">

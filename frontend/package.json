@@ -1,10 +1,11 @@
 {
-  "name": "frontend",
-  "version": "0.0.1",
+  "name": "thunderbird-send",
+  "version": "0.1.8",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "NODE_ENV=production ./scripts/build.sh",
+    "build:dev": "./scripts/build.sh",
     "dev": "vite --host",
     "lint:all": "eslint . --fix",
     "prettier:all": "prettier --write .",

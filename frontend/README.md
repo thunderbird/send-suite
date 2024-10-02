@@ -5,3 +5,9 @@ This template should help get you started developing with Vue 3 in Vite. The tem
 ## Recommended IDE Setup
 
 - [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+
+## Building the application
+
+Run `pnpm i && pnpm build`
+
+This command will generate a `send-suite-alpha.xpi`, that is the extension file. Additionally, it will generate a `dist` folder with the extension files, a `dist-web` folder with the web files.

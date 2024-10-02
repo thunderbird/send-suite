@@ -10,9 +10,12 @@ import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import useSharingStore from '@/apps/lockbox/stores/sharing-store';
 
 import { EXTENSION_READY, SHARE_ABORTED, SHARE_COMPLETE } from '@/lib/const';
+import { restoreKeysUsingLocalStorage } from '@/lib/keychain';
+import useApiStore from '@/stores/api-store';
 
 const userStore = useUserStore();
 const { keychain } = useKeychainStore();
+const { api } = useApiStore();
 
 const folderStore = useFolderStore();
 const sharingStore = useSharingStore();
@@ -71,6 +74,7 @@ function shareAborted() {
 
 onMounted(async () => {
   try {
+    await restoreKeysUsingLocalStorage(keychain, api);
     await init(userStore, keychain, folderStore);
     console.log(`
 

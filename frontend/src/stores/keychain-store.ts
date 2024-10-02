@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia';
 import { Keychain } from '@/lib/keychain';
 import { Storage } from '@/lib/storage';
+import { defineStore } from 'pinia';
 
 // TODO: decide if it's worth it to move the internals of the Keychain class to the store.
 /*
@@ -18,7 +18,7 @@ type KeychainStore = {
 
 const useKeychainStore: () => KeychainStore = defineStore('keychain', () => {
   const storage = new Storage();
-  let keychain = new Keychain(storage);
+  const keychain = new Keychain(storage);
 
   function resetKeychain() {
     keychain._init();

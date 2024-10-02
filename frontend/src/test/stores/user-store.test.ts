@@ -155,7 +155,6 @@ describe('User Store', () => {
       );
       expect(result).toBeNull();
     });
-
   });
 
   describe('login', () => {
@@ -178,7 +177,7 @@ describe('User Store', () => {
       expect(result).toEqual({
         id: 1,
         tier: 3,
-        email
+        email,
       });
     });
   });
@@ -188,7 +187,7 @@ describe('User Store', () => {
       const storedUserData = {
         id: 2,
         tier: UserTier.FREE,
-        email
+        email,
       };
       const storageMock = vi
         .spyOn(Storage.prototype, 'loadUser')
@@ -403,7 +402,6 @@ describe('User Store', () => {
 
   describe('getBackup', () => {
     it('should retrieve backup data for a specific user', async () => {
-      const userId = 1;
       const backupData = {
         keys: 'someKeys',
         keypair: 'someKeypair',
@@ -414,9 +412,9 @@ describe('User Store', () => {
         .spyOn(useApiStore().api, 'call')
         .mockResolvedValueOnce(backupData);
 
-      const result = await userStore.getBackup(userId);
+      const result = await userStore.getBackup();
 
-      expect(apiCallMock).toHaveBeenCalledWith(`users/${userId}/backup`);
+      expect(apiCallMock).toHaveBeenCalledWith(`users/backup`);
       expect(result).toEqual(backupData);
     });
   });

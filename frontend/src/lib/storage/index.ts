@@ -12,6 +12,7 @@ export class Storage {
   USER_KEY = 'lb/user';
   OTHER_KEYS_KEY = 'lb/keys';
   RSA_KEYS_KEY = 'lb/rsa';
+  PASS_PHRASE = 'lb/passphrase';
   adapter: StorageAdapter;
 
   constructor(Adapter = LocalStorageAdapter) {
@@ -28,6 +29,15 @@ export class Storage {
 
   async storeKeys(keysObj: StoredKey): Promise<void> {
     this.adapter.set(this.OTHER_KEYS_KEY, { ...keysObj });
+  }
+
+  async storePassPhrase(passPhrase: string): Promise<void> {
+    this.adapter.set(this.PASS_PHRASE, { passPhrase });
+  }
+
+  getPassPhrase(): string {
+    const keys = this.adapter.get(this.PASS_PHRASE);
+    return keys?.passPhrase || '';
   }
 
   async loadKeys(): Promise<StoredKey> {

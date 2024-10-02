@@ -4,8 +4,9 @@ if [ "$NODE_ENV" = "production" ]; then
 fi
 
 # Remove old builds
-rm -rf dist
-rm -rf dist-extension
+rm -rf dist && rm -rf dist-web
+rm ../send-suite-alpha.xpi
+rm -rf send-suite-alpha
 
 mkdir -p dist/assets
 
@@ -24,19 +25,14 @@ cp -R dist/pages/assets/* dist/assets/
 cp -R dist/pages/*.* dist/
 rm -rf dist/pages
 
-### Rename dist folder to extension
-mv dist dist-extension
+cd dist
 
 # Create xpi
-cd dist-extension
-zip -r -FS ../send-suite-alpha.xpi * --exclude '*.git*'
+zip -r -FS ../send-suite-alpha.xpi * 
 
-# Check if zip file was created
-cd ..
-if ! find . -name "*.xpi" | grep -q .; then
-  echo "Error: No zip files found" >&2
-  exit 1
-fi
+echo 'Add-on build complete 🎉'
 
 echo 'Building web app 🏭'
 pnpm exec vite build
+
+echo 'Web app build complete 🎉'

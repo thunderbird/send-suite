@@ -7,7 +7,6 @@ const initializeClientMetrics = (uid: string | undefined) => {
   if (!uid) {
     return;
   }
-  console.log('Initializing metrics with uid:', uid);
   posthog.rest.identify(uid);
 };
 
