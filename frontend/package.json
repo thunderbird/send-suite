@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "NODE_ENV=production ./scripts/build.sh",
-    "build:watch:dev": "nodemon --watch ./src/* -e vue,ts,js --exec 'pnpm build'",
     "build:dev": "./scripts/build.sh",
     "build:watch": "nodemon --watch ./src/* -e vue,ts,js --exec 'pnpm build'",
+    "build:watch:dev": "nodemon --watch ./src/* -e vue,ts,js --exec 'pnpm build'",
     "dev": "vite --host",
     "lint:all": "eslint . --fix",
     "prettier:all": "prettier --write .",
