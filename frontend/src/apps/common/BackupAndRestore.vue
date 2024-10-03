@@ -35,17 +35,26 @@ const { api } = useApiStore();
 const { getBackup } = useUserStore();
 const { keychain } = useKeychainStore();
 const bigMessageDisplay = ref('');
+const shouldRestore = ref(false);
+const shouldBackup = ref(false);
 const hasBackedUpKeys = ref<string>(null);
+
+function hideBackupRestore() {
+  shouldRestore.value = false;
+  shouldBackup.value = false;
+}
 
 onMounted(async () => {
   const keybackup = await getBackup();
   hasBackedUpKeys.value = keybackup?.backupKeypair;
   if (!hasBackedUpKeys.value) {
+    shouldBackup.value = true;
     bigMessageDisplay.value =
       '⚠️ Please write down your backup keys and click "Encrypt and backup keys" ⚠️';
   } else {
     if (!keychain.getPassphraseValue()) {
       bigMessageDisplay.value = '⚠️ Please restore your keys from backup ⚠️';
+      shouldRestore.value = true;
     }
   }
 });
@@ -67,7 +76,12 @@ async function makeBackup() {
 
   keychain.storePassPhrase(passphrase.value);
 
-  await backupKeys(keychain, api, bigMessageDisplay);
+  try {
+    await backupKeys(keychain, api, bigMessageDisplay);
+    hideBackupRestore();
+  } catch (e) {
+    console.error('Error backing up keys', e);
+  }
 }
 
 async function restoreFromBackup() {
@@ -80,6 +94,7 @@ async function restoreFromBackup() {
   try {
     await restoreKeys(keychain, api, bigMessageDisplay, passphrase.value);
     keychain.storePassPhrase(passphrase.value);
+    hideBackupRestore();
   } catch (e) {
     bigMessageDisplay.value = e;
   }
@@ -103,10 +118,10 @@ function passphraseIsComplex(phrase) {
           {{ bigMessageDisplay }}
         </p>
         <p>
-          Need informative text telling the user that they need to type in a
-          long passphrase. We'll use that passphrase to encrypt their backup.
-          When logging into another device, they'll visit this page to "install"
-          their keys onto the new device.
+          Please make note of the following 12-word pass phrase. You will need
+          it to restore your keys whenever you log into a new device. This
+          guarantees that your files are encrypted on your device and your keys
+          are never stored on our servers.
         </p>
       </header>
       <div class="w-full flex flex-col gap-3 px-4">
@@ -119,8 +134,10 @@ function passphraseIsComplex(phrase) {
           />
         </div>
 
-        <Btn primary @click.prevent="makeBackup">Encrypt and backup keys</Btn>
-        <Btn danger @click.prevent="restoreFromBackup"
+        <Btn v-if="shouldBackup" primary @click.prevent="makeBackup"
+          >Encrypt and backup keys</Btn
+        >
+        <Btn v-if="shouldRestore" danger @click.prevent="restoreFromBackup"
           >Restore keys from backup</Btn
         >
       </div>
