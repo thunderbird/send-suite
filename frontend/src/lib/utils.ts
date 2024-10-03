@@ -17,9 +17,9 @@ export function delay(delayMs = 100): Promise<void> {
  * @param {number} maxWaitTimeMs - The maximum amount of time to retry until we give up.
  */
 export async function retryUntilSuccessOrTimeout(
-  fn: () => any,
-  waitTimeMs: number = 1000,
-  maxWaitTimeMs: number = 5000
+  fn: () => Promise<boolean>,
+  waitTimeMs: number = 1_000,
+  maxWaitTimeMs: number = 5_000
 ): Promise<void> {
   for (
     let waitTotalMs = 0;
@@ -28,12 +28,23 @@ export async function retryUntilSuccessOrTimeout(
   ) {
     await delay(waitTimeMs);
     try {
-      await fn();
-      return;
+      const result: boolean = await fn();
+      // Stop retrying if the function returns a truthy value
+      if (!!result) return;
     } catch (e) {
       // do nothing
     }
   }
+}
+
+export function calculateTimeout(
+  fileSizeMb: number,
+  uploadSpeedMbps: number,
+  buffer: number = 1.25
+): number {
+  const uploadSpeedMBps = uploadSpeedMbps / 8;
+  const uploadTime = fileSizeMb / uploadSpeedMBps;
+  return Math.ceil(uploadTime * buffer); // Returns the timeout in seconds with buffer
 }
 
 export async function streamToArrayBuffer(

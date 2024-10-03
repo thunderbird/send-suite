@@ -6,6 +6,8 @@
   "scripts": {
     "build": "NODE_ENV=production ./scripts/build.sh",
     "build:dev": "./scripts/build.sh",
+    "build:watch": "nodemon --watch ./src/* -e vue,ts,js --exec 'pnpm build'",
+    "build:watch:dev": "nodemon --watch ./src/* -e vue,ts,js --exec 'pnpm build'",
     "dev": "vite --host",
     "lint:all": "eslint . --fix",
     "prettier:all": "prettier --write .",
@@ -59,6 +61,7 @@
     "lint-staged": "^15.2.7",
     "mock-socket": "^9.3.1",
     "msw": "^2.3.0",
+    "nodemon": "^3.1.7",
     "postcss": "^8.4.28",
     "postcss-import": "^15.1.0",
     "prettier": "^3.0.0",

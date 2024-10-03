@@ -151,7 +151,7 @@ server.on('upgrade', (req, socket, head) => {
   if (req.url === WS_UPLOAD_PATH) {
     wsUploadServer.handleUpgrade(req, socket, head, (ws) => {
       wsUploadServer.emit('connection', ws, req);
-      wsUploadHandler(ws, req);
+      wsUploadHandler(ws);
     });
   } else if (req.url.startsWith(WS_MESSAGE_PATH)) {
     console.info(`upgrading ${WS_MESSAGE_PATH}`);
