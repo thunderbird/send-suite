@@ -19,3 +19,7 @@ cd ..
 # Run lint-staged on backend
 echo "🧶 Running lint-staged on backend..."
 cd backend && pnpx lint-staged
+
+# Run typecheck
+echo "🔍 Running typecheck..."
+pnpm run build
