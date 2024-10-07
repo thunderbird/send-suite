@@ -14,7 +14,7 @@ This command will generate a `send-suite-alpha.xpi`, that is the extension file.
 
 ### Submitting .xpi to ATN
 
-Make sure you have a file named `.env.production` that contains the environment variables for production. Otherwise this will fail.
+Make sure you have a file named `.env.production` inside the frontend directory that contains the environment variables for production. Otherwise this will fail.
 
 Run `pnpm build-and-submit`
 This will create `frontend-source.zip` use it to upload to ATN when asked for source code.
