@@ -30,6 +30,14 @@ import storage from '../storage';
 import { base64url } from '../utils';
 import { fromPrismaV2 } from './prisma-helper';
 const prisma = new PrismaClient();
+
+const onFindShareError = () => {
+  throw new Error(`Could not find existing share for access link`);
+};
+const onCreateError = () => {
+  throw new Error(`Could not create share for access link`);
+};
+
 /**
  * Create Access Link
  * Creates an access link for a container.
@@ -50,29 +58,35 @@ export async function createAccessLink(
   expiration?: string
 ) {
   let share: Share;
-  try {
-    const findShareQuery = {
-      where: {
-        containerId,
-        senderId,
-      },
-    };
-    share = await fromPrismaV2(prisma.share.findFirstOrThrow, findShareQuery);
-  } catch (err) {
+
+  const findShareQuery = {
+    where: {
+      containerId,
+      senderId,
+    },
+  };
+
+  const existingShare = await fromPrismaV2(
+    prisma.share.findFirst,
+    findShareQuery,
+    onFindShareError
+  );
+
+  if (!existingShare?.id) {
     const createShareQuery = {
       data: {
         containerId,
         senderId,
       },
     };
-    const onCreateError = () => {
-      throw new Error(`Could not create share for access link`);
-    };
+
     share = await fromPrismaV2(
       prisma.share.create,
       createShareQuery,
       onCreateError
     );
+  } else {
+    share = existingShare;
   }
 
   const id = base64url(randomBytes(64));
