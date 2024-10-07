@@ -11,3 +11,11 @@ This template should help get you started developing with Vue 3 in Vite. The tem
 Run `pnpm i && pnpm build`
 
 This command will generate a `send-suite-alpha.xpi`, that is the extension file. Additionally, it will generate a `dist` folder with the extension files, a `dist-web` folder with the web files.
+
+### Submitting .xpi to ATN
+
+Make sure you have a file named `.env.production` that contains the environment variables for production. Otherwise this will fail.
+
+Run `pnpm build-and-submit`
+This will create `frontend-source.zip` use it to upload to ATN when asked for source code.
+It will also move your `.xpi` to the root.

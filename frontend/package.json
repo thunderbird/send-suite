@@ -1,10 +1,11 @@
 {
   "name": "thunderbird-send",
-  "version": "0.1.8",
+  "version": "0.1.10",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "NODE_ENV=production ./scripts/build.sh",
+    "build-and-submit": "NODE_ENV=production ./scripts/build.sh && ./scripts/submit.sh",
     "build:dev": "./scripts/build.sh",
     "build:watch": "nodemon --watch ./src/* -e vue,ts,js --exec 'pnpm build'",
     "build:watch:dev": "nodemon --watch ./src/* -e vue,ts,js --exec 'pnpm build'",
