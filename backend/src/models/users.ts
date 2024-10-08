@@ -13,7 +13,7 @@ export async function createUser(
   email: string,
   tier: UserTier = UserTier.PRO
 ) {
-  const query = {
+  return prisma.user.create({
     data: {
       publicKey,
       email,
@@ -21,9 +21,7 @@ export async function createUser(
       createdAt: new Date(),
       updatedAt: new Date(),
     },
-  };
-
-  return await fromPrismaV2(prisma.user.create, query, USER_NOT_CREATED);
+  });
 }
 
 export async function getUserByEmail(email: string) {
@@ -62,17 +60,15 @@ export async function findOrCreateUserProfileByMozillaId(
         mozid,
       },
     },
-    select: {
-      id: true,
-      email: true,
-      tier: true,
-      profile: true,
-    },
   };
 
   try {
-    user = await fromPrisma(prisma.user.findFirstOrThrow, userQuery);
+    user = await fromPrismaV2(prisma.user.findFirst, userQuery);
   } catch (err) {
+    console.error(err);
+  }
+
+  if (!user?.id) {
     user = await createUser('', email, UserTier.FREE);
   }
 

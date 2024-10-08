@@ -109,6 +109,8 @@ router.get(
   requireLogin,
   addErrorHandling(USER_ERRORS.FOLDERS_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
+    const emptyFolder = [{ id: 0, items: [] }];
+
     try {
       await checkAllowList(req.session?.user?.email);
     } catch (error) {
@@ -118,7 +120,7 @@ router.get(
       we need to return an empty array of items.
        */
 
-      return res.status(401).json([{ id: 0, items: [] }]);
+      return res.status(401).json(emptyFolder);
     }
 
     const { id } = getSessionUserOrThrow(req);
@@ -297,6 +299,7 @@ router.post(
 
 router.post(
   '/backup',
+  requireLogin,
   addErrorHandling(USER_ERRORS.BACKUP_FAILED),
   wrapAsyncHandler(async (req, res) => {
     const { id } = getSessionUserOrThrow(req);
@@ -311,10 +314,11 @@ router.post(
 
 router.get(
   '/backup',
+  requireLogin,
   addErrorHandling(USER_ERRORS.BACKUP_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
-    const userIDFomSession = getSessionUserOrThrow(req);
-    const backup = await getBackup(userIDFomSession.id);
+    const { id } = getSessionUserOrThrow(req);
+    const backup = await getBackup(id);
     res.status(200).json(backup);
   })
 );
@@ -323,8 +327,8 @@ router.get(
   '/:id/backup',
   addErrorHandling(USER_ERRORS.BACKUP_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
-    const userIDFomSession = getSessionUserOrThrow(req);
-    const backup = await getBackup(userIDFomSession.id);
+    const { id } = getSessionUserOrThrow(req);
+    const backup = await getBackup(id);
     res.status(200).json(backup);
   })
 );
