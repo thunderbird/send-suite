@@ -71,7 +71,7 @@
     "typescript": "^5.2.2",
     "typescript-eslint": "^7.13.0",
     "typescript-language-server": "^3.3.2",
-    "vite": "^4.4.5",
+    "vite": "^4.5.5",
     "vitest": "^1.6.0",
     "vitest-localstorage-mock": "^0.0.1",
     "vitest-websocket-mock": "^0.3.0",
