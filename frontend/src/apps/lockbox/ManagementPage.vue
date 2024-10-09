@@ -103,7 +103,6 @@ onMounted(async () => {
     // If so, hydrate our user using session data.
     const didPopulate = await userStore.populateFromSession();
     if (!didPopulate) {
-      console.warn(`DEBUG: could not retrieve user; did mozilla login fail?`);
       return;
     }
     // app-sepcific initialization
@@ -148,7 +147,6 @@ async function dbUserSetup() {
   // Populate the user from the session.
   const didPopulate = await userStore.populateFromSession();
   if (!didPopulate) {
-    console.warn(`DEBUG: could not retrieve user; did mozilla login fail?`);
     return;
   }
   // Store the user we got by populating from session.

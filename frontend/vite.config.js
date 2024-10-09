@@ -1,7 +1,13 @@
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import vue from '@vitejs/plugin-vue';
-import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
+
+import fs from 'fs';
+import path from 'path';
+
+const packageJson = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, './package.json'), 'utf8')
+);
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -26,6 +32,10 @@ export default defineConfig(({ mode }) => {
         org: 'thunderbird',
         project: 'send-suite-frontend',
         authToken: env.VITE_SENTRY_AUTH_TOKEN,
+        release: packageJson.version,
+        moduleMetadata: {
+          version: packageJson.version,
+        },
       }),
     ],
     server: {
@@ -46,21 +56,6 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       outDir: 'dist-web',
-      rollupOptions: {
-        // input: {
-        //   // background: resolve(__dirname, "src/background.js"),
-        //   "extension-ui": resolve(__dirname, "index.extension-ui.html"),
-        //   "extension-settings": resolve(
-        //     __dirname,
-        //     "index.extension-settings.html"
-        //   ),
-        //   // testpage: resolve(__dirname, "index.test.html"),
-        //   // management: resolve(__dirname, "index.management.html"),
-        //   // stats: resolve(__dirname, 'index.stats.html'),
-        //   // options: resolve(__dirname, 'index.options.html'),
-        //   // popup: resolve(__dirname, 'index.popup.html'),
-        // },
-      },
       sourcemap: true,
     },
   };

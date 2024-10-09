@@ -98,7 +98,7 @@ resources:
           - FARGATE
         container_definitions:
           backend:
-            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:0.1.11
+            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:0.1.12
             portMappings:
               - name: send-suite
                 containerPort: 8080
@@ -131,7 +131,7 @@ resources:
                 valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/sentry-auth-token-esyr6P
             environment:
               - name: B2_BUCKET_NAME
-                value: tb-send-suite-staging-object-store
+                value: tb-send-suite-staging-object-store-alpha
               - name: B2_ENDPOINT
                 value: s3.us-east-005.backblazeb2.com
               - name: B2_REGION

@@ -25,7 +25,6 @@ onMounted(async () => {
     // Load from backend session and retry init()
     const didPopulate = await userStore.populateFromSession();
     if (!didPopulate) {
-      console.warn(`DEBUG: could not retrieve user; did mozilla login fail?`);
       return;
     }
     await init(userStore, keychain, folderStore);
