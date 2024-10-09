@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "version": "0.1.10",
+  "version": "0.1.11",
   "author": "Thunderbird Team",
   "name": "Thunderbird Send",
   "description": "Thunderbird and friends",
@@ -31,6 +31,7 @@
     "activeTab",
     "tabs",
     "messagesRead",
-    "messagesModify"
+    "messagesModify",
+    "sensitiveDataUpload"
   ]
 }
