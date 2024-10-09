@@ -11,9 +11,10 @@ const extractKeys = (str: string): string[] => {
 
 // Function to read .env files from a directory and return unique keys
 async function readEnvs(directoryPath: string): Promise<string[]> {
+  const trackedFiles = [".env", ".env.sample"];
   try {
     const files = await fs.readdir(directoryPath);
-    const envFiles = files.filter((file) => file.includes(".env"));
+    const envFiles = files.filter((file) => trackedFiles.includes(file));
 
     const keys = await Promise.all(
       envFiles.map(async (file) => {

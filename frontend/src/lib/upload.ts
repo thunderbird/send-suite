@@ -60,7 +60,7 @@ export default class Uploader {
     }
 
     const ONE_SECOND = 1_000;
-    const ONE_MINUTE = 60_000;
+    const FIVE_MINUTES = 60_000 * 5;
 
     // Poll the api to check if the file is in storage
     await retryUntilSuccessOrTimeout(
@@ -72,7 +72,7 @@ export default class Uploader {
         return !!size;
       },
       ONE_SECOND,
-      ONE_MINUTE
+      FIVE_MINUTES
     );
 
     // Create a Content entry in the database

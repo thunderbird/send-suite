@@ -88,7 +88,7 @@ export async function _upload(
       ws.send(buf);
 
       size += buf.length;
-      console.log('Uploaded', size, 'bytes');
+      console.log('Uploaded', size, 'bytes', '- timestamp:', Date.now());
       state = await reader.read();
       while (
         ws.bufferedAmount > ECE_RECORD_SIZE * 2 &&

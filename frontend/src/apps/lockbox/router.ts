@@ -34,6 +34,7 @@ export const routes: RouteRecordRaw[] = [
         meta: {
           requiresSessionAndAuth: true,
           autoRestoresKeys: true,
+          requiresBackedUpKeys: true,
         },
       },
       {
@@ -66,6 +67,7 @@ export const routes: RouteRecordRaw[] = [
         meta: {
           requiresSessionAndAuth: true,
           autoRestoresKeys: true,
+          requiresBackedUpKeys: true,
         },
       },
     ],
@@ -86,7 +88,7 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
-  const { user } = useUserStore();
+  const { user, getBackup } = useUserStore();
   const { keychain } = useKeychainStore();
   const { api } = useApiStore();
   //  requiresSession - means that even if the user has a session in local storage, it must be valid in the backend
@@ -108,6 +110,9 @@ router.beforeEach(async (to, from, next) => {
   );
   const autoRestoresKeys = to.matched.some(
     (record) => record.meta.autoRestoresKeys
+  );
+  const requiresBackedUpKeys = to.matched.some(
+    (record) => record.meta.requiresBackedUpKeys
   );
 
   // Check local storage
@@ -137,6 +142,14 @@ router.beforeEach(async (to, from, next) => {
 
   if (redirectOnValidSession && hasLocalStorageSession && isSessionValid) {
     return next('/lockbox/profile');
+  }
+
+  if (requiresBackedUpKeys) {
+    const keybackup = await getBackup();
+    const hasBackedUpKeys = keychain.getPassphraseValue();
+    if (!keybackup || !hasBackedUpKeys) {
+      return next('/lockbox/profile');
+    }
   }
 
   if (autoRestoresKeys) {
