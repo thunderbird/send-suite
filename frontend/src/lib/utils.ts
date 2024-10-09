@@ -32,7 +32,9 @@ export async function retryUntilSuccessOrTimeout(
       // Stop retrying if the function returns a truthy value
       if (!!result) return;
     } catch (e) {
-      // do nothing
+      console.error(
+        `Error on waiting for the file to show up in storage: ${e}`
+      );
     }
   }
 }
