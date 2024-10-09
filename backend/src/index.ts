@@ -114,6 +114,12 @@ app.get('/echo', (req, res) => {
   res.status(200).json({ message: 'API echo response' });
 });
 
+app.get('/error', (req, res) => {
+  console.error('catching error on purpose');
+
+  res.status(200).json({ message: 'API is simulating an error' });
+});
+
 app.get('/api/debug-session', (req, res) => {
   res.status(200).json({
     session: req.session,
