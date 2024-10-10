@@ -143,4 +143,5 @@ function passphraseIsComplex(phrase) {
       </div>
     </div>
   </div>
+  <div @dblclick="console.warn('Test error')">Happy sending! 🐧</div>
 </template>
