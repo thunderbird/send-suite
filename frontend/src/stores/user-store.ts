@@ -133,6 +133,11 @@ const useUserStore: () => UserStore = defineStore('user', () => {
   // After login, get user from backend and save it locally.
   // Returns a boolean signaling whether successfully populated the user.
   async function populateFromSession() {
+    // Stop the execution if the user is already populated
+    if (user.id) {
+      return true;
+    }
+
     const userResp = await api.call<{ user: UserType }>(`users/me`);
     if (!userResp?.user) {
       // Either we didn't get a response or it doesn't have a .user

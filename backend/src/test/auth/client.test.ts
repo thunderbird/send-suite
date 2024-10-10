@@ -5,8 +5,17 @@ import {
   generateState,
   getClient,
   getIssuer,
+  getUserFromJWT,
   isEmailInAllowList,
 } from '../../auth/client';
+
+const { mockedDecode } = vi.hoisted(() => ({
+  mockedDecode: vi.fn(),
+}));
+
+vi.mock('jsonwebtoken', () => ({
+  default: { decode: mockedDecode },
+}));
 
 describe('Auth Client', () => {
   beforeAll(() => {
@@ -121,5 +130,29 @@ describe('checkAllowList no .env', () => {
   it('should not throw when no allow list is provided', async () => {
     const noErrorHere = await checkAllowList('ham@burger.com');
     expect(noErrorHere).toBeUndefined();
+  });
+});
+
+describe('getUserFromJWT', () => {
+  beforeAll(() => {
+    vi.unstubAllEnvs();
+    vi.stubEnv('ACCESS_TOKEN_SECRET', 'your_secret');
+  });
+
+  it('should return the user from the token', () => {
+    const mockedTokenData = { userId: '123' };
+    mockedDecode.mockReturnValue(mockedTokenData);
+
+    const data = getUserFromJWT('valid.token.here');
+    expect(data).toStrictEqual(mockedTokenData);
+  });
+
+  it('should return null if token is invalid', () => {
+    mockedDecode.mockReturnValue(null);
+    // Make sure the function does not throw
+    expect(() => {
+      const data = getUserFromJWT('invalid.token');
+      expect(data).toBeNull();
+    }).not.toThrow();
   });
 });

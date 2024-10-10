@@ -21,45 +21,43 @@ import {
   getBackup,
   getRecentActivity,
   getUserByEmail,
+  getUserById,
   getUserPublicKey,
   setBackup,
   updateUserPublicKey,
 } from '../models/users';
 
-import { checkAllowList } from '../auth/client';
+import {
+  checkAllowList,
+  getJWTfromToken,
+  getUserFromJWT,
+} from '../auth/client';
 import { BaseError, SESSION_NOT_SAVED } from '../errors/models';
-import { requireLogin } from '../middleware';
+import { requireJWT, requireLogin } from '../middleware';
 import { getSessionUserOrThrow } from '../utils/session';
 
 const router: Router = Router();
 
 router.get(
   '/me',
-  requireLogin,
+  // requireLogin,
+  requireJWT,
   addErrorHandling(USER_ERRORS.SESSION_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
-    // If an allow list is provided, only allow users in that list
-    // If there is no env variable, we allow all users
-    try {
-      await checkAllowList(req.session?.user?.email);
-    } catch (error) {
-      return res.status(401).json({
-        msg: 'Not in allow list',
-      });
-    }
-
     // Retrieves the logged-in user from the current session
     // ok, I need to persist the user to the session, don't I?
     // am I not doing that already?
-    console.log('session id: ', req.session.id);
-    const user = req.session.user;
-    if (!user) {
+    const authToken = getJWTfromToken(req.headers.authentication);
+    const { id } = getUserFromJWT(authToken);
+
+    try {
+      const user = await getUserById(id);
+      return res.status(200).json({
+        user,
+      });
+    } catch (error) {
       return res.status(404).json({});
     }
-
-    res.status(200).json({
-      user,
-    });
   })
 );
 

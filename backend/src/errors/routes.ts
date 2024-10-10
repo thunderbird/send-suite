@@ -6,6 +6,10 @@ type ErrorRespInfo = {
 };
 
 export const AUTH_ERRORS = {
+  AUTH_FAILED: {
+    statusCode: 401,
+    message: 'Authentication failed.',
+  },
   LOG_IN_FAILED: {
     statusCode: 500,
     message: 'Could not log in.',

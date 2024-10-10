@@ -1,5 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 
+import type { NextFunction, Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
+import { getJWTfromToken } from './auth/client';
 import { fromPrismaV2 } from './models/prisma-helper';
 import {
   allPermissions,
@@ -57,12 +60,43 @@ function extractContainerId(req) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function reject(res, status = 403, message = `Not authorized`) {
-  res.status(403).json({
+export function reject(
+  res: Response,
+  status = 403,
+  message = `Not authorized`
+) {
+  res.status(status).json({
     message,
   });
   return;
+}
+
+export async function requireJWT(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const jwtToken = req.headers.authentication;
+  let shouldReturn = false;
+
+  const token = getJWTfromToken(jwtToken);
+  if (!token) {
+    console.error(`No token found for ${extractMethodAndRoute(req)}`);
+    return res.status(403).json({ message: `Not authorized: Token not found` });
+  }
+
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err) => {
+    if (err) {
+      console.error(`Invalid token for ${extractMethodAndRoute(req)}`);
+      shouldReturn = true;
+    }
+  });
+
+  // We need to keep this variable outside the callback to make sure next doesn't execute
+  if (shouldReturn) {
+    return res.status(403).json({ message: `Not authorized: Invalid token` });
+  }
+  next();
 }
 
 export async function requireLogin(req, res, next) {
