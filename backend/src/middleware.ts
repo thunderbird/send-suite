@@ -93,6 +93,8 @@ export const getGroupMemberPermissions: RequestHandler = async (
   res,
   next
 ) => {
+  // Since we're calling a function intended to be used as middleware, we need to call next() if the JWT is valid
+  // We set a boolean to make sure next() is called. This means that the jwt has been verified
   let goodToGo = false;
   const nextTrigger = () => {
     goodToGo = true;
