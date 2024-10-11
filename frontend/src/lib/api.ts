@@ -73,7 +73,7 @@ export class ApiConnection {
       headers: {
         'content-type': 'application/json',
         ...headers,
-        authentication: 'Bearer ' + this.authToken,
+        authorization: 'Bearer ' + this.authToken,
       },
     };
 

@@ -20,7 +20,7 @@ import {
   getGroupMemberPermissions,
   renameBodyProperty,
   requireAdminPermission,
-  requireLogin,
+  requireJWT,
   requireReadPermission,
   requireWritePermission,
 } from '../middleware';
@@ -40,7 +40,8 @@ import {
   getItemsInContainer,
   updateContainerName,
 } from '../models/containers';
-import { getSessionUserOrThrow } from '../utils/session';
+
+import { getUserFromAuthenticatedRequest } from '@/auth/client';
 
 const router: Router = Router();
 
@@ -64,7 +65,7 @@ export function flattenDescendants(tree: TreeNode): number[] {
 // Add the ancestor folder path as a property.
 router.get(
   '/:containerId',
-  requireLogin,
+  requireJWT,
   getGroupMemberPermissions,
   requireReadPermission,
   addErrorHandling(CONTAINER_ERRORS.CONTAINER_NOT_FOUND),
@@ -87,7 +88,7 @@ router.get(
 // Get all Access Links for a container
 router.get(
   '/:containerId/links',
-  requireLogin,
+  requireJWT,
   getGroupMemberPermissions,
   requireReadPermission,
   addErrorHandling(CONTAINER_ERRORS.ACCESS_LINKS_NOT_FOUND),
@@ -105,7 +106,7 @@ router.get(
 // `renameBodyProperty` is a no-op when creating a top-level folder in Lockbox.
 router.post(
   '/',
-  requireLogin,
+  requireJWT,
   renameBodyProperty('parentId', 'containerId'),
   getGroupMemberPermissions,
   requireWritePermission,
@@ -119,7 +120,7 @@ router.post(
       type: ContainerType;
     } = req.body;
 
-    const { id } = getSessionUserOrThrow(req);
+    const { id } = getUserFromAuthenticatedRequest(req);
 
     const ownerId = id;
 
@@ -150,7 +151,7 @@ router.post(
 // Rename a container
 router.post(
   '/:containerId/rename',
-  requireLogin,
+  requireJWT,
   getGroupMemberPermissions,
   requireWritePermission,
   addErrorHandling(CONTAINER_ERRORS.CONTAINER_NOT_RENAMED),
@@ -165,7 +166,7 @@ router.post(
 // TODO: think about whether we can be admin of a folder that contains folders we don't own.
 router.delete(
   '/:containerId',
-  requireLogin,
+  requireJWT,
   getGroupMemberPermissions,
   requireAdminPermission,
   addErrorHandling(CONTAINER_ERRORS.CONTAINER_NOT_DELETED),

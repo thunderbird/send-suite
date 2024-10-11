@@ -1,4 +1,5 @@
 import { AuthResponse } from '@/routes/auth';
+import type { Request } from 'express';
 import jwt from 'jsonwebtoken';
 import { Issuer, generators } from 'openid-client';
 
@@ -65,7 +66,7 @@ export function getUserFromJWT(token: string) {
   return data as AuthResponse;
 }
 
-export function getJWTfromToken(jwtToken: string | string[]): string | null {
+export function getJWTfromToken(jwtToken: string): string | null {
   const isValidTokenFormatting =
     typeof jwtToken === 'string' && jwtToken.startsWith('Bearer ');
 
@@ -75,4 +76,14 @@ export function getJWTfromToken(jwtToken: string | string[]): string | null {
 
   const token = jwtToken.split('Bearer ')[1];
   return token;
+}
+
+export function getUserFromAuthenticatedRequest(req: Request) {
+  const token = getJWTfromToken(req.headers.authorization);
+  if (!token)
+    throw new Error(
+      'No token found in request: This should not happen if the user is authenticated'
+    );
+  const user = getUserFromJWT(token);
+  return user;
 }

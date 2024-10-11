@@ -28,7 +28,7 @@ describe('requireJWT', () => {
   it('should call next() for a valid token', async () => {
     const token = 'valid.token.here';
     mockRequest.headers = {
-      authentication: `Bearer ${token}`,
+      authorization: `Bearer ${token}`,
     };
     vi.mocked(mockedVerify).mockImplementationOnce((token, secret, callback) =>
       callback(null, { userId: '123' })
@@ -62,7 +62,7 @@ describe('requireJWT', () => {
   it('should reject with a status 403 if token is invalid', async () => {
     const token = 'invalid.token';
     mockRequest.headers = {
-      authentication: `Bearer ${token}`,
+      authorization: `Bearer ${token}`,
     };
     vi.mocked(mockedVerify).mockImplementationOnce((token, secret, callback) =>
       callback(new Error('Invalid token'), null)

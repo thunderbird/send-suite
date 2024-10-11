@@ -16,7 +16,7 @@ import {
 import { useMetrics } from '../metrics';
 import {
   getGroupMemberPermissions,
-  requireLogin,
+  requireJWT,
   requireWritePermission,
 } from '../middleware';
 import { getSessionUserOrThrow } from '../utils/session';
@@ -30,7 +30,7 @@ const router: Router = Router();
  */
 router.post(
   '/',
-  requireLogin,
+  requireJWT,
   getGroupMemberPermissions,
   requireWritePermission,
   addErrorHandling(UPLOAD_ERRORS.NOT_CREATED),

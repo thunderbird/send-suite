@@ -76,7 +76,7 @@ export async function requireJWT(
   res: Response,
   next: NextFunction
 ) {
-  const jwtToken = req.headers.authentication;
+  const jwtToken = req.headers.authorization;
   let shouldReturn = false;
 
   const token = getJWTfromToken(jwtToken);
@@ -95,15 +95,6 @@ export async function requireJWT(
   // We need to keep this variable outside the callback to make sure next doesn't execute
   if (shouldReturn) {
     return res.status(403).json({ message: `Not authorized: Invalid token` });
-  }
-  next();
-}
-
-export async function requireLogin(req, res, next) {
-  const id = extractUserId(req);
-  if (!id) {
-    reject(res);
-    return;
   }
   next();
 }

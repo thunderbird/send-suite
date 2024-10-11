@@ -1,4 +1,4 @@
-import { Request, RequestHandler, Response } from 'express';
+import { NextFunction, Request, RequestHandler, Response } from 'express';
 
 type ErrorRespInfo = {
   statusCode: number;
@@ -8,7 +8,7 @@ type ErrorRespInfo = {
 export const AUTH_ERRORS = {
   AUTH_FAILED: {
     statusCode: 401,
-    message: 'Authentication failed.',
+    message: 'Authorization failed.',
   },
   LOG_IN_FAILED: {
     statusCode: 500,
@@ -241,7 +241,7 @@ export function addErrorHandling(err: ErrorRespInfo): RequestHandler {
  * Any errors thrown will be passed to the global error handler middleware.
  */
 export function wrapAsyncHandler(fn: RequestHandler) {
-  return function (req, res, next) {
+  return function (req: Request, res: Response, next: NextFunction) {
     return Promise.resolve(fn(req, res, next)).catch(next);
   } as RequestHandler;
 }
