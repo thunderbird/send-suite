@@ -11,6 +11,7 @@
     "build:watch:dev": "nodemon --watch ./src/* -e vue,ts,js --exec 'pnpm build'",
     "dev": "vite --host",
     "lint:all": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
     "prettier:all": "prettier --write .",
     "preview": "vite preview",
     "test": "vitest run --silent",

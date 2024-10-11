@@ -13,13 +13,13 @@ import {
   statUpload,
 } from '../models/uploads';
 
+import { getUserFromAuthenticatedRequest } from '@/auth/client';
 import { useMetrics } from '../metrics';
 import {
   getGroupMemberPermissions,
   requireJWT,
   requireWritePermission,
 } from '../middleware';
-import { getSessionUserOrThrow } from '../utils/session';
 
 const router: Router = Router();
 
@@ -38,13 +38,9 @@ router.post(
     const { id, size, ownerId, type } = req.body;
     const Metrics = useMetrics();
 
-    getSessionUserOrThrow(req);
+    const { uniqueHash } = getUserFromAuthenticatedRequest(req);
 
-    if (!req.session.user?.uniqueHash) {
-      throw new Error('User does not have a unique hash. Log in again.');
-    }
-
-    const distinctId = req.session.user.uniqueHash;
+    const distinctId = uniqueHash;
 
     Metrics.capture({
       event: 'upload.size',

@@ -8,6 +8,7 @@
   "main": "index.js",
   "scripts": {
     "build": "pnpm exec tsc && pnpm sentry:sourcemaps",
+    "typecheck": "tsc --noEmit",
     "db:browse": "prisma studio",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
