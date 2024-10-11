@@ -11,12 +11,12 @@
     "build:watch:dev": "nodemon --watch ./src/* -e vue,ts,js --exec 'pnpm build'",
     "dev": "vite --host",
     "lint:all": "eslint . --fix",
-    "typecheck": "tsc --noEmit",
     "prettier:all": "prettier --write .",
     "preview": "vite preview",
     "test": "vitest run --silent",
     "test-debug": "vitest --inspect-brk --single-thread",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch",
+    "typecheck": "tsc --noEmit"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": [

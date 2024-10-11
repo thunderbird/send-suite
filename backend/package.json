@@ -8,7 +8,6 @@
   "main": "index.js",
   "scripts": {
     "build": "pnpm exec tsc && pnpm sentry:sourcemaps",
-    "typecheck": "tsc --noEmit",
     "db:browse": "prisma studio",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
@@ -23,7 +22,8 @@
     "prestart": "NODE_ENV=production pnpm run build",
     "start": "NODE_ENV=production node dist/index.js",
     "test": "vitest run --silent",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch",
+    "typecheck": "tsc --noEmit"
   },
   "lint-staged": {
     "*.{js,ts}": [
