@@ -1,0 +1,123 @@
+---
+name: deploy-staging-and-create-release
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+    contents: read
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend-changed: ${{ steps.check.outputs.backend-changed }}
+      iac-changed: ${{ steps.check.outputs.iac-changed }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: check
+        with:
+          filters: |
+            backend-changed:
+              - 'backend/**'
+            iac-changed:
+              - 'pulumi/**'
+              - '.github/workflows/validate.yml'
+
+  # When backend changes are merged in, build and push a new Docker image
+  backend-merge:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.backend-changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # Preparation for future steps
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: 'true'
+      
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+      
+      - name: Set up virtual environment
+        shell: bash
+        run: |
+          python -m pip install virtualenv
+          cd pulumi
+          virtualenv ./venv
+        
+      - name: Set up Pulumi environment
+        id: pulumi-env
+        shell: bash
+        run: |
+          cd pulumi
+          source ./venv/bin/activate
+          curl -fsSL https://get.pulumi.com | sh
+          pip install -Ur requirements.txt
+
+      # - name: Setup tmate session
+      #   uses: mxschmitt/action-tmate@v3
+      
+      # Produce a container image
+      - name: Build, tag, and push backend image to Amazon ECR
+        id: build-backend
+        env:
+          ECR_TAG: '${{ steps.login-ecr.outputs.registry }}/${{ vars.PROJECT }}:${{ github.sha }}'
+        run: |
+          # Build a docker container and push it to ECR so that it can be deployed to ECS.
+          docker build -t $ECR_TAG ./backend
+          docker push $ECR_TAG
+          echo "backend-image=$ECR_TAG" >> $GITHUB_OUTPUT
+
+      # Deploy to jung
+      - name: Deploy new image to jung
+        shell: bash
+        env:
+          ECR_TAG: '${{ steps.login-ecr.outputs.registry }}/${{ vars.PROJECT }}:${{ github.sha }}'
+        run: |
+          # Change the image config option and try to apply the change
+          cd pulumi
+          cat << EOF > newimage.yaml
+          resources:
+            tb:fargate:FargateClusterWithLogging:
+              backend:
+                task_definition:
+                  container_definitions:
+                    backend:
+                      image: "$ECR_TAG"
+          EOF
+          yq -i '. *= load("newimage.yaml")' config.jung.yaml
+          export PULUMI_CONFIG_PASSPHRASE="${{ secrets.PULUMI_PASSPHRASE }}"
+          source ./venv/bin/activate
+          pulumi login s3://tb-send-suite-pulumi
+          pulumi stack select jung
+          pulumi up -y --diff --target \
+            'urn:pulumi:jung::send-suite::tb:fargate:FargateClusterWithLogging$aws:ecs/taskDefinition:TaskDefinition::send-suite-jung-fargate-taskdef' \
+            --target-dependents
+
+          # Only push the config change back to the repo if it was successfully applied
+          # git add config.staging.yaml
+          # git commit -m "CI: Update staging image"
+          # git push
