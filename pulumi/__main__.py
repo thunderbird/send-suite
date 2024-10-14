@@ -90,7 +90,7 @@ backend_fargate = tb_pulumi.fargate.FargateClusterWithLogging(
 backend_dns = aws.route53.Record(
     f'{project.name_prefix}-dns-backend',
     zone_id='Z03528753AZVULC8BFCA',  # thunderbird.dev
-    name='lockbox.thunderbird.dev',
+    name=resources['domains']['backend'],
     # Delete this record once this issue is resolved, deferring to the CloudFront rewrite instead
     # https://bugzilla.mozilla.org/show_bug.cgi?id=1866867
     type=aws.route53.RecordType.CNAME,
@@ -109,12 +109,10 @@ except IOError:
 cf_func = aws.cloudfront.Function(
     f'{project.name_prefix}-func-rewrite',
     code=rewrite_code,
-    # comment=f'Rewrite URLs for {project.name_prefix}',
-    comment='Rewrites inbound requests to direct them to the staging send-suite backend API',
+    comment='Rewrites inbound requests to direct them to the send-suite backend API',
     name=f'{project.name_prefix}-rewrite',
-    publish=False,
+    publish=True,
     runtime='cloudfront-js-2.0',
-    opts=pulumi.ResourceOptions(import_='send-suite-staging-rewrite'),
 )
 
 # Deliver frontend content via CloudFront; Ref:
@@ -156,7 +154,7 @@ frontend = tb_pulumi.cloudfront.CloudFrontS3Service(
 frontend_dns = aws.route53.Record(
     f'{project.name_prefix}-dns-frontend',
     zone_id='Z03528753AZVULC8BFCA',  # thunderbird.dev
-    name='send.thunderbird.dev',
+    name=resources['domains']['frontend'],
     type=aws.route53.RecordType.CNAME,
     ttl=60,
     records=[frontend.resources['cloudfront_distribution'].domain_name],
