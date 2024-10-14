@@ -91,8 +91,8 @@ jobs:
           docker push $ECR_TAG
           echo "backend-image=$ECR_TAG" >> $GITHUB_OUTPUT
 
-      # Deploy to jung
-      - name: Deploy new image to jung
+      # Deploy to staging
+      - name: Deploy new image to staging
         shell: bash
         env:
           ECR_TAG: '${{ steps.login-ecr.outputs.registry }}/${{ vars.PROJECT }}:${{ github.sha }}'
@@ -108,16 +108,63 @@ jobs:
                     backend:
                       image: "$ECR_TAG"
           EOF
-          yq -i '. *= load("newimage.yaml")' config.jung.yaml
+          yq -i '. *= load("newimage.yaml")' config.staging.yaml
           export PULUMI_CONFIG_PASSPHRASE="${{ secrets.PULUMI_PASSPHRASE }}"
           source ./venv/bin/activate
           pulumi login s3://tb-send-suite-pulumi
-          pulumi stack select jung
+          pulumi stack select staging
           pulumi up -y --diff --target \
-            'urn:pulumi:jung::send-suite::tb:fargate:FargateClusterWithLogging$aws:ecs/taskDefinition:TaskDefinition::send-suite-jung-fargate-taskdef' \
+            'urn:pulumi:staging::send-suite::tb:fargate:FargateClusterWithLogging$aws:ecs/taskDefinition:TaskDefinition::send-suite-staging-fargate-taskdef' \
             --target-dependents
 
           # Only push the config change back to the repo if it was successfully applied
           # git add config.staging.yaml
           # git commit -m "CI: Update staging image"
           # git push
+
+  frontend-merge:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend-changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # Preparation for future steps
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Build the frontend's static assets
+        id: frontend-build
+        shell: bash
+        run: |
+          # Initial setup of dependencies
+          cd frontend
+          npm install -g pnpm
+          pnpm install
+
+          # Build static frontend assets and create a compressed archive of them
+          TIMESTAMP=$(date +%Y.%m.%d-%H.%M.%S)
+          ARCHIVE="send-suite-frontend-build-$TIMESTAMP.tbz"
+          pnpm build
+          tar -cvjf $ARCHIVE dist/*
+          echo "archive_filename=$ARCHIVE" >> $GITHUB_OUTPUT
+
+      - name: Archive the build
+        id: frontend-archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-static-assets
+          path: ${{ steps.frontend-build.outputs.archive_filename }}
+      
+      - name: Deploy to staging
+        id: frontend-deploy
+        shell: bash
+        run: |
+          cd frontend/dist
+          aws s3 cp . s3://tb-send-suite-staging-frontend/ --recursive

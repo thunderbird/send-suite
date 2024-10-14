@@ -59,7 +59,7 @@ jobs:
         shell: bash
         run: |
           cd backend
-          pnpm run test || true # TODO: rjung should remove this before merging any PRS about this
+          pnpm run test
       
   backend-lint:
     needs: detect-changes
@@ -103,3 +103,49 @@ jobs:
         uses: chartboost/ruff-action@v1
         with:
           src: './pulumi'
+
+  # When the frontend code changes, run these steps
+  frontend-lint:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    if: needs.detect-changes.outputs.frontend-changed == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        id: install-dependencies
+        shell: bash
+        run: |
+          npm install -g pnpm
+          pnpm install
+
+      # This step is temporarily forced into success because getting linting under control is
+      # low priority. When https://github.com/thunderbird/send-suite/issues/253 is resolved,
+      # remove the ` || true` bit below.
+      - name: Frontend lint
+        id: frontend-lint
+        shell: bash
+        run: |
+          cd frontend
+          pnpm run lint:all || true
+  
+  frontend-test:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    if: needs.detect-changes.outputs.frontend-changed == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        id: install-dependencies
+        shell: bash
+        run: |
+          npm install -g pnpm
+          pnpm install
+
+      - name: Frontend lint
+        id: frontend-test
+        shell: bash
+        run: |
+          cd frontend
+          pnpm run test
