@@ -183,3 +183,7 @@ resources:
         comment: send-suite staging frontend
         logging_config:
           include_cookies: True
+
+  domains:
+    backend: lockbox.thunderbird.dev
+    frontend: send.thunderbird.dev
