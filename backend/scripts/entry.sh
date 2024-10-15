@@ -1,4 +1,7 @@
 #!/bin/sh
+echo 'installing backend deps 🤖'
+rm -rf node_modules
+pnpm install
 
 # Check if environment NODE_ENV has been set to production
 if [ "$NODE_ENV" = "production" ]; then
@@ -20,5 +23,3 @@ else
     echo 'Starting db browser on http://localhost:5555 🔎'
     pnpm debug
 fi
-
-
