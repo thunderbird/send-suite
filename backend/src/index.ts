@@ -9,6 +9,7 @@ import session from 'express-session';
 import sessionFileStore from 'session-file-store';
 import WebSocket from 'ws';
 
+import auth from './routes/auth';
 import containers from './routes/containers';
 import download from './routes/download';
 import fxa from './routes/fxa';
@@ -135,6 +136,7 @@ app.use('/api/tags', tags);
 app.use('/lockbox/fxa', fxa);
 app.use('/fxa', fxa);
 app.use('/api/lockbox/fxa', fxa);
+app.use('/api/auth', auth);
 app.use(metricsRoute);
 app.use((_, res) => {
   res.status(404).send('404 Not Found');

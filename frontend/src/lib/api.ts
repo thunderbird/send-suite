@@ -7,6 +7,7 @@ export type AsyncJsonResponse<T = { [key: string]: any }> = Promise<
 export class ApiConnection {
   serverUrl: string;
   sessionId: string;
+  authToken: string;
 
   constructor(serverUrl: string) {
     if (!serverUrl) {
@@ -15,6 +16,11 @@ export class ApiConnection {
     // using new URL() trims off excess whitespace and trailing '/'
     const u = new URL(serverUrl);
     this.serverUrl = u.origin;
+
+    const token = localStorage.getItem('token');
+    if (token) {
+      this.authToken = token;
+    }
   }
 
   toString(): string {
@@ -23,6 +29,15 @@ export class ApiConnection {
 
   setSessionId(sessionId: string): void {
     this.sessionId = sessionId;
+  }
+
+  async requestAuthToken(): Promise<void> {
+    const response = await this.call<{ token: any }>('auth');
+    console.log('got request auth token', response);
+    if (response) {
+      localStorage.setItem('token', response.token);
+      this.authToken = response.token;
+    }
   }
 
   /**
@@ -55,7 +70,11 @@ export class ApiConnection {
       mode: 'cors',
       credentials: 'include', // include cookies
       method,
-      headers: { 'content-type': 'application/json', ...headers },
+      headers: {
+        'content-type': 'application/json',
+        ...headers,
+        authorization: 'Bearer ' + this.authToken,
+      },
     };
 
     if (method.trim().toUpperCase() === 'POST') {

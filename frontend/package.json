@@ -15,7 +15,8 @@
     "preview": "vite preview",
     "test": "vitest run --silent",
     "test-debug": "vitest --inspect-brk --single-thread",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch",
+    "typecheck": "tsc --noEmit"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": [

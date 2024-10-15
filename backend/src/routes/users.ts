@@ -21,45 +21,36 @@ import {
   getBackup,
   getRecentActivity,
   getUserByEmail,
+  getUserById,
   getUserPublicKey,
   setBackup,
   updateUserPublicKey,
 } from '../models/users';
 
-import { checkAllowList } from '../auth/client';
+import { getUserFromAuthenticatedRequest } from '@/auth/client';
 import { BaseError, SESSION_NOT_SAVED } from '../errors/models';
-import { requireLogin } from '../middleware';
-import { getSessionUserOrThrow } from '../utils/session';
+import { requireJWT } from '../middleware';
 
 const router: Router = Router();
 
 router.get(
   '/me',
-  requireLogin,
+  requireJWT,
   addErrorHandling(USER_ERRORS.SESSION_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
-    // If an allow list is provided, only allow users in that list
-    // If there is no env variable, we allow all users
-    try {
-      await checkAllowList(req.session?.user?.email);
-    } catch (error) {
-      return res.status(401).json({
-        msg: 'Not in allow list',
-      });
-    }
-
     // Retrieves the logged-in user from the current session
     // ok, I need to persist the user to the session, don't I?
     // am I not doing that already?
-    console.log('session id: ', req.session.id);
-    const user = req.session.user;
-    if (!user) {
+    const { id } = getUserFromAuthenticatedRequest(req);
+
+    try {
+      const user = await getUserById(id);
+      return res.status(200).json({
+        user,
+      });
+    } catch (error) {
       return res.status(404).json({});
     }
-
-    res.status(200).json({
-      user,
-    });
   })
 );
 
@@ -78,7 +69,7 @@ router.get(
 // that can take any of the following: email, publicKey, avatar...
 router.post(
   '/publickey',
-  requireLogin,
+  requireJWT,
   addErrorHandling(USER_ERRORS.PROFILE_NOT_UPDATED),
   wrapAsyncHandler(async (req, res) => {
     const {
@@ -87,13 +78,8 @@ router.post(
       publicKey: string;
     } = req.body;
 
-    if (!req.session?.user?.id) {
-      return res.status(401).json({
-        msg: 'User not found in session',
-      });
-    }
+    const { id } = getUserFromAuthenticatedRequest(req);
 
-    const { id } = req.session.user;
     const update = await updateUserPublicKey(
       id,
       JSON.stringify(publicKey).trim()
@@ -106,24 +92,10 @@ router.post(
 
 router.get(
   '/folders',
-  requireLogin,
+  requireJWT,
   addErrorHandling(USER_ERRORS.FOLDERS_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
-    const emptyFolder = [{ id: 0, items: [] }];
-
-    try {
-      await checkAllowList(req.session?.user?.email);
-    } catch (error) {
-      /* 
-      TODO: Type this response correctly on the frontend
-      Since the frontend is expecting an array of folders,
-      we need to return an empty array of items.
-       */
-
-      return res.status(401).json(emptyFolder);
-    }
-
-    const { id } = getSessionUserOrThrow(req);
+    const { id } = getUserFromAuthenticatedRequest(req);
 
     const containers = await getAllUserGroupContainers(
       id,
@@ -135,7 +107,7 @@ router.get(
 
 router.get(
   '/lookup/:email',
-  requireLogin,
+  requireJWT,
   addErrorHandling(USER_ERRORS.USER_NOT_FOUND),
   wrapAsyncHandler(async (req: Request, res) => {
     const { email } = req.params;
@@ -299,10 +271,10 @@ router.post(
 
 router.post(
   '/backup',
-  requireLogin,
+  requireJWT,
   addErrorHandling(USER_ERRORS.BACKUP_FAILED),
   wrapAsyncHandler(async (req, res) => {
-    const { id } = getSessionUserOrThrow(req);
+    const { id } = getUserFromAuthenticatedRequest(req);
     const { keys, keypair, keystring, salt } = req.body;
     // We're not using the return value, but we want to make sure the backup runs
     await setBackup(id, keys, keypair, keystring, salt);
@@ -314,10 +286,10 @@ router.post(
 
 router.get(
   '/backup',
-  requireLogin,
+  requireJWT,
   addErrorHandling(USER_ERRORS.BACKUP_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
-    const { id } = getSessionUserOrThrow(req);
+    const { id } = getUserFromAuthenticatedRequest(req);
     const backup = await getBackup(id);
     res.status(200).json(backup);
   })
@@ -325,9 +297,10 @@ router.get(
 
 router.get(
   '/:id/backup',
+  requireJWT,
   addErrorHandling(USER_ERRORS.BACKUP_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
-    const { id } = getSessionUserOrThrow(req);
+    const { id } = getUserFromAuthenticatedRequest(req);
     const backup = await getBackup(id);
     res.status(200).json(backup);
   })
