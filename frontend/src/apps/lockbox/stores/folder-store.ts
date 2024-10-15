@@ -106,7 +106,7 @@ const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
     if (rootFolder.value) {
       parentId = rootFolder.value.id;
     }
-    const { container } = await api.call<{ container: Folder }>(
+    const containerResponse = await api.call<{ container: Folder }>(
       `containers`,
       {
         name: name, // ?? timestamp(),
@@ -116,7 +116,9 @@ const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
       },
       'POST'
     );
-    if (container) {
+
+    if (containerResponse?.container) {
+      const { container } = containerResponse;
       folders.value = [...folders.value, container];
       await keychain.newKeyForContainer(container.id);
       await backupKeys(keychain, api, msg);

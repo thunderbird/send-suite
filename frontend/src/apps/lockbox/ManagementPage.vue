@@ -98,6 +98,9 @@ async function configureExtension() {
 // Initialize the settings
 onMounted(async () => {
   salutation.value = 'Please log in.';
+  // check local storage first
+  await userStore.load();
+
   try {
     // See if we already have a valid session.
     // If so, hydrate our user using session data.
@@ -111,6 +114,7 @@ onMounted(async () => {
     // debug ref vars with those values.
     email.value = userStore.user.email;
     userId.value = userStore.user.id;
+    await finishLogin();
   } catch (e) {
     console.log(e);
   }
@@ -232,6 +236,7 @@ And, we should show that information here instead of showing the login button.
 }
 
 async function finishLogin() {
+  await api.requestAuthToken();
   await showCurrentServerSession();
   await dbUserSetup();
   await configureExtension();

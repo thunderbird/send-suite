@@ -99,13 +99,16 @@ const useUserStore: () => UserStore = defineStore('user', () => {
 
   async function load(): Promise<boolean> {
     try {
-      const { id, tier, email } = await storage.loadUser();
+      const userFromStorage = await storage.loadUser();
+      if (!userFromStorage) {
+        return false;
+      }
+      const { id, tier, email } = userFromStorage;
 
       populateUser({ id, email, tier });
 
       return true;
     } catch (e) {
-      console.log(`No user in storage`);
       return false;
     }
   }
