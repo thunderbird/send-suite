@@ -59,32 +59,8 @@ jobs:
         shell: bash
         run: |
           cd backend
-          pnpm run test
+          pnpm ci:validate
       
-  backend-lint:
-    needs: detect-changes
-    runs-on: ubuntu-latest
-    if: needs.detect-changes.outputs.backend-changed == 'true'
-    steps:
-      - uses: actions/checkout@v4
-    
-      - name: Install dependencies
-        id: install-dependencies
-        shell: bash
-        run: |
-          npm install -g pnpm
-          pnpm install
-
-      # This step is temporarily forced into success because getting linting under control is
-      # low priority. When https://github.com/thunderbird/send-suite/issues/253 is resolved,
-      # remove the ` || true` bit below.
-      - name: Backend lint
-        id: backend-lint
-        shell: bash
-        run: |
-          cd backend
-          pnpm run lint:all || true
-
   # When Pulumi code or configs change, run these steps
   iac-lint:
     needs: detect-changes
@@ -127,25 +103,5 @@ jobs:
         shell: bash
         run: |
           cd frontend
-          pnpm run lint:all || true
+          pnpm ci:validate
   
-  frontend-test:
-    needs: detect-changes
-    runs-on: ubuntu-latest
-    if: needs.detect-changes.outputs.frontend-changed == 'true'
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install dependencies
-        id: install-dependencies
-        shell: bash
-        run: |
-          npm install -g pnpm
-          pnpm install
-
-      - name: Frontend lint
-        id: frontend-test
-        shell: bash
-        run: |
-          cd frontend
-          pnpm run test
