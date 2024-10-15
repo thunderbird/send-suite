@@ -166,5 +166,5 @@ jobs:
         id: frontend-deploy
         shell: bash
         run: |
-          cd frontend/dist
+          cd frontend/dist-web
           aws s3 cp . s3://tb-send-suite-staging-frontend/ --recursive
