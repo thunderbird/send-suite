@@ -109,7 +109,7 @@ jobs:
                       image: "$ECR_TAG"
           EOF
           yq -i '. *= load("newimage.yaml")' config.staging.yaml
-          export PULUMI_CONFIG_PASSPHRASE="${{ secrets.PULUMI_PASSPHRASE }}"
+          export PULUMI_CONFIG_PASSPHRASE="${{ secrets.PULUMI_PASSPHRASE_STAGING }}"
           source ./venv/bin/activate
           pulumi login s3://tb-send-suite-pulumi
           pulumi stack select staging
@@ -138,6 +138,19 @@ jobs:
           aws-region: us-east-1
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Create production .env file from secrets
+        shell: bash
+        run: |
+          cat << EOF > .env
+          VUE_BASE_URL=https://send.thunderbird.dev
+          VITE_SEND_SERVER_URL=https://lockbox.thunderbird.dev
+          VITE_SEND_CLIENT_URL=https://send.thunderbird.dev
+          VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }}
+          VITE_SENTRY_DSN=${{ vars.VITE_SENTRY_DSN }}
+          VITE_POSTHOG_PROJECT_KEY=${{ secrets.VITE_POSTHOG_PROJECT_KEY }}
+          VITE_POSTHOG_HOST=${{ vars.VITE_POSTHOG_HOST }}
+          EOF
 
       - name: Build the frontend's static assets
         id: frontend-build
