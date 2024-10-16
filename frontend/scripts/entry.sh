@@ -1,7 +1,6 @@
 #!/bin/sh
 echo 'installing frontend deps 🤖'
-rm -rf node_modules
-pnpm install
+pnpm install --frozen-lockfile
 
 echo 'Starting dev server 🦄'
 pnpm run dev
