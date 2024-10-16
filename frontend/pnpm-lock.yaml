@@ -60,6 +60,9 @@ importers:
       '@types/firefox-webext-browser':
         specifier: ^120.0.3
         version: 120.0.4
+      '@types/thunderbird-webext-browser':
+        specifier: ^127.0.0
+        version: 127.0.0
       '@types/ws':
         specifier: ^8.5.5
         version: 8.5.10
@@ -859,6 +862,9 @@ packages:
 
   '@types/statuses@2.0.5':
     resolution: {integrity: sha512-jmIUGWrAiwu3dZpxntxieC+1n/5c3mjrImkmOSQ2NC5uP6cYO4aAZDdSmRcI5C1oiTmqlZGHC+/NmJrKogbP5A==}
+
+  '@types/thunderbird-webext-browser@127.0.0':
+    resolution: {integrity: sha512-ewJdjj6VFueVgPSEUMNKQ/wp+gheXo2oc6xliK5KaYwnt/ynUBRP1VqNXnZLUMO1/AIdrdbo+RrKPCuPmVuiDw==}
 
   '@types/ua-parser-js@0.7.39':
     resolution: {integrity: sha512-P/oDfpofrdtF5xw433SPALpdSchtJmY7nsJItf8h3KXqOslkbySh8zq4dSWXH2oTjRvJ5PczVEoCZPow6GicLg==}
@@ -3259,6 +3265,8 @@ snapshots:
       undici-types: 5.26.5
 
   '@types/statuses@2.0.5': {}
+
+  '@types/thunderbird-webext-browser@127.0.0': {}
 
   '@types/ua-parser-js@0.7.39': {}
 
