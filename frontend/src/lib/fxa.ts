@@ -11,9 +11,10 @@ export async function mozAcctLogin(onSuccess: () => void) {
     console.warn(`DEBUG: couldn't get a mozilla auth url`);
   }
   const win = window.open(formatLoginURL(url));
-  const timer = setInterval(() => {
+  const timer = setInterval(async () => {
     if (win.closed) {
       clearInterval(timer);
+      await api.requestAuthToken();
       onSuccess();
     }
   }, 500);

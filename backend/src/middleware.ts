@@ -1,5 +1,11 @@
 import { PrismaClient } from '@prisma/client';
 
+import type { NextFunction, Request, RequestHandler, Response } from 'express';
+import jwt from 'jsonwebtoken';
+import {
+  getJWTfromToken,
+  getUserFromAuthenticatedRequest,
+} from './auth/client';
 import { fromPrismaV2 } from './models/prisma-helper';
 import {
   allPermissions,
@@ -16,34 +22,8 @@ function extractMethodAndRoute(req) {
   return `${req.method} ${req.originalUrl}`;
 }
 
-function extractSessionValue(req, path) {
-  let val = req.session;
-  for (const item of path) {
-    if (!val[item]) {
-      console.log(
-        `No req.session.${path.join('.')} for ${extractMethodAndRoute(req)}`
-      );
-      return null;
-    }
-    val = val[item];
-  }
-  return val;
-}
-
 function extractParamOrBody(req, prop: string) {
   return req.params[prop] ?? req.body[prop];
-}
-
-function extractUserId(req) {
-  const path = ['user', 'id'];
-  const val = extractSessionValue(req, path);
-  try {
-    const userId = parseInt(val, 10);
-    return userId;
-  } catch (e) {
-    console.error(`Could  ${path} for ${extractMethodAndRoute(req)}`);
-    return null;
-  }
 }
 
 function extractContainerId(req) {
@@ -57,19 +37,41 @@ function extractContainerId(req) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function reject(res, status = 403, message = `Not authorized`) {
-  res.status(403).json({
+export function reject(
+  res: Response,
+  status = 403,
+  message = `Not authorized`
+) {
+  res.status(status).json({
     message,
   });
   return;
 }
 
-export async function requireLogin(req, res, next) {
-  const id = extractUserId(req);
-  if (!id) {
-    reject(res);
-    return;
+export async function requireJWT(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const jwtToken = req.headers.authorization;
+  let shouldReturn = false;
+
+  const token = getJWTfromToken(jwtToken);
+  if (!token) {
+    console.error(`No token found for ${extractMethodAndRoute(req)}`);
+    return res.status(403).json({ message: `Not authorized: Token not found` });
+  }
+
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err) => {
+    if (err) {
+      console.error(`Invalid token for ${extractMethodAndRoute(req)}`);
+      shouldReturn = true;
+    }
+  });
+
+  // We need to keep this variable outside the callback to make sure next doesn't execute
+  if (shouldReturn) {
+    return res.status(403).json({ message: `Not authorized: Invalid token` });
   }
   next();
 }
@@ -86,8 +88,24 @@ export function renameBodyProperty(from: string, to: string) {
 }
 
 // Gets a user's permissions for a container and adds it to the request.
-export async function getGroupMemberPermissions(req, res, next) {
-  const userId = extractUserId(req);
+export const getGroupMemberPermissions: RequestHandler = async (
+  req,
+  res,
+  next
+) => {
+  // Since we're calling a function intended to be used as middleware, we need to call next() if the JWT is valid
+  // We set a boolean to make sure next() is called. This means that the jwt has been verified
+  let goodToGo = false;
+  const nextTrigger = () => {
+    goodToGo = true;
+  };
+  await requireJWT(req, res, nextTrigger);
+
+  if (!goodToGo) {
+    return reject(res);
+  }
+
+  const { id: userId } = getUserFromAuthenticatedRequest(req);
   const containerId = extractContainerId(req);
 
   if (userId && containerId === 0) {
@@ -139,7 +157,7 @@ is a user and containerId === 0
     reject(res);
     return;
   }
-}
+};
 
 export function requireReadPermission(req, res, next) {
   if (!hasRead(req[PERMISSION_REQUEST_KEY])) {

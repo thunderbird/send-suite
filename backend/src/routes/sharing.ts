@@ -18,19 +18,19 @@ import {
   wrapAsyncHandler,
 } from '../errors/routes';
 
+import { getUserFromAuthenticatedRequest } from '@/auth/client';
 import {
   getGroupMemberPermissions,
-  requireLogin,
+  requireJWT,
   requireSharePermission,
 } from '../middleware';
-import { getSessionUserOrThrow } from '../utils/session';
 
 const router: Router = Router();
 
 // Request a new hash for a shared container
 router.post(
   '/',
-  requireLogin,
+  requireJWT,
   getGroupMemberPermissions,
   requireSharePermission,
   addErrorHandling(SHARING_ERRORS.ACCESS_LINK_NOT_CREATED),
@@ -163,10 +163,10 @@ router.delete(
 // Allow user to use an AccessLink to become a group member for a container
 router.post(
   '/:linkId/member/accept',
-  requireLogin,
+  requireJWT,
   addErrorHandling(SHARING_ERRORS.ACCESS_LINK_NOT_ACCEPTED),
   wrapAsyncHandler(async (req, res) => {
-    const { id } = getSessionUserOrThrow(req);
+    const { id } = getUserFromAuthenticatedRequest(req);
 
     const { linkId } = req.params;
 
