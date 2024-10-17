@@ -95,7 +95,7 @@ backend_dns = aws.route53.Record(
     # https://bugzilla.mozilla.org/show_bug.cgi?id=1866867
     type=aws.route53.RecordType.CNAME,
     ttl=60,
-    records=[backend_fargate.resources['fargate_service_alb']['albs']['send-suite'].dns_name],
+    records=[backend_fargate.resources['fargate_service_alb'].resources['albs']['send-suite'].dns_name],
 )
 
 # Manage the CloudFront rewrite function; the code is managed in cloudfront-rewrite.js
@@ -119,7 +119,7 @@ cf_func = aws.cloudfront.Function(
 # https://www.pulumi.com/registry/packages/aws/api-docs/cloudfront/distribution/#distributionorigincustomoriginconfig
 api_origin = {
     'origin_id': f'{project.name_prefix}-api',
-    'domain_name': backend_fargate.resources['fargate_service_alb']['albs']['send-suite'].dns_name,
+    'domain_name': backend_fargate.resources['fargate_service_alb'].resources['albs']['send-suite'].dns_name,
     'custom_origin_config': {
         'http_port': 80,
         'https_port': 443,
