@@ -2,6 +2,7 @@ import { FolderStore } from '@/apps/lockbox/stores/folder-store.types';
 import init from '@/lib/init';
 import { UserStore } from '@/stores/user-store';
 import { Canceler, JsonResponse } from '@/types';
+import { RouteLocationNormalized } from 'vue-router';
 import {
   ECE_RECORD_SIZE,
   encryptStream,
@@ -184,3 +185,8 @@ export async function dbUserSetup(
   // Existing init() handles
   await init(userStore, keychain, folderStore);
 }
+
+/* This function is a short hand to get the meta records from the route */
+export const matchMeta = (to: RouteLocationNormalized, key: string) => {
+  return to.matched.some((record) => record.meta[key]);
+};

@@ -8,11 +8,19 @@ import Lockbox from '@/apps/lockbox/pages/WebPage.vue';
 
 import Recovery from '@/apps/common/Recovery.vue';
 import Share from '@/apps/lockbox/pages/Share.vue';
+import { matchMeta } from '@/lib/helpers';
 import { restoreKeysUsingLocalStorage } from '@/lib/keychain';
 import useApiStore from '@/stores/api-store';
 import useKeychainStore from '@/stores/keychain-store';
-import useUserStore from '@/stores/user-store';
 import LoginPage from './LoginPage.vue';
+import { useStatusStore } from './stores/status-store';
+
+enum META_OPTIONS {
+  redirectOnValidSession = 'redirectOnValidSession',
+  requiresValidToken = 'requiresValidToken',
+  autoRestoresKeys = 'autoRestoresKeys',
+  requiresBackedUpKeys = 'requiresBackedUpKeys',
+}
 
 export const routes: RouteRecordRaw[] = [
   {
@@ -22,7 +30,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/login',
     component: LoginPage,
-    meta: { redirectOnValidSession: true },
+    meta: { [META_OPTIONS.redirectOnValidSession]: true },
   },
   {
     path: '/lockbox',
@@ -32,31 +40,31 @@ export const routes: RouteRecordRaw[] = [
         path: '',
         component: FolderView,
         meta: {
-          requiresSessionAndAuth: true,
-          autoRestoresKeys: true,
-          requiresBackedUpKeys: true,
+          [META_OPTIONS.requiresValidToken]: true,
+          [META_OPTIONS.autoRestoresKeys]: true,
+          [META_OPTIONS.requiresBackedUpKeys]: true,
         },
       },
       {
         path: 'profile',
         component: ProfileView,
         meta: {
-          requiresSessionAndAuth: true,
-          autoRestoresKeys: true,
+          [META_OPTIONS.requiresValidToken]: true,
+          [META_OPTIONS.autoRestoresKeys]: true,
         },
       },
       {
         path: 'sent',
         component: Sent,
         meta: {
-          requiresSessionAndAuth: true,
+          [META_OPTIONS.requiresValidToken]: true,
         },
       },
       {
         path: 'received',
         component: Received,
         meta: {
-          requiresSessionAndAuth: true,
+          [META_OPTIONS.requiresValidToken]: true,
         },
       },
       {
@@ -65,9 +73,9 @@ export const routes: RouteRecordRaw[] = [
         props: true,
         name: 'folder',
         meta: {
-          requiresSessionAndAuth: true,
-          autoRestoresKeys: true,
-          requiresBackedUpKeys: true,
+          [META_OPTIONS.requiresValidToken]: true,
+          [META_OPTIONS.autoRestoresKeys]: true,
+          [META_OPTIONS.requiresBackedUpKeys]: true,
         },
       },
     ],
@@ -88,68 +96,31 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
-  const { user, getBackup } = useUserStore();
   const { keychain } = useKeychainStore();
   const { api } = useApiStore();
-  //  requiresSession - means that even if the user has a session in local storage, it must be valid in the backend
-  const requiresSession = to.matched.some(
-    (record) => record.meta.requiresSession
-  );
-  // requiresAuth - means that the user must have a session in local storage
-  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
-  // requiresSessionAndAuth - means that the user must have a session in local storage and it must be valid in the backend
-  const requiresSessionAndAuth = to.matched.some(
-    (record) => record.meta.requiresSessionAndAuth
-  );
+  const { validators } = useStatusStore();
+
   //  redirectOnValidSession - means that if the user has a session in local storage, they will be redirected to the lockbox page
-  const redirectOnValidSession = to.matched.some(
-    (record) => record.meta.redirectOnValidSession
-  );
-  const requireFreshSession = to.matched.some(
-    (record) => record.meta.requireFreshSession
-  );
-  const autoRestoresKeys = to.matched.some(
-    (record) => record.meta.autoRestoresKeys
-  );
-  const requiresBackedUpKeys = to.matched.some(
-    (record) => record.meta.requiresBackedUpKeys
-  );
 
-  // Check local storage
-  const hasLocalStorageSession = user?.id === 0 ? false : true;
+  const redirectOnValidSession = matchMeta(to, 'redirectOnValidSession');
+  const requiresValidToken = matchMeta(to, 'requiresValidToken');
+  const autoRestoresKeys = matchMeta(to, 'autoRestoresKeys');
+  const requiresBackedUpKeys = matchMeta(to, 'requiresBackedUpKeys');
 
-  if (requiresAuth && !hasLocalStorageSession) {
+  const { hasLocalStorageSession, isTokenValid, hasBackedUpKeys } =
+    await validators();
+
+  if (requiresValidToken && !isTokenValid) {
     return next('/login');
   }
 
-  const isSessionValid = await api.call('auth/me');
-
-  if (requiresSessionAndAuth) {
-    if (!hasLocalStorageSession || !isSessionValid) {
-      return next('/login');
-    }
-  }
-
-  if (requiresSession && !isSessionValid) {
-    return next('/login');
-  }
-
-  if (requireFreshSession) {
-    if (hasLocalStorageSession && !isSessionValid) {
-      return next('/login');
-    }
-  }
-
-  if (redirectOnValidSession && hasLocalStorageSession && isSessionValid) {
+  if (redirectOnValidSession && hasLocalStorageSession && isTokenValid) {
     return next('/lockbox/profile');
   }
 
-  if (requiresBackedUpKeys) {
-    const keybackup = await getBackup();
-    const hasBackedUpKeys = keychain.getPassphraseValue();
-    if (!keybackup || !hasBackedUpKeys) {
-      return next('/lockbox/profile');
-    }
+  if (requiresBackedUpKeys && !hasBackedUpKeys) {
+    next('/lockbox/profile');
+    return;
   }
 
   if (autoRestoresKeys) {

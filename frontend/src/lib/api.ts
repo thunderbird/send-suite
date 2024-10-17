@@ -52,12 +52,16 @@ export class ApiConnection {
    * @returns {AsyncJsonResponse<T>} Returns a Promise that resolves to the response data (or null).
    *
    */
-  public async call<T = { [key: string]: any }>(
+  public async call<
+    T = { [key: string]: any },
+    O extends Options = { fullResponse: false },
+  >(
     path: string,
-    body = {},
-    method = 'GET',
-    headers = {}
-  ): Promise<T | null> {
+    body: Record<string, any> = {},
+    method: string = 'GET',
+    headers: Record<string, any> = {},
+    options?: O
+  ): Promise<O extends { fullResponse: true } ? Response : T | null> {
     if (this.sessionId) {
       headers = {
         ...headers,
@@ -87,7 +91,6 @@ export class ApiConnection {
     try {
       resp = await fetch(url, opts);
     } catch (e) {
-      // debugger;
       console.log(e);
       return null;
     }
@@ -95,6 +98,16 @@ export class ApiConnection {
     if (!resp.ok) {
       return null;
     }
+
+    if (!!options?.fullResponse) {
+      //@ts-ignore
+      return resp;
+    }
+
     return resp.json();
   }
 }
+
+type Options = {
+  fullResponse?: boolean;
+};

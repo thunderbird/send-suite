@@ -5,24 +5,27 @@ import useApiStore from '@/stores/api-store';
 import useConfigurationStore from '@/stores/configuration-store';
 import useKeychainStore from '@/stores/keychain-store';
 import useUserStore from '@/stores/user-store';
-import { onMounted, ref, toRaw } from 'vue';
+import { onMounted, ref } from 'vue';
 
 import BackupAndRestore from '@/apps/common/BackupAndRestore.vue';
 import FeedbackBox from '@/apps/common/FeedbackBox.vue';
 import { useMetricsUpdate } from '@/apps/common/mixins/metrics';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
+import { formatSessionInfo } from '@/lib/fxa';
 import { formatLoginURL } from '@/lib/helpers';
 import { CLIENT_MESSAGES } from '@/lib/messages';
+import { validateToken } from '@/lib/validations';
 import useMetricsStore from '@/stores/metrics';
-
-const DEBUG = true;
-const SERVER = `server`;
+import { useExtensionStore } from './stores/extension-store';
+import { useStatusStore } from './stores/status-store';
 
 const userStore = useUserStore();
 const { keychain, resetKeychain } = useKeychainStore();
 const { api } = useApiStore();
 const folderStore = useFolderStore();
+const { validators } = useStatusStore();
+const { configureExtension } = useExtensionStore();
 const { initializeClientMetrics, sendMetricsToBackend } = useMetricsStore();
 const { updateMetricsIdentity } = useMetricsUpdate();
 const configurationStore = useConfigurationStore();
@@ -33,67 +36,9 @@ const sessionInfo = ref(null);
 const salutation = ref('');
 const isLoggedIn = ref(false);
 
-configurationStore.$onAction(() => {
-  console.log(`the serverUrl is ${configurationStore.serverUrl}`);
-});
-
 const currentServerUrl = ref(configurationStore.serverUrl);
 const email = ref(null);
 const userId = ref(null);
-
-// This specifies the id of the provider chosen in the
-// "Composition > Attachments" window.
-// This is necessary only for the management page.
-const accountId = new URL(location.href).searchParams.get('accountId');
-
-function setAccountConfigured(accountId) {
-  // Let TB know that extension is ready for use with cloudFile API.
-  try {
-    //@ts-ignore
-    browser.cloudFile.updateAccount(accountId, {
-      configured: true,
-    });
-  } catch (e) {
-    console.log(
-      `setAccountConfigured: You're probably running this outside of Thundebird`
-    );
-  }
-}
-
-async function configureExtension() {
-  console.log(`
-
-  Configuring extension with:
-
-  accountId: ${accountId}
-  SERVER: ${SERVER}
-  currentServerUrl.value: ${currentServerUrl.value}
-
-  `);
-
-  return browser.storage.local
-    .set({
-      [accountId]: {
-        [SERVER]: currentServerUrl.value,
-      },
-    })
-    .catch((error) => {
-      console.log(error);
-    })
-    .then(() => {
-      setAccountConfigured(accountId);
-      configurationStore.setServerUrl(currentServerUrl.value);
-      DEBUG &&
-        browser.storage.local.get(accountId).then((accountInfo) => {
-          if (accountInfo[accountId] && SERVER in accountInfo[accountId]) {
-            configurationStore.setServerUrl(accountInfo[accountId][SERVER]);
-            setAccountConfigured(accountId);
-          } else {
-            console.log(`You probably need to wait longer`);
-          }
-        });
-    });
-}
 
 // Initialize the settings
 onMounted(async () => {
@@ -118,16 +63,7 @@ onMounted(async () => {
   } catch (e) {
     console.log(e);
   }
-  try {
-    // extension-specific initialization
-    await configureExtension();
-  } catch (e) {
-    console.log(
-      `extension init: You're probably running this outside of Thundebird`
-    );
-  }
-  salutation.value = 'You are logged into your Mozilla Account';
-  isLoggedIn.value = true;
+
   // Identify user for analytics
   const uid = userStore.user.uniqueHash;
   initializeClientMetrics(uid);
@@ -197,24 +133,6 @@ async function showCurrentServerSession() {
     (await api.call(`users/me`)) ?? CLIENT_MESSAGES.SHOULD_LOG_IN;
 }
 
-function formatSessionInfo(info) {
-  console.log(info);
-  if (!info) {
-    return null;
-  }
-  const val = structuredClone(toRaw(info));
-  if (!val.user) {
-    return info;
-  }
-  for (let key in val.user) {
-    console.log(`inspecting ${key}`);
-    if (typeof val.user[key] == 'string' && val.user[key].length > 20) {
-      val.user[key] = val.user[key].substring(0, 20) + '...';
-    }
-  }
-  return JSON.stringify(val, null, 4);
-}
-
 async function openPopup() {
   try {
     await browser.windows.create({
@@ -235,12 +153,31 @@ And, we should show that information here instead of showing the login button.
   }
 }
 
-async function finishLogin() {
-  await api.requestAuthToken();
+type Options = { onClick: boolean };
+async function finishLogin(options?: Options) {
+  if (options?.onClick) {
+    await api.requestAuthToken();
+  }
+
+  const isSessionValid = await validateToken(api);
+  if (!isSessionValid) {
+    salutation.value = `Please log in again, your session is invalid`;
+    return;
+  }
+
   await showCurrentServerSession();
   await dbUserSetup();
-  await configureExtension();
+  const { isTokenValid, hasBackedUpKeys } = await validators();
 
+  if (isTokenValid && hasBackedUpKeys) {
+    try {
+      await configureExtension();
+    } catch (error) {
+      console.warn('You are running this outside TB');
+    }
+  }
+
+  isLoggedIn.value = isTokenValid;
   // TODO: confirm that I am saving the user and keys when I init() (which is in dbUserSetup)
   salutation.value = 'You are logged into your Mozilla Account';
   isLoggedIn.value = true;
@@ -250,7 +187,9 @@ async function finishLogin() {
 <template>
   <h1>{{ salutation }}</h1>
   <button @click.prevent="loginToMozAccount">Log into Mozilla Account</button>
-  <button @click.prevent="finishLogin">Click after moz login</button>
+  <button @click.prevent="finishLogin({ onClick: true })">
+    Click after moz login
+  </button>
   <br />
   <h1>Debug Info</h1>
   <form>
