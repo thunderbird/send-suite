@@ -99,13 +99,16 @@ const useUserStore: () => UserStore = defineStore('user', () => {
 
   async function load(): Promise<boolean> {
     try {
-      const { id, tier, email } = await storage.loadUser();
+      const userFromStorage = await storage.loadUser();
+      if (!userFromStorage) {
+        return false;
+      }
+      const { id, tier, email } = userFromStorage;
 
       populateUser({ id, email, tier });
 
       return true;
     } catch (e) {
-      console.log(`No user in storage`);
       return false;
     }
   }
@@ -133,6 +136,11 @@ const useUserStore: () => UserStore = defineStore('user', () => {
   // After login, get user from backend and save it locally.
   // Returns a boolean signaling whether successfully populated the user.
   async function populateFromSession() {
+    // Stop the execution if the user is already populated
+    if (user.id) {
+      return true;
+    }
+
     const userResp = await api.call<{ user: UserType }>(`users/me`);
     if (!userResp?.user) {
       // Either we didn't get a response or it doesn't have a .user

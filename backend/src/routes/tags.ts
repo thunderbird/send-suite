@@ -1,10 +1,11 @@
+import { getUserFromAuthenticatedRequest } from '@/auth/client';
 import { Router } from 'express';
 import {
   addErrorHandling,
   TAG_ERRORS,
   wrapAsyncHandler,
 } from '../errors/routes';
-import { getGroupMemberPermissions, requireLogin } from '../middleware';
+import { getGroupMemberPermissions, requireJWT } from '../middleware';
 import {
   createTagForContainer,
   createTagForItem,
@@ -12,7 +13,6 @@ import {
   getContainersAndItemsWithTags,
   updateTagName,
 } from '../models';
-import { getSessionUserOrThrow } from '../utils/session';
 
 const router: Router = Router();
 
@@ -62,11 +62,11 @@ router.post(
 // Get all the items and containers with a particular tag
 router.get(
   '/:tagName',
-  requireLogin,
+  requireJWT,
   getGroupMemberPermissions,
   addErrorHandling(TAG_ERRORS.NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
-    const { id } = getSessionUserOrThrow(req);
+    const { id } = getUserFromAuthenticatedRequest(req);
     const { tagName } = req.params;
     const result = await getContainersAndItemsWithTags(id, [tagName]);
     res.status(200).json({

@@ -1,3 +1,6 @@
+import { AuthResponse } from '@/routes/auth';
+import type { Request } from 'express';
+import jwt from 'jsonwebtoken';
 import { Issuer, generators } from 'openid-client';
 
 export function generateState() {
@@ -44,4 +47,43 @@ export async function checkAllowList(email: string | undefined | null) {
   if (!isEmailInAllowList(email, allowList)) {
     throw new Error('User not in allow list');
   }
+}
+
+export function verifyJWT(token: string) {
+  const callback = (err, decoded) => {
+    if (err) {
+      return null;
+    }
+    return decoded;
+  };
+  const data = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, callback);
+
+  return data;
+}
+
+export function getUserFromJWT(token: string) {
+  const data = jwt.decode(token);
+  return data as AuthResponse;
+}
+
+export function getJWTfromToken(jwtToken: string): string | null {
+  const isValidTokenFormatting =
+    typeof jwtToken === 'string' && jwtToken.startsWith('Bearer ');
+
+  if (!isValidTokenFormatting) {
+    return null;
+  }
+
+  const token = jwtToken.split('Bearer ')[1];
+  return token;
+}
+
+export function getUserFromAuthenticatedRequest(req: Request) {
+  const token = getJWTfromToken(req.headers.authorization);
+  if (!token)
+    throw new Error(
+      'No token found in request: This should not happen if the user is authenticated'
+    );
+  const user = getUserFromJWT(token);
+  return user;
 }

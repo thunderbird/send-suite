@@ -122,7 +122,7 @@ router.beforeEach(async (to, from, next) => {
     return next('/login');
   }
 
-  const isSessionValid = await api.call('users/me');
+  const isSessionValid = await api.call('auth/me');
 
   if (requiresSessionAndAuth) {
     if (!hasLocalStorageSession || !isSessionValid) {

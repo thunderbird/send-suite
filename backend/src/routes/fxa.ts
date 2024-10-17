@@ -41,8 +41,6 @@ router.get(
       const utm_source = 'login';
 
       // Fetch the flowValues before requesting the auth url
-
-      console.log('Calling metrics for 5s');
       const flow_values = await axios
         .get(process.env.FXA_METRICS_FLOW_URL, {
           timeout: 5000,

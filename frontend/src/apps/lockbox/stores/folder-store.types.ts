@@ -66,7 +66,7 @@ export interface FolderStore {
   visibleFolders: Folder[];
   selectedFolder: Folder;
   selectedFile: ItemResponse;
-  createFolder: () => Promise<Folder>;
+  createFolder: () => Promise<Folder | null>;
   sync: () => Promise<void>;
   init: () => void;
   print: () => void;

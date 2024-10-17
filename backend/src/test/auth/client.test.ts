@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { beforeEach } from 'node:test';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import {
@@ -5,8 +6,18 @@ import {
   generateState,
   getClient,
   getIssuer,
+  getUserFromAuthenticatedRequest,
+  getUserFromJWT,
   isEmailInAllowList,
 } from '../../auth/client';
+
+const { mockedDecode } = vi.hoisted(() => ({
+  mockedDecode: vi.fn(),
+}));
+
+vi.mock('jsonwebtoken', () => ({
+  default: { decode: mockedDecode },
+}));
 
 describe('Auth Client', () => {
   beforeAll(() => {
@@ -121,5 +132,94 @@ describe('checkAllowList no .env', () => {
   it('should not throw when no allow list is provided', async () => {
     const noErrorHere = await checkAllowList('ham@burger.com');
     expect(noErrorHere).toBeUndefined();
+  });
+});
+
+describe('getUserFromJWT', () => {
+  beforeAll(() => {
+    vi.unstubAllEnvs();
+    vi.stubEnv('ACCESS_TOKEN_SECRET', 'your_secret');
+  });
+
+  it('should return the user from the token', () => {
+    const mockedTokenData = { userId: '123' };
+    mockedDecode.mockReturnValue(mockedTokenData);
+
+    const data = getUserFromJWT('valid.token.here');
+    expect(data).toStrictEqual(mockedTokenData);
+  });
+
+  it('should return null if token is invalid', () => {
+    mockedDecode.mockReturnValue(null);
+    // Make sure the function does not throw
+    expect(() => {
+      const data = getUserFromJWT('invalid.token');
+      expect(data).toBeNull();
+    }).not.toThrow();
+  });
+
+  describe('getUserFromAuthenticatedRequest', () => {
+    beforeAll(() => {
+      vi.unstubAllEnvs();
+      vi.stubEnv('ACCESS_TOKEN_SECRET', 'your_secret');
+    });
+
+    it('should return the user from the authenticated request', () => {
+      const mockedTokenData = { userId: '123' };
+      mockedDecode.mockReturnValue(mockedTokenData);
+
+      const req = {
+        headers: {
+          authorization: 'Bearer valid.token.here',
+        },
+      };
+      //@ts-ignore
+      const user = getUserFromAuthenticatedRequest(req as Request);
+      expect(user).toStrictEqual(mockedTokenData);
+    });
+
+    it('should return null if authorization header is missing', () => {
+      const req = {
+        headers: {
+          authorization: null,
+        },
+      };
+
+      expect(() => {
+        //@ts-ignore
+        getUserFromAuthenticatedRequest(req as Request);
+      }).toThrowError(
+        'No token found in request: This should not happen if the user is authenticated'
+      );
+    });
+
+    it('should return null if token is invalid', () => {
+      mockedDecode.mockReturnValue(null);
+
+      const req = {
+        headers: {
+          authorization: 'Bearer invalid.token',
+        },
+      };
+
+      // @ts-ignore
+      const user = getUserFromAuthenticatedRequest(req as Request);
+      expect(user).toBeNull();
+    });
+
+    it('should return null if token format is incorrect', () => {
+      const req = {
+        headers: {
+          authorization: 'InvalidTokenFormat',
+        },
+      };
+
+      expect(() => {
+        // @ts-ignore
+        getUserFromAuthenticatedRequest(req as Request);
+      }).toThrowError(
+        'No token found in request: This should not happen if the user is authenticated'
+      );
+    });
   });
 });
