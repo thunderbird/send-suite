@@ -55,3 +55,4 @@ venv
 /blob-report/
 /playwright/.cache/
 /data
+/frontend-source.zip
