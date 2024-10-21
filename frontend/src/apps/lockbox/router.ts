@@ -102,10 +102,13 @@ router.beforeEach(async (to, from, next) => {
 
   //  redirectOnValidSession - means that if the user has a session in local storage, they will be redirected to the lockbox page
 
-  const redirectOnValidSession = matchMeta(to, 'redirectOnValidSession');
-  const requiresValidToken = matchMeta(to, 'requiresValidToken');
-  const autoRestoresKeys = matchMeta(to, 'autoRestoresKeys');
-  const requiresBackedUpKeys = matchMeta(to, 'requiresBackedUpKeys');
+  const redirectOnValidSession = matchMeta(
+    to,
+    META_OPTIONS.redirectOnValidSession
+  );
+  const requiresValidToken = matchMeta(to, META_OPTIONS.requiresValidToken);
+  const autoRestoresKeys = matchMeta(to, META_OPTIONS.autoRestoresKeys);
+  const requiresBackedUpKeys = matchMeta(to, META_OPTIONS.requiresBackedUpKeys);
 
   const { hasLocalStorageSession, isTokenValid, hasBackedUpKeys } =
     await validators();
