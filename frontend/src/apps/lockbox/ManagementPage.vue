@@ -135,18 +135,19 @@ async function showCurrentServerSession() {
 
 async function openPopup() {
   try {
-    await browser.windows.create({
+    const popup = await browser.windows.create({
       url: formatLoginURL(authUrl.value),
       type: 'popup',
       allowScriptsToClose: true,
     });
-    /*
-TODO: I need to start an interval that pings the server.
-It should ask if the current code has just been used to successfully log in.
-If so, we should grab the login information from the server and popuplate the local user-store.
 
-And, we should show that information here instead of showing the login button.
-    */
+    const checkPopupClosed = (windowId: number) => {
+      if (windowId === popup.id) {
+        browser.windows.onRemoved.removeListener(checkPopupClosed);
+        finishLogin({ onClick: true });
+      }
+    };
+    browser.windows.onRemoved.addListener(checkPopupClosed);
   } catch (e) {
     console.log(`popup failed`);
     console.log(e);
