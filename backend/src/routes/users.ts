@@ -28,7 +28,6 @@ import {
 } from '../models/users';
 
 import { getUserFromAuthenticatedRequest } from '@/auth/client';
-import { BaseError, SESSION_NOT_SAVED } from '../errors/models';
 import { requireJWT } from '../middleware';
 
 const router: Router = Router();
@@ -121,24 +120,14 @@ router.get(
 
 router.post(
   '/login',
+  requireJWT,
   addErrorHandling(USER_ERRORS.DEV_LOGIN_FAILED),
   wrapAsyncHandler(async (req, res) => {
-    const { email } = req.body;
-    const user = await getUserByEmail(email);
+    const { id } = getUserFromAuthenticatedRequest(req);
+    const user = await getUserById(id);
 
     if (user) {
-      req.session.user = user;
-      req.session.save((err) => {
-        if (err) {
-          throw new BaseError(SESSION_NOT_SAVED);
-        } else {
-          console.log(`
-          session id: ${req.session.id}
-          user id in session ${req.session?.user?.id}
-          `);
-          res.status(200).json(user);
-        }
-      });
+      res.status(200).json(user);
     } else {
       res.status(404).send();
     }
