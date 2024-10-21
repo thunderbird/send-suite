@@ -549,3 +549,31 @@ export async function getContainersAndItemsWithTags(
     items: itemsWithTags,
   };
 }
+
+export const createLoginSession = async (id: string) => {
+  try {
+    await prisma.login.create({ data: { fxasession: id } });
+  } catch (error) {
+    console.error('bad login creation');
+  }
+};
+
+export const getLoginSession = async (id: string) => {
+  try {
+    return await prisma.login.findFirst({
+      where: {
+        fxasession: id,
+      },
+    });
+  } catch (error) {
+    console.error('bad login creation');
+  }
+};
+
+export const deleteSession = async (id: string) => {
+  try {
+    return await prisma.login.delete({ where: { fxasession: id } });
+  } catch (error) {
+    console.error('Could not delete fxa session');
+  }
+};

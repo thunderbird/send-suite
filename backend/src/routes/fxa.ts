@@ -1,6 +1,8 @@
+import { createLoginSession, deleteSession, getLoginSession } from '@/models';
 import axios from 'axios';
 import { createHash } from 'crypto';
 import { Request, Router } from 'express';
+import jwt from 'jsonwebtoken';
 import {
   checkAllowList,
   generateState,
@@ -18,9 +20,8 @@ import {
   updateUniqueHash,
 } from '../models/users';
 
-const FXA_STATE = 'fxa_state';
-
 const router: Router = Router();
+const ONE_MINUTE = 60_000;
 
 // Route for obtaining an authorization URL for Mozilla account.
 router.get(
@@ -79,27 +80,29 @@ router.get(
     });
 
     // Add state code to session.
-    // We'll attempt to match this in the callback.
-    req.session[FXA_STATE] = state;
 
-    // Save session and send the auth url to the front end
-    // so they can do the redirect.
-    req.session.save((err) => {
+    // We'll attempt to match this in the callback.
+    try {
+      await createLoginSession(state);
+    } catch (err) {
       if (err) {
         console.error('Could not save session in /login.', err);
         res.status(500).json(err);
         return;
       }
+    }
 
-      /* TODO: We have to replace send for lockbox because fxa isn't enabled for send
+    // Save session and send the auth url to the front end
+    // so they can do the redirect.
+
+    /* TODO: We have to replace send for lockbox because fxa isn't enabled for send
       We should remove this and return the actual url once fxa is enabled 
       https://github.com/thunderbird/send-suite/issues/216
        */
-      const responseURL = url.replace('send', 'lockbox');
+    const responseURL = url.replace('send', 'lockbox');
 
-      res.status(200).json({
-        url: responseURL,
-      });
+    res.status(200).json({
+      url: responseURL,
     });
   })
 );
@@ -118,9 +121,10 @@ router.get(
     // Confirm that we received a state code and compare
     // it to the original we set in `/login`
     const { code, state } = req.query;
-    const originalState = req.session[FXA_STATE];
 
-    if (!code || (state as string) !== originalState) {
+    const originalState = await getLoginSession(state as string);
+
+    if (!code || state !== originalState?.fxasession) {
       res.status(403).json({
         msg: 'Could not authenticate',
       });
@@ -128,66 +132,59 @@ router.get(
     }
 
     // Clean up session and continue
-    delete req.session[FXA_STATE];
-    req.session.save(async (err) => {
-      if (err) {
-        console.error('Could not save session in / callback.');
-        console.error(err);
-        res.status(500).json(err);
-        return;
-      }
+    await deleteSession(originalState?.fxasession);
+    const mozIssuer = await getIssuer();
+    const client = getClient(mozIssuer);
 
-      const mozIssuer = await getIssuer();
-      const client = getClient(mozIssuer);
+    // The `params` contains the string equivalents of req.query.*
+    // Here, params == { code, state }
+    const params = client.callbackParams(req);
+    const tokenSet = await client.callback(
+      process.env.FXA_REDIRECT_URI,
+      params,
+      { state: params.state }
+    );
+    const { access_token: accessToken, refresh_token: refreshToken } = tokenSet;
 
-      // The `params` contains the string equivalents of req.query.*
-      // Here, params == { code, state }
-      const params = client.callbackParams(req);
-      const tokenSet = await client.callback(
-        process.env.FXA_REDIRECT_URI,
-        params,
-        { state: params.state }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userinfo: Record<string, any> = await client.userinfo(accessToken);
+
+    try {
+      await checkAllowList(userinfo.email);
+      const { uid, avatar, email } = userinfo;
+      const user = await findOrCreateUserProfileByMozillaId(
+        uid,
+        avatar,
+        email,
+        accessToken,
+        refreshToken
       );
-      const { access_token: accessToken, refresh_token: refreshToken } =
-        tokenSet;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const userinfo: Record<string, any> = await client.userinfo(accessToken);
+      const uniqueHash = createHash('sha256').update(uid).digest('hex');
 
-      try {
-        await checkAllowList(userinfo.email);
-        const { uid, avatar, email } = userinfo;
-        const user = await findOrCreateUserProfileByMozillaId(
-          uid,
-          avatar,
-          email,
-          accessToken,
-          refreshToken
-        );
+      req.session['user'] = {
+        ...user,
+        uniqueHash,
+      };
+      user.uniqueHash = uniqueHash;
 
-        const uniqueHash = createHash('sha256').update(uid).digest('hex');
+      await updateUniqueHash(user.id, uniqueHash);
 
-        req.session['user'] = {
-          ...user,
-          uniqueHash,
-        };
-        user.uniqueHash = uniqueHash;
+      // Sign the jwt and pass it as a cookie
+      const jwtToken = jwt.sign(
+        { uniqueHash, id: req.session.user.id },
+        process.env.ACCESS_TOKEN_SECRET!,
+        { expiresIn: '1d' }
+      );
 
-        await updateUniqueHash(user.id, uniqueHash);
+      res.cookie('authorization', jwtToken, {
+        maxAge: ONE_MINUTE,
+      });
 
-        req.session.save((err) => {
-          if (err) {
-            console.error('Could not save session in / callback.', err);
-
-            throw Error(`Could not save session in fxa callback`);
-          }
-
-          res.redirect('/login-success.html');
-        });
-      } catch (error) {
-        res.redirect('/login-failed.html');
-      }
-    });
+      res.redirect('/login-success.html');
+    } catch (error) {
+      res.redirect('/login-failed.html');
+    }
   })
 );
 

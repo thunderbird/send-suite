@@ -6,9 +6,7 @@ import {
 } from '../errors/routes';
 
 import { User } from '@prisma/client';
-import jwt from 'jsonwebtoken';
 import { requireJWT } from '../middleware';
-import { getSessionUserOrThrow } from '../utils/session';
 
 export type AuthResponse = {
   id: User['id'];
@@ -16,22 +14,6 @@ export type AuthResponse = {
 };
 
 const router: Router = Router();
-
-router.get(
-  '/',
-  addErrorHandling(AUTH_ERRORS.LOG_IN_FAILED),
-  wrapAsyncHandler(async (req, res) => {
-    const { uniqueHash } = getSessionUserOrThrow(req);
-    const jwtToken = jwt.sign(
-      { uniqueHash, id: req.session.user.id },
-      process.env.ACCESS_TOKEN_SECRET!,
-      { expiresIn: '1d' }
-    );
-    return res.json({
-      token: jwtToken,
-    });
-  })
-);
 
 router.get(
   '/me',

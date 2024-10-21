@@ -4,6 +4,12 @@ export type AsyncJsonResponse<T = { [key: string]: any }> = Promise<
   JsonResponse<T>
 > | null;
 
+function getCookie(name: string): string | null {
+  const cookies = document.cookie.split('; ');
+  const cookie = cookies.find((row) => row.startsWith(`${name}=`));
+  return cookie ? cookie.split('=')[1] : null;
+}
+
 export class ApiConnection {
   serverUrl: string;
   sessionId: string;
@@ -36,11 +42,11 @@ export class ApiConnection {
   }
 
   async requestAuthToken(): Promise<void> {
-    const response = await this.call<{ token: any }>('auth');
-    console.log('got request auth token', response);
-    if (response) {
-      localStorage.setItem('token', response.token);
-      this.authToken = response.token;
+    const authorization: string | null = getCookie('authorization');
+
+    if (authorization) {
+      localStorage.setItem('token', authorization);
+      this.authToken = authorization;
     }
   }
 
