@@ -63,8 +63,7 @@ router.get(
       };
     } catch (err) {
       // Log the error, but continue with OIDC auth
-      console.error(`Could not initialize metrics flow.`);
-      console.error(err);
+      console.error(`Could not initialize metrics flow.`, err);
     }
 
     // Set up client
@@ -79,20 +78,6 @@ router.get(
       state,
     });
 
-    // First time logins should skip checking the allowlist
-    const shouldCheckAllowlist = !!req?.session?.user?.email;
-
-    if (shouldCheckAllowlist) {
-      try {
-        await checkAllowList(req.session?.user?.email);
-      } catch (error) {
-        res.status(403).json({
-          msg: 'User not in allow list',
-        });
-        return;
-      }
-    }
-
     // Add state code to session.
     // We'll attempt to match this in the callback.
     req.session[FXA_STATE] = state;
@@ -101,8 +86,7 @@ router.get(
     // so they can do the redirect.
     req.session.save((err) => {
       if (err) {
-        console.error('Could not save session in /login.');
-        console.error(err);
+        console.error('Could not save session in /login.', err);
         res.status(500).json(err);
         return;
       }
@@ -193,8 +177,8 @@ router.get(
 
         req.session.save((err) => {
           if (err) {
-            console.error('Could not save session in / callback.');
-            console.error(err);
+            console.error('Could not save session in / callback.', err);
+
             throw Error(`Could not save session in fxa callback`);
           }
 

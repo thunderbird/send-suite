@@ -36,7 +36,6 @@ const router: Router = Router();
 router.get(
   '/me',
   requireJWT,
-  addErrorHandling(USER_ERRORS.SESSION_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     // Retrieves the logged-in user from the current session
     // ok, I need to persist the user to the session, don't I?

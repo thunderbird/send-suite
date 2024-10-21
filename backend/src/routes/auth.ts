@@ -25,7 +25,7 @@ router.get(
     const jwtToken = jwt.sign(
       { uniqueHash, id: req.session.user.id },
       process.env.ACCESS_TOKEN_SECRET!,
-      { expiresIn: '30d' }
+      { expiresIn: '1d' }
     );
     return res.json({
       token: jwtToken,

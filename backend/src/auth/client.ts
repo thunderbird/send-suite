@@ -49,18 +49,6 @@ export async function checkAllowList(email: string | undefined | null) {
   }
 }
 
-export function verifyJWT(token: string) {
-  const callback = (err, decoded) => {
-    if (err) {
-      return null;
-    }
-    return decoded;
-  };
-  const data = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, callback);
-
-  return data;
-}
-
 export function getUserFromJWT(token: string) {
   const data = jwt.decode(token);
   return data as AuthResponse;

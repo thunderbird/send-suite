@@ -54,26 +54,19 @@ export async function requireJWT(
   next: NextFunction
 ) {
   const jwtToken = req.headers.authorization;
-  let shouldReturn = false;
 
   const token = getJWTfromToken(jwtToken);
   if (!token) {
-    console.error(`No token found for ${extractMethodAndRoute(req)}`);
+    console.warn(`No token found for ${extractMethodAndRoute(req)}`);
     return res.status(403).json({ message: `Not authorized: Token not found` });
   }
 
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err) => {
-    if (err) {
-      console.error(`Invalid token for ${extractMethodAndRoute(req)}`);
-      shouldReturn = true;
-    }
-  });
-
-  // We need to keep this variable outside the callback to make sure next doesn't execute
-  if (shouldReturn) {
+  try {
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    next();
+  } catch (error) {
     return res.status(403).json({ message: `Not authorized: Invalid token` });
   }
-  next();
 }
 
 // Returns a middleware function that renames a property in req.body

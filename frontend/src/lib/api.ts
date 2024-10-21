@@ -31,6 +31,10 @@ export class ApiConnection {
     this.sessionId = sessionId;
   }
 
+  async removeAuthToken() {
+    this.authToken = '';
+  }
+
   async requestAuthToken(): Promise<void> {
     const response = await this.call<{ token: any }>('auth');
     console.log('got request auth token', response);

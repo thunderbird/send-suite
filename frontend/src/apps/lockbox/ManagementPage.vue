@@ -44,12 +44,12 @@ const userId = ref(null);
 onMounted(async () => {
   salutation.value = 'Please log in.';
   // check local storage first
-  await userStore.load();
+  await userStore.loadFromLocalStorage();
 
   try {
     // See if we already have a valid session.
     // If so, hydrate our user using session data.
-    const didPopulate = await userStore.populateFromSession();
+    const didPopulate = await userStore.populateFromBackend();
     if (!didPopulate) {
       return;
     }
@@ -65,7 +65,7 @@ onMounted(async () => {
   }
 
   // Identify user for analytics
-  const uid = userStore.user.uniqueHash;
+  const uid = userStore?.user?.uniqueHash;
   initializeClientMetrics(uid);
   await sendMetricsToBackend(api);
 });
@@ -85,7 +85,7 @@ function clean() {
 
 async function dbUserSetup() {
   // Populate the user from the session.
-  const didPopulate = await userStore.populateFromSession();
+  const didPopulate = await userStore.populateFromBackend();
   if (!didPopulate) {
     return;
   }
@@ -131,6 +131,11 @@ async function loginToMozAccount() {
 async function showCurrentServerSession() {
   sessionInfo.value =
     (await api.call(`users/me`)) ?? CLIENT_MESSAGES.SHOULD_LOG_IN;
+}
+
+async function logOut() {
+  await userStore.logOut();
+  await validators();
 }
 
 async function openPopup() {
@@ -216,6 +221,7 @@ async function finishLogin(options?: Options) {
   <pre v-if="sessionInfo">
     {{ formatSessionInfo(sessionInfo) }}
   </pre>
+  <Btn @click.prevent="logOut">Log out</Btn>
   <FeedbackBox />
 </template>
 

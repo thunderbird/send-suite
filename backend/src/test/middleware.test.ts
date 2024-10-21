@@ -30,9 +30,13 @@ describe('requireJWT', () => {
     mockRequest.headers = {
       authorization: `Bearer ${token}`,
     };
-    vi.mocked(mockedVerify).mockImplementationOnce((token, secret, callback) =>
-      callback(null, { userId: '123' })
-    );
+    vi.mocked(mockedVerify).mockReturnValue({
+      id: '2',
+      uniqueHash:
+        '906f57920630c73eccb51d3a65c032fa660115178633949779b5932b0291a108',
+      exp: 11111,
+      iat: 22222,
+    });
 
     await requireJWT(
       mockRequest as Request,

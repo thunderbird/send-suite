@@ -123,6 +123,7 @@ userStore.user.id ${userStore.user.id}
       `Cannot access browser.runtime, probably not running as an extension`
     );
   }
+  // At the very end we have to validate that everything is in order for the upload to happen
   const { hasBackedUpKeys, isTokenValid } = await validators();
 
   if (!hasBackedUpKeys) {

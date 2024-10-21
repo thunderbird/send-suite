@@ -2,7 +2,6 @@ import { Storage } from '@/lib/storage/index';
 import { UserTier } from '@/types';
 import { describe, expect, it } from 'vitest';
 
-
 describe('User storage', () => {
   it('can store a user without error', async () => {
     const storage = new Storage();
@@ -22,7 +21,7 @@ describe('User storage', () => {
       email: 'ned@ryerson.com',
       tier: UserTier.PRO,
     };
-    const storedUser = await storage.loadUser();
+    const storedUser = await storage.getUserFromLocalStorage();
     expect(userObj).toEqual(storedUser);
   });
 });
