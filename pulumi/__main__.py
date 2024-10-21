@@ -174,5 +174,5 @@ ci_iam = tb_pulumi.ci.AwsAutomationUser(
     enable_full_s3_access=True,
     s3_full_access_buckets=['tb-send-suite-pulumi'],
     enable_s3_bucket_upload=True,
-    s3_upload_buckets=['tb-send-suite-staging-frontend']
+    s3_upload_buckets=['tb-send-suite-staging-frontend'],
 )

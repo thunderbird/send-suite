@@ -99,7 +99,7 @@ resources:
           - FARGATE
         container_definitions:
           backend:
-            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send@sha256:2e4e8d72a3f6494ebacf1a056ebcb806a3c178b3d99a3059249a1c9f6b7199b5
+            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:0.1.19
             portMappings:
               - name: send-suite
                 containerPort: 8080
@@ -131,7 +131,7 @@ resources:
               - name: SENTRY_AUTH_TOKEN
                 valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/sentry-auth-token-esyr6P
               - name: ACCESS_TOKEN_SECRET
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/sentry-auth-token-esyr6P
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/access_token_secret-iIghei
               - name: REFRESH_TOKEN_SECRET
                 valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/sentry-auth-token-esyr6P
             environment:
