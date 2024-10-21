@@ -6,6 +6,8 @@ import init from '@/lib/init';
 import useKeychainStore from '@/stores/keychain-store';
 import useUserStore from '@/stores/user-store';
 
+import StatusBar from '@/apps/common/StatusBar.vue';
+
 import ErrorUploading from '@/apps/lockbox/components/ErrorUploading.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import useSharingStore from '@/apps/lockbox/stores/sharing-store';
@@ -13,10 +15,12 @@ import useSharingStore from '@/apps/lockbox/stores/sharing-store';
 import { EXTENSION_READY, SHARE_ABORTED, SHARE_COMPLETE } from '@/lib/const';
 import { restoreKeysUsingLocalStorage } from '@/lib/keychain';
 import useApiStore from '@/stores/api-store';
+import { useStatusStore } from '../stores/status-store';
 
 const userStore = useUserStore();
 const { keychain } = useKeychainStore();
 const { api } = useApiStore();
+const { validators } = useStatusStore();
 
 const folderStore = useFolderStore();
 const sharingStore = useSharingStore();
@@ -26,6 +30,8 @@ const isError = ref(false);
 
 const password = ref('');
 const fileBlob = ref(null);
+const isAllowed = ref(true);
+const message = ref('');
 
 // TODO: Make it so you can mix-and-match.
 // i.e., you can convert attachment to lockbox
@@ -117,26 +123,44 @@ userStore.user.id ${userStore.user.id}
       `Cannot access browser.runtime, probably not running as an extension`
     );
   }
+  const { hasBackedUpKeys, isTokenValid } = await validators();
+
+  if (!hasBackedUpKeys) {
+    isAllowed.value = false;
+    message.value = `Please make sure you have backed up or restored your keys. Go back to the compositon panel and follow the instructions`;
+    return;
+  }
+  if (!isTokenValid) {
+    isAllowed.value = false;
+    message.value = `You're not logged in properly. Please go back to the compositon panel to log back in`;
+    return;
+  }
 });
 </script>
 
 <template>
-  <h1>Attach via Lockbox</h1>
-  <div v-if="isError">
-    <ErrorUploading />
-  </div>
+  <div v-if="isAllowed">
+    <h1>Attach via Lockbox</h1>
+    <div v-if="isError">
+      <ErrorUploading />
+    </div>
 
-  <div v-if="isUploading">
-    <p>Uploading...</p>
-  </div>
+    <div v-if="isUploading">
+      <p>Uploading...</p>
+    </div>
 
-  <form @submit.prevent="uploadAndShare">
-    <br />
-    <label>
-      Password for sharing:
-      <input v-model="password" type="password" :disabled="isUploading" />
-    </label>
-    <br />
-    <input type="submit" value="Encrypt and Upload" :disabled="isUploading" />
-  </form>
+    <form @submit.prevent="uploadAndShare">
+      <br />
+      <label>
+        Password for sharing:
+        <input v-model="password" type="password" :disabled="isUploading" />
+      </label>
+      <br />
+      <input type="submit" value="Encrypt and Upload" :disabled="isUploading" />
+    </form>
+  </div>
+  <div v-else>
+    <p>{{ message }}</p>
+  </div>
+  <StatusBar />
 </template>

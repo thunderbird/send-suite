@@ -12,6 +12,7 @@ export default [
       },
       globals: {
         ...globals.browser, // Existing browser globals
+        ...globals.webextensions, // Existing browser globals
         __dirname: 'readonly', // Setting __dirname as a global variable
         __filename: 'readonly', // Commonly used alongside __dirname
         process: 'readonly', // Another common Node.js global
@@ -25,9 +26,9 @@ export default [
   eslintConfigPrettier,
   {
     rules: {
-      "@typescript-eslint/ban-ts-comment": "off",
-      "@typescript-eslint/no-explicit-any": "warn",
-      "no-extra-boolean-cast": "off",
-    }
-  }
+      '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      'no-extra-boolean-cast': 'off',
+    },
+  },
 ];
