@@ -72,7 +72,7 @@ resources:
 
   tb:fargate:FargateClusterWithLogging:
     backend:
-      desired_count: 3
+      desired_count: 1
       assign_public_ip: True
       ecr_resources:
         - arn:aws:ecr:us-east-1:768512802988:repository/send*
