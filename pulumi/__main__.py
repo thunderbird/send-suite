@@ -3,6 +3,7 @@
 import pulumi
 import pulumi_aws as aws
 import tb_pulumi
+import tb_pulumi.ci
 import tb_pulumi.cloudfront
 import tb_pulumi.fargate
 import tb_pulumi.network
@@ -158,4 +159,20 @@ frontend_dns = aws.route53.Record(
     type=aws.route53.RecordType.CNAME,
     ttl=60,
     records=[frontend.resources['cloudfront_distribution'].domain_name],
+)
+
+# These settings transcend the stack/environment, so we are not loading them from a config file
+ci_iam = tb_pulumi.ci.AwsAutomationUser(
+    name=f'{project.project}-ci',
+    project=project,
+    active_stack='staging',
+    enable_ecr_image_push=True,
+    ecr_repositories=['send'],
+    enable_fargate_deployments=True,
+    fargate_clusters=['send-suite-staging-fargate'],
+    fargate_task_role_arns=['arn:aws:iam::768512802988:role/send-suite-staging-fargate'],
+    enable_full_s3_access=True,
+    s3_full_access_buckets=['tb-send-suite-pulumi'],
+    enable_s3_bucket_upload=True,
+    s3_upload_buckets=['tb-send-suite-staging-frontend']
 )
