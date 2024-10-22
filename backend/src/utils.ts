@@ -34,3 +34,26 @@ export const getCookie = (
   const [, value] = authCookie.split('=');
   return value ? decodeURIComponent(value) : null;
 };
+
+type RoundNumber = number;
+
+function isRoundNumber(num: number): num is RoundNumber {
+  return Number.isInteger(num);
+}
+export const getTokenExpiration = (days: number) => {
+  if (!isRoundNumber(days)) {
+    throw new Error(
+      'Token expiration should be a round number specifying days'
+    );
+  }
+
+  // we use days as a multiplier
+  const ONE_HOUR = 60;
+  const ONE_DAY = 24;
+  const ONE_MINUTE = 60_000;
+  const milliseconds = ONE_MINUTE * ONE_HOUR * ONE_DAY * days;
+
+  const stringified = `${days}d`;
+
+  return { milliseconds, stringified };
+};

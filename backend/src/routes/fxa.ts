@@ -1,4 +1,5 @@
 import { createLoginSession, deleteSession, getLoginSession } from '@/models';
+import { getTokenExpiration } from '@/utils';
 import axios from 'axios';
 import { createHash } from 'crypto';
 import { Request, Router } from 'express';
@@ -23,7 +24,8 @@ import {
 import { AuthResponse } from './auth';
 
 const router: Router = Router();
-const ONE_MINUTE = 60_000;
+const ONE_DAY = 1;
+const tokenExpiration = getTokenExpiration(ONE_DAY);
 
 // Route for obtaining an authorization URL for Mozilla account.
 router.get(
@@ -175,11 +177,11 @@ router.get(
 
       // Sign the jwt and pass it as a cookie
       const jwtToken = jwt.sign(signedData, process.env.ACCESS_TOKEN_SECRET!, {
-        expiresIn: '1d',
+        expiresIn: tokenExpiration.stringified,
       });
 
       res.cookie('authorization', `Bearer ${jwtToken}`, {
-        maxAge: 60 * 24 * ONE_MINUTE,
+        maxAge: tokenExpiration.milliseconds,
         httpOnly: true,
         sameSite: 'none',
         secure: true,

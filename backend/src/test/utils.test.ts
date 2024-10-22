@@ -1,4 +1,4 @@
-import { getCookie } from '@/utils';
+import { getCookie, getTokenExpiration } from '@/utils';
 import { describe, expect, it } from 'vitest';
 
 describe('getCookie', () => {
@@ -30,5 +30,24 @@ describe('getCookie', () => {
     const cookieStr = 'Authorization=Bearer%20token123';
     const result = getCookie(cookieStr, 'Authorization');
     expect(result).toBe('Bearer token123');
+  });
+});
+
+describe('getTokenExpiration', () => {
+  it('should return correct expiration details for valid days', () => {
+    const days = 1;
+    const result = getTokenExpiration(days);
+    expect(result).toEqual({
+      milliseconds: 86_400_000, // 5 days in milliseconds
+      stringified: '1d',
+    });
+  });
+
+  it('should throw an error if days is not a round number', () => {
+    const days = 5.5;
+    const testFunc = () => getTokenExpiration(days);
+    expect(testFunc).toThrow(
+      'Token expiration should be a round number specifying days'
+    );
   });
 });
