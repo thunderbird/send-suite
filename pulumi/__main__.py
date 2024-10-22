@@ -9,7 +9,6 @@ import tb_pulumi.fargate
 import tb_pulumi.network
 import tb_pulumi.rds
 import tb_pulumi.secrets
-import urllib.parse
 
 
 CLOUDFRONT_REWRITE_CODE_FILE = 'cloudfront-rewrite.js'
