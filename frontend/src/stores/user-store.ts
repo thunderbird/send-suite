@@ -199,10 +199,8 @@ const useUserStore: () => UserStore = defineStore('user', () => {
   }
 
   async function setUserToDefault() {
-    Object.entries(EMPTY_USER).forEach(([k, v]) => {
-      console.log('empty value', k);
-      console.log('for', v);
-      user[k] = v;
+    Object.entries(EMPTY_USER).forEach(([key, value]) => {
+      user[key] = value;
     });
   }
 
