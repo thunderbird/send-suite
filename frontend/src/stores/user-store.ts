@@ -205,7 +205,7 @@ const useUserStore: () => UserStore = defineStore('user', () => {
   }
 
   async function logOut() {
-    api.removeAuthToken();
+    await api.removeAuthToken();
     storage.clear();
     setUserToDefault();
   }

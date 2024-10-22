@@ -4,15 +4,8 @@ export type AsyncJsonResponse<T = { [key: string]: any }> = Promise<
   JsonResponse<T>
 > | null;
 
-function getCookie(name: string): string | null {
-  const cookies = document.cookie.split('; ');
-  const cookie = cookies.find((row) => row.startsWith(`${name}=`));
-  return cookie ? cookie.split('=')[1] : null;
-}
-
 export class ApiConnection {
   serverUrl: string;
-  sessionId: string;
   authToken: string;
 
   constructor(serverUrl: string) {
@@ -33,21 +26,8 @@ export class ApiConnection {
     return this.serverUrl;
   }
 
-  setSessionId(sessionId: string): void {
-    this.sessionId = sessionId;
-  }
-
   async removeAuthToken() {
-    this.authToken = '';
-  }
-
-  async requestAuthToken(): Promise<void> {
-    const authorization: string | null = getCookie('authorization');
-
-    if (authorization) {
-      localStorage.setItem('token', authorization);
-      this.authToken = authorization;
-    }
+    await this.call('lockbox/fxa/logout');
   }
 
   /**
@@ -72,13 +52,6 @@ export class ApiConnection {
     headers: Record<string, any> = {},
     options?: O
   ): Promise<O extends { fullResponse: true } ? Response : T | null> {
-    if (this.sessionId) {
-      headers = {
-        ...headers,
-        sessionId: this.sessionId,
-      };
-    }
-
     const url = `${this.serverUrl}/api/${path}`;
     const opts: Record<string, any> = {
       mode: 'cors',
@@ -87,7 +60,6 @@ export class ApiConnection {
       headers: {
         'content-type': 'application/json',
         ...headers,
-        authorization: 'Bearer ' + this.authToken,
       },
     };
 

@@ -149,7 +149,7 @@ async function openPopup() {
     const checkPopupClosed = (windowId: number) => {
       if (windowId === popup.id) {
         browser.windows.onRemoved.removeListener(checkPopupClosed);
-        finishLogin({ onClick: true });
+        finishLogin();
       }
     };
     browser.windows.onRemoved.addListener(checkPopupClosed);
@@ -159,12 +159,7 @@ async function openPopup() {
   }
 }
 
-type Options = { onClick: boolean };
-async function finishLogin(options?: Options) {
-  if (options?.onClick) {
-    await api.requestAuthToken();
-  }
-
+async function finishLogin() {
   const isSessionValid = await validateToken(api);
   if (!isSessionValid) {
     salutation.value = `Please log in again, your session is invalid`;
@@ -193,9 +188,6 @@ async function finishLogin(options?: Options) {
 <template>
   <h1>{{ salutation }}</h1>
   <button @click.prevent="loginToMozAccount">Log into Mozilla Account</button>
-  <button @click.prevent="finishLogin({ onClick: true })">
-    Click after moz login
-  </button>
   <br />
   <h1>Debug Info</h1>
   <form>

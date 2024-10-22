@@ -7,7 +7,7 @@
     "build": "NODE_ENV=production ./scripts/build.sh",
     "build-and-submit": "NODE_ENV=production ./scripts/build.sh && ./scripts/submit.sh",
     "build:dev": "./scripts/build.sh",
-    "build:watch": "nodemon --watch ./src/* -e vue,ts,js,json --exec 'pnpm build'",
+    "build:watch": "nodemon --watch ./src/* --watch public -e vue,ts,js,json --exec 'pnpm build'",
     "ci:validate": "pnpm run lint:all; pnpm run test",
     "dev": "vite --host",
     "lint:all": "eslint . --fix",

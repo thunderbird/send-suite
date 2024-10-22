@@ -210,7 +210,6 @@ router.get(
   })
 );
 
-//Unused
 router.get(
   '/logout',
   addErrorHandling(AUTH_ERRORS.LOG_OUT_FAILED),
@@ -228,6 +227,13 @@ TODO:
 - get destroyUrl from issuer
 - handle errors
   */
+
+    res.cookie('authorization', `null`, {
+      maxAge: 0,
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
+    });
 
     const destroyUrl = `https://oauth.stage.mozaws.net/v1/destroy`;
     const accessToken = `get the access token`;

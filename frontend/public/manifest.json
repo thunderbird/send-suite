@@ -18,8 +18,9 @@
     "open_in_tab": true,
     "browser_style": true
   },
+  "host_permissions": "<all_urls>",
   "cloud_file": {
-    "name": "Lockbox Send",
+    "name": "Thunderbird Send",
     "management_url": "index.management.html",
     "browser_style": true,
     "reuse_uploads": false
@@ -32,6 +33,7 @@
     "tabs",
     "messagesRead",
     "messagesModify",
+    "cookies",
     "sensitiveDataUpload"
   ]
 }
