@@ -52,6 +52,10 @@ export const SESSION_NOT_SAVED = 'SESSION_NOT_SAVED';
 
 export const TRANSFER_ERROR = 'TRANSFER_ERROR';
 
+export const SESSION_NOT_FOUND = 'SESSION_NOT_FOUND';
+export const SESSION_NOT_CREATED = 'SESSION_NOT_CREATED';
+export const SESSION_NOT_DELETED = 'SESSION_NOT_DELETED';
+
 export class BaseError extends Error {
   constructor(errorType: string) {
     super(errorType);
