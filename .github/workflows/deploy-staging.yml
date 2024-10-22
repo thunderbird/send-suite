@@ -1,0 +1,183 @@
+---
+name: deploy-staging-and-create-release
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+    contents: read
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend-changed: ${{ steps.check.outputs.backend-changed }}
+      iac-changed: ${{ steps.check.outputs.iac-changed }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: check
+        with:
+          filters: |
+            backend-changed:
+              - 'backend/**'
+            iac-changed:
+              - 'pulumi/**'
+              - '.github/workflows/validate.yml'
+
+  # When backend changes are merged in, build and push a new Docker image
+  backend-merge:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.backend-changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # Preparation for future steps
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: 'true'
+      
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+      
+      - name: Set up virtual environment
+        shell: bash
+        run: |
+          python -m pip install virtualenv
+          cd pulumi
+          virtualenv ./venv
+        
+      - name: Set up Pulumi environment
+        id: pulumi-env
+        shell: bash
+        run: |
+          cd pulumi
+          source ./venv/bin/activate
+          curl -fsSL https://get.pulumi.com | sh
+          pip install -Ur requirements.txt
+
+      # - name: Setup tmate session
+      #   uses: mxschmitt/action-tmate@v3
+      
+      # Produce a container image
+      - name: Build, tag, and push backend image to Amazon ECR
+        id: build-backend
+        env:
+          ECR_TAG: '${{ steps.login-ecr.outputs.registry }}/${{ vars.PROJECT }}:${{ github.sha }}'
+        run: |
+          # Build a docker container and push it to ECR so that it can be deployed to ECS.
+          docker build -t $ECR_TAG ./backend
+          docker push $ECR_TAG
+          echo "backend-image=$ECR_TAG" >> $GITHUB_OUTPUT
+
+      # Deploy to staging
+      - name: Deploy new image to staging
+        shell: bash
+        env:
+          ECR_TAG: '${{ steps.login-ecr.outputs.registry }}/${{ vars.PROJECT }}:${{ github.sha }}'
+        run: |
+          # Change the image config option and try to apply the change
+          cd pulumi
+          cat << EOF > newimage.yaml
+          resources:
+            tb:fargate:FargateClusterWithLogging:
+              backend:
+                task_definition:
+                  container_definitions:
+                    backend:
+                      image: "$ECR_TAG"
+          EOF
+          yq -i '. *= load("newimage.yaml")' config.staging.yaml
+          export PULUMI_CONFIG_PASSPHRASE="${{ secrets.PULUMI_PASSPHRASE_STAGING }}"
+          source ./venv/bin/activate
+          pulumi login s3://tb-send-suite-pulumi
+          pulumi stack select staging
+          pulumi up -y --diff --target \
+            'urn:pulumi:staging::send-suite::tb:fargate:FargateClusterWithLogging$aws:ecs/taskDefinition:TaskDefinition::send-suite-staging-fargate-taskdef' \
+            --target-dependents
+
+          # Only push the config change back to the repo if it was successfully applied
+          # git add config.staging.yaml
+          # git commit -m "CI: Update staging image"
+          # git push
+
+  frontend-merge:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend-changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # Preparation for future steps
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Create production .env file from secrets
+        shell: bash
+        run: |
+          cat << EOF > .env
+          VUE_BASE_URL=https://send.thunderbird.dev
+          VITE_SEND_SERVER_URL=https://lockbox.thunderbird.dev
+          VITE_SEND_CLIENT_URL=https://send.thunderbird.dev
+          VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }}
+          VITE_SENTRY_DSN=${{ vars.VITE_SENTRY_DSN }}
+          VITE_POSTHOG_PROJECT_KEY=${{ secrets.VITE_POSTHOG_PROJECT_KEY }}
+          VITE_POSTHOG_HOST=${{ vars.VITE_POSTHOG_HOST }}
+          EOF
+
+      - name: Build the frontend's static assets
+        id: frontend-build
+        shell: bash
+        run: |
+          # Initial setup of dependencies
+          cd frontend
+          npm install -g pnpm
+          pnpm install
+
+          # Build static frontend assets and create a compressed archive of them
+          TIMESTAMP=$(date +%Y.%m.%d-%H.%M.%S)
+          ARCHIVE="send-suite-frontend-build-$TIMESTAMP.tbz"
+          pnpm build
+          tar -cvjf $ARCHIVE dist/*
+          echo "archive_filename=$ARCHIVE" >> $GITHUB_OUTPUT
+
+      - name: Archive the build
+        id: frontend-archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-static-assets
+          path: ${{ steps.frontend-build.outputs.archive_filename }}
+      
+      - name: Deploy to staging
+        id: frontend-deploy
+        shell: bash
+        run: |
+          cd frontend/dist-web
+          aws s3 cp . s3://tb-send-suite-staging-frontend/ --recursive

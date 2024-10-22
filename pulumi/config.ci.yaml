@@ -1,8 +1,11 @@
 ---
+# This defines the ci environment. The ci environment is not to be considered stable, as it is used
+# to test validity of changes to Pulumi code and as a breakable/fixable ci environment.
+
 resources:
   tb:network:MultiCidrVpc:
     vpc:
-      cidr_block: 10.0.0.0/16
+      cidr_block: 10.255.0.0/16
       egress_via_internet_gateway: True
       enable_dns_hostnames: True
       enable_internet_gateway: True
@@ -16,11 +19,11 @@ resources:
         - s3
       subnets:
         us-east-1a:
-          - 10.0.101.0/24
+          - 10.255.101.0/24
         us-east-1b:
-          - 10.0.102.0/24
+          - 10.255.102.0/24
         us-east-1c:
-          - 10.0.103.0/24
+          - 10.255.103.0/24
 
   tb:network:SecurityGroupWithRules:
     backend:
@@ -31,14 +34,14 @@ resources:
             protocol: tcp
             from_port: 443
             to_port: 443
-          - cidr_blocks: ["10.0.0.0/16"]
-            description: Backend port
+          - cidr_blocks: ["10.255.0.0/16"]
+            description: Private backend port
             protocol: tcp
             from_port: 8080
             to_port: 8080
         egress:
           - cidr_blocks: ["0.0.0.0/0"]
-            description: Outbound TLS traffic
+            description: Outbound traffic
             protocol: tcp
             from_port: 0
             to_port: 65535
@@ -62,9 +65,14 @@ resources:
       parameter_group_family: postgres15
       skip_final_snapshot: True
       # Jumphost options
-      build_jumphost: False
-      jumphost_public_key: ""
+      build_jumphost: True
+      # The below public key is not used by anything else and is not a critical value.
+      # You may replace it at will if you need to access the jumphost
+      jumphost_public_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDh8XKSBUuStEAuQcqxKSRJ8uk0UWshsTmViuTa+9FLm3KKnSag7SZEcP2ROO5g8HX9kIWTPllNxgYqGDqFioDVV2xxGY/WW9O6kQcQdXNrHM53niA7Ai+T+o577D4Nl3d0RSDXmflb4D5tYE9r3cwnv4fDQkDvlHy+9y42Nh+jiE537II2B2u/SeZ1Ead9fhPpk0CvI8uMSXMKpRBord+4fc6w0T/n3rAtFk2KZ7U456bBccWHnAAjYh4CZcrDJxbviA3Bp+urmxsE0aKq47rXGs3m9+bgrMEoXzCT6B/VqvMZpbLAIGppXZQc2H4MzSCZgDPd/skFAYXOK4oX1QjXyV7d955cVJwBtvZHMGrbmPPe7mLiILFidQU/i3o92CsOfg+l3UGiEHiLZwUa6TgajoLsiYyA4tFf464guLGB/f9pJI22QmWqOK29BUhPJnv5xk6TBS3vC3k7hsz5e6dJ94alcN1zfJoAJcoos/+VDT66OSqtkggDzAEw2BZJraoaP9TxRGe6cwmNo7rQjMFyYnx/NBEge4H5RHV+gMh5aStdLwI6yczxR6FchaiVjnv4+shtkWzxj3ij9/pE4s0mhM+4w1BpAmFMPLvt/At+zcsB/9JUdntYidTFtP48K7J0kzvPEhiK8zKHX3G2hF2gVCUIAMs9VJa0SeiQbJfKUQ=="
+      # The below list must contain an entry that is inclusive of your client's public IP. You may
+      # `curl -4 https://curlmyip.net/` to get that info, then tack a `/32` on the end of it to produce a good CIDR.
       jumphost_source_cidrs: []
+      # The following script gets run on the jumphost at launch time. Adjust to your needs.
       jumphost_user_data: |
         #!/bin/bash
         yum update -y
@@ -72,8 +80,8 @@ resources:
 
   tb:fargate:FargateClusterWithLogging:
     backend:
-      desired_count: 1
       assign_public_ip: True
+      desired_count: 1
       ecr_resources:
         - arn:aws:ecr:us-east-1:768512802988:repository/send*
       health_check_grace_period_seconds: 60
@@ -82,24 +90,26 @@ resources:
         send-suite:
           listener_port: 443
           listener_proto: HTTPS
-          listener_cert_arn: arn:aws:acm:us-east-1:768512802988:certificate/17ae6d4f-0f30-4e92-b243-74bce7ea5f90
+          listener_cert_arn: arn:aws:acm:us-east-1:768512802988:certificate/8550cfab-84e2-432d-b9b6-a5454bacfd8c
           container_port: 8080
           container_name: backend
           # "name" field is arbitrary, but must be unique and no longer than 32 chars
-          name: send-suite-staging-api
+          name: send-suite-ci-api
           health_check:
             healthy_threshold: 2
             unhealthy_threshold: 5
             interval: 15
       task_definition:
         network_mode: awsvpc
-        cpu: 1024
-        memory: 4096
+        # Adjust sizing as necessary; 256 cpu/512 ram are minimum values. Values must match listings in the table here:
+        # https://docs.aws.amazon.com/AmazonECS/latest/cieloperguide/task_definition_parameters.html#task_size
+        cpu: 256
+        memory: 512
         requires_compatibilities:
           - FARGATE
         container_definitions:
           backend:
-            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:0.1.19
+            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:0.1.12
             portMappings:
               - name: send-suite
                 containerPort: 8080
@@ -115,37 +125,33 @@ resources:
               initProcessEnabled: True
             secrets:
               - name: B2_APPLICATION_KEY
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/b2-application-key-OfJfMS
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/b2-application-key
               - name: B2_APPLICATION_KEY_ID
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/b2-application-key-id-5QFZWv
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/b2-application-key-id
               - name: DATABASE_URL
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/database_url-5c8zAR
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/database_url
               - name: FXA_ALLOW_LIST
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-allow-list-QM5LZb
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/fxa-allow-list
               - name: FXA_CLIENT_ID
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-id-trDR1r
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/fxa-client-id
               - name: FXA_CLIENT_SECRET
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-secret-FGcei3
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/fxa-client-secret
               - name: POSTHOG_API_KEY
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/posthog-api-key-gnIFgZ
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/posthog-api-key
               - name: SENTRY_AUTH_TOKEN
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/sentry-auth-token-esyr6P
-              - name: ACCESS_TOKEN_SECRET
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/access_token_secret-iIghei
-              - name: REFRESH_TOKEN_SECRET
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/sentry-auth-token-esyr6P
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/sentry-auth-token
             environment:
               - name: B2_BUCKET_NAME
-                value: tb-send-suite-staging-object-store-alpha
+                value: tb-send-suite-ci-object-store
               - name: B2_ENDPOINT
                 value: s3.us-east-005.backblazeb2.com
               - name: B2_REGION
                 value: auto
               - name: BASE_URL
-                value: https://lockbox.thunderbird.dev/
+                value: https://lockbox-ci.thunderbird.dev/
               - name: COMBINED_LOG
                 value: logs/combined.log
-              - name: DEVELOPER_TIMEZONE
+              - name: ciELOPER_TIMEZONE
                 value: US/Eastern
               - name: DATABASE_ENGINE
                 value: postgres
@@ -160,7 +166,7 @@ resources:
               - name: FXA_MOZ_ISSUER
                 value: https://accounts.stage.mozaws.net
               - name: FXA_REDIRECT_URI
-                value: https://lockbox.thunderbird.dev/lockbox/fxa
+                value: https://lockbox-ci.thunderbird.dev/lockbox/fxa
               - name: NODE_ENV
                 value: production
               - name: POSTHOG_HOST
@@ -176,15 +182,15 @@ resources:
 
   tb:cloudfront:CloudFrontS3Service:
     frontend:
-      service_bucket_name: tb-send-suite-staging-frontend
-      certificate_arn: arn:aws:acm:us-east-1:768512802988:certificate/3a98e226-c4df-4e58-bc0a-aa4ccbf6325e
+      service_bucket_name: tb-send-suite-ci-frontend
+      certificate_arn: arn:aws:acm:us-east-1:768512802988:certificate/e3fe04b9-a8e8-4881-b5bc-257c11e17941
       distribution:
         aliases:
-          - send.thunderbird.dev
-        comment: send-suite staging frontend
+          - send-ci.thunderbird.dev
+        comment: send-suite ci frontend
         logging_config:
           include_cookies: True
 
   domains:
-    backend: lockbox.thunderbird.dev
-    frontend: send.thunderbird.dev
+    backend: lockbox-ci.thunderbird.dev
+    frontend: send-ci.thunderbird.dev

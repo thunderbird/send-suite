@@ -3,6 +3,7 @@
 import pulumi
 import pulumi_aws as aws
 import tb_pulumi
+import tb_pulumi.ci
 import tb_pulumi.cloudfront
 import tb_pulumi.fargate
 import tb_pulumi.network
@@ -90,12 +91,12 @@ backend_fargate = tb_pulumi.fargate.FargateClusterWithLogging(
 backend_dns = aws.route53.Record(
     f'{project.name_prefix}-dns-backend',
     zone_id='Z03528753AZVULC8BFCA',  # thunderbird.dev
-    name='lockbox.thunderbird.dev',
+    name=resources['domains']['backend'],
     # Delete this record once this issue is resolved, deferring to the CloudFront rewrite instead
     # https://bugzilla.mozilla.org/show_bug.cgi?id=1866867
     type=aws.route53.RecordType.CNAME,
     ttl=60,
-    records=[backend_fargate.resources['fargate_service_alb']['albs']['send-suite'].dns_name],
+    records=[backend_fargate.resources['fargate_service_alb'].resources['albs']['send-suite'].dns_name],
 )
 
 # Manage the CloudFront rewrite function; the code is managed in cloudfront-rewrite.js
@@ -109,19 +110,17 @@ except IOError:
 cf_func = aws.cloudfront.Function(
     f'{project.name_prefix}-func-rewrite',
     code=rewrite_code,
-    # comment=f'Rewrite URLs for {project.name_prefix}',
-    comment='Rewrites inbound requests to direct them to the staging send-suite backend API',
+    comment='Rewrites inbound requests to direct them to the send-suite backend API',
     name=f'{project.name_prefix}-rewrite',
-    publish=False,
+    publish=True,
     runtime='cloudfront-js-2.0',
-    opts=pulumi.ResourceOptions(import_='send-suite-staging-rewrite'),
 )
 
 # Deliver frontend content via CloudFront; Ref:
 # https://www.pulumi.com/registry/packages/aws/api-docs/cloudfront/distribution/#distributionorigincustomoriginconfig
 api_origin = {
     'origin_id': f'{project.name_prefix}-api',
-    'domain_name': backend_fargate.resources['fargate_service_alb']['albs']['send-suite'].dns_name,
+    'domain_name': backend_fargate.resources['fargate_service_alb'].resources['albs']['send-suite'].dns_name,
     'custom_origin_config': {
         'http_port': 80,
         'https_port': 443,
@@ -156,8 +155,24 @@ frontend = tb_pulumi.cloudfront.CloudFrontS3Service(
 frontend_dns = aws.route53.Record(
     f'{project.name_prefix}-dns-frontend',
     zone_id='Z03528753AZVULC8BFCA',  # thunderbird.dev
-    name='send.thunderbird.dev',
+    name=resources['domains']['frontend'],
     type=aws.route53.RecordType.CNAME,
     ttl=60,
     records=[frontend.resources['cloudfront_distribution'].domain_name],
+)
+
+# These settings transcend the stack/environment, so we are not loading them from a config file
+ci_iam = tb_pulumi.ci.AwsAutomationUser(
+    name=f'{project.project}-ci',
+    project=project,
+    active_stack='staging',
+    enable_ecr_image_push=True,
+    ecr_repositories=['send'],
+    enable_fargate_deployments=True,
+    fargate_clusters=['send-suite-staging-fargate'],
+    fargate_task_role_arns=['arn:aws:iam::768512802988:role/send-suite-staging-fargate'],
+    enable_full_s3_access=True,
+    s3_full_access_buckets=['tb-send-suite-pulumi'],
+    enable_s3_bucket_upload=True,
+    s3_upload_buckets=['tb-send-suite-staging-frontend'],
 )
