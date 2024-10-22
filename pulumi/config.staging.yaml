@@ -48,6 +48,7 @@ resources:
       secret_names:
         - b2-application-key-id
         - b2-application-key
+        - database-url
         - fxa-allow-list
         - fxa-client-id
         - fxa-client-secret
@@ -55,22 +56,6 @@ resources:
         - jwt-refresh-token-secret
         - posthog-api-key
         - sentry-auth-token
-
-  tb:rds:RdsDatabaseGroup:
-    backend:
-      engine_version: 15.7 # 16.x is available, but it's in beta and only supported in certain configs
-      instance_class: db.t3.micro
-      num_instances: 1
-      parameter_group_family: postgres15
-      skip_final_snapshot: True
-      # Jumphost options
-      build_jumphost: False
-      jumphost_public_key: ""
-      jumphost_source_cidrs: []
-      jumphost_user_data: |
-        #!/bin/bash
-        yum update -y
-        yum install -y postgresql15
 
   tb:fargate:FargateClusterWithLogging:
     backend:
@@ -121,7 +106,7 @@ resources:
               - name: B2_APPLICATION_KEY_ID
                 valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/b2-application-key-id-5QFZWv
               - name: DATABASE_URL
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/database_url-5c8zAR
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/database-url-6J02g2
               - name: FXA_ALLOW_LIST
                 valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-allow-list-QM5LZb
               - name: FXA_CLIENT_ID
