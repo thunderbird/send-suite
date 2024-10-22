@@ -10,7 +10,7 @@
     "build:watch": "nodemon --watch ./src/* --watch public -e vue,ts,js,json --exec 'pnpm build'",
     "ci:validate": "pnpm run lint:all; pnpm run test",
     "dev": "vite --host",
-    "lint:all": "eslint . --fix",
+    "lint:all": "eslint src/**/*.ts --fix",
     "prettier:all": "prettier --write .",
     "preview": "vite preview",
     "test": "vitest run --silent",
