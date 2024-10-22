@@ -1,5 +1,4 @@
 import express from 'express';
-import session from 'express-session';
 import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
 import router from '../../routes/metrics';
@@ -38,19 +37,7 @@ vi.mock('@/utils/session', () => {
   };
 });
 
-//  Mock express session
-const expressSession = session({
-  secret: process.env.SESSION_SECRET ?? 'abc123xyz',
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    secure: false,
-    sameSite: 'none', // Cannot use 'lax' or 'strict' for local dev.
-  },
-});
-
 const app = express();
-app.use(expressSession);
 app.use(express.json());
 app.use(router);
 
