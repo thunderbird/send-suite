@@ -51,6 +51,8 @@ resources:
         - fxa-allow-list
         - fxa-client-id
         - fxa-client-secret
+        - jwt-access-token-secret
+        - jwt-refresh-token-secret
         - posthog-api-key
         - sentry-auth-token
 
@@ -131,9 +133,9 @@ resources:
               - name: SENTRY_AUTH_TOKEN
                 valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/sentry-auth-token-esyr6P
               - name: ACCESS_TOKEN_SECRET
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/access_token_secret-iIghei
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/jwt-access-token-secret-WCnIkJ
               - name: REFRESH_TOKEN_SECRET
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/sentry-auth-token-esyr6P
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/jwt-refresh-token-secret-EXm0RB
             environment:
               - name: B2_BUCKET_NAME
                 value: tb-send-suite-staging-object-store-alpha
