@@ -3,8 +3,8 @@ import { PrismaClient } from '@prisma/client';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import {
+  getDataFromAuthenticatedRequest,
   getJWTfromToken,
-  getUserFromAuthenticatedRequest,
 } from './auth/client';
 import { fromPrismaV2 } from './models/prisma-helper';
 import {
@@ -98,7 +98,7 @@ export const getGroupMemberPermissions: RequestHandler = async (
     return reject(res);
   }
 
-  const { id: userId } = getUserFromAuthenticatedRequest(req);
+  const { id: userId } = getDataFromAuthenticatedRequest(req);
   const containerId = extractContainerId(req);
 
   if (userId && containerId === 0) {

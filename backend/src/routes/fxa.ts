@@ -7,6 +7,7 @@ import {
   checkAllowList,
   generateState,
   getClient,
+  getDataFromAuthenticatedRequest,
   getIssuer,
 } from '../auth/client';
 import { ENVIRONMENT } from '../config';
@@ -19,6 +20,7 @@ import {
   findOrCreateUserProfileByMozillaId,
   updateUniqueHash,
 } from '../models/users';
+import { AuthResponse } from './auth';
 
 const router: Router = Router();
 const ONE_MINUTE = 60_000;
@@ -170,12 +172,16 @@ router.get(
 
       await updateUniqueHash(user.id, uniqueHash);
 
+      const signedData: AuthResponse = {
+        uniqueHash,
+        id: user.id,
+        email: user.email,
+      };
+
       // Sign the jwt and pass it as a cookie
-      const jwtToken = jwt.sign(
-        { uniqueHash, id: req.session.user.id },
-        process.env.ACCESS_TOKEN_SECRET!,
-        { expiresIn: '1d' }
-      );
+      const jwtToken = jwt.sign(signedData, process.env.ACCESS_TOKEN_SECRET!, {
+        expiresIn: '1d',
+      });
 
       res.cookie('authorization', jwtToken, {
         maxAge: ONE_MINUTE,
@@ -192,8 +198,9 @@ router.get(
   '/allowlist',
   addErrorHandling(AUTH_ERRORS.ALLOW_LIST_FAILED),
   wrapAsyncHandler(async (req, res) => {
+    const { email } = getDataFromAuthenticatedRequest(req);
     try {
-      await checkAllowList(req.session?.user?.email);
+      await checkAllowList(email);
     } catch (error) {
       return res.status(200).json({
         msg: 'No email in session, cannot check allow list',
@@ -205,6 +212,7 @@ router.get(
   })
 );
 
+//Unused
 router.get(
   '/logout',
   addErrorHandling(AUTH_ERRORS.LOG_OUT_FAILED),
@@ -224,7 +232,7 @@ TODO:
   */
 
     const destroyUrl = `https://oauth.stage.mozaws.net/v1/destroy`;
-    const accessToken = `${req.session?.user?.profile?.accessToken}`;
+    const accessToken = `get the access token`;
     if (accessToken) {
       const body = {
         token: accessToken,

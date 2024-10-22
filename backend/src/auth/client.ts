@@ -66,7 +66,7 @@ export function getJWTfromToken(jwtToken: string): string | null {
   return token;
 }
 
-export function getUserFromAuthenticatedRequest(req: Request) {
+export function getDataFromAuthenticatedRequest(req: Request) {
   const token = getJWTfromToken(req.headers.authorization);
   if (!token)
     throw new Error(

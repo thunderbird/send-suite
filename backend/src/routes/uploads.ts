@@ -13,7 +13,7 @@ import {
   statUpload,
 } from '../models/uploads';
 
-import { getUserFromAuthenticatedRequest } from '@/auth/client';
+import { getDataFromAuthenticatedRequest } from '@/auth/client';
 import { useMetrics } from '../metrics';
 import {
   getGroupMemberPermissions,
@@ -38,7 +38,7 @@ router.post(
     const { id, size, ownerId, type } = req.body;
     const Metrics = useMetrics();
 
-    const { uniqueHash } = getUserFromAuthenticatedRequest(req);
+    const { uniqueHash } = getDataFromAuthenticatedRequest(req);
 
     const distinctId = uniqueHash;
 

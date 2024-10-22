@@ -27,7 +27,7 @@ import {
   updateUserPublicKey,
 } from '../models/users';
 
-import { getUserFromAuthenticatedRequest } from '@/auth/client';
+import { getDataFromAuthenticatedRequest } from '@/auth/client';
 import { requireJWT } from '../middleware';
 
 const router: Router = Router();
@@ -39,7 +39,7 @@ router.get(
     // Retrieves the logged-in user from the current session
     // ok, I need to persist the user to the session, don't I?
     // am I not doing that already?
-    const { id } = getUserFromAuthenticatedRequest(req);
+    const { id } = getDataFromAuthenticatedRequest(req);
 
     try {
       const user = await getUserById(id);
@@ -76,7 +76,7 @@ router.post(
       publicKey: string;
     } = req.body;
 
-    const { id } = getUserFromAuthenticatedRequest(req);
+    const { id } = getDataFromAuthenticatedRequest(req);
 
     const update = await updateUserPublicKey(
       id,
@@ -93,7 +93,7 @@ router.get(
   requireJWT,
   addErrorHandling(USER_ERRORS.FOLDERS_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
-    const { id } = getUserFromAuthenticatedRequest(req);
+    const { id } = getDataFromAuthenticatedRequest(req);
 
     const containers = await getAllUserGroupContainers(
       id,
@@ -123,7 +123,7 @@ router.post(
   requireJWT,
   addErrorHandling(USER_ERRORS.DEV_LOGIN_FAILED),
   wrapAsyncHandler(async (req, res) => {
-    const { id } = getUserFromAuthenticatedRequest(req);
+    const { id } = getDataFromAuthenticatedRequest(req);
     const user = await getUserById(id);
 
     if (user) {
@@ -262,7 +262,7 @@ router.post(
   requireJWT,
   addErrorHandling(USER_ERRORS.BACKUP_FAILED),
   wrapAsyncHandler(async (req, res) => {
-    const { id } = getUserFromAuthenticatedRequest(req);
+    const { id } = getDataFromAuthenticatedRequest(req);
     const { keys, keypair, keystring, salt } = req.body;
     // We're not using the return value, but we want to make sure the backup runs
     await setBackup(id, keys, keypair, keystring, salt);
@@ -277,7 +277,7 @@ router.get(
   requireJWT,
   addErrorHandling(USER_ERRORS.BACKUP_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
-    const { id } = getUserFromAuthenticatedRequest(req);
+    const { id } = getDataFromAuthenticatedRequest(req);
     const backup = await getBackup(id);
     res.status(200).json(backup);
   })
@@ -288,7 +288,7 @@ router.get(
   requireJWT,
   addErrorHandling(USER_ERRORS.BACKUP_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
-    const { id } = getUserFromAuthenticatedRequest(req);
+    const { id } = getDataFromAuthenticatedRequest(req);
     const backup = await getBackup(id);
     res.status(200).json(backup);
   })

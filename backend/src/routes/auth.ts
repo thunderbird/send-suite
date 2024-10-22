@@ -11,6 +11,7 @@ import { requireJWT } from '../middleware';
 export type AuthResponse = {
   id: User['id'];
   uniqueHash: User['uniqueHash'];
+  email: User['email'];
 };
 
 const router: Router = Router();
