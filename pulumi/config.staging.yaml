@@ -51,6 +51,8 @@ resources:
         - fxa-allow-list
         - fxa-client-id
         - fxa-client-secret
+        - jwt-access-token-secret
+        - jwt-refresh-token-secret
         - posthog-api-key
         - sentry-auth-token
 
