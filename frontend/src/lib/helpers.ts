@@ -162,7 +162,7 @@ export async function dbUserSetup(
   folderStore: FolderStore
 ) {
   // Populate the user if they exist
-  const didPopulate = await userStore.populateFromSession();
+  const didPopulate = await userStore.populateFromBackend();
   if (!didPopulate) {
     return;
   }

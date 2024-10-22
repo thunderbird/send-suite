@@ -13,7 +13,7 @@ async function initialize() {
   showDebugger.value = true;
 
   async function healthCheck() {
-    const healthcheck = await api.call('debug-session');
+    const healthcheck = await api.call('health');
     isAPIOn.value = JSON.stringify(healthcheck);
 
     const x = await validators();

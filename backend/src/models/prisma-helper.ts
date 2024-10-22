@@ -49,6 +49,31 @@ export async function fromPrismaV2<T, U>(
   }
 }
 
+/* 
+  This version types the query parameter correclty.
+*/
+export async function fromPrismaV3<F extends (args: any) => Promise<any>>(
+  fn: F,
+  options: Parameters<F>[0],
+  onError?: string | ErrorCallback
+): Promise<ReturnType<F> extends Promise<infer R> ? R : never> {
+  try {
+    const result = await fn(options);
+    return result;
+  } catch (err) {
+    console.error(err);
+    if (onError) {
+      if (typeof onError === 'string') {
+        throw new BaseError(onError);
+      } else {
+        onError();
+      }
+    } else {
+      throw new Error(err.name);
+    }
+  }
+}
+
 export const itemsIncludeOptions = {
   items: {
     include: {

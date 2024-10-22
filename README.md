@@ -84,7 +84,7 @@ Note: All named volumes are persisted. You can see these expressed as `volumes` 
 
 - Visit `https://localhost:8088/` and accept the self-signed certificate
   - In Firefox, you'll want to add an exception for this certificate
-- Then, you can open `http://localhost:5173/lockbox/`
+- Then, you can open `http://localhost:5173/`
 - Click the `Profile` link in the sidebar and click `Log into Moz Acct`
 - After logging in, go to `My Files` in the sidebar
 
@@ -136,13 +136,9 @@ Successful conversion results in a "beautiful" link being added to your message 
 
 Note: the link will only work on your local machine, as the URL is a `localhost` one. (But you should be able to open it in a browser and see that the file downloads and can be viewed).
 
-#### Re-login will/may be required
+### Authentication
 
-The TB Extension loses the login session pretty quickly, requiring you to go click the `Log into Mozilla Account` button again.
-
-This could be because the sessions are expiring when the backend reloads (which it does automatically when code changes).
-
-If you're not changing the backend code (and the backend doesn't restart), you might be fine.
+We're using jwt tokens to authenticate users. Once they go through the login flow, they get a jwt token that is stored as a secure cookie. This is passed on every request to the backend automatically. We use this token to know who is making the request and by decoding it we get user data such as userId and email. We can set how many days the token is valid for and once it expires, the user has to log in again.
 
 ## Building
 

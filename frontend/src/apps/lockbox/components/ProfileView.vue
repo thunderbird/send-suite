@@ -26,6 +26,11 @@ async function onSuccess() {
   await dbUserSetup(userStore, keychain, folderStore);
   await pingSession();
 }
+
+async function logOut() {
+  await userStore.logOut();
+  location.reload();
+}
 </script>
 <template>
   <Btn @click.prevent="mozAcctLogin(onSuccess)">Log into Moz Acct</Btn>
@@ -38,4 +43,5 @@ async function onSuccess() {
   <pre v-if="sessionInfo">
     {{ formatSessionInfo(sessionInfo) }}
   </pre>
+  <Btn @click.prevent="logOut">Log out</Btn>
 </template>

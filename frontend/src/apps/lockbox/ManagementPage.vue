@@ -44,12 +44,12 @@ const userId = ref(null);
 onMounted(async () => {
   salutation.value = 'Please log in.';
   // check local storage first
-  await userStore.load();
+  await userStore.loadFromLocalStorage();
 
   try {
     // See if we already have a valid session.
     // If so, hydrate our user using session data.
-    const didPopulate = await userStore.populateFromSession();
+    const didPopulate = await userStore.populateFromBackend();
     if (!didPopulate) {
       return;
     }
@@ -65,7 +65,7 @@ onMounted(async () => {
   }
 
   // Identify user for analytics
-  const uid = userStore.user.uniqueHash;
+  const uid = userStore?.user?.uniqueHash;
   initializeClientMetrics(uid);
   await sendMetricsToBackend(api);
 });
@@ -85,7 +85,7 @@ function clean() {
 
 async function dbUserSetup() {
   // Populate the user from the session.
-  const didPopulate = await userStore.populateFromSession();
+  const didPopulate = await userStore.populateFromBackend();
   if (!didPopulate) {
     return;
   }
@@ -133,6 +133,11 @@ async function showCurrentServerSession() {
     (await api.call(`users/me`)) ?? CLIENT_MESSAGES.SHOULD_LOG_IN;
 }
 
+async function logOut() {
+  await userStore.logOut();
+  await validators();
+}
+
 async function openPopup() {
   try {
     const popup = await browser.windows.create({
@@ -144,7 +149,7 @@ async function openPopup() {
     const checkPopupClosed = (windowId: number) => {
       if (windowId === popup.id) {
         browser.windows.onRemoved.removeListener(checkPopupClosed);
-        finishLogin({ onClick: true });
+        finishLogin();
       }
     };
     browser.windows.onRemoved.addListener(checkPopupClosed);
@@ -154,12 +159,7 @@ async function openPopup() {
   }
 }
 
-type Options = { onClick: boolean };
-async function finishLogin(options?: Options) {
-  if (options?.onClick) {
-    await api.requestAuthToken();
-  }
-
+async function finishLogin() {
   const isSessionValid = await validateToken(api);
   if (!isSessionValid) {
     salutation.value = `Please log in again, your session is invalid`;
@@ -188,9 +188,6 @@ async function finishLogin(options?: Options) {
 <template>
   <h1>{{ salutation }}</h1>
   <button @click.prevent="loginToMozAccount">Log into Mozilla Account</button>
-  <button @click.prevent="finishLogin({ onClick: true })">
-    Click after moz login
-  </button>
   <br />
   <h1>Debug Info</h1>
   <form>
@@ -216,6 +213,7 @@ async function finishLogin(options?: Options) {
   <pre v-if="sessionInfo">
     {{ formatSessionInfo(sessionInfo) }}
   </pre>
+  <Btn @click.prevent="logOut">Log out</Btn>
   <FeedbackBox />
 </template>
 

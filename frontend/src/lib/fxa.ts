@@ -14,7 +14,6 @@ export async function mozAcctLogin(onSuccess: () => void) {
   const timer = setInterval(async () => {
     if (win.closed) {
       clearInterval(timer);
-      await api.requestAuthToken();
       onSuccess();
     }
   }, 500);

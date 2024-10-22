@@ -18,7 +18,7 @@ import {
   wrapAsyncHandler,
 } from '../errors/routes';
 
-import { getUserFromAuthenticatedRequest } from '@/auth/client';
+import { getDataFromAuthenticatedRequest } from '@/auth/client';
 import {
   getGroupMemberPermissions,
   requireJWT,
@@ -166,7 +166,7 @@ router.post(
   requireJWT,
   addErrorHandling(SHARING_ERRORS.ACCESS_LINK_NOT_ACCEPTED),
   wrapAsyncHandler(async (req, res) => {
-    const { id } = getUserFromAuthenticatedRequest(req);
+    const { id } = getDataFromAuthenticatedRequest(req);
 
     const { linkId } = req.params;
 

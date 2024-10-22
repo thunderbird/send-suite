@@ -6,7 +6,6 @@ export type AsyncJsonResponse<T = { [key: string]: any }> = Promise<
 
 export class ApiConnection {
   serverUrl: string;
-  sessionId: string;
   authToken: string;
 
   constructor(serverUrl: string) {
@@ -27,17 +26,8 @@ export class ApiConnection {
     return this.serverUrl;
   }
 
-  setSessionId(sessionId: string): void {
-    this.sessionId = sessionId;
-  }
-
-  async requestAuthToken(): Promise<void> {
-    const response = await this.call<{ token: any }>('auth');
-    console.log('got request auth token', response);
-    if (response) {
-      localStorage.setItem('token', response.token);
-      this.authToken = response.token;
-    }
+  async removeAuthToken() {
+    await this.call('lockbox/fxa/logout');
   }
 
   /**
@@ -62,13 +52,6 @@ export class ApiConnection {
     headers: Record<string, any> = {},
     options?: O
   ): Promise<O extends { fullResponse: true } ? Response : T | null> {
-    if (this.sessionId) {
-      headers = {
-        ...headers,
-        sessionId: this.sessionId,
-      };
-    }
-
     const url = `${this.serverUrl}/api/${path}`;
     const opts: Record<string, any> = {
       mode: 'cors',
@@ -77,7 +60,6 @@ export class ApiConnection {
       headers: {
         'content-type': 'application/json',
         ...headers,
-        authorization: 'Bearer ' + this.authToken,
       },
     };
 
