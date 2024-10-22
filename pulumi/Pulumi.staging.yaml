@@ -18,3 +18,5 @@ config:
     secure: v1:lLeTJ7TxgvicSg9V:/ldoLD8NcsEg5DHVhmqZ4sF8NFTDHcxEbDg5++hETI0AgaC4oc3QvuOSCqI4ie5S/35tWqTcELoSDzhb7Z0gSqUsjWBzql1L+9s+UmpinjPQseP5RLYCm0ULYG1nkbDt6oY4
   send-suite:jwt-refresh-token-secret:
     secure: v1:93Lg1vCPTFiPsH81:mhrg+6JJ+w28NC/qTxA+Uyl5/TOcVF05qCUwkdQsCYrEAdFnZueW+9MFuukCYltxTHbAJw0q4BJl0KAT6AWxBIbmXQ5xGjqUI9h8sdmzgEJPecASDELRVzaYd3dATvBxWyXNnA==
+  send-suite:database-url:
+    secure: v1:1Mqh9iYtVQJjVZhk:KSsr8wJYdDjFc1LqNMsEahFlJGBlPlXBxS/E1khpQfQtkogBI35wTI0uv8GWPOO/IcB4oszbeStpBPhBMieQP/OoiC55g6Q69DvwsXrN7Kfsb+oRAr5eA3qXfecC2hu/VDNHLasDLjrD59t6gGh7u+7o6WoQ/zce

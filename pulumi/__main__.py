@@ -9,22 +9,9 @@ import tb_pulumi.fargate
 import tb_pulumi.network
 import tb_pulumi.rds
 import tb_pulumi.secrets
-import urllib.parse
 
 
 CLOUDFRONT_REWRITE_CODE_FILE = 'cloudfront-rewrite.js'
-
-
-def url_secret(project, secret_name, password, address, port):
-    """We have to define this resource inside a function so Pulumi will recognize it."""
-
-    password = urllib.parse.quote_plus(password)
-    tb_pulumi.secrets.SecretsManagerSecret(
-        f'{project.name_prefix}-secret-rdsurl',
-        project,
-        secret_name,
-        f'postgresql://root:{password}@{address}:{port}/send_suite',
-    )
 
 
 project = tb_pulumi.ThunderbirdPulumiProject()
@@ -50,24 +37,6 @@ pulumi_sm = tb_pulumi.secrets.PulumiSecretsManager(
     f'{project.name_prefix}-secrets', project, **pulumi_sm_opts, opts=pulumi.ResourceOptions(depends_on=vpc)
 )
 
-# Build an RDS cluster
-rds_opts = resources['tb:rds:RdsDatabaseGroup']['backend']
-rds_cluster = tb_pulumi.rds.RdsDatabaseGroup(
-    f'{project.name_prefix}-rds',
-    project,
-    'send_suite',
-    vpc.resources['subnets'],
-    vpc.resources['vpc'].cidr_block,
-    vpc.resources['vpc'].id,
-    **rds_opts,
-)
-
-pulumi.Output.all(
-    rds_cluster.resources['password'].result,
-    rds_cluster.resources['instances'][0].address,
-    rds_cluster.resources['instances'][0].port,
-).apply(lambda outputs: url_secret(project, f'{project.project}/{project.stack}/database_url', *outputs))
-
 # NOTE: AWS Secrets Manager doesn't delete secrets right away, in case you accidentally delete
 #     something and need to recover it. If you delete a secret (leaving it pending deletion for a few
 #     days) and then try to create another by the same name, that creates a conflict. Because of
@@ -83,7 +52,7 @@ backend_fargate = tb_pulumi.fargate.FargateClusterWithLogging(
     project,
     [subnet for subnet in vpc.resources['subnets']],
     security_groups=[backend_sg.resources['sg']],
-    opts=pulumi.ResourceOptions(depends_on=[vpc, pulumi_sm, rds_cluster]),
+    opts=pulumi.ResourceOptions(depends_on=[vpc, pulumi_sm]),
     **backend_fargate_opts,
 )
 
