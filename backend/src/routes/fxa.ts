@@ -8,7 +8,6 @@ import {
   checkAllowList,
   generateState,
   getClient,
-  getDataFromAuthenticatedRequest,
   getIssuer,
 } from '../auth/client';
 import { ENVIRONMENT } from '../config';
@@ -191,24 +190,6 @@ router.get(
     } catch (error) {
       res.redirect('/login-failed.html');
     }
-  })
-);
-
-router.get(
-  '/allowlist',
-  addErrorHandling(AUTH_ERRORS.ALLOW_LIST_FAILED),
-  wrapAsyncHandler(async (req, res) => {
-    const { email } = getDataFromAuthenticatedRequest(req);
-    try {
-      await checkAllowList(email);
-    } catch (error) {
-      return res.status(200).json({
-        msg: 'No email in session, cannot check allow list',
-      });
-    }
-    return res.status(200).json({
-      msg: 'User in allow list',
-    });
   })
 );
 
