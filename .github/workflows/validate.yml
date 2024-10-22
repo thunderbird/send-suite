@@ -23,12 +23,13 @@ jobs:
     outputs:
       backend-changed: ${{ steps.check.outputs.backend-changed }}
       iac-changed: ${{ steps.check.outputs.iac-changed }}
+      frontend-changed: ${{ steps.check.outputs.frontend-changed }}
     steps:
       - uses: actions/checkout@v4
 
       # - name: Setup tmate session
       #   uses: mxschmitt/action-tmate@v3
-      
+
       - uses: dorny/paths-filter@v3
         id: check
         with:
@@ -38,6 +39,8 @@ jobs:
             iac-changed:
               - 'pulumi/**'
               - '.github/workflows/validate.yml'
+            frontend-changed:
+              - 'frontend/**'
 
   # When the backend code changes, run these steps
   backend-tests:
@@ -46,7 +49,7 @@ jobs:
     if: needs.detect-changes.outputs.backend-changed == 'true'
     steps:
       - uses: actions/checkout@v4
-    
+
       - name: Install dependencies
         id: install-dependencies
         shell: bash
@@ -60,7 +63,7 @@ jobs:
         run: |
           cd backend
           pnpm ci:validate || true
-      
+
   # When Pulumi code or configs change, run these steps
   iac-lint:
     needs: detect-changes
@@ -104,4 +107,3 @@ jobs:
         run: |
           cd frontend
           pnpm ci:validate ||  true
-  
