@@ -140,10 +140,6 @@ Note: the link will only work on your local machine, as the URL is a `localhost`
 
 We're using jwt tokens to authenticate users. Once they go through the login flow, they get a jwt token that is stored as a secure cookie. This is passed on every request to the backend automatically. We use this token to know who is making the request and by decoding it we get user data such as userId and email. We can set how many days the token is valid for and once it expires, the user has to log in again.
 
-#### Re-login will/may be required
-
-We're using
-
 ## Building
 
 To build the frontend run from the root `pnpm build:frontend`
