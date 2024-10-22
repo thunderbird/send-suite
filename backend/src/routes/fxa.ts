@@ -163,11 +163,6 @@ router.get(
       );
 
       const uniqueHash = createHash('sha256').update(uid).digest('hex');
-
-      req.session['user'] = {
-        ...user,
-        uniqueHash,
-      };
       user.uniqueHash = uniqueHash;
 
       await updateUniqueHash(user.id, uniqueHash);
@@ -183,8 +178,11 @@ router.get(
         expiresIn: '1d',
       });
 
-      res.cookie('authorization', jwtToken, {
-        maxAge: ONE_MINUTE,
+      res.cookie('authorization', `Bearer ${jwtToken}`, {
+        maxAge: 60 * 24 * ONE_MINUTE,
+        httpOnly: true,
+        sameSite: 'none',
+        secure: true,
       });
 
       res.redirect('/login-success.html');

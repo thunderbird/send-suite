@@ -14,6 +14,7 @@ import {
   hasShare,
   hasWrite,
 } from './types/custom';
+import { getCookie } from './utils';
 
 const prisma = new PrismaClient();
 const PERMISSION_REQUEST_KEY = '_permission';
@@ -53,7 +54,7 @@ export async function requireJWT(
   res: Response,
   next: NextFunction
 ) {
-  const jwtToken = req.headers.authorization;
+  const jwtToken = getCookie(req?.headers?.cookie, 'authorization');
 
   const token = getJWTfromToken(jwtToken);
   if (!token) {

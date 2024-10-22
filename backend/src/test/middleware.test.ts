@@ -17,7 +17,7 @@ describe('requireJWT', () => {
 
   beforeEach(() => {
     mockedVerify.mockClear();
-    mockRequest = {};
+    mockRequest = { headers: { cookie: '' } };
     mockResponse = {
       json: vi.fn(),
       status: vi.fn(() => mockResponse), // This chains the status and json methods
@@ -27,9 +27,8 @@ describe('requireJWT', () => {
 
   it('should call next() for a valid token', async () => {
     const token = 'valid.token.here';
-    mockRequest.headers = {
-      authorization: `Bearer ${token}`,
-    };
+    mockRequest.headers.cookie = `authorization=Bearer%20${token}`;
+
     vi.mocked(mockedVerify).mockReturnValue({
       id: '2',
       uniqueHash:
@@ -38,18 +37,20 @@ describe('requireJWT', () => {
       iat: 22222,
     });
 
-    await requireJWT(
-      mockRequest as Request,
-      mockResponse as Response,
-      nextFunction
-    );
+    expect(async () => {
+      await requireJWT(
+        mockRequest as Request,
+        mockResponse as Response,
+        nextFunction
+      );
+    }).not.toThrow();
 
     expect(mockedVerify).toHaveBeenCalled();
     expect(nextFunction).toHaveBeenCalled();
   });
 
   it('should reject with a status 403 if token is not provided', async () => {
-    mockRequest.headers = {};
+    mockRequest.headers.cookie = '';
 
     await requireJWT(
       mockRequest as Request,
@@ -65,9 +66,8 @@ describe('requireJWT', () => {
 
   it('should reject with a status 403 if token is invalid', async () => {
     const token = 'invalid.token';
-    mockRequest.headers = {
-      authorization: `Bearer ${token}`,
-    };
+    mockRequest.headers.cookie = `authorization=Bearer%20${token}`;
+
     vi.mocked(mockedVerify).mockImplementationOnce((token, secret, callback) =>
       callback(new Error('Invalid token'), null)
     );

@@ -1,4 +1,5 @@
 import { AuthResponse } from '@/routes/auth';
+import { getCookie } from '@/utils';
 import type { Request } from 'express';
 import jwt from 'jsonwebtoken';
 import { Issuer, generators } from 'openid-client';
@@ -67,7 +68,8 @@ export function getJWTfromToken(jwtToken: string): string | null {
 }
 
 export function getDataFromAuthenticatedRequest(req: Request) {
-  const token = getJWTfromToken(req.headers.authorization);
+  const jwtToken = getCookie(req?.headers?.cookie, 'authorization');
+  const token = getJWTfromToken(jwtToken);
   if (!token)
     throw new Error(
       'No token found in request: This should not happen if the user is authenticated'

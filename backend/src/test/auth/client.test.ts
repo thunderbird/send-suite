@@ -170,7 +170,7 @@ describe('getUserFromJWT', () => {
 
       const req = {
         headers: {
-          authorization: 'Bearer valid.token.here',
+          cookie: 'authorization=Bearer%20valid.token.here',
         },
       };
       //@ts-ignore
@@ -198,7 +198,7 @@ describe('getUserFromJWT', () => {
 
       const req = {
         headers: {
-          authorization: 'Bearer invalid.token',
+          cookie: 'authorization=Bearer%20invalid.token',
         },
       };
 
