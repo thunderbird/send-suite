@@ -11,7 +11,6 @@
     "ci:validate": "pnpm run lint:all; pnpm run test",
     "db:browse": "prisma studio",
     "db:generate": "prisma generate",
-    "postversion": "bun run ./scripts/bump.ts",
     "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset --force",
     "db:update": "prisma db push",
@@ -25,7 +24,8 @@
     "start": "NODE_ENV=production node dist/index.js",
     "test": "vitest run --silent",
     "test:watch": "vitest --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postversion": "bun run ./scripts/bump.ts"
   },
   "lint-staged": {
     "*.{js,ts}": [
