@@ -19,6 +19,7 @@ jobs:
     outputs:
       backend-changed: ${{ steps.check.outputs.backend-changed }}
       iac-changed: ${{ steps.check.outputs.iac-changed }}
+      frontend-changed: ${{ steps.check.outputs.frontend-changed }}
     steps:
       - uses: actions/checkout@v4
 
@@ -31,6 +32,8 @@ jobs:
             iac-changed:
               - 'pulumi/**'
               - '.github/workflows/validate.yml'
+            frontend-changed:
+              - 'frontend/**'
 
   # When backend changes are merged in, build and push a new Docker image
   backend-merge:
@@ -55,19 +58,19 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
         with:
           mask-password: 'true'
-      
+
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: 3.12
-      
+
       - name: Set up virtual environment
         shell: bash
         run: |
           python -m pip install virtualenv
           cd pulumi
           virtualenv ./venv
-        
+
       - name: Set up Pulumi environment
         id: pulumi-env
         shell: bash
@@ -79,7 +82,7 @@ jobs:
 
       # - name: Setup tmate session
       #   uses: mxschmitt/action-tmate@v3
-      
+
       # Produce a container image
       - name: Build, tag, and push backend image to Amazon ECR
         id: build-backend
@@ -174,7 +177,7 @@ jobs:
         with:
           name: frontend-static-assets
           path: ${{ steps.frontend-build.outputs.archive_filename }}
-      
+
       - name: Deploy to staging
         id: frontend-deploy
         shell: bash
