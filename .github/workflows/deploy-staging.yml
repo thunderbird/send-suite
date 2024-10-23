@@ -171,6 +171,9 @@ jobs:
           tar -cvjf $ARCHIVE dist/*
           echo "archive_filename=$ARCHIVE" >> $GITHUB_OUTPUT
 
+          # Invalidate the CDN
+          aws cloudfront create-invalidation --distribution-id $STAGING_CF_DISTRO_ID --paths "/*"
+
       - name: Archive the build
         id: frontend-archive
         uses: actions/upload-artifact@v4
