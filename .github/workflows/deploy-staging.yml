@@ -164,22 +164,22 @@ jobs:
           npm install -g pnpm
           pnpm install
 
-          # Build static frontend assets and create a compressed archive of them
-          TIMESTAMP=$(date +%Y.%m.%d-%H.%M.%S)
-          ARCHIVE="send-suite-frontend-build-$TIMESTAMP.tbz"
-          pnpm build
-          tar -cvjf $ARCHIVE dist/*
-          echo "archive_filename=$ARCHIVE" >> $GITHUB_OUTPUT
+          # Build static frontend assets and the .xpi
+          pnpm build-and-submit
 
-          # Invalidate the CDN
-          aws cloudfront create-invalidation --distribution-id ${{ vars.STAGING_CF_DISTRO_ID }} --paths "/*"
-
-      - name: Archive the build
+      - name: Archive the frontend build
         id: frontend-archive
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-static-assets
-          path: ${{ steps.frontend-build.outputs.archive_filename }}
+          name: frontend-source
+          path: frontend-source.zip
+
+      - name: Archive the XPI
+        id: xpi-archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: xpi
+          path: send-suite-alpha.xpi
 
       - name: Deploy to staging
         id: frontend-deploy
@@ -187,3 +187,6 @@ jobs:
         run: |
           cd frontend/dist-web
           aws s3 cp . s3://tb-send-suite-staging-frontend/ --recursive
+
+          # Invalidate the CDN
+          aws cloudfront create-invalidation --distribution-id ${{ vars.STAGING_CF_DISTRO_ID }} --paths "/*"
