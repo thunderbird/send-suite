@@ -11,7 +11,10 @@ const selectedFolderName = ref(folderStore.selectedFolder.name);
 const input = ref(null);
 
 async function updateFolderName() {
-  const result = await folderStore.renameFolder(folderStore.selectedFolder.id, selectedFolderName.value);
+  const result = await folderStore.renameFolder(
+    folderStore.selectedFolder.id,
+    selectedFolderName.value
+  );
   if (result) {
     emit('renameComplete');
   }
@@ -39,7 +42,13 @@ onMounted(() => {
   <section class="flex flex-col gap-3">
     <form @submit.prevent="updateFolderName">
       <label class="flex flex-col gap-2">
-        <input class="!rounded-r-none" type="text" v-model="selectedFolderName" ref="input" @keydown.esc="resetForm" />
+        <input
+          class="!rounded-r-none"
+          type="text"
+          v-model="selectedFolderName"
+          ref="input"
+          @keydown.esc="resetForm"
+        />
         <div class="flex flex-row justify-end">
           <Btn @click="updateFolderName">Rename</Btn>
         </div>

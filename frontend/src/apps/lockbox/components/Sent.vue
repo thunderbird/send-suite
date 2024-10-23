@@ -11,12 +11,17 @@ const sharingStore = useSharingStore();
 const sent = ref([]);
 // const foldersByRecipientId = computed(() => groupByRecipient(toRaw(sent.value)));
 // const emailsByRecipientId = computed(() => createEmailMap(toRaw(sent.value)));
-const shareOnlyFolders = computed(() => toRaw(sent.value).filter(({ container }) => container.shareOnly));
+const shareOnlyFolders = computed(() =>
+  toRaw(sent.value).filter(({ container }) => container.shareOnly)
+);
 
 async function getSentFolders() {
   const resp = await sharingStore.getFoldersSharedByUser(user.id);
   console.log(resp);
-  sent.value = resp.map(({ accessLinks, container }) => ({ accessLinks, container }));
+  sent.value = resp.map(({ accessLinks, container }) => ({
+    accessLinks,
+    container,
+  }));
 }
 onMounted(getSentFolders);
 
@@ -51,6 +56,8 @@ onMounted(getSentFolders);
 <template>
   <h1>stuff you've shared</h1>
   <ul>
-    <li v-for="{ container, accessLinks } in shareOnlyFolders">{{ container }}: {{ accessLinks.length }}</li>
+    <li v-for="{ container, accessLinks } in shareOnlyFolders">
+      {{ container }}: {{ accessLinks.length }}
+    </li>
   </ul>
 </template>

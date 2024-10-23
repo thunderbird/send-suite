@@ -11,8 +11,8 @@ import { setupServer } from 'msw/node';
 const defaultUser: UserType = {
   id: 0,
   tier: UserTier.FREE,
-  email: ''
-}
+  email: '',
+};
 
 vi.mock('@/lib/keychain', () => {
   const Keychain = vi.fn(() => ({

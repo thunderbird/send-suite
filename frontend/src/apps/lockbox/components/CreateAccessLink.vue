@@ -19,7 +19,11 @@ const accessUrl = ref('');
 const showPassword = ref(false);
 
 async function newAccessLink() {
-  const url = await sharingStore.createAccessLink(props.folderId, password.value, expiration.value);
+  const url = await sharingStore.createAccessLink(
+    props.folderId,
+    password.value,
+    expiration.value
+  );
 
   if (!url) {
     // emit('createAccessLinkError');
@@ -52,11 +56,16 @@ watch(
     <label class="flex flex-col gap-2 relative">
       <span class="text-xs font-semibold text-gray-600">Password</span>
       <input :type="showPassword ? 'text' : 'password'" v-model="password" />
-      <button @click.prevent="showPassword = !showPassword" class="absolute right-3 bottom-2 select-none">
+      <button
+        @click.prevent="showPassword = !showPassword"
+        class="absolute right-3 bottom-2 select-none"
+      >
         <IconEye v-if="showPassword" class="w-4 h-4" />
         <IconEyeOff v-else class="w-4 h-4" />
       </button>
     </label>
   </section>
-  <Btn class="mb-8" @click="newAccessLink">Create Share Link <IconLink class="w-4 h-4" /></Btn>
+  <Btn class="mb-8" @click="newAccessLink"
+    >Create Share Link <IconLink class="w-4 h-4"
+  /></Btn>
 </template>

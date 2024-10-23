@@ -18,7 +18,9 @@ const color = ref('');
 
 // Also show a list of existing tags?
 async function addTag() {
-  console.log(`you want to add the tag ${name.value} with color ${color.value}`);
+  console.log(
+    `you want to add the tag ${name.value} with color ${color.value}`
+  );
   if (props.type === 'container') {
     // addTagForContainer(props.id, name.value, color.value);
   } else if (props.type === 'item') {
