@@ -262,7 +262,13 @@ export function errorHandler(err: Error, req: Request, res: Response) {
     message: message,
   });
 
-  console.error(
-    `${status} - ${req.method} ${req.originalUrl} - ${req.ip} - ${message} `
-  );
+  if (status === 500) {
+    console.error(
+      `${status} - ${req.method} ${req.originalUrl} - ${req.ip} - ${message} `
+    );
+  } else {
+    console.warn(
+      `${status} - ${req.method} ${req.originalUrl} - ${req.ip} - ${message} `
+    );
+  }
 }

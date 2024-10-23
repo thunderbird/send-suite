@@ -1,5 +1,5 @@
-import { Buffer } from 'buffer';
 import { transformStream } from '@/lib/streams';
+import { Buffer } from 'buffer';
 
 // Polyfill necessary after tsconfig.json chnages
 import getRandomValues from 'get-random-values';
@@ -12,8 +12,6 @@ const MODE_DECRYPT = 'decrypt';
 export const ECE_RECORD_SIZE = 1024 * 64;
 export const OVERHEAD_SIZE = TAG_LENGTH + 1;
 export const HEADER_SIZE = 21;
-
-const encoder = new TextEncoder();
 
 function generateSalt(len) {
   const randSalt = new Uint8Array(len);

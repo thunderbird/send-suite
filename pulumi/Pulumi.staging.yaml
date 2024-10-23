@@ -14,3 +14,9 @@ config:
     secure: v1:W8yneB7kseuVECuJ:WE1bI/IIpUtP7nhoR/YWFK4koXKhHytw8mR3oaOO7e7sVDQztEDfdupESRS2JYBkt9toZQUVvqP1PoLgvnfa
   send-suite:sentry-auth-token:
     secure: v1:dcPe+Y0zi9nVY7wU:+Uy72pqkZTz81wiM3oX815qhhNBP1JuPO8exD+X1b+b27ofnWJCVqn60nc0hBgMD4SOYrP8luBKxMajhGRF16cJU353fbPYWPV8JBX1I+B5UoJjhbxZzgWyNaZlRhlPZwhOw5UvkfpGsdsGXbGcktP4iaKlD13mK1AZ98vI4j6EQlgKTIqtKtFG+SDYqh8fWOujnAAo55lKKa+nCa1fTFHv8CXmbbHkrjLbGvNqW/c0bEGBj9u4hPZA9NnDMJpRf4epeUkjCbU/gCEAaiQ1uvvVveA==
+  send-suite:jwt-access-token-secret:
+    secure: v1:lLeTJ7TxgvicSg9V:/ldoLD8NcsEg5DHVhmqZ4sF8NFTDHcxEbDg5++hETI0AgaC4oc3QvuOSCqI4ie5S/35tWqTcELoSDzhb7Z0gSqUsjWBzql1L+9s+UmpinjPQseP5RLYCm0ULYG1nkbDt6oY4
+  send-suite:jwt-refresh-token-secret:
+    secure: v1:93Lg1vCPTFiPsH81:mhrg+6JJ+w28NC/qTxA+Uyl5/TOcVF05qCUwkdQsCYrEAdFnZueW+9MFuukCYltxTHbAJw0q4BJl0KAT6AWxBIbmXQ5xGjqUI9h8sdmzgEJPecASDELRVzaYd3dATvBxWyXNnA==
+  send-suite:database-url:
+    secure: v1:1Mqh9iYtVQJjVZhk:KSsr8wJYdDjFc1LqNMsEahFlJGBlPlXBxS/E1khpQfQtkogBI35wTI0uv8GWPOO/IcB4oszbeStpBPhBMieQP/OoiC55g6Q69DvwsXrN7Kfsb+oRAr5eA3qXfecC2hu/VDNHLasDLjrD59t6gGh7u+7o6WoQ/zce

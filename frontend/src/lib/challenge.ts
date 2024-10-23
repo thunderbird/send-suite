@@ -40,7 +40,7 @@ export async function getContainerKeyFromChallenge(
 
   try {
     // Step 3: unwrap the challenge key using the password
-    let unwrappedChallengeKey: CryptoKey =
+    const unwrappedChallengeKey: CryptoKey =
       await keychain.password.unwrapContentKey(
         challengeKeyStr,
         password,
@@ -48,11 +48,12 @@ export async function getContainerKeyFromChallenge(
       );
 
     // Step 4: decrypt the challenge ciphertext and send it back
-    let challengePlaintext: string = await keychain.challenge.decryptChallenge(
-      challengeCiphertext,
-      unwrappedChallengeKey,
-      challengeSalt
-    );
+    const challengePlaintext: string =
+      await keychain.challenge.decryptChallenge(
+        challengeCiphertext,
+        unwrappedChallengeKey,
+        challengeSalt
+      );
 
     // Step 5: post the challenge text to receive:
     // - containerId

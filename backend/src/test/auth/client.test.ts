@@ -5,8 +5,8 @@ import {
   checkAllowList,
   generateState,
   getClient,
+  getDataFromAuthenticatedRequest,
   getIssuer,
-  getUserFromAuthenticatedRequest,
   getUserFromJWT,
   isEmailInAllowList,
 } from '../../auth/client';
@@ -158,7 +158,7 @@ describe('getUserFromJWT', () => {
     }).not.toThrow();
   });
 
-  describe('getUserFromAuthenticatedRequest', () => {
+  describe('getDataFromAuthenticatedRequest', () => {
     beforeAll(() => {
       vi.unstubAllEnvs();
       vi.stubEnv('ACCESS_TOKEN_SECRET', 'your_secret');
@@ -170,11 +170,11 @@ describe('getUserFromJWT', () => {
 
       const req = {
         headers: {
-          authorization: 'Bearer valid.token.here',
+          cookie: 'authorization=Bearer%20valid.token.here',
         },
       };
       //@ts-ignore
-      const user = getUserFromAuthenticatedRequest(req as Request);
+      const user = getDataFromAuthenticatedRequest(req as Request);
       expect(user).toStrictEqual(mockedTokenData);
     });
 
@@ -187,7 +187,7 @@ describe('getUserFromJWT', () => {
 
       expect(() => {
         //@ts-ignore
-        getUserFromAuthenticatedRequest(req as Request);
+        getDataFromAuthenticatedRequest(req as Request);
       }).toThrowError(
         'No token found in request: This should not happen if the user is authenticated'
       );
@@ -198,12 +198,12 @@ describe('getUserFromJWT', () => {
 
       const req = {
         headers: {
-          authorization: 'Bearer invalid.token',
+          cookie: 'authorization=Bearer%20invalid.token',
         },
       };
 
       // @ts-ignore
-      const user = getUserFromAuthenticatedRequest(req as Request);
+      const user = getDataFromAuthenticatedRequest(req as Request);
       expect(user).toBeNull();
     });
 
@@ -216,7 +216,7 @@ describe('getUserFromJWT', () => {
 
       expect(() => {
         // @ts-ignore
-        getUserFromAuthenticatedRequest(req as Request);
+        getDataFromAuthenticatedRequest(req as Request);
       }).toThrowError(
         'No token found in request: This should not happen if the user is authenticated'
       );

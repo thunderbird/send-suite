@@ -2,6 +2,7 @@
 import Btn from '@/apps/lockbox/elements/Btn.vue';
 import { computed, onMounted, ref } from 'vue';
 
+import StatusBar from '@/apps/common/StatusBar.vue';
 import useKeychainStore from '@/stores/keychain-store';
 
 // move the following imports elsewhere
@@ -9,6 +10,7 @@ import { backupKeys, restoreKeys } from '@/lib/keychain';
 import logger from '@/logger';
 import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
+import { useExtensionStore } from '../lockbox/stores/extension-store';
 
 const PHRASE_SIZE = 12;
 const MIN_WORD_LENGTH = 5;
@@ -34,6 +36,7 @@ const passphrase = computed(() => {
 const { api } = useApiStore();
 const { getBackup } = useUserStore();
 const { keychain } = useKeychainStore();
+const { configureExtension } = useExtensionStore();
 const bigMessageDisplay = ref('');
 const shouldRestore = ref(false);
 const shouldBackup = ref(false);
@@ -79,6 +82,7 @@ async function makeBackup() {
   try {
     await backupKeys(keychain, api, bigMessageDisplay);
     hideBackupRestore();
+    configureExtension();
   } catch (e) {
     console.error('Error backing up keys', e);
   }
@@ -95,6 +99,7 @@ async function restoreFromBackup() {
     await restoreKeys(keychain, api, bigMessageDisplay, passphrase.value);
     keychain.storePassPhrase(passphrase.value);
     hideBackupRestore();
+    configureExtension();
   } catch (e) {
     bigMessageDisplay.value = e;
   }
@@ -144,4 +149,5 @@ function passphraseIsComplex(phrase) {
     </div>
   </div>
   <div @dblclick="console.warn('Test error')">Happy sending! 🐧</div>
+  <StatusBar />
 </template>

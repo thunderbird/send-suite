@@ -1,6 +1,9 @@
+import { createLoginSession, deleteSession, getLoginSession } from '@/models';
+import { getTokenExpiration } from '@/utils';
 import axios from 'axios';
 import { createHash } from 'crypto';
 import { Request, Router } from 'express';
+import jwt from 'jsonwebtoken';
 import {
   checkAllowList,
   generateState,
@@ -17,10 +20,11 @@ import {
   findOrCreateUserProfileByMozillaId,
   updateUniqueHash,
 } from '../models/users';
-
-const FXA_STATE = 'fxa_state';
+import { AuthResponse } from './auth';
 
 const router: Router = Router();
+const ONE_DAY = 1;
+const tokenExpiration = getTokenExpiration(ONE_DAY);
 
 // Route for obtaining an authorization URL for Mozilla account.
 router.get(
@@ -63,8 +67,7 @@ router.get(
       };
     } catch (err) {
       // Log the error, but continue with OIDC auth
-      console.error(`Could not initialize metrics flow.`);
-      console.error(err);
+      console.error(`Could not initialize metrics flow.`, err);
     }
 
     // Set up client
@@ -79,43 +82,30 @@ router.get(
       state,
     });
 
-    // First time logins should skip checking the allowlist
-    const shouldCheckAllowlist = !!req?.session?.user?.email;
+    // Add state code to session.
 
-    if (shouldCheckAllowlist) {
-      try {
-        await checkAllowList(req.session?.user?.email);
-      } catch (error) {
-        res.status(403).json({
-          msg: 'User not in allow list',
-        });
+    // We'll attempt to match this in the callback.
+    try {
+      await createLoginSession(state);
+    } catch (err) {
+      if (err) {
+        console.error('Could not save session in /login.', err);
+        res.status(500).json(err);
         return;
       }
     }
 
-    // Add state code to session.
-    // We'll attempt to match this in the callback.
-    req.session[FXA_STATE] = state;
-
     // Save session and send the auth url to the front end
     // so they can do the redirect.
-    req.session.save((err) => {
-      if (err) {
-        console.error('Could not save session in /login.');
-        console.error(err);
-        res.status(500).json(err);
-        return;
-      }
 
-      /* TODO: We have to replace send for lockbox because fxa isn't enabled for send
+    /* TODO: We have to replace send for lockbox because fxa isn't enabled for send
       We should remove this and return the actual url once fxa is enabled 
       https://github.com/thunderbird/send-suite/issues/216
        */
-      const responseURL = url.replace('send', 'lockbox');
+    const responseURL = url.replace('send', 'lockbox');
 
-      res.status(200).json({
-        url: responseURL,
-      });
+    res.status(200).json({
+      url: responseURL,
     });
   })
 );
@@ -134,9 +124,10 @@ router.get(
     // Confirm that we received a state code and compare
     // it to the original we set in `/login`
     const { code, state } = req.query;
-    const originalState = req.session[FXA_STATE];
 
-    if (!code || (state as string) !== originalState) {
+    const originalState = await getLoginSession(state as string);
+
+    if (!code || state !== originalState?.fxasession) {
       res.status(403).json({
         msg: 'Could not authenticate',
       });
@@ -144,83 +135,61 @@ router.get(
     }
 
     // Clean up session and continue
-    delete req.session[FXA_STATE];
-    req.session.save(async (err) => {
-      if (err) {
-        console.error('Could not save session in / callback.');
-        console.error(err);
-        res.status(500).json(err);
-        return;
-      }
+    await deleteSession(originalState?.fxasession);
+    const mozIssuer = await getIssuer();
+    const client = getClient(mozIssuer);
 
-      const mozIssuer = await getIssuer();
-      const client = getClient(mozIssuer);
+    // The `params` contains the string equivalents of req.query.*
+    // Here, params == { code, state }
+    const params = client.callbackParams(req);
+    const tokenSet = await client.callback(
+      process.env.FXA_REDIRECT_URI,
+      params,
+      { state: params.state }
+    );
+    const { access_token: accessToken, refresh_token: refreshToken } = tokenSet;
 
-      // The `params` contains the string equivalents of req.query.*
-      // Here, params == { code, state }
-      const params = client.callbackParams(req);
-      const tokenSet = await client.callback(
-        process.env.FXA_REDIRECT_URI,
-        params,
-        { state: params.state }
-      );
-      const { access_token: accessToken, refresh_token: refreshToken } =
-        tokenSet;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userinfo: Record<string, any> = await client.userinfo(accessToken);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const userinfo: Record<string, any> = await client.userinfo(accessToken);
-
-      try {
-        await checkAllowList(userinfo.email);
-        const { uid, avatar, email } = userinfo;
-        const user = await findOrCreateUserProfileByMozillaId(
-          uid,
-          avatar,
-          email,
-          accessToken,
-          refreshToken
-        );
-
-        const uniqueHash = createHash('sha256').update(uid).digest('hex');
-
-        req.session['user'] = {
-          ...user,
-          uniqueHash,
-        };
-        user.uniqueHash = uniqueHash;
-
-        await updateUniqueHash(user.id, uniqueHash);
-
-        req.session.save((err) => {
-          if (err) {
-            console.error('Could not save session in / callback.');
-            console.error(err);
-            throw Error(`Could not save session in fxa callback`);
-          }
-
-          res.redirect('/login-success.html');
-        });
-      } catch (error) {
-        res.redirect('/login-failed.html');
-      }
-    });
-  })
-);
-
-router.get(
-  '/allowlist',
-  addErrorHandling(AUTH_ERRORS.ALLOW_LIST_FAILED),
-  wrapAsyncHandler(async (req, res) => {
     try {
-      await checkAllowList(req.session?.user?.email);
-    } catch (error) {
-      return res.status(200).json({
-        msg: 'No email in session, cannot check allow list',
+      await checkAllowList(userinfo.email);
+      const { uid, avatar, email } = userinfo;
+      const user = await findOrCreateUserProfileByMozillaId(
+        uid,
+        avatar,
+        email,
+        accessToken,
+        refreshToken
+      );
+
+      const uniqueHash = createHash('sha256').update(uid).digest('hex');
+      user.uniqueHash = uniqueHash;
+
+      await updateUniqueHash(user.id, uniqueHash);
+
+      const signedData: AuthResponse = {
+        uniqueHash,
+        id: user.id,
+        email: user.email,
+      };
+
+      // Sign the jwt and pass it as a cookie
+      const jwtToken = jwt.sign(signedData, process.env.ACCESS_TOKEN_SECRET!, {
+        expiresIn: tokenExpiration.stringified,
       });
+
+      res.cookie('authorization', `Bearer ${jwtToken}`, {
+        maxAge: tokenExpiration.milliseconds,
+        httpOnly: true,
+        sameSite: 'none',
+        secure: true,
+      });
+
+      res.redirect('/login-success.html');
+    } catch (error) {
+      res.redirect('/login-failed.html');
     }
-    return res.status(200).json({
-      msg: 'User in allow list',
-    });
   })
 );
 
@@ -242,8 +211,15 @@ TODO:
 - handle errors
   */
 
+    res.cookie('authorization', `null`, {
+      maxAge: 0,
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
+    });
+
     const destroyUrl = `https://oauth.stage.mozaws.net/v1/destroy`;
-    const accessToken = `${req.session?.user?.profile?.accessToken}`;
+    const accessToken = `get the access token`;
     if (accessToken) {
       const body = {
         token: accessToken,

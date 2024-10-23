@@ -38,7 +38,7 @@ export async function getBlob(
 
   let plaintext: ArrayBufferLike | string;
   if (key) {
-    let plainStream = decryptStream(blobStream(downloadedBlob), key);
+    const plainStream = decryptStream(blobStream(downloadedBlob), key);
     plaintext = await streamToArrayBuffer(plainStream, size);
   } else {
     plaintext = await downloadedBlob.arrayBuffer();

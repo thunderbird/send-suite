@@ -5,7 +5,7 @@ export async function createMessageSocket(
 ): Promise<WebSocket> {
   const connection = await connectToWebSocketServer(endpoint);
 
-  connection.onclose = function (e) {
+  connection.onclose = function () {
     // Uncomment this when you start debugging the disconnection issues.
     // console.log(
     //   'Socket is closed. Reconnect will be attempted in 1 second.',

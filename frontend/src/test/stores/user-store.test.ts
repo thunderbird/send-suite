@@ -190,10 +190,10 @@ describe('User Store', () => {
         email,
       };
       const storageMock = vi
-        .spyOn(Storage.prototype, 'loadUser')
+        .spyOn(Storage.prototype, 'getUserFromLocalStorage')
         .mockResolvedValue(storedUserData);
 
-      const result = await userStore.load();
+      const result = await userStore.loadFromLocalStorage();
 
       expect(storageMock).toHaveBeenCalled();
       expect(userStore.user.id).toBe(storedUserData.id);
@@ -204,10 +204,10 @@ describe('User Store', () => {
 
     it('should return false and log an error if no user data is in storage', async () => {
       const storageMock = vi
-        .spyOn(Storage.prototype, 'loadUser')
+        .spyOn(Storage.prototype, 'getUserFromLocalStorage')
         .mockRejectedValue(new Error('Storage fetch failed'));
 
-      const result = await userStore.load();
+      const result = await userStore.loadFromLocalStorage();
 
       expect(storageMock).toHaveBeenCalled();
       expect(result).toBe(false);
@@ -244,7 +244,7 @@ describe('User Store', () => {
     });
   });
 
-  describe('populateFromSession', () => {
+  describe('populateFromBackend', () => {
     it('should populate user store with user data from session', async () => {
       const userData = {
         user: {
@@ -257,7 +257,7 @@ describe('User Store', () => {
         .spyOn(useApiStore().api, 'call')
         .mockResolvedValueOnce(userData);
 
-      const result = await userStore.populateFromSession();
+      const result = await userStore.populateFromBackend();
 
       expect(apiCallMock).toHaveBeenCalledWith('users/me');
       expect(userStore.user.id).toBe(userData.user.id);
@@ -271,7 +271,7 @@ describe('User Store', () => {
         .spyOn(useApiStore().api, 'call')
         .mockResolvedValueOnce({}); // No user object in the response
 
-      const result = await userStore.populateFromSession();
+      const result = await userStore.populateFromBackend();
 
       expect(apiCallMock).toHaveBeenCalledWith('users/me');
       expect(result).toBe(false);
@@ -282,7 +282,7 @@ describe('User Store', () => {
         .spyOn(useApiStore().api, 'call')
         .mockResolvedValueOnce(null); // Simulate a null response scenario
 
-      const result = await userStore.populateFromSession();
+      const result = await userStore.populateFromBackend();
 
       expect(apiCallMock).toHaveBeenCalledWith('users/me');
       expect(result).toBe(false);
