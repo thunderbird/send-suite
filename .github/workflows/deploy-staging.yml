@@ -172,7 +172,7 @@ jobs:
           echo "archive_filename=$ARCHIVE" >> $GITHUB_OUTPUT
 
           # Invalidate the CDN
-          aws cloudfront create-invalidation --distribution-id $STAGING_CF_DISTRO_ID --paths "/*"
+          aws cloudfront create-invalidation --distribution-id ${{ vars.STAGING_CF_DISTRO_ID }} --paths "/*"
 
       - name: Archive the build
         id: frontend-archive
