@@ -1,12 +1,12 @@
-import { expect, describe, it, afterAll } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 
-import { FileStore } from '../../storage';
 import {
-  StorageType,
   StorageAdapterConfig,
+  StorageType,
 } from '@tweedegolf/storage-abstraction';
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
+import { FileStore } from '../../storage';
 
 describe(`Storage: Filesystem`, () => {
   const mockFile = 'file.txt';
@@ -67,6 +67,7 @@ describe(`Storage: Filesystem`, () => {
 
     // Test fails on Linux unless we wait for the next tick in the event loop.
     setTimeout(async () => {
+      // eslint-disable-next-line no-async-promise-executor
       return new Promise(async () => {
         const deleteResult = await storage.del(fileName);
         expect(deleteResult).toBeTruthy();
