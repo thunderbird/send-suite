@@ -5,8 +5,6 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import 'dotenv/config';
 import express from 'express';
-import session from 'express-session';
-import sessionFileStore from 'session-file-store';
 import WebSocket from 'ws';
 
 import auth from './routes/auth';
@@ -22,33 +20,8 @@ import wsMsgHandler from './wsMsgHandler';
 import wsUploadHandler from './wsUploadHandler';
 
 import * as Sentry from '@sentry/node';
-import { IS_ENV_PROD } from './config';
 import { errorHandler } from './errors/routes';
 import metricsRoute from './routes/metrics';
-
-type Profile = {
-  mozid: string;
-  avatar: string;
-  userId: number;
-  accessToken: string;
-  refreshToken: string;
-};
-type User = {
-  id: number;
-  email: string;
-  tier: string;
-  createdAt: Date;
-  updatedAt: Date;
-  activatedAt: Date;
-  profile?: Profile;
-  uniqueHash?: string;
-};
-declare module 'express-session' {
-  interface SessionData {
-    user: User;
-    isAuthenticated: boolean;
-  }
-}
 
 const PORT = 8080;
 const HOST = '0.0.0.0';
@@ -91,20 +64,6 @@ app.use((req, res, next) => {
 });
 
 app.set('trust proxy', 1); // trust first proxy
-const FileStore = sessionFileStore(session);
-const fileStoreOptions = {};
-const expressSession = session({
-  secret: process.env.SESSION_SECRET ?? 'abc123xyz',
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    secure: IS_ENV_PROD,
-    sameSite: 'none', // Cannot use 'lax' or 'strict' for local dev.
-  },
-  store: new FileStore(fileStoreOptions),
-});
-
-app.use(expressSession);
 app.use(cookieParser());
 
 app.get('/', (req, res) => {
@@ -121,9 +80,9 @@ app.get('/error', (req, res) => {
   res.status(200).json({ message: 'API is simulating an error' });
 });
 
-app.get('/api/debug-session', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.status(200).json({
-    session: req.session,
+    session: 'API is alive',
   });
 });
 

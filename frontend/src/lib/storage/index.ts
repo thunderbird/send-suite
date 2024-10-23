@@ -23,7 +23,7 @@ export class Storage {
     this.adapter.set(this.USER_KEY, { ...userObj });
   }
 
-  async loadUser(): Promise<UserType> {
+  async getUserFromLocalStorage(): Promise<UserType> {
     return this.adapter.get(this.USER_KEY);
   }
 
@@ -59,7 +59,7 @@ export class Storage {
   async export() {
     // primarily for debugging or moving a user to another device
     // prior to getting multiple-device login implemented
-    const user = await this.loadUser();
+    const user = await this.getUserFromLocalStorage();
     const keypair = await this.loadKeypair();
     const keys = await this.loadKeys();
     return {

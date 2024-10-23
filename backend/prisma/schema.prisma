@@ -235,3 +235,8 @@ model Tag {
   items       Item[]
   containers  Container[]
 }
+
+// This table stores login attempts to compare agains fxa logins
+model Login {
+  fxasession String @id
+}

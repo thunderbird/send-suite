@@ -1,0 +1,22 @@
+encryptionsalt: v1:dqO9ve4FztE=:v1:/eyhW1i0UNycdo3+:xh0fNrUP/v8CK2lnjXe0rEf4e/Z2GQ==
+config:
+  send-suite:b2-application-key:
+    secure: v1:GN1t50/ZV/Hi4mW+:3FTbNQB7JLWLicnc9sEyvBvYFidSx9xJvQ2AUdauVLJLXh1X9rP7svHbVjQnxzo=
+  send-suite:b2-application-key-id:
+    secure: v1:Rz2yu+STHreE4onF:0ShmMiv7pz0pHEFTC6Wxsp1eJxFwtngQYiE1xAlVLHzDQhfnc4fISkk=
+  send-suite:fxa-allow-list:
+    secure: v1:Z243JCjGidkIWOAe:dGhY53MBOxnHSPB07NjJyT9jm2lcCQtmeN8h1zmvDGo=
+  send-suite:fxa-client-id:
+    secure: v1:s0QSnsSw/dkNxcwh:k6Ekdzy0Hg9QHQCo7UTL/Sge/nAp
+  send-suite:fxa-client-secret:
+    secure: v1:dqtSXENNuZLG5Sh/:TAp99sm/COVqF2AoRzQjUgXhN3Y=
+  send-suite:posthog-api-key:
+    secure: v1:3fRMgg50jMwqlzA5:7VqMN88AYvzkb43iR89c07kawn3qM2u7
+  send-suite:sentry-auth-token:
+    secure: v1:09y2h04wC19e0k6N:EjnmOGvkmR0aB8rOdU3FDbbQJqYqex37xGfVxQ==
+  send-suite:jwt-access-token-secret:
+    secure: v1:EzRRIbhS0KaYLs8N:vnxISSNryblJ95UDCWScNFv/sBBKgXYjftcDreC103AfbLcjKf88BhYFXP4uQR0SqeSBdVBJ54TdRP+lJwdrao5R5umlfKqlI2+DCfFGksI1VYdTkV2gW/42EyMN1th3K2nYRg==
+  send-suite:jwt-refresh-token-secret:
+    secure: v1:wmklnnWakdwj8r1q:CuzUB6v/ft8VdR6wYFU70cit6FJa+w/VPI1VfTN9W+V7hwccg2s2RxJNZJnyO/t6yvXqHBcBvuTQgl5D2WzUv4TxhswDjd7yrWIR4orDjZAQq8Nd3d72Dv8v6X+aWDSbfi0kJw==
+  send-suite:database-url:
+    secure: v1:G7wC/POJFk644OxJ:6vwY6ZiRnyfBaCowKxhVmE0pvFGzBK0SajYZPajlAfcbDVtbP6Q0sEAvv3zVaiQ8t38UqZ2xp4LBJEsbuo/gNdr0yc009vbKNeJIv3c2GsFTkV2G8mcoIQP6uOmmTdrG42dNl4oU2NOBimr9OEJx+9QxvrvJecJq5r64ndMF

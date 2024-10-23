@@ -23,7 +23,7 @@ onMounted(async () => {
   if (errorCode) {
     console.log('init error: ', Object.keys(INIT_ERRORS)[errorCode]);
     // Load from backend session and retry init()
-    const didPopulate = await userStore.populateFromSession();
+    const didPopulate = await userStore.populateFromBackend();
     if (!didPopulate) {
       return;
     }

@@ -1,4 +1,5 @@
 import { AuthResponse } from '@/routes/auth';
+import { getCookie } from '@/utils';
 import type { Request } from 'express';
 import jwt from 'jsonwebtoken';
 import { Issuer, generators } from 'openid-client';
@@ -49,18 +50,6 @@ export async function checkAllowList(email: string | undefined | null) {
   }
 }
 
-export function verifyJWT(token: string) {
-  const callback = (err, decoded) => {
-    if (err) {
-      return null;
-    }
-    return decoded;
-  };
-  const data = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, callback);
-
-  return data;
-}
-
 export function getUserFromJWT(token: string) {
   const data = jwt.decode(token);
   return data as AuthResponse;
@@ -78,8 +67,9 @@ export function getJWTfromToken(jwtToken: string): string | null {
   return token;
 }
 
-export function getUserFromAuthenticatedRequest(req: Request) {
-  const token = getJWTfromToken(req.headers.authorization);
+export function getDataFromAuthenticatedRequest(req: Request) {
+  const jwtToken = getCookie(req?.headers?.cookie, 'authorization');
+  const token = getJWTfromToken(jwtToken);
   if (!token)
     throw new Error(
       'No token found in request: This should not happen if the user is authenticated'

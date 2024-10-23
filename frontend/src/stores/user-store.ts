@@ -13,13 +13,13 @@ export interface UserStore {
     isEphemeral?: boolean
   ) => Promise<UserType>;
   login: (loginEmail?: string) => Promise<UserType>;
-  load: () => Promise<boolean>;
+  loadFromLocalStorage: () => Promise<boolean>;
   store: (
     newId?: number,
     newTier?: UserTier,
     newEmail?: string
   ) => Promise<void>;
-  populateFromSession: () => Promise<boolean>;
+  populateFromBackend: () => Promise<boolean>;
   getPublicKey: () => Promise<string>;
   updatePublicKey: (jwk: string) => Promise<string>;
   getMozAccountAuthUrl: () => Promise<string>;
@@ -31,17 +31,20 @@ export interface UserStore {
     salt: string
   ) => AsyncJsonResponse;
   getBackup: () => Promise<Backup>;
+  logOut: () => Promise<void>;
 }
+
+export const EMPTY_USER: UserType = {
+  id: 0,
+  tier: UserTier.FREE,
+  email: '',
+};
 
 const useUserStore: () => UserStore = defineStore('user', () => {
   const { api } = useApiStore();
   const storage = new Storage();
 
-  const user: UserType = {
-    id: 0,
-    tier: UserTier.FREE,
-    email: '',
-  };
+  const user = { ...EMPTY_USER };
 
   function populateUser(userData: UserType) {
     user.id = userData.id;
@@ -97,9 +100,9 @@ const useUserStore: () => UserStore = defineStore('user', () => {
     return resp;
   }
 
-  async function load(): Promise<boolean> {
+  async function loadFromLocalStorage(): Promise<boolean> {
     try {
-      const userFromStorage = await storage.loadUser();
+      const userFromStorage = await storage.getUserFromLocalStorage();
       if (!userFromStorage) {
         return false;
       }
@@ -135,7 +138,7 @@ const useUserStore: () => UserStore = defineStore('user', () => {
 
   // After login, get user from backend and save it locally.
   // Returns a boolean signaling whether successfully populated the user.
-  async function populateFromSession() {
+  async function populateFromBackend() {
     // Stop the execution if the user is already populated
     if (user.id) {
       return true;
@@ -195,18 +198,31 @@ const useUserStore: () => UserStore = defineStore('user', () => {
     return await api.call<Backup>(`users/backup`);
   }
 
+  async function setUserToDefault() {
+    Object.entries(EMPTY_USER).forEach(([key, value]) => {
+      user[key] = value;
+    });
+  }
+
+  async function logOut() {
+    await api.removeAuthToken();
+    storage.clear();
+    setUserToDefault();
+  }
+
   return {
     user,
     createUser,
     login,
     store,
-    load,
-    populateFromSession,
+    loadFromLocalStorage,
+    populateFromBackend,
     getPublicKey,
     updatePublicKey,
     getMozAccountAuthUrl,
     createBackup,
     getBackup,
+    logOut,
   };
 });
 

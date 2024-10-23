@@ -41,7 +41,7 @@ import {
   updateContainerName,
 } from '../models/containers';
 
-import { getUserFromAuthenticatedRequest } from '@/auth/client';
+import { getDataFromAuthenticatedRequest } from '@/auth/client';
 
 const router: Router = Router();
 
@@ -120,7 +120,7 @@ router.post(
       type: ContainerType;
     } = req.body;
 
-    const { id } = getUserFromAuthenticatedRequest(req);
+    const { id } = getDataFromAuthenticatedRequest(req);
 
     const ownerId = id;
 

@@ -14,13 +14,16 @@ import {
   ITEM_NOT_UPDATED,
   MEMBERSHIP_NOT_CREATED,
   MEMBERSHIP_NOT_DELETED,
+  SESSION_NOT_CREATED,
+  SESSION_NOT_DELETED,
+  SESSION_NOT_FOUND,
   TAG_NOT_CREATED,
   TAG_NOT_DELETED,
   TAG_NOT_UPDATED,
   UPLOAD_NOT_DELETED,
   UPLOAD_NOT_REPORTED,
 } from './errors/models';
-import { fromPrismaV2 } from './models/prisma-helper';
+import { fromPrismaV2, fromPrismaV3 } from './models/prisma-helper';
 import { PermissionType } from './types/custom';
 const prisma = new PrismaClient();
 
@@ -549,3 +552,30 @@ export async function getContainersAndItemsWithTags(
     items: itemsWithTags,
   };
 }
+
+export const createLoginSession = async (id: string) =>
+  fromPrismaV3(
+    prisma.login.create,
+    { data: { fxasession: id } },
+    SESSION_NOT_CREATED
+  );
+
+export const getLoginSession = async (id: string) =>
+  fromPrismaV3(
+    prisma.login.findFirst,
+    {
+      where: {
+        fxasession: id,
+      },
+    },
+    SESSION_NOT_FOUND
+  );
+
+export const deleteSession = async (id: string) =>
+  fromPrismaV3(
+    prisma.login.delete,
+    {
+      where: { fxasession: id },
+    },
+    SESSION_NOT_DELETED
+  );

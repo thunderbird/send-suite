@@ -1,12 +1,24 @@
+import {
+  getDataFromAuthenticatedRequest,
+  getJWTfromToken,
+} from '@/auth/client';
 import { Router } from 'express';
 import { useMetrics } from '../metrics';
-import { getUniqueHash, getUniqueHashFromAnonId } from '../utils/session';
+import { getUniqueHashFromAnonId } from '../utils/session';
 
 const router: Router = Router();
 
 router.post('/api/metrics/page-load', (req, res) => {
+  let uniqueHash = null;
+  try {
+    getJWTfromToken(req.headers.authorization);
+    const dataFromToken = getDataFromAuthenticatedRequest(req);
+    uniqueHash = dataFromToken.uniqueHash;
+  } catch (error) {
+    console.log('no token present');
+  }
+
   const data = req.body;
-  const uniqueHash = getUniqueHash(req);
 
   const metrics = useMetrics();
 

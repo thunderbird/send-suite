@@ -16,7 +16,7 @@ export function useMetricsUpdate() {
      * and then initialize the client metrics with the hashed email
      * if it's there already, skip initializaiton
      */
-    await userStore.populateFromSession();
+    await userStore.loadFromLocalStorage();
     const uid = userStore.user.uniqueHash;
     initializeClientMetrics(uid);
   };

@@ -1,11 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
-
-async function checkServerUrl(url) {
-  // it should start with https://
-  // should ping the server
-  // TODO: add an endpoint to the backend for verification
-}
+import { computed, ref } from 'vue';
 
 const useConfigurationStore = defineStore('configuration', () => {
   const _serverUrl = ref(import.meta.env.VITE_SEND_SERVER_URL);

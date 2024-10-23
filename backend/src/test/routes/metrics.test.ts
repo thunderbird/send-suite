@@ -1,12 +1,12 @@
 import express from 'express';
-import session from 'express-session';
 import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
 import router from '../../routes/metrics';
 
-const { mockcapture, getUniqueHash } = vi.hoisted(() => ({
+const { mockcapture, mockAuth, mockAuthenticatedRequest } = vi.hoisted(() => ({
   mockcapture: vi.fn(),
-  getUniqueHash: vi.fn(),
+  mockAuth: vi.fn(),
+  mockAuthenticatedRequest: vi.fn(),
 }));
 
 vi.mock('@/metrics', () => {
@@ -21,31 +21,29 @@ vi.mock('@/metrics', () => {
   };
 });
 
+vi.mock('@/auth/client', () => {
+  const mMetrics = {
+    getDataFromAuthenticatedRequest: mockAuthenticatedRequest,
+    getJWTfromToken: mockAuth,
+  };
+  return {
+    ...mMetrics,
+  };
+});
+
 vi.mock('@/utils/session', () => {
   return {
-    getUniqueHash: getUniqueHash,
     getUniqueHashFromAnonId: vi.fn().mockReturnValue('hash'),
   };
 });
 
-//  Mock express session
-const expressSession = session({
-  secret: process.env.SESSION_SECRET ?? 'abc123xyz',
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    secure: false,
-    sameSite: 'none', // Cannot use 'lax' or 'strict' for local dev.
-  },
-});
-
 const app = express();
-app.use(expressSession);
 app.use(express.json());
 app.use(router);
 
 describe('POST /api/metrics/page-load', () => {
   it('should capture metrics for anon users', async () => {
+    mockAuth.mockReturnValue({ uniqueHash: 'something' });
     const mockPayload = {
       browser_version: '1.0',
       os_version: '1.0',
@@ -64,6 +62,7 @@ describe('POST /api/metrics/page-load', () => {
       .post('/api/metrics/page-load')
       .send(mockPayload)
       .set('Content-Type', 'application/json')
+      .set('Authorization', 'Bearer yayak')
       .set('Accept', 'application/json');
 
     expect(mockcapture).toBeCalledWith(expectedResponse);
@@ -72,9 +71,15 @@ describe('POST /api/metrics/page-load', () => {
   });
 
   it('should capture metrics for logged users', async () => {
+    vi.mock('@/middleware', () => {
+      return {
+        requireJWT: vi.fn().mockReturnValue('hash'),
+      };
+    });
     const mockedHash = 'mocked-email-hash';
+    mockAuth.mockReturnValue({ uniqueHash: mockedHash });
+    mockAuthenticatedRequest.mockReturnValue({ uniqueHash: mockedHash });
 
-    getUniqueHash.mockReturnValue(mockedHash);
     const mockPayload = {
       browser_version: '1.0',
       os_version: '1.0',
@@ -93,7 +98,8 @@ describe('POST /api/metrics/page-load', () => {
       .post('/api/metrics/page-load')
       .send(mockPayload)
       .set('Content-Type', 'application/json')
-      .set('Accept', 'application/json');
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer yayak');
 
     expect(mockcapture).toBeCalledWith(expectedResponse);
 

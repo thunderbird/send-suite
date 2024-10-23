@@ -1,4 +1,4 @@
-import { getUserFromAuthenticatedRequest } from '@/auth/client';
+import { getDataFromAuthenticatedRequest } from '@/auth/client';
 import { Router } from 'express';
 import {
   addErrorHandling,
@@ -66,7 +66,7 @@ router.get(
   getGroupMemberPermissions,
   addErrorHandling(TAG_ERRORS.NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
-    const { id } = getUserFromAuthenticatedRequest(req);
+    const { id } = getDataFromAuthenticatedRequest(req);
     const { tagName } = req.params;
     const result = await getContainersAndItemsWithTags(id, [tagName]);
     res.status(200).json({

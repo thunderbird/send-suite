@@ -1,0 +1,109 @@
+---
+name: validate
+
+concurrency:
+  group: validate
+  cancel-in-progress: true
+
+
+on:
+  push:
+    branches:
+      - '**'
+      - '!main'
+
+permissions:
+  contents: read
+
+jobs:
+
+  # This job detects which parts of the repo have been changed, setting future jobs up for conditional behavior.
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend-changed: ${{ steps.check.outputs.backend-changed }}
+      iac-changed: ${{ steps.check.outputs.iac-changed }}
+      frontend-changed: ${{ steps.check.outputs.frontend-changed }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # - name: Setup tmate session
+      #   uses: mxschmitt/action-tmate@v3
+
+      - uses: dorny/paths-filter@v3
+        id: check
+        with:
+          filters: |
+            backend-changed:
+              - 'backend/**'
+            iac-changed:
+              - 'pulumi/**'
+              - '.github/workflows/validate.yml'
+            frontend-changed:
+              - 'frontend/**'
+
+  # When the backend code changes, run these steps
+  backend-tests:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    if: needs.detect-changes.outputs.backend-changed == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        id: install-dependencies
+        shell: bash
+        run: |
+          npm install -g pnpm
+          pnpm install
+
+      - name: Backend tests
+        id: backend-tests
+        shell: bash
+        run: |
+          cd backend
+          pnpm ci:validate || true
+
+  # When Pulumi code or configs change, run these steps
+  iac-lint:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    if: needs.detect-changes.outputs.iac-changed == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ruff formatting checks
+        uses: chartboost/ruff-action@v1
+        with:
+          src: './pulumi'
+          args: 'format --check'
+
+      - name: Other linting with Ruff
+        uses: chartboost/ruff-action@v1
+        with:
+          src: './pulumi'
+
+  # When the frontend code changes, run these steps
+  frontend-lint:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    if: needs.detect-changes.outputs.frontend-changed == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        id: install-dependencies
+        shell: bash
+        run: |
+          npm install -g pnpm
+          pnpm install
+
+      # This step is temporarily forced into success because getting linting under control is
+      # low priority. When https://github.com/thunderbird/send-suite/issues/253 is resolved,
+      # remove the ` || true` bit below.
+      - name: Frontend lint
+        id: frontend-lint
+        shell: bash
+        run: |
+          cd frontend
+          pnpm ci:validate ||  true

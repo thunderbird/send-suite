@@ -14,8 +14,46 @@ export function base64url(source) {
 
 export function uuidv4() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    var r = (Math.random() * 16) | 0,
+    const r = (Math.random() * 16) | 0,
       v = c == 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }
+
+export const getCookie = (
+  cookieStr: string | undefined,
+  name: string
+): string | null => {
+  if (!cookieStr || !name) return null;
+
+  const cookies = cookieStr.split(';').map((cookie) => cookie.trim());
+  const authCookie = cookies.find((cookie) => cookie.startsWith(`${name}=`));
+
+  if (!authCookie) return null;
+
+  const [, value] = authCookie.split('=');
+  return value ? decodeURIComponent(value) : null;
+};
+
+type RoundNumber = number;
+
+function isRoundNumber(num: number): num is RoundNumber {
+  return Number.isInteger(num);
+}
+export const getTokenExpiration = (days: number) => {
+  if (!isRoundNumber(days)) {
+    throw new Error(
+      'Token expiration should be a round number specifying days'
+    );
+  }
+
+  // we use days as a multiplier
+  const ONE_HOUR = 60;
+  const ONE_DAY = 24;
+  const ONE_MINUTE = 60_000;
+  const milliseconds = ONE_MINUTE * ONE_HOUR * ONE_DAY * days;
+
+  const stringified = `${days}d`;
+
+  return { milliseconds, stringified };
+};

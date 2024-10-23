@@ -1,6 +1,6 @@
 import { INIT_ERRORS } from '@/apps/lockbox/const';
-import { Keychain } from '@/lib/keychain';
 import { FolderStore } from '@/apps/lockbox/stores/folder-store.types';
+import { Keychain } from '@/lib/keychain';
 import { UserStore } from '@/stores/user-store';
 
 /**
@@ -15,7 +15,7 @@ async function init(
   keychain: Keychain,
   folderStore: FolderStore
 ): Promise<INIT_ERRORS> {
-  const hasUser = await userStore.load();
+  const hasUser = await userStore.loadFromLocalStorage();
   const hasKeychain = await keychain.load();
 
   if (!hasUser) {
