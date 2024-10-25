@@ -118,11 +118,12 @@ jobs:
             --target-dependents
 
           # Only push the config change back to the repo if it was successfully applied
-          git config --global user.email 'services-dev@thunderbird.net'
-          git config --global user.name 'GitHub Actions Workflow Automation'
-          git add config.staging.yaml
-          git commit -m "CI: Update staging image"
-          git push
+          # Don't do this, at least for now
+          # git config --global user.email 'services-dev@thunderbird.net'
+          # git config --global user.name 'GitHub Actions Workflow Automation'
+          # git add config.staging.yaml
+          # git commit -m "CI: Update staging image"
+          # git push
 
   frontend-merge:
     needs: detect-changes
