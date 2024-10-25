@@ -59,6 +59,7 @@ resources:
         - fxa-client-secret
         - posthog-api-key
         - sentry-auth-token
+      recovery_window_in_days: 0
 
   tb:fargate:FargateClusterWithLogging:
     backend:
@@ -164,6 +165,7 @@ resources:
 
   tb:cloudfront:CloudFrontS3Service:
     frontend:
+      forcibly_destroy_buckets: True
       service_bucket_name: tb-send-suite-ci-frontend
       certificate_arn: arn:aws:acm:us-east-1:768512802988:certificate/e3fe04b9-a8e8-4881-b5bc-257c11e17941
       distribution:
