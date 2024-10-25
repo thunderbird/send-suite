@@ -49,7 +49,9 @@ const showForm = ref(false);
         </span>
         <FolderNameForm v-if="showForm" @renameComplete="showForm = false" />
       </div>
-      <div class="text-xs">{{ formatBytes(folderStore.selectedFolder.size) }}</div>
+      <div class="text-xs">
+        {{ formatBytes(folderStore.selectedFolder.size) }}
+      </div>
     </header>
     <!-- sharing config -->
     <CreateAccessLink :folderId="folderStore.selectedFolder.id" />
@@ -72,11 +74,17 @@ const showForm = ref(false);
     </section> -->
     <!-- meta -->
     <footer class="mt-auto flex flex-col gap-3">
-      <label class="flex flex-col gap-1" v-if="folderStore.selectedFolder.createdAt">
+      <label
+        class="flex flex-col gap-1"
+        v-if="folderStore.selectedFolder.createdAt"
+      >
         <span class="text-xs font-semibold text-gray-600">Created</span>
         <div class="text-xs">{{ folderStore.selectedFolder.createdAt }}</div>
       </label>
-      <label class="flex flex-col gap-1" v-if="folderStore.selectedFolder.updatedAt">
+      <label
+        class="flex flex-col gap-1"
+        v-if="folderStore.selectedFolder.updatedAt"
+      >
         <span class="text-xs font-semibold text-gray-600">Modified</span>
         <div class="text-xs">{{ folderStore.selectedFolder.updatedAt }}</div>
       </label>

@@ -8,7 +8,7 @@
     "build-and-submit": "NODE_ENV=production ./scripts/build.sh && ./scripts/submit.sh",
     "build:dev": "./scripts/build.sh",
     "build:watch": "nodemon -e vue,ts,js --watch './src/**/*' --watch public --exec 'pnpm build'",
-    "ci:validate": "pnpm run lint:all; pnpm run test",
+    "ci:validate": "pnpm lint:all; pnpm prettier:all; pnpm run test",
     "dev": "vite --host",
     "lint:all": "eslint src/**/*.ts --fix",
     "prettier:all": "prettier --write .",

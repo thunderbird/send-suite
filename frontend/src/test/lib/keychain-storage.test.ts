@@ -40,7 +40,10 @@ describe('RSA key storage', () => {
     const wrappedKeyStr = await keychain.rsa.wrapContainerKey(key, publicKey);
 
     // unwrap container key, using the loaded key
-    const unwrappedKey = await keychain.rsa.unwrapContainerKey(wrappedKeyStr, keychain.rsa.privateKey);
+    const unwrappedKey = await keychain.rsa.unwrapContainerKey(
+      wrappedKeyStr,
+      keychain.rsa.privateKey
+    );
     expect(await Util.compareKeys(key, unwrappedKey)).toBeTruthy();
   });
   it('Preserves the integrity of the keys for wrapping', async () => {
@@ -56,9 +59,15 @@ describe('RSA key storage', () => {
 
     // wrap a container key using the loaded key
     const key = await keychain.container.generateContainerKey();
-    const wrappedKeyStr = await keychain.rsa.wrapContainerKey(key, keychain.rsa.publicKey);
+    const wrappedKeyStr = await keychain.rsa.wrapContainerKey(
+      key,
+      keychain.rsa.publicKey
+    );
     // unwrap container key using original key
-    const unwrappedKey = await keychain.rsa.unwrapContainerKey(wrappedKeyStr, privateKey);
+    const unwrappedKey = await keychain.rsa.unwrapContainerKey(
+      wrappedKeyStr,
+      privateKey
+    );
     expect(await Util.compareKeys(key, unwrappedKey)).toBeTruthy();
   });
 });

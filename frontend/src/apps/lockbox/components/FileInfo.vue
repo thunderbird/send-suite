@@ -31,7 +31,9 @@ Note about shareOnly containers.
         </span>
         <FileNameForm v-if="showForm" @renameComplete="showForm = false" />
       </div>
-      <div class="text-xs">{{ formatBytes(folderStore.selectedFile.upload.size) }}</div>
+      <div class="text-xs">
+        {{ formatBytes(folderStore.selectedFile.upload.size) }}
+      </div>
     </header>
     <!-- sharing config -->
     <!-- <CreateAccessLink :folderId="folderStore.selectedFile.id" /> -->
@@ -45,11 +47,17 @@ Note about shareOnly containers.
     </section> -->
     <!-- meta -->
     <footer class="mt-auto flex flex-col gap-3">
-      <label class="flex flex-col gap-1" v-if="folderStore.selectedFile.createdAt">
+      <label
+        class="flex flex-col gap-1"
+        v-if="folderStore.selectedFile.createdAt"
+      >
         <span class="text-xs font-semibold text-gray-600">Created</span>
         <div class="text-xs">{{ folderStore.selectedFile.createdAt }}</div>
       </label>
-      <label class="flex flex-col gap-1" v-if="folderStore.selectedFile.updatedAt">
+      <label
+        class="flex flex-col gap-1"
+        v-if="folderStore.selectedFile.updatedAt"
+      >
         <span class="text-xs font-semibold text-gray-600">Modified</span>
         <div class="text-xs">{{ folderStore.selectedFile.updatedAt }}</div>
       </label>

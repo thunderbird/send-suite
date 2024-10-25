@@ -22,7 +22,11 @@ TODO: implement "regeneration" of links
 */
 </script>
 <template>
-  <span v-if="sharingStore.links.length > 0" class="text-xs font-semibold text-gray-600">Existing Links</span>
+  <span
+    v-if="sharingStore.links.length > 0"
+    class="text-xs font-semibold text-gray-600"
+    >Existing Links</span
+  >
   <section class="flex flex-col gap-3" v-for="link in sharingStore.links">
     <label class="flex flex-col gap-2">
       <input type="text" class="!rounded-r-none" :value="link.id" />
