@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "0.1.23",
+  "version": "0.1.24",
   "description": "",
   "keywords": [],
   "license": "ISC",
@@ -25,7 +25,7 @@
     "test": "vitest run --silent",
     "test:watch": "vitest --watch",
     "typecheck": "tsc --noEmit",
-    "postversion": "bun run ./scripts/bump.ts"
+    "postversion": "bun run ./src/scripts/bump.ts"
   },
   "lint-staged": {
     "*.{js,ts}": [
