@@ -56,7 +56,7 @@ resources:
         - sentry-auth-token
   tb:fargate:FargateClusterWithLogging:
     backend:
-      desired_count: 1
+      desired_count: 3
       assign_public_ip: True
       ecr_resources:
         - arn:aws:ecr:us-east-1:768512802988:repository/send*
@@ -84,7 +84,6 @@ resources:
         container_definitions:
           backend:
             image: "768512802988.dkr.ecr.us-east-1.amazonaws.com/send:b815464b1e5eab182c3712a701fafe1ad8a71811"
-            desired_replicas: 1
             portMappings:
               - name: send-suite
                 containerPort: 8080
