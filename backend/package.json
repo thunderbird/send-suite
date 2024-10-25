@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "0.1.24",
+  "version": "0.1.25",
   "description": "",
   "keywords": [],
   "license": "ISC",
@@ -19,6 +19,7 @@
     "dev": "nodemon -e js,ts src/index.ts",
     "lint:all": "eslint . --fix --ignore-pattern 'dist/*'",
     "prettier:all": "prettier --write .",
+    "release": "./scripts/release.sh",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org thunderbird --project send-suite-backend ./dist && sentry-cli sourcemaps upload --org thunderbird --project send-suite-backend ./dist",
     "prestart": "NODE_ENV=production pnpm run build",
     "start": "NODE_ENV=production node dist/index.js",
