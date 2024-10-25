@@ -16,7 +16,8 @@
     "test": "vitest run --silent",
     "test-debug": "vitest --inspect-brk --single-thread",
     "test:watch": "vitest --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postversion": "bun run ./scripts/bump.ts"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": [

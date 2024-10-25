@@ -24,7 +24,8 @@
     "start": "NODE_ENV=production node dist/index.js",
     "test": "vitest run --silent",
     "test:watch": "vitest --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postversion": "bun run ./scripts/bump.ts"
   },
   "lint-staged": {
     "*.{js,ts}": [
