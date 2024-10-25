@@ -25,6 +25,7 @@
     "test": "vitest run --silent",
     "test:watch": "vitest --watch",
     "typecheck": "tsc --noEmit",
+    "release": "./scripts/release.sh",
     "postversion": "bun run ./src/scripts/bump.ts"
   },
   "lint-staged": {
