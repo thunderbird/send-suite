@@ -86,7 +86,7 @@ resources:
           - FARGATE
         container_definitions:
           backend:
-            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:0.1.20
+            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:0.1.21
             desired_replicas: 1
             portMappings:
               - name: send-suite
@@ -103,25 +103,25 @@ resources:
               initProcessEnabled: True
             secrets:
               - name: B2_APPLICATION_KEY
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/b2-application-key-OfJfMS
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/b2-application-key-rLsvh0
               - name: B2_APPLICATION_KEY_ID
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/b2-application-key-id-5QFZWv
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/b2-application-key-id-MZ3rlj
               - name: DATABASE_URL
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/database-url-6J02g2
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/database-url-XTeR66
               - name: FXA_ALLOW_LIST
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-allow-list-QM5LZb
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-allow-list-ICboGX
               - name: FXA_CLIENT_ID
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-id-trDR1r
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-id-mcM9Sq
               - name: FXA_CLIENT_SECRET
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-secret-FGcei3
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/fxa-client-secret-QGCUwG
               - name: POSTHOG_API_KEY
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/posthog-api-key-gnIFgZ
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/posthog-api-key-8Tj59P
               - name: SENTRY_AUTH_TOKEN
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/sentry-auth-token-esyr6P
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/sentry-auth-token-iIS0uB
               - name: ACCESS_TOKEN_SECRET
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/jwt-access-token-secret-WCnIkJ
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/jwt-access-token-secret-QnyA4h
               - name: REFRESH_TOKEN_SECRET
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/jwt-refresh-token-secret-EXm0RB
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/staging/jwt-refresh-token-secret-f7efZi
             environment:
               - name: B2_BUCKET_NAME
                 value: tb-send-suite-staging-object-store-alpha
