@@ -80,9 +80,6 @@ jobs:
           curl -fsSL https://get.pulumi.com | sh
           pip install -Ur requirements.txt
 
-      # - name: Setup tmate session
-      #   uses: mxschmitt/action-tmate@v3
-
       # Produce a container image
       - name: Build, tag, and push backend image to Amazon ECR
         id: build-backend
@@ -145,6 +142,7 @@ jobs:
       - name: Create production .env file from secrets
         shell: bash
         run: |
+          cd frontend
           cat << EOF > .env
           VUE_BASE_URL=https://send.thunderbird.dev
           VITE_SEND_SERVER_URL=https://lockbox.thunderbird.dev
