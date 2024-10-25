@@ -8,10 +8,10 @@ interface PackageJson {
 async function updateYamlConfig(): Promise<void> {
   try {
     // Define relative paths from current directory
-    const packageJsonPath = path.resolve(__dirname, '../package.json');
+    const packageJsonPath = path.resolve(__dirname, '../../package.json');
     const yamlConfigPath = path.resolve(
       __dirname,
-      '../../pulumi/config.staging.yaml'
+      '../../../pulumi/config.staging.yaml'
     );
 
     // Read and parse package.json
