@@ -1,13 +1,13 @@
 {
   "name": "backend",
-  "version": "0.1.22",
+  "version": "0.1.23",
   "description": "",
   "keywords": [],
   "license": "ISC",
   "author": "",
   "main": "index.js",
   "scripts": {
-    "build": "pnpm --package=typescript dlx tsc && tsc-alias && pnpm sentry:sourcemaps",
+    "build": "pnpm exec tsc && tsc-alias && pnpm sentry:sourcemaps",
     "ci:validate": "pnpm run lint:all; pnpm run test",
     "db:browse": "prisma studio",
     "db:generate": "prisma generate",
