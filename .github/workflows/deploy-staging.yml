@@ -118,9 +118,9 @@ jobs:
             --target-dependents
 
           # Only push the config change back to the repo if it was successfully applied
-          # git add config.staging.yaml
-          # git commit -m "CI: Update staging image"
-          # git push
+          git add config.staging.yaml
+          git commit -m "CI: Update staging image"
+          git push
 
   frontend-merge:
     needs: detect-changes
