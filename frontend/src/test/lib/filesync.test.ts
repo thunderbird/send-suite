@@ -1,21 +1,19 @@
-import { expect, describe, it, vi } from 'vitest';
-import { sendBlob, getBlob } from '@/lib/filesync';
+import { getBlob, sendBlob } from '@/lib/filesync';
+import { describe, expect, it, vi } from 'vitest';
 
 import { Keychain } from '@/lib/keychain';
-import * as utils from '@/lib/utils';
 import {
   arrayBufferToReadableStream,
   readableStreamToArrayBuffer,
 } from '@/lib/streams';
+import * as utils from '@/lib/utils';
 
-import WS from 'vitest-websocket-mock';
 import { WebSocket } from 'mock-socket';
+import WS from 'vitest-websocket-mock';
 
-import { setupServer } from 'msw/node';
-import { HttpResponse, http } from 'msw';
 import { encryptStream } from '@/lib/ece';
-
-import { _download } from '@/lib/helpers';
+import { HttpResponse, http } from 'msw';
+import { setupServer } from 'msw/node';
 
 const API_URL = `${import.meta.env.VITE_SEND_SERVER_URL}/api`;
 const UPLOAD_ID = `abcdefg1234567`;
@@ -119,9 +117,11 @@ describe(`Filesync`, () => {
       const keychain = new Keychain();
       const key = await keychain.content.generateKey();
       const blob = new Blob(['abc123']);
+      const progressTracker = vi.fn();
 
-      const result = await sendBlob(blob, key);
+      const result = await sendBlob(blob, key, progressTracker);
       expect(result).toEqual(SUCCESSFUL_UPLOAD_RESPONSE.id);
+      expect(progressTracker).toBeCalled();
     });
   });
 });

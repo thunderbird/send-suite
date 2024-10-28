@@ -1,4 +1,5 @@
 import { UserResponse } from '@/stores/user-store.types';
+import { FolderStore as FS } from './folder-store';
 
 export type ContainerResponse = {
   id: number;
@@ -60,32 +61,4 @@ export type ShareResponse = {
   sender?: UserResponse;
 };
 
-export interface FolderStore {
-  rootFolder: Folder;
-  defaultFolder: Folder | null;
-  visibleFolders: Folder[];
-  selectedFolder: Folder;
-  selectedFile: ItemResponse;
-  createFolder: () => Promise<Folder | null>;
-  sync: () => Promise<void>;
-  init: () => void;
-  print: () => void;
-  goToRootFolder: (folderId: number) => Promise<void>;
-  setSelectedFolder: (folderId: number) => void;
-  setSelectedFile: (itemId: number) => Promise<void>;
-  renameFolder: (folderId: number, name: string) => Promise<Folder>;
-  deleteFolder: (folderId: number) => Promise<void>;
-  uploadItem: (fileBlob: Blob, folderId: number) => Promise<ItemResponse>;
-  deleteItem: (itemId: number, folderId: number) => Promise<void>;
-  renameItem: (
-    folderId: number,
-    itemId: number,
-    name: string
-  ) => Promise<ItemResponse>;
-  downloadContent: (
-    uploadId: string,
-    containerId: number,
-    wrappedKeyStr: string,
-    name: string
-  ) => Promise<boolean>;
-}
+export type FolderStore = FS;

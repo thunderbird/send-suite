@@ -6,12 +6,14 @@ import { NamedBlob } from '@/lib/filesync';
 import { zipBlob } from '@/lib/utils';
 import { useDropZone } from '@vueuse/core';
 import { ref } from 'vue';
+import ProgressBar from './ProgressBar.vue';
+
 const folderStore = useFolderStore();
 
 const dropZoneRef = ref();
 
 const filesMetadata = ref(null);
-const fileBlobs = ref([]);
+const fileBlobs = ref<NamedBlob[]>([]);
 const isUploading = ref(false);
 const isError = ref(false);
 
@@ -82,6 +84,7 @@ async function doUpload() {
   </div>
 
   <div v-if="isUploading">
+    <ProgressBar type="Uploading" />
     <UploadingProgress />
   </div>
 

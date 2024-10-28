@@ -15,6 +15,7 @@ import useSharingStore from '@/apps/lockbox/stores/sharing-store';
 import { EXTENSION_READY, SHARE_ABORTED, SHARE_COMPLETE } from '@/lib/const';
 import { restoreKeysUsingLocalStorage } from '@/lib/keychain';
 import useApiStore from '@/stores/api-store';
+import ProgressBar from '../components/ProgressBar.vue';
 import { useStatusStore } from '../stores/status-store';
 
 const userStore = useUserStore();
@@ -29,7 +30,7 @@ const isUploading = ref(false);
 const isError = ref(false);
 
 const password = ref('');
-const fileBlob = ref(null);
+const fileBlob = ref<Blob>(null);
 const isAllowed = ref(true);
 const message = ref('');
 
@@ -147,7 +148,7 @@ userStore.user.id ${userStore.user.id}
     </div>
 
     <div v-if="isUploading">
-      <p>Uploading...</p>
+      <ProgressBar type="Uploading" />
     </div>
 
     <form @submit.prevent="uploadAndShare">

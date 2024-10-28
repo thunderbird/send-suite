@@ -1,4 +1,4 @@
-import { FolderStore } from '@/apps/lockbox/stores/folder-store.types';
+import { FolderStore } from '@/apps/lockbox/stores/folder-store';
 import init from '@/lib/init';
 import { UserStore } from '@/stores/user-store';
 import { Canceler, JsonResponse } from '@/types';
@@ -38,11 +38,16 @@ export async function _download(
   });
 }
 
+type Options = {
+  canceler?: Canceler;
+  progressTracker: (progress: number) => void;
+};
+
 export async function _upload(
   stream: ReadableStream,
   key: CryptoKey,
   encryptedSize: number = -1,
-  canceler: Canceler = {}
+  { canceler = {} as Canceler, progressTracker }: Options
 ): Promise<JsonResponse> {
   let host = import.meta.env.VITE_SEND_SERVER_URL;
   if (host) {
@@ -90,6 +95,7 @@ export async function _upload(
 
       size += buf.length;
       console.log('Uploaded', size, 'bytes', '- timestamp:', Date.now());
+      progressTracker(size);
       state = await reader.read();
       while (
         ws.bufferedAmount > ECE_RECORD_SIZE * 2 &&
