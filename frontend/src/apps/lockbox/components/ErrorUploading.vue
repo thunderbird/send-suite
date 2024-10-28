@@ -1,4 +1,8 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useStatusStore } from '../stores/status-store';
+
+const { progress } = useStatusStore();
+</script>
 
 <template>
   <div
@@ -6,7 +10,10 @@
     role="status"
   >
     <p>
-      There was an error uploading your file, please try again or raise an issue
+      {{
+        progress.error ||
+        `There was an error uploading your file, please try again or raise an issue`
+      }}
     </p>
   </div>
 </template>

@@ -3,7 +3,6 @@ import ErrorUploading from '@/apps/lockbox/components/ErrorUploading.vue';
 import UploadingProgress from '@/apps/lockbox/components/UploadingProgress.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import { NamedBlob } from '@/lib/filesync';
-import { zipBlob } from '@/lib/utils';
 import { useDropZone } from '@vueuse/core';
 import { ref } from 'vue';
 import ProgressBar from './ProgressBar.vue';
@@ -47,18 +46,10 @@ useDropZone(dropZoneRef, onDrop);
 async function doUpload() {
   const result = await Promise.all(
     fileBlobs.value.map(async (blob) => {
-      let compressedBlob = null;
-
-      if (blob.type === '') {
-        const zippedBlob = await zipBlob(blob, blob.name);
-        compressedBlob = new Blob([zippedBlob], { type: 'application/zip' });
-        compressedBlob.name = `${blob.name}.zip`;
-      }
       isUploading.value = true;
-
       try {
         const uploadResult = await folderStore.uploadItem(
-          compressedBlob || blob,
+          blob,
           folderStore.rootFolder.id
         );
         isUploading.value = false;

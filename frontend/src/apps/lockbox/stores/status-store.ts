@@ -15,15 +15,17 @@ export const useStatusStore = defineStore('status', () => {
   // Download status
   const total = ref(0);
   const progressed = ref(0);
+  const error = ref<string>('');
   const debouncedUpdate = useDebounceFn((updatedValue: number) => {
     progressed.value = updatedValue;
-  });
+  }, 100);
 
   function setUploadSize(size: number) {
     total.value = size;
   }
 
   function setProgress(number: number) {
+    console.log('setting progress', number);
     debouncedUpdate(number);
   }
 
@@ -42,6 +44,7 @@ export const useStatusStore = defineStore('status', () => {
       total,
       progressed,
       percentage,
+      error,
     },
   };
 });

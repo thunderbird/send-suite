@@ -39,6 +39,7 @@
     "jszip": "^3.10.1",
     "pinia": "^2.1.7",
     "posthog-js": "^1.150.1",
+    "pretty-bytes": "^6.1.1",
     "ua-parser-js": "^1.0.38",
     "vue": "^3.3.4",
     "vue-router": "4"

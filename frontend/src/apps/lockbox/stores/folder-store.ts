@@ -15,6 +15,8 @@ import {
 } from '@/apps/lockbox/stores/folder-store.types';
 import { NamedBlob } from '@/lib/filesync';
 import { backupKeys } from '@/lib/keychain';
+import { CLIENT_MESSAGES } from '@/lib/messages';
+import { checkBlobSize, formatBlob } from '@/lib/utils';
 import { useStatusStore } from './status-store';
 
 export interface FolderStore {
@@ -50,7 +52,7 @@ export interface FolderStore {
 const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
   const { api } = useApiStore();
   const { user } = useUserStore();
-  const { setUploadSize, setProgress } = useStatusStore();
+  const { setUploadSize, setProgress, progress } = useStatusStore();
   const { keychain } = useKeychainStore();
 
   const uploader = new Uploader(user, keychain, api);
@@ -194,8 +196,24 @@ const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
     fileBlob: NamedBlob,
     folderId: number
   ): Promise<Item> {
-    setUploadSize(fileBlob.size);
-    const newItem = await uploader.doUpload(fileBlob, folderId, setProgress);
+    progress.error = '';
+
+    const canUpload = await checkBlobSize(fileBlob);
+
+    if (!canUpload) {
+      progress.error = CLIENT_MESSAGES.FILE_TOO_BIG;
+      throw new Error('Too big');
+    }
+
+    const formattedBlob = await formatBlob(fileBlob);
+
+    setUploadSize(formattedBlob.size);
+
+    const newItem = await uploader.doUpload(
+      formattedBlob,
+      folderId,
+      setProgress
+    );
     if (newItem && rootFolder.value) {
       rootFolder.value.items = [...rootFolder.value.items, newItem];
     }

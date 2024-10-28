@@ -1,3 +1,5 @@
+import prettyBytes from 'pretty-bytes';
+
 export const CONTAINER_TYPE = {
   CONVERSATION: 'CONVERSATION',
   FOLDER: 'FOLDER',
@@ -14,3 +16,10 @@ export const SHARE_ABORTED = 'SHARE_ABORTED';
 
 export const FILE_SELECTED = 'FILE_SELECTED';
 export const SELECTION_COMPLETE = 'SELECTION_COMPLETE';
+
+const ONE_KB_IN_BYTES = 1024;
+const ONE_MB_IN_BYTES = ONE_KB_IN_BYTES * 1024;
+const ONE_GB_IN_BYTES = ONE_MB_IN_BYTES * 1024;
+
+export const MAX_FILE_SIZE = ONE_GB_IN_BYTES;
+export const MAX_FILE_SIZE_HUMAN_READABLE = prettyBytes(MAX_FILE_SIZE);
