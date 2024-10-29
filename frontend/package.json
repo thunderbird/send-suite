@@ -13,11 +13,11 @@
     "lint:all": "eslint src/**/*.ts --fix",
     "prettier:all": "prettier --write .",
     "preview": "vite preview",
+    "release": "./scripts/release.sh",
     "test": "vitest run --silent",
     "test-debug": "vitest --inspect-brk --single-thread",
     "test:watch": "vitest --watch",
     "typecheck": "tsc --noEmit",
-    "release": "./scripts/release.sh",
     "postversion": "bun run ./scripts/bump.ts"
   },
   "lint-staged": {
