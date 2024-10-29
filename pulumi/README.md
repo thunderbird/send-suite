@@ -34,3 +34,29 @@ virtual environment Pulumi has built to operate itself in.
 ```
 ./venv/bin/pip install -U -r requirements.txt
 ```
+
+
+## Building a new environment
+
+Before building a new environment, make sure you've gone through the setup steps above, then gather your materials:
+
+- Select domain names for frontend and backend services (but don't create any records for them).
+- Request certificates from AWS Certificate Manager for each of those domains. Prove to AWS that you own those domains
+    to get them issued. Take note of the ARNs.
+- Generate a secret passphrase to encrypt secrets in this stack with. Store this secret securely. Export it into your
+    shell:
+        - `export PULUMI_CONFIG_PASSPHRASE='that_password_here'`
+- Initialize a new Pulumi stack
+    - `pulumi stack init $stackname`
+- Generate all of the special values this software needs to run. These are referenced in the `config.$env.yaml` files
+    as part of the `tb:secrets:PulumiManager` configuration. Some of these values can be copied from other environments,
+    while others will have to be created fresh. Be sure to store anything newly made in a secure location outside of
+    this repo. For example, you will need to create a BackBlaze bucket, then create an application key with access to
+    it.
+- For each one of those special values, create a Pulumi secret. One such command might look like this:
+    - `pulumi config set --secret b2-application-key-id 'somethingsomethingblahblahblah'`
+- Copy the configuration file for the environment that most closely resembles the one you wish to build. f/ex:
+    - `cp config.{staging,prod}.yaml`
+- Adjust the values of the new config file appropriately. Double-check everything.
+- Build the infrastructure.
+    - `pulumi up`
