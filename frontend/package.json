@@ -1,6 +1,6 @@
 {
   "name": "thunderbird-send",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,6 +13,7 @@
     "lint:all": "eslint src/**/*.ts --fix",
     "prettier:all": "prettier --write .",
     "preview": "vite preview",
+    "release": "./scripts/release.sh",
     "test": "vitest run --silent",
     "test-debug": "vitest --inspect-brk --single-thread",
     "test:watch": "vitest --watch",
