@@ -135,6 +135,7 @@ ci_iam = tb_pulumi.ci.AwsAutomationUser(
     name=f'{project.project}-ci',
     project=project,
     active_stack='staging',
+    additional_policies=[frontend.resources['invalidation_policy'].arn],
     enable_ecr_image_push=True,
     ecr_repositories=['send'],
     enable_fargate_deployments=True,
@@ -144,4 +145,5 @@ ci_iam = tb_pulumi.ci.AwsAutomationUser(
     s3_full_access_buckets=['tb-send-suite-pulumi'],
     enable_s3_bucket_upload=True,
     s3_upload_buckets=['tb-send-suite-staging-frontend'],
+    opts=pulumi.ResourceOptions(depends_on=[frontend])
 )
