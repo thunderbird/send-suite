@@ -10,16 +10,49 @@ import { computed, ref } from 'vue';
 import {
   Folder,
   FolderResponse,
-  FolderStore,
   Item,
   ItemResponse,
 } from '@/apps/lockbox/stores/folder-store.types';
 import { NamedBlob } from '@/lib/filesync';
 import { backupKeys } from '@/lib/keychain';
+import { CLIENT_MESSAGES } from '@/lib/messages';
+import { checkBlobSize, formatBlob } from '@/lib/utils';
+import { useStatusStore } from './status-store';
+
+export interface FolderStore {
+  rootFolder: Folder;
+  defaultFolder: Folder | null;
+  visibleFolders: Folder[];
+  selectedFolder: Folder;
+  selectedFile: ItemResponse;
+  createFolder: () => Promise<Folder | null>;
+  sync: () => Promise<void>;
+  init: () => void;
+  print: () => void;
+  goToRootFolder: (folderId: number) => Promise<void>;
+  setSelectedFolder: (folderId: number) => void;
+  setSelectedFile: (itemId: number) => Promise<void>;
+  renameFolder: (folderId: number, name: string) => Promise<Folder>;
+  deleteFolder: (folderId: number) => Promise<void>;
+  uploadItem: (fileBlob: Blob, folderId: number) => Promise<ItemResponse>;
+  deleteItem: (itemId: number, folderId: number) => Promise<void>;
+  renameItem: (
+    folderId: number,
+    itemId: number,
+    name: string
+  ) => Promise<ItemResponse>;
+  downloadContent: (
+    uploadId: string,
+    containerId: number,
+    wrappedKeyStr: string,
+    name: string
+  ) => Promise<boolean>;
+}
 
 const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
   const { api } = useApiStore();
   const { user } = useUserStore();
+  const { setUploadSize, setProgress, progress } = useStatusStore();
   const { keychain } = useKeychainStore();
 
   const uploader = new Uploader(user, keychain, api);
@@ -163,7 +196,24 @@ const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
     fileBlob: NamedBlob,
     folderId: number
   ): Promise<Item> {
-    const newItem = await uploader.doUpload(fileBlob, folderId);
+    progress.error = '';
+
+    const canUpload = await checkBlobSize(fileBlob);
+
+    if (!canUpload) {
+      progress.error = CLIENT_MESSAGES.FILE_TOO_BIG;
+      throw new Error('Too big');
+    }
+
+    const formattedBlob = await formatBlob(fileBlob);
+
+    setUploadSize(formattedBlob.size);
+
+    const newItem = await uploader.doUpload(
+      formattedBlob,
+      folderId,
+      setProgress
+    );
     if (newItem && rootFolder.value) {
       rootFolder.value.items = [...rootFolder.value.items, newItem];
     }

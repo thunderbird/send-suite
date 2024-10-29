@@ -1,5 +1,7 @@
 import { JsonResponse } from '@/lib/api';
+import { NamedBlob } from '@/types';
 import JSZip from 'jszip';
+import { MAX_FILE_SIZE } from './const';
 /**
  * Returns a promise that resolves after an amount of time has passed.
  *
@@ -168,3 +170,24 @@ export async function zipBlob(blob: Blob, filename: string) {
 
   return zip.generateAsync({ type: 'blob' });
 }
+
+export const formatBlob = async (blob: NamedBlob): Promise<NamedBlob> => {
+  if (blob.type === '') {
+    const zippedBlob = await zipBlob(blob, blob.name);
+    const compressedBlob = new Blob([zippedBlob], {
+      type: 'application/zip',
+    }) as NamedBlob;
+    compressedBlob.name = `${blob.name}.zip`;
+    return compressedBlob;
+  }
+  return blob;
+};
+
+export const checkBlobSize = async (blob: NamedBlob) => {
+  console.log(blob);
+  if (blob.size > MAX_FILE_SIZE) {
+    console.warn('File too big');
+    return false;
+  }
+  return true;
+};
