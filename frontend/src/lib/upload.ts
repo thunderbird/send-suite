@@ -25,7 +25,7 @@ export default class Uploader {
   async doUpload(
     fileBlob: NamedBlob,
     containerId: number,
-    isText = true
+    progressTracker: (progress: number) => void
   ): Promise<Item> {
     if (!containerId) {
       return null;
@@ -54,7 +54,7 @@ export default class Uploader {
     const filename = blob.name;
 
     // Blob is encrypted as it is uploaded through a websocket connection
-    const id = await sendBlob(blob, key);
+    const id = await sendBlob(blob, key, progressTracker);
     if (!id) {
       return null;
     }
@@ -99,7 +99,7 @@ export default class Uploader {
       {
         uploadId: upload.id,
         name: filename,
-        type: isText ? 'MESSAGE' : 'FILE',
+        type: 'MESSAGE',
         wrappedKey: wrappedKeyStr,
       },
       'POST'

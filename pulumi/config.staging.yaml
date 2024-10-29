@@ -21,7 +21,6 @@ resources:
           - 10.0.102.0/24
         us-east-1c:
           - 10.0.103.0/24
-
   tb:network:SecurityGroupWithRules:
     backend:
       rules:
@@ -42,7 +41,6 @@ resources:
             protocol: tcp
             from_port: 0
             to_port: 65535
-
   tb:secrets:PulumiSecretsManager:
     pulumi:
       secret_names:
@@ -56,10 +54,9 @@ resources:
         - jwt-refresh-token-secret
         - posthog-api-key
         - sentry-auth-token
-
   tb:fargate:FargateClusterWithLogging:
     backend:
-      desired_count: 1
+      desired_count: 3
       assign_public_ip: True
       ecr_resources:
         - arn:aws:ecr:us-east-1:768512802988:repository/send*
@@ -86,8 +83,7 @@ resources:
           - FARGATE
         container_definitions:
           backend:
-            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:0.1.21
-            desired_replicas: 1
+            image: "768512802988.dkr.ecr.us-east-1.amazonaws.com/send:b815464b1e5eab182c3712a701fafe1ad8a71811"
             portMappings:
               - name: send-suite
                 containerPort: 8080
@@ -161,7 +157,6 @@ resources:
                 value: send-suite-backend
               - name: STORAGE_BACKEND
                 value: b2
-
   tb:cloudfront:CloudFrontS3Service:
     frontend:
       service_bucket_name: tb-send-suite-staging-frontend
@@ -172,7 +167,6 @@ resources:
         comment: send-suite staging frontend
         logging_config:
           include_cookies: True
-
   domains:
     backend: lockbox.thunderbird.dev
     frontend: send.thunderbird.dev

@@ -18,7 +18,7 @@
     "open_in_tab": true,
     "browser_style": true
   },
-  "host_permissions": "<all_urls>",
+  "host_permissions": ["<all_urls>"],
   "cloud_file": {
     "name": "Thunderbird Send",
     "management_url": "index.management.html",
