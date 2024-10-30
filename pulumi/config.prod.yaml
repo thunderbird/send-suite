@@ -1,0 +1,172 @@
+---
+resources:
+  tb:network:MultiCidrVpc:
+    vpc:
+      cidr_block: 10.100.0.0/16
+      egress_via_internet_gateway: True
+      enable_dns_hostnames: True
+      enable_internet_gateway: True
+      endpoint_interfaces:
+        - ecr.api
+        - ecr.dkr
+        - logs
+        - secretsmanager
+        - ssm
+      endpoint_gateways:
+        - s3
+      subnets:
+        us-east-1a:
+          - 10.100.101.0/24
+        us-east-1b:
+          - 10.100.102.0/24
+        us-east-1c:
+          - 10.100.103.0/24
+  tb:network:SecurityGroupWithRules:
+    backend:
+      rules:
+        ingress:
+          - cidr_blocks: ["0.0.0.0/0"]
+            description: TLS port for the load balancer
+            protocol: tcp
+            from_port: 443
+            to_port: 443
+          - cidr_blocks: ["10.100.0.0/16"]
+            description: Backend port
+            protocol: tcp
+            from_port: 8080
+            to_port: 8080
+        egress:
+          - cidr_blocks: ["0.0.0.0/0"]
+            description: Outbound TLS traffic
+            protocol: tcp
+            from_port: 0
+            to_port: 65535
+  tb:secrets:PulumiSecretsManager:
+    pulumi:
+      secret_names:
+        - b2-application-key-id
+        - b2-application-key
+        - database-url
+        - fxa-allow-list
+        - fxa-client-id
+        - fxa-client-secret
+        - jwt-access-token-secret
+        - jwt-refresh-token-secret
+        - posthog-api-key
+        - sentry-auth-token
+  tb:fargate:FargateClusterWithLogging:
+    backend:
+      desired_count: 1
+      assign_public_ip: True
+      ecr_resources:
+        - arn:aws:ecr:us-east-1:768512802988:repository/send*
+      health_check_grace_period_seconds: 60
+      internal: False
+      services:
+        send-suite:
+          listener_port: 443
+          listener_proto: HTTPS
+          listener_cert_arn: arn:aws:acm:us-east-1:768512802988:certificate/e6a7ce3b-ba6d-4b88-ac4b-e26eb85394a2
+          container_port: 8080
+          container_name: backend
+          # "name" field is arbitrary, but must be unique and no longer than 32 chars
+          name: send-suite-prod-api
+          health_check:
+            healthy_threshold: 2
+            unhealthy_threshold: 5
+            interval: 15
+      task_definition:
+        network_mode: awsvpc
+        cpu: 1024
+        memory: 4096
+        requires_compatibilities:
+          - FARGATE
+        container_definitions:
+          backend:
+            image: "768512802988.dkr.ecr.us-east-1.amazonaws.com/send:0.1.23"
+            portMappings:
+              - name: send-suite
+                containerPort: 8080
+                hostPort: 8080
+                protocol: tcp
+                appProtocol: http
+              - name: prisma
+                containerPort: 5555
+                hostPort: 5555
+                protocol: tcp
+                appProtocol: http
+            linuxParameters:
+              initProcessEnabled: True
+            secrets:
+              - name: B2_APPLICATION_KEY
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/b2-application-key
+              - name: B2_APPLICATION_KEY_ID
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/b2-application-key-id
+              - name: DATABASE_URL
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/database-url
+              - name: FXA_ALLOW_LIST
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/fxa-allow-list
+              - name: FXA_CLIENT_ID
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/fxa-client-id
+              - name: FXA_CLIENT_SECRET
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/fxa-client-secret
+              - name: POSTHOG_API_KEY
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/posthog-api-key
+              - name: SENTRY_AUTH_TOKEN
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/sentry-auth-token
+              - name: ACCESS_TOKEN_SECRET
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/jwt-access-token-secret
+              - name: REFRESH_TOKEN_SECRET
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/jwt-refresh-token-secret
+            environment:
+              - name: B2_BUCKET_NAME
+                value: tb-send-suite-prod-object-store
+              - name: B2_ENDPOINT
+                value: s3.us-east-005.backblazeb2.com
+              - name: B2_REGION
+                value: auto
+              - name: BASE_URL
+                value: https://send-backend-prod.thunderbird.dev/
+              - name: COMBINED_LOG
+                value: logs/combined.log
+              - name: DEVELOPER_TIMEZONE
+                value: US/Eastern
+              - name: DATABASE_ENGINE
+                value: postgres
+              - name: DATABASE_USER
+                value: sendapp
+              - name: FS_LOCAL_BUCKET
+                value: send-fs-local
+              - name: FXA_ENTRYPOINT
+                value: tblockbox
+              - name: FXA_METRICS_FLOW_URL
+                value: https://accounts.prod.mozaws.net/metrics-flow
+              - name: FXA_MOZ_ISSUER
+                value: https://accounts.prod.mozaws.net
+              - name: FXA_REDIRECT_URI
+                value: https://send-backend-prod.thunderbird.dev/lockbox/fxa
+              - name: NODE_ENV
+                value: production
+              - name: POSTHOG_HOST
+                value: https://us.i.posthog.com
+              - name: SENTRY_DSN
+                value: https://85b7b08be94b8991ed121578d807f755@o4505428107853824.ingest.us.sentry.io/4507567071232000
+              - name: SENTRY_ORG
+                value: thunderbird
+              - name: SENTRY_PROJECT
+                value: send-suite-backend
+              - name: STORAGE_BACKEND
+                value: b2
+  tb:cloudfront:CloudFrontS3Service:
+    frontend:
+      service_bucket_name: tb-send-suite-prod-frontend
+      certificate_arn: arn:aws:acm:us-east-1:768512802988:certificate/bb3bc7dc-7271-4e8f-9661-340b3953e56c
+      distribution:
+        aliases:
+          - send-frontend-prod.thunderbird.dev
+        comment: send-suite prod frontend
+        logging_config:
+          include_cookies: True
+  domains:
+    backend: send-backend-prod.thunderbird.dev
+    frontend: send-frontend-prod.thunderbird.dev
