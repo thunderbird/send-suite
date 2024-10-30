@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { Router } from 'express';
 
 import {
@@ -14,6 +15,7 @@ import {
 } from '../models/uploads';
 
 import { getDataFromAuthenticatedRequest } from '@/auth/client';
+import storage from '@/storage';
 import { useMetrics } from '../metrics';
 import {
   getGroupMemberPermissions,
@@ -61,6 +63,23 @@ router.post(
       res.status(500).json({
         message: 'Upload not created',
       });
+    }
+  })
+);
+
+router.post(
+  '/signed',
+  requireJWT,
+  addErrorHandling(UPLOAD_ERRORS.NO_BUCKET),
+  wrapAsyncHandler(async (req, res) => {
+    const uploadId = crypto.randomBytes(24).toString('hex');
+    const { type } = req.body;
+    try {
+      const url = await storage.getBucketUrl(uploadId, type);
+      return res.json({ id: uploadId, url });
+    } catch (error) {
+      console.error('Error generating pre-signed URL:', error);
+      return res.status(500).json(UPLOAD_ERRORS.NO_BUCKET);
     }
   })
 );

@@ -123,6 +123,53 @@ export async function _upload(
   }
 }
 
+export async function encrypt(
+  stream: ReadableStream,
+  key: CryptoKey,
+  { progressTracker }: Options
+) {
+  try {
+    let size = 0;
+    const chunks: Uint8Array[] = [];
+    // Intentionally omitting `await` so that the encrypt & upload
+    // finishes before we read the response from the server.
+
+    if (key) {
+      stream = encryptStream(stream, key);
+    }
+
+    const reader = stream.getReader();
+    let state = await reader.read();
+
+    while (!state.done) {
+      const buf = state.value;
+      chunks.push(buf);
+
+      size += buf.length;
+      console.log('Uploaded', size, 'bytes', '- timestamp:', Date.now());
+      progressTracker(size);
+      state = await reader.read();
+    }
+    const concatenated = concatenateUint8Arrays(chunks);
+    return concatenated;
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function concatenateUint8Arrays(arrays: Uint8Array[]): Uint8Array {
+  const totalLength = arrays.reduce((acc, value) => acc + value.length, 0);
+  const result = new Uint8Array(totalLength);
+  let length = 0;
+
+  for (const array of arrays) {
+    result.set(array, length);
+    length += array.length;
+  }
+
+  return result;
+}
+
 /**
  * Calculates the size of a file after encrypting.
  *

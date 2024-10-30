@@ -1,7 +1,8 @@
 import { decryptStream } from '@/lib/ece';
-import { _download, _upload, calculateEncryptedSize } from '@/lib/helpers';
+import { _download, encrypt } from '@/lib/helpers';
 import { blobStream } from '@/lib/streams';
 import { streamToArrayBuffer } from '@/lib/utils';
+import { ApiConnection } from './api';
 
 export type NamedBlob = Blob & { name: string };
 
@@ -60,17 +61,33 @@ export async function getBlob(
 export async function sendBlob(
   blob: Blob,
   aesKey: CryptoKey,
+  api: ApiConnection,
   progressTracker: (progress: number) => void
 ): Promise<string> {
   const stream = blobStream(blob);
-  const encryptedSize = calculateEncryptedSize(blob.size);
-  const result = await _upload(stream, aesKey, encryptedSize, {
-    progressTracker,
-  });
-  // Using a type guard since a JsonResponse can be a single object or an array
-  if (Array.isArray(result)) {
-    return result[0].id;
-  } else {
-    return result.id;
+  try {
+    // Get the bucket url
+    const { id, url } = await api.call<{ url: string; id: string }>(
+      'uploads/signed',
+      {
+        type: 'application/octet-stream',
+      },
+      'POST'
+    );
+
+    const encrypted = await encrypt(stream, aesKey, {
+      progressTracker,
+    });
+
+    // Upload directly to bucket
+    await fetch(url, {
+      body: encrypted,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/octet-stream' },
+    });
+
+    return id;
+  } catch (error) {
+    throw new Error('UPLOAD_FAILED');
   }
 }

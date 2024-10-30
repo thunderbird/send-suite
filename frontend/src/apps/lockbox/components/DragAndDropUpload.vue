@@ -3,12 +3,13 @@ import ErrorUploading from '@/apps/lockbox/components/ErrorUploading.vue';
 import UploadingProgress from '@/apps/lockbox/components/UploadingProgress.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import { NamedBlob } from '@/lib/filesync';
+import useApiStore from '@/stores/api-store';
 import { useDropZone } from '@vueuse/core';
 import { ref } from 'vue';
 import ProgressBar from './ProgressBar.vue';
 
 const folderStore = useFolderStore();
-
+const { api } = useApiStore();
 const dropZoneRef = ref();
 
 const filesMetadata = ref(null);
@@ -50,7 +51,8 @@ async function doUpload() {
       try {
         const uploadResult = await folderStore.uploadItem(
           blob,
-          folderStore.rootFolder.id
+          folderStore.rootFolder.id,
+          api
         );
         isUploading.value = false;
         console.log(uploadResult);

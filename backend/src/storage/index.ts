@@ -1,3 +1,4 @@
+import { S3Client } from '@aws-sdk/client-s3';
 import {
   Storage,
   StorageAdapterConfig,
@@ -6,8 +7,13 @@ import {
 import { FileStreamParams } from '@tweedegolf/storage-abstraction/dist/types/add_file_params';
 import { ReadStream } from 'fs';
 import { Readable } from 'stream';
+import { getClientFromAWSSDK, getSignedUrl } from './s3b2';
 
 const TWELVE_HOURS = 12 * 60 * 60 * 1000;
+
+type Direct = {
+  directClient?: S3Client;
+};
 
 const B2_CONFIG = {
   type: StorageType.B2,
@@ -23,7 +29,7 @@ export class FileStore {
   /**
    * A storage client instance.
    */
-  private client: Storage;
+  private client: Storage & Direct;
 
   /**
    * Initialize the adapter.
@@ -70,9 +76,18 @@ export class FileStore {
       setInterval(() => {
         console.log('Renewing client');
         this.client = new Storage(B2_CONFIG);
+        getClientFromAWSSDK().then(
+          (client) => (this.client.directClient = client)
+        );
       }, TWELVE_HOURS);
     }
+    // We have to instantiate an s3 client using backblaze for signed uploads/downloads
+    getClientFromAWSSDK().then((client) => (this.client.directClient = client));
     this.client = new Storage(config);
+  }
+
+  async getBucketUrl(key: string, contentType: string) {
+    return await getSignedUrl(this.client.directClient, key, contentType);
   }
 
   /**

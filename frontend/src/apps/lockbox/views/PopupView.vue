@@ -44,7 +44,8 @@ async function uploadAndShare() {
     isUploading.value = true;
     const itemObj = await folderStore.uploadItem(
       fileBlob.value,
-      folderStore.defaultFolder.id
+      folderStore.defaultFolder.id,
+      api
     );
     if (!itemObj) {
       uploadAborted();
