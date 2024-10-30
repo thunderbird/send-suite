@@ -9,7 +9,7 @@ import {
 } from '@/lib/streams';
 
 import { encryptStream } from '@/lib/ece';
-import useApiStore from '@/stores/api-store';
+import * as useApiStore from '@/stores/api-store';
 import useUserStore, { UserStore } from '@/stores/user-store';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
@@ -121,8 +121,14 @@ describe(`Filesync`, () => {
 
     it(`should get a sucessful response after uploading`, async () => {
       const mockedApi = vi
-        .spyOn(useApiStore().api, 'call')
+        .spyOn(useApiStore, 'default')
+        // @ts-ignore
+        .mockReturnValue({
+          // @ts-ignore
+          api: { ...useApiStore.default().api },
+        })
         .mockResolvedValueOnce({
+          // @ts-ignore
           id: 1,
           url: `${API_URL}/dummybucket`,
         });
