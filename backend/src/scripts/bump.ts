@@ -32,7 +32,7 @@ async function updateYamlConfig(): Promise<void> {
     // Replace the version in the image line
     const updatedYamlContent = yamlContent.replace(
       imageLineRegex,
-      (match, prefix) => `${prefix}${version}`
+      (match, prefix) => `${prefix}${version}"`
     );
 
     // Only write if there were actual changes
