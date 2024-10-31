@@ -62,6 +62,12 @@ jobs:
         shell: bash
         run: |
           cd backend
+          cp .env.sample .env
+          sed -i "s/^TEST_B2_REGION=$/TEST_B2_REGION=${{ vars.TEST_B2_REGION }}/ .env"
+          sed -i "s/^TEST_B2_ENDPOINT=$/TEST_B2_ENDPOINT=${{ vars.TEST_B2_ENDPOINT }}/ .env"
+          sed -i "s/^TEST_B2_BUCKET_NAME=$/TEST_B2_BUCKET_NAME=${{ vars.TEST_B2_BUCKET_NAME }}/ .env"
+          sed -i "s/^TEST_B2_APPLICATION_KEY_ID=$/TEST_B2_APPLICATION_KEY_ID=${{ secrets.TEST_B2_APPLICATION_KEY_ID }}/ .env"
+          sed -i "s/^TEST_B2_APPLICATION_KEY=$/TEST_B2_APPLICATION_KEY=${{ secrets.TEST_B2_APPLICATION_KEY }}/ .env"
           pnpm ci:validate || true
 
   # When Pulumi code or configs change, run these steps
@@ -97,6 +103,20 @@ jobs:
         run: |
           npm install -g pnpm
           pnpm install
+
+      - name: Create .env file so tests will work
+        shell: bash
+        run: |
+          cd frontend
+          cat << EOF > .env
+          VUE_BASE_URL=https://send.thunderbird.dev
+          VITE_SEND_SERVER_URL=https://lockbox.thunderbird.dev
+          VITE_SEND_CLIENT_URL=https://send.thunderbird.dev
+          VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }}
+          VITE_SENTRY_DSN=${{ vars.VITE_SENTRY_DSN }}
+          VITE_POSTHOG_PROJECT_KEY=${{ secrets.VITE_POSTHOG_PROJECT_KEY }}
+          VITE_POSTHOG_HOST=${{ vars.VITE_POSTHOG_HOST }}
+          EOF
 
       # This step is temporarily forced into success because getting linting under control is
       # low priority. When https://github.com/thunderbird/send-suite/issues/253 is resolved,
