@@ -63,11 +63,11 @@ jobs:
         run: |
           cd backend
           cp .env.sample .env
-          sed -i "s/^TEST_B2_REGION=$/TEST_B2_REGION=${{ vars.TEST_B2_REGION }}/ .env"
-          sed -i "s/^TEST_B2_ENDPOINT=$/TEST_B2_ENDPOINT=${{ vars.TEST_B2_ENDPOINT }}/ .env"
-          sed -i "s/^TEST_B2_BUCKET_NAME=$/TEST_B2_BUCKET_NAME=${{ vars.TEST_B2_BUCKET_NAME }}/ .env"
-          sed -i "s/^TEST_B2_APPLICATION_KEY_ID=$/TEST_B2_APPLICATION_KEY_ID=${{ secrets.TEST_B2_APPLICATION_KEY_ID }}/ .env"
-          sed -i "s/^TEST_B2_APPLICATION_KEY=$/TEST_B2_APPLICATION_KEY=${{ secrets.TEST_B2_APPLICATION_KEY }}/ .env"
+          sed -i "s/^TEST_B2_REGION=$/TEST_B2_REGION=${{ vars.TEST_B2_REGION }}/" .env
+          sed -i "s/^TEST_B2_ENDPOINT=$/TEST_B2_ENDPOINT=${{ vars.TEST_B2_ENDPOINT }}/" .env
+          sed -i "s/^TEST_B2_BUCKET_NAME=$/TEST_B2_BUCKET_NAME=${{ vars.TEST_B2_BUCKET_NAME }}/" .env
+          sed -i "s/^TEST_B2_APPLICATION_KEY_ID=$/TEST_B2_APPLICATION_KEY_ID=${{ secrets.TEST_B2_APPLICATION_KEY_ID }}/" .env
+          sed -i "s/^TEST_B2_APPLICATION_KEY=$/TEST_B2_APPLICATION_KEY=${{ secrets.TEST_B2_APPLICATION_KEY }}/" .env
           pnpm ci:validate || true
 
   # When Pulumi code or configs change, run these steps
