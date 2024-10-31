@@ -147,3 +147,21 @@ ci_iam = tb_pulumi.ci.AwsAutomationUser(
     s3_upload_buckets=['tb-send-suite-staging-frontend'],
     opts=pulumi.ResourceOptions(depends_on=[frontend]),
 )
+
+
+def monitoring(project):
+    tb_pulumi.ThunderbirdPulumiProjectIterator(project)
+
+
+pulumi.Output.all(
+    [
+        vpc,
+        backend_sg,
+        pulumi_sm,
+        backend_fargate,
+        backend_dns,
+        cf_func,
+        frontend,
+        frontend_dns,
+    ]
+).apply(lambda outputs: monitoring(project=project))
