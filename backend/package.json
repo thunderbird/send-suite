@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "0.1.26",
+  "version": "0.1.27",
   "description": "",
   "keywords": [],
   "license": "ISC",
@@ -38,6 +38,8 @@
     ]
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.679.0",
+    "@aws-sdk/s3-request-presigner": "^3.682.0",
     "@prisma/client": "^5.1.1",
     "@sentry/cli": "^2.32.1",
     "@sentry/node": "^8.15.0",

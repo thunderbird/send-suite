@@ -13,6 +13,7 @@ import {
   Item,
   ItemResponse,
 } from '@/apps/lockbox/stores/folder-store.types';
+import { ApiConnection } from '@/lib/api';
 import { NamedBlob } from '@/lib/filesync';
 import { backupKeys } from '@/lib/keychain';
 import { CLIENT_MESSAGES } from '@/lib/messages';
@@ -34,7 +35,11 @@ export interface FolderStore {
   setSelectedFile: (itemId: number) => Promise<void>;
   renameFolder: (folderId: number, name: string) => Promise<Folder>;
   deleteFolder: (folderId: number) => Promise<void>;
-  uploadItem: (fileBlob: Blob, folderId: number) => Promise<ItemResponse>;
+  uploadItem: (
+    fileBlob: Blob,
+    folderId: number,
+    api: ApiConnection
+  ) => Promise<ItemResponse>;
   deleteItem: (itemId: number, folderId: number) => Promise<void>;
   renameItem: (
     folderId: number,
@@ -194,7 +199,8 @@ const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
 
   async function uploadItem(
     fileBlob: NamedBlob,
-    folderId: number
+    folderId: number,
+    api: ApiConnection
   ): Promise<Item> {
     progress.error = '';
 
@@ -212,6 +218,7 @@ const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
     const newItem = await uploader.doUpload(
       formattedBlob,
       folderId,
+      api,
       setProgress
     );
     if (newItem && rootFolder.value) {

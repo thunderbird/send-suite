@@ -3,10 +3,10 @@ import {
   ItemResponse,
   UploadResponse,
 } from '@/apps/lockbox/stores/folder-store.types';
+import { ProgressTracker } from '@/apps/lockbox/stores/status-store';
 import { ApiConnection } from '@/lib/api';
 import { NamedBlob, sendBlob } from '@/lib/filesync';
 import { Keychain } from '@/lib/keychain';
-import { retryUntilSuccessOrTimeout } from '@/lib/utils';
 import { UserType } from '@/types';
 
 export default class Uploader {
@@ -25,7 +25,8 @@ export default class Uploader {
   async doUpload(
     fileBlob: NamedBlob,
     containerId: number,
-    progressTracker: (progress: number) => void
+    api: ApiConnection,
+    progressTracker: ProgressTracker
   ): Promise<Item> {
     if (!containerId) {
       return null;
@@ -54,26 +55,10 @@ export default class Uploader {
     const filename = blob.name;
 
     // Blob is encrypted as it is uploaded through a websocket connection
-    const id = await sendBlob(blob, key, progressTracker);
+    const id = await sendBlob(blob, key, api, progressTracker);
     if (!id) {
       return null;
     }
-
-    const ONE_SECOND = 1_000;
-    const FIVE_MINUTES = 60_000 * 5;
-
-    // Poll the api to check if the file is in storage
-    await retryUntilSuccessOrTimeout(
-      async () => {
-        const { size } = await this.api.call<{ size: null | number }>(
-          `uploads/${id}/stat`
-        );
-        // Return a boolean, telling us if the size is null or not
-        return !!size;
-      },
-      ONE_SECOND,
-      FIVE_MINUTES
-    );
 
     // Create a Content entry in the database
     const result = await this.api.call<{

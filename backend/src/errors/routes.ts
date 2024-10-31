@@ -165,6 +165,10 @@ export const UPLOAD_ERRORS = {
     statusCode: 500,
     message: 'Could not upload file.',
   },
+  NO_BUCKET: {
+    statusCode: 500,
+    message: 'Could not get url for bucket.',
+  },
 };
 
 export const USER_ERRORS = {

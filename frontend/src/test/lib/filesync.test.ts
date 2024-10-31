@@ -1,4 +1,5 @@
 import { getBlob, sendBlob } from '@/lib/filesync';
+import { createPinia, setActivePinia } from 'pinia';
 import { describe, expect, it, vi } from 'vitest';
 
 import { Keychain } from '@/lib/keychain';
@@ -6,12 +7,10 @@ import {
   arrayBufferToReadableStream,
   readableStreamToArrayBuffer,
 } from '@/lib/streams';
-import * as utils from '@/lib/utils';
-
-import { WebSocket } from 'mock-socket';
-import WS from 'vitest-websocket-mock';
 
 import { encryptStream } from '@/lib/ece';
+import * as useApiStore from '@/stores/api-store';
+import useUserStore, { UserStore } from '@/stores/user-store';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 
@@ -69,6 +68,14 @@ describe(`Filesync`, () => {
       server.resetHandlers();
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    let userStore: UserStore;
+
+    beforeEach(() => {
+      setActivePinia(createPinia());
+      userStore = useUserStore();
+    });
+
     it(`should download and decrypt the upload`, async () => {
       const isMessage = true;
       const result = await getBlob(
@@ -85,43 +92,88 @@ describe(`Filesync`, () => {
 
   describe(`sendBlob`, () => {
     const SUCCESSFUL_UPLOAD_RESPONSE = {
-      id: 'abcd1234',
+      id: 1,
     };
-    const MOCK_WS_SERVER_URL = `ws://localhost:8765`;
 
-    let server: WS;
-    let client: WebSocket;
+    const restHandlers = [
+      http.put(`${API_URL}/dummybucket`, async () =>
+        HttpResponse.json(metadata)
+      ),
+      http.post(`${API_URL}/uploads/signed`, async () =>
+        HttpResponse.json(metadata)
+      ),
+    ];
 
-    beforeEach(async () => {
-      server = new WS(MOCK_WS_SERVER_URL);
-      client = new WebSocket(MOCK_WS_SERVER_URL);
-      await server.connected; // only run tests after connecting
+    const server = setupServer(...restHandlers);
+    beforeAll(() => {
+      server.listen();
+    });
+    afterAll(() => {
+      server.close();
+    });
+    afterEach(() => {
+      server.resetHandlers();
     });
 
     afterEach(() => {
       server.close();
     });
 
-    it(`should get a sucessful response after uploading`, async () => {
-      const mockListenForResponse = vi.spyOn(utils, 'listenForResponse');
-
-      // When uploading, we expect two responses from the WebSocket server.
-      mockListenForResponse
-        .mockResolvedValueOnce(SUCCESSFUL_UPLOAD_RESPONSE)
-        .mockResolvedValueOnce({ ...SUCCESSFUL_UPLOAD_RESPONSE, ok: true });
-
-      const mockAsyncInitWebSocket = vi.spyOn(utils, 'asyncInitWebSocket');
-      // Resolve to the already-connected client.
-      mockAsyncInitWebSocket.mockResolvedValue(client);
+    it(`should get a successful response after uploading`, async () => {
+      const mockedApi = vi
+        .spyOn(useApiStore, 'default')
+        // @ts-ignore
+        .mockReturnValue({
+          // @ts-ignore
+          api: { ...useApiStore.default().api },
+        })
+        .mockResolvedValueOnce({
+          // @ts-ignore
+          id: 1,
+          url: `${API_URL}/dummybucket`,
+        });
 
       const keychain = new Keychain();
       const key = await keychain.content.generateKey();
-      const blob = new Blob(['abc123']);
+      const blob = new Blob([new Uint8Array(2)]);
       const progressTracker = vi.fn();
 
-      const result = await sendBlob(blob, key, progressTracker);
+      const result = await sendBlob(
+        blob,
+        key,
+        mockedApi as any,
+        progressTracker
+      );
+
       expect(result).toEqual(SUCCESSFUL_UPLOAD_RESPONSE.id);
-      expect(progressTracker).toBeCalled();
+    });
+
+    it('should handle upload errors', async () => {
+      server.use(
+        http.put(`${API_URL}/dummybucket`, async () => HttpResponse.error())
+      );
+
+      const mockedApi = vi
+        .spyOn(useApiStore, 'default')
+        // @ts-ignore
+        .mockReturnValue({
+          // @ts-ignore
+          api: { ...useApiStore.default().api },
+        })
+        .mockResolvedValueOnce({
+          // @ts-ignore
+          id: 1,
+          url: `${API_URL}/dummybucket`,
+        });
+
+      const keychain = new Keychain();
+      const key = await keychain.content.generateKey();
+      const blob = new Blob([new Uint8Array(2)]);
+      const progressTracker = vi.fn();
+
+      await expect(
+        sendBlob(blob, key, mockedApi as any, progressTracker)
+      ).rejects.toThrow();
     });
   });
 });

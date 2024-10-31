@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia';
 import { ApiConnection } from '@/lib/api';
 import useConfigurationStore from '@/stores/configuration-store';
+import { defineStore } from 'pinia';
 
 const useApiStore = defineStore('api', () => {
   const configurationStore = useConfigurationStore();

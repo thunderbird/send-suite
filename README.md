@@ -275,3 +275,24 @@ Afterwards you'll see a new file inside the `data` folder. It should be called `
 ## Releasing
 
 In order to keep track of our releases, we need to set our versions on either the `frontend` or `backend` package.json. To bump the version, move to the directory and run `pnpm version patch` (you can use minor or major depending on your needs). This will bump the version number on package.json and the related files that need updating. The backend requires `config.staging.yaml` to match the version number, whereas the frontend requires `manifest.json` to match. This is done automatically as long as you handle the version via `pnpm version`
+
+## Storage
+
+We're using Backblaze for our storage buckets.
+
+We're uploading/downloading directly to the bucket using signed urls. In order for us to avoid CORS issues, we have to configure the buckets correctly.
+
+Using the `b2` CLI, run the authorization command:
+
+`b2 account authorize`
+
+This will prompt for your credentials. Make sure you use the master key and not a specific bucket key as it won't work.
+
+To confirm that it worked, list the buckets from the account.
+`b2 ls`
+
+Move to the b2 rules directory
+`cd backend/b2`
+
+Update the rules
+`b2 bucket update {YOUR_BUCKET_NAME} --cors-rules "$(<./rules.json)"`
