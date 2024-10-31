@@ -122,7 +122,7 @@ resources:
               - name: B2_BUCKET_NAME
                 value: tb-send-suite-prod-object-store
               - name: B2_ENDPOINT
-                value: s3.us-east-005.backblazeb2.com
+                value: https://s3.us-east-005.backblazeb2.com
               - name: B2_REGION
                 value: auto
               - name: BASE_URL
