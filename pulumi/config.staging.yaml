@@ -83,7 +83,7 @@ resources:
           - FARGATE
         container_definitions:
           backend:
-            image: "768512802988.dkr.ecr.us-east-1.amazonaws.com/send:0.1.27"
+            image: "768512802988.dkr.ecr.us-east-1.amazonaws.com/send:0.1.28"
             desired_replicas: 3
             portMappings:
               - name: send-suite
@@ -123,7 +123,7 @@ resources:
               - name: B2_BUCKET_NAME
                 value: tb-send-suite-staging-object-store-alpha
               - name: B2_ENDPOINT
-                value: s3.us-east-005.backblazeb2.com
+                value: https://s3.us-east-005.backblazeb2.com
               - name: B2_REGION
                 value: auto
               - name: BASE_URL
