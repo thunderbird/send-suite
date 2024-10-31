@@ -48,3 +48,6 @@ export const useStatusStore = defineStore('status', () => {
     },
   };
 });
+
+export type StatusStore = ReturnType<typeof useStatusStore>;
+export type ProgressTracker = StatusStore['setProgress'];

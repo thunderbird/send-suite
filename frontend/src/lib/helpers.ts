@@ -1,4 +1,8 @@
 import { FolderStore } from '@/apps/lockbox/stores/folder-store';
+import {
+  ProgressTracker,
+  StatusStore,
+} from '@/apps/lockbox/stores/status-store';
 import init from '@/lib/init';
 import { UserStore } from '@/stores/user-store';
 import { Canceler, JsonResponse } from '@/types';
@@ -40,7 +44,7 @@ export async function _download(
 
 type Options = {
   canceler?: Canceler;
-  progressTracker: (progress: number) => void;
+  progressTracker: ProgressTracker;
 };
 
 export async function _upload(
@@ -123,11 +127,7 @@ export async function _upload(
   }
 }
 
-export async function encrypt(
-  stream: ReadableStream,
-  key: CryptoKey,
-  { progressTracker }: Options
-) {
+export async function encrypt(stream: ReadableStream, key: CryptoKey) {
   try {
     let size = 0;
     const chunks: Uint8Array[] = [];
@@ -147,7 +147,6 @@ export async function encrypt(
 
       size += buf.length;
       console.log('Uploaded', size, 'bytes', '- timestamp:', Date.now());
-      progressTracker(size);
       state = await reader.read();
     }
     const concatenated = concatenateUint8Arrays(chunks);
@@ -242,4 +241,45 @@ export async function dbUserSetup(
 /* This function is a short hand to get the meta records from the route */
 export const matchMeta = (to: RouteLocationNormalized, key: string) => {
   return to.matched.some((record) => record.meta[key]);
+};
+
+type UploadOptions = {
+  url: string;
+  readableStream: ReadableStream;
+  progressTracker: StatusStore['setProgress'];
+};
+
+export const uploadWithTracker = ({
+  url,
+  readableStream,
+  progressTracker,
+}: UploadOptions) => {
+  // Track upload progress using XMLHttpRequest
+  return new Promise<string>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('PUT', url, true);
+    xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const uploadProgress = event.loaded;
+        progressTracker(uploadProgress);
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(xhr.response);
+      } else {
+        reject(new Error('UPLOAD_FAILED'));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error('UPLOAD_FAILED'));
+
+    // Convert ReadableStream to Blob and send
+    new Response(readableStream).blob().then((uploadBlob) => {
+      xhr.send(uploadBlob);
+    });
+  });
 };

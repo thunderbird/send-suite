@@ -1,5 +1,6 @@
+import { ProgressTracker } from '@/apps/lockbox/stores/status-store';
 import { decryptStream } from '@/lib/ece';
-import { _download, encrypt } from '@/lib/helpers';
+import { _download, encrypt, uploadWithTracker } from '@/lib/helpers';
 import { blobStream } from '@/lib/streams';
 import { streamToArrayBuffer } from '@/lib/utils';
 import { ApiConnection } from './api';
@@ -62,7 +63,7 @@ export async function sendBlob(
   blob: Blob,
   aesKey: CryptoKey,
   api: ApiConnection,
-  progressTracker: (progress: number) => void
+  progressTracker: ProgressTracker
 ): Promise<string> {
   const stream = blobStream(blob);
   try {
@@ -75,17 +76,21 @@ export async function sendBlob(
       'POST'
     );
 
-    const encrypted = await encrypt(stream, aesKey, {
+    const encrypted = await encrypt(stream, aesKey);
+
+    // Create a ReadableStream from the Uint8Array
+    const readableStream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encrypted);
+        controller.close();
+      },
+    });
+
+    await uploadWithTracker({
+      url,
+      readableStream,
       progressTracker,
     });
-
-    // Upload directly to bucket
-    await fetch(url, {
-      body: encrypted,
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/octet-stream' },
-    });
-
     return id;
   } catch (error) {
     throw new Error('UPLOAD_FAILED');

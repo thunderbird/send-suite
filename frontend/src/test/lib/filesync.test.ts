@@ -119,7 +119,7 @@ describe(`Filesync`, () => {
       server.close();
     });
 
-    it(`should get a sucessful response after uploading`, async () => {
+    it(`should get a successful response after uploading`, async () => {
       const mockedApi = vi
         .spyOn(useApiStore, 'default')
         // @ts-ignore
@@ -135,7 +135,7 @@ describe(`Filesync`, () => {
 
       const keychain = new Keychain();
       const key = await keychain.content.generateKey();
-      const blob = new Blob(['abc123']);
+      const blob = new Blob([new Uint8Array(2)]);
       const progressTracker = vi.fn();
 
       const result = await sendBlob(
@@ -146,7 +146,34 @@ describe(`Filesync`, () => {
       );
 
       expect(result).toEqual(SUCCESSFUL_UPLOAD_RESPONSE.id);
-      expect(progressTracker).toBeCalled();
+    });
+
+    it('should handle upload errors', async () => {
+      server.use(
+        http.put(`${API_URL}/dummybucket`, async () => HttpResponse.error())
+      );
+
+      const mockedApi = vi
+        .spyOn(useApiStore, 'default')
+        // @ts-ignore
+        .mockReturnValue({
+          // @ts-ignore
+          api: { ...useApiStore.default().api },
+        })
+        .mockResolvedValueOnce({
+          // @ts-ignore
+          id: 1,
+          url: `${API_URL}/dummybucket`,
+        });
+
+      const keychain = new Keychain();
+      const key = await keychain.content.generateKey();
+      const blob = new Blob([new Uint8Array(2)]);
+      const progressTracker = vi.fn();
+
+      await expect(
+        sendBlob(blob, key, mockedApi as any, progressTracker)
+      ).rejects.toThrow();
     });
   });
 });

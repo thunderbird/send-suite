@@ -3,6 +3,7 @@ import {
   ItemResponse,
   UploadResponse,
 } from '@/apps/lockbox/stores/folder-store.types';
+import { ProgressTracker } from '@/apps/lockbox/stores/status-store';
 import { ApiConnection } from '@/lib/api';
 import { NamedBlob, sendBlob } from '@/lib/filesync';
 import { Keychain } from '@/lib/keychain';
@@ -25,7 +26,7 @@ export default class Uploader {
     fileBlob: NamedBlob,
     containerId: number,
     api: ApiConnection,
-    progressTracker: (progress: number) => void
+    progressTracker: ProgressTracker
   ): Promise<Item> {
     if (!containerId) {
       return null;
