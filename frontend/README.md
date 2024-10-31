@@ -19,24 +19,3 @@ Make sure you have a file named `.env.production` inside the frontend directory 
 Run `pnpm build-and-submit`
 This will create `frontend-source.zip` use it to upload to ATN when asked for source code.
 It will also move your `.xpi` to the root.
-
-## Storage
-
-We're using Backblaze for our storage buckets.
-
-We're uploading/downloading directly to the bucket using signed urls. In order for us to avoid CORS issues, we have to configure the buckets correctly.
-
-Using the `b2` CLI, run the authorization command:
-
-`b2 account authorize`
-
-This will prompt for your credentials. Make sure you use the master key and not a specific bucket key as it won't work.
-
-To confirm that it worked, list the buckets from the account.
-`b2 ls`
-
-Move to the b2 rules directory
-`cd backend/b2`
-
-Update the rules
-`b2 bucket update {YOUR_BUCKET_NAME} --cors-rules "$(<./rules.json)"`

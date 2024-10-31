@@ -24,7 +24,7 @@ export async function getSignedUrl(
 ) {
   // Set up the command parameters
   const command = new PutObjectCommand({
-    Bucket: Bucket,
+    Bucket,
     Key,
     ContentType,
   });
