@@ -53,4 +53,21 @@ router.get(
   })
 );
 
+/*
+ * This route is used to get a signed URL for downloading a file.
+ */
+router.get(
+  '/:id/signed',
+  wrapAsyncHandler(async (req, res) => {
+    const { id } = req.params;
+    try {
+      const bucketUrl = await storage.getDownloadBucketUrl(id);
+
+      return res.json({ url: bucketUrl });
+    } catch (e) {
+      return res.status(404).send(TRANSFER_ERROR);
+    }
+  })
+);
+
 export default router;

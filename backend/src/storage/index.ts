@@ -7,7 +7,11 @@ import {
 import { FileStreamParams } from '@tweedegolf/storage-abstraction/dist/types/add_file_params';
 import { ReadStream } from 'fs';
 import { Readable } from 'stream';
-import { getClientFromAWSSDK, getSignedUrl } from './s3b2';
+import {
+  getClientFromAWSSDK,
+  getSignedUrl,
+  getSignedUrlforDownload,
+} from './s3b2';
 
 const TWELVE_HOURS = 12 * 60 * 60 * 1000;
 
@@ -86,8 +90,12 @@ export class FileStore {
     this.client = new Storage(config);
   }
 
-  async getBucketUrl(key: string, contentType: string) {
+  async getUploadBucketUrl(key: string, contentType: string) {
     return await getSignedUrl(this.client.directClient, key, contentType);
+  }
+
+  async getDownloadBucketUrl(id: string) {
+    return await getSignedUrlforDownload(this.client.directClient, id);
   }
 
   /**

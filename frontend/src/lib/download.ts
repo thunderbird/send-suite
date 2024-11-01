@@ -1,6 +1,6 @@
+import { ApiConnection } from '@/lib/api';
 import { getBlob } from '@/lib/filesync';
 import { Keychain } from '@/lib/keychain';
-import { ApiConnection } from '@/lib/api';
 
 export default class Downloader {
   keychain: Keychain;
@@ -46,7 +46,7 @@ export default class Downloader {
       );
 
     try {
-      await getBlob(id, size, contentKey, false, filename, type);
+      await getBlob(id, size, contentKey, false, filename, type, this.api);
       return true;
     } catch (e) {
       return false;
