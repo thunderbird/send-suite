@@ -149,19 +149,4 @@ ci_iam = tb_pulumi.ci.AwsAutomationUser(
 )
 
 
-def monitoring(project):
-    tb_pulumi.ThunderbirdPulumiProjectIterator(project)
-
-
-pulumi.Output.all(
-    [
-        vpc,
-        backend_sg,
-        pulumi_sm,
-        backend_fargate,
-        backend_dns,
-        cf_func,
-        frontend,
-        frontend_dns,
-    ]
-).apply(lambda outputs: monitoring(project=project))
+all_resources = project.flatten()
