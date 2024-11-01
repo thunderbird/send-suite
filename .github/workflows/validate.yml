@@ -64,14 +64,15 @@ jobs:
           cd backend
           cp .env.sample .env
 
-          # The application key contains a "/" character, which needs to be escaped so sed doesn't break
-          APP_KEY=$(echo '${{ secrets.TEST_B2_APPLICATION_KEY }}' | sed 's/\//\\\//')
+          # Certain values here contain "/" characters, which need to be escaped so sed doesn't break
+          APP_KEY=$(echo '${{ secrets.TEST_B2_APPLICATION_KEY }}' | sed 's/\//\\\//g')
+          B2_ENDPOINT=$(echo '${{ vars.TEST_B2_ENDPOINT }}' | sed 's/\//\\\//g')
 
           sed -i "s/^TEST_B2_REGION=$/TEST_B2_REGION=${{ vars.TEST_B2_REGION }}/" .env
-          sed -i "s/^TEST_B2_ENDPOINT=$/TEST_B2_ENDPOINT=${{ vars.TEST_B2_ENDPOINT }}/" .env
+          sed -i "s/^TEST_B2_ENDPOINT=$/TEST_B2_ENDPOINT=$B2_ENDPOINT/" .env
           sed -i "s/^TEST_B2_BUCKET_NAME=$/TEST_B2_BUCKET_NAME=${{ vars.TEST_B2_BUCKET_NAME }}/" .env
           sed -i "s/^TEST_B2_APPLICATION_KEY_ID=$/TEST_B2_APPLICATION_KEY_ID=${{ secrets.TEST_B2_APPLICATION_KEY_ID }}/" .env
-          # sed -i "s/^TEST_B2_APPLICATION_KEY=$/TEST_B2_APPLICATION_KEY=$APP_KEY/" .env
+          sed -i "s/^TEST_B2_APPLICATION_KEY=$/TEST_B2_APPLICATION_KEY=$APP_KEY/" .env
           pnpm ci:validate || true
 
   # When Pulumi code or configs change, run these steps
