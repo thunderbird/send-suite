@@ -10,7 +10,6 @@ import {
 
 import { encryptStream } from '@/lib/ece';
 import * as useApiStore from '@/stores/api-store';
-import useUserStore, { UserStore } from '@/stores/user-store';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 
@@ -28,6 +27,7 @@ const fileContents = new Array(26)
   .map((_, i) => String.fromCharCode(i + 97))
   .join('');
 const metadata = { size: fileContents.length, type: 'text/plain' };
+const bucketUrl = `${API_URL}/dummybucket`;
 
 const textEncoder = new TextEncoder();
 const plaintextUint8Array = textEncoder.encode(fileContents);
@@ -35,13 +35,16 @@ const plaintextStream = arrayBufferToReadableStream(plaintextUint8Array);
 const encryptedStream = encryptStream(plaintextStream, key);
 const encryptedArrayBuffer = await readableStreamToArrayBuffer(encryptedStream);
 
+const { downloadMock } = vi.hoisted(() => {
+  return {
+    downloadMock: vi.fn(),
+  };
+});
+
 vi.mock('@/lib/helpers', async (importOriginal) => {
   const original = await importOriginal<typeof import('@/lib/utils')>();
 
-  const _download = vi.fn().mockImplementation(() => {
-    return new Blob([encryptedArrayBuffer]);
-  });
-
+  const _download = downloadMock;
   return {
     ...original,
     _download,
@@ -49,11 +52,18 @@ vi.mock('@/lib/helpers', async (importOriginal) => {
 });
 // ===================================================
 
+downloadMock.mockImplementation(() => {
+  return new Blob([encryptedArrayBuffer]);
+});
+
 describe(`Filesync`, () => {
   describe(`getBlob`, async () => {
     const restHandlers = [
       http.get(`${API_URL}/uploads/${UPLOAD_ID}/metadata`, async () =>
         HttpResponse.json(metadata)
+      ),
+      http.get(`${API_URL}/download/${UPLOAD_ID}/signed`, async () =>
+        HttpResponse.json({ url: bucketUrl })
       ),
     ];
 
@@ -68,25 +78,132 @@ describe(`Filesync`, () => {
       server.resetHandlers();
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    let userStore: UserStore;
-
     beforeEach(() => {
       setActivePinia(createPinia());
-      userStore = useUserStore();
     });
 
     it(`should download and decrypt the upload`, async () => {
-      const isMessage = true;
-      const result = await getBlob(
-        UPLOAD_ID,
-        metadata.size,
-        key,
-        isMessage,
-        fileName,
-        metadata.type
+      const fetchSpy = vi.spyOn(global, 'fetch');
+      const { api } = useApiStore.default();
+
+      expect(async () => {
+        const isMessage = true;
+        const result = await getBlob(
+          UPLOAD_ID,
+          metadata.size,
+          key,
+          isMessage,
+          fileName,
+          metadata.type,
+          api
+        );
+        expect(result).toBe(fileContents);
+      }).not.toThrow();
+
+      expect(fetchSpy).toBeCalledTimes(1);
+      expect(fetchSpy).toBeCalledWith(
+        `${API_URL}/download/${UPLOAD_ID}/signed`,
+        expect.objectContaining({
+          method: 'GET',
+        })
       );
-      expect(result).toBe(fileContents);
+    });
+
+    it(`should throw an error if the bucket url is null`, async () => {
+      const fetchSpy = vi.spyOn(global, 'fetch');
+      server.use(
+        http.get(`${API_URL}/download/${UPLOAD_ID}/signed`, async () =>
+          HttpResponse.json({ url: null })
+        )
+      );
+      const { api } = useApiStore.default();
+
+      expect(async () => {
+        const isMessage = true;
+        await getBlob(
+          UPLOAD_ID,
+          metadata.size,
+          key,
+          isMessage,
+          fileName,
+          metadata.type,
+          api
+        );
+      }).rejects.toThrowError('BUCKET_URL_NOT_FOUND');
+
+      expect(fetchSpy).toBeCalledWith(
+        `${API_URL}/download/${UPLOAD_ID}/signed`,
+        expect.objectContaining({
+          method: 'GET',
+        })
+      );
+    });
+
+    it(`should throw an error if the bucket url is null`, async () => {
+      server.use(
+        http.get(`${API_URL}/download/${UPLOAD_ID}/signed`, async () =>
+          HttpResponse.error()
+        )
+      );
+      const fetchSpy = vi.spyOn(global, 'fetch');
+      const { api } = useApiStore.default();
+
+      expect(async () => {
+        const isMessage = true;
+        await getBlob(
+          UPLOAD_ID,
+          metadata.size,
+          key,
+          isMessage,
+          fileName,
+          metadata.type,
+          api
+        );
+      }).rejects.toThrowError('BUCKET_URL_NOT_FOUND');
+
+      expect(fetchSpy).toBeCalledWith(
+        `${API_URL}/download/${UPLOAD_ID}/signed`,
+        expect.objectContaining({
+          method: 'GET',
+        })
+      );
+    });
+
+    it(`should throw an error if the file cannot be downloaded`, async () => {
+      const fetchSpy = vi.spyOn(global, 'fetch');
+      // Spy on XMLHttpRequest's open method
+      downloadMock.mockImplementation(() => {
+        return Promise.reject('DOWNLOAD ERROR');
+      });
+
+      const { api } = useApiStore.default();
+
+      server.use(
+        http.get(`${API_URL}/download/${UPLOAD_ID}/signed`, async () =>
+          HttpResponse.json({ url: bucketUrl })
+        ),
+        http.get(bucketUrl, async () => HttpResponse.error())
+      );
+
+      expect(async () => {
+        const isMessage = true;
+        await getBlob(
+          UPLOAD_ID,
+          metadata.size,
+          key,
+          isMessage,
+          fileName,
+          metadata.type,
+          api
+        );
+      }).rejects.toThrowError('DOWNLOAD ERROR');
+
+      expect(fetchSpy).toBeCalledWith(
+        `${API_URL}/download/${UPLOAD_ID}/signed`,
+        expect.objectContaining({
+          method: 'GET',
+        })
+      );
     });
   });
 

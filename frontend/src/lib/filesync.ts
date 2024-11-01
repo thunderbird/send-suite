@@ -34,28 +34,41 @@ export async function getBlob(
   key: CryptoKey,
   isMessage = true,
   filename = 'dummy.file',
-  type = 'text/plain'
+  type = 'text/plain',
+  api: ApiConnection
 ): Promise<string | void> {
-  const downloadedBlob = await _download(id);
+  try {
+    const bucketResponse = await api.call<{ url: string }>(
+      `download/${id}/signed`
+    );
 
-  let plaintext: ArrayBufferLike | string;
-  if (key) {
-    const plainStream = decryptStream(blobStream(downloadedBlob), key);
-    plaintext = await streamToArrayBuffer(plainStream, size);
-  } else {
-    plaintext = await downloadedBlob.arrayBuffer();
-  }
+    if (!bucketResponse?.url) {
+      throw new Error('BUCKET_URL_NOT_FOUND');
+    }
 
-  if (isMessage) {
-    const decoder = new TextDecoder();
-    const plaintextString = decoder.decode(plaintext);
-    return plaintextString;
-  } else {
-    return await _saveFile({
-      plaintext,
-      name: decodeURIComponent(filename),
-      type, // mime type of the upload
-    });
+    const downloadedBlob = await _download(bucketResponse.url);
+    let plaintext: ArrayBufferLike | string;
+    if (key) {
+      const plainStream = decryptStream(blobStream(downloadedBlob), key);
+      plaintext = await streamToArrayBuffer(plainStream, size);
+    } else {
+      plaintext = await downloadedBlob.arrayBuffer();
+    }
+
+    if (isMessage) {
+      const decoder = new TextDecoder();
+      const plaintextString = decoder.decode(plaintext);
+      return plaintextString;
+    } else {
+      return await _saveFile({
+        plaintext,
+        name: decodeURIComponent(filename),
+        type, // mime type of the upload
+      });
+    }
+  } catch (error) {
+    console.error('DOWNLOAD_FAILED', error);
+    throw error;
   }
 }
 

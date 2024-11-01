@@ -15,20 +15,11 @@ import {
 } from './ece';
 import { Keychain } from './keychain';
 import { asyncInitWebSocket, delay, listenForResponse } from './utils';
-export async function _download(
-  id: string,
-  canceler: Canceler = {}
-): Promise<Blob> {
-  const endpoint = `${import.meta.env.VITE_SEND_SERVER_URL}/api/download`;
+export async function _download(url: string): Promise<Blob> {
   const xhr = new XMLHttpRequest();
-  canceler.oncancel = function () {
-    xhr.abort();
-  };
 
   return new Promise((resolve, reject) => {
     xhr.addEventListener('loadend', async function () {
-      canceler.oncancel = function () {};
-
       if (xhr.status !== 200) {
         return reject(new Error(`${xhr.status}`));
       }
@@ -36,7 +27,7 @@ export async function _download(
       resolve(blob);
     });
 
-    xhr.open('get', `${endpoint}/${id}`);
+    xhr.open('get', url);
     xhr.responseType = 'blob';
     xhr.send();
   });

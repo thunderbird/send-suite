@@ -75,7 +75,7 @@ router.post(
     const uploadId = crypto.randomBytes(24).toString('hex');
     const { type } = req.body;
     try {
-      const url = await storage.getBucketUrl(uploadId, type);
+      const url = await storage.getUploadBucketUrl(uploadId, type);
       return res.json({ id: uploadId, url });
     } catch (error) {
       console.error('Error generating pre-signed URL:', error);

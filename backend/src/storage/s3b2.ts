@@ -1,4 +1,8 @@
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl as getSignedUrlCommand } from '@aws-sdk/s3-request-presigner';
 
 const Bucket = process.env.B2_BUCKET_NAME;
@@ -27,6 +31,20 @@ export async function getSignedUrl(
     Bucket,
     Key,
     ContentType,
+  });
+
+  // Generate the presigned URL (expires in 3600 seconds / 1 hour by default)
+  const signedUrl = await getSignedUrlCommand(s3Client, command, {
+    expiresIn: 3600,
+  });
+  return signedUrl;
+}
+
+export async function getSignedUrlforDownload(s3Client: S3Client, Key: string) {
+  // Set up the command parameters
+  const command = new GetObjectCommand({
+    Bucket,
+    Key,
   });
 
   // Generate the presigned URL (expires in 3600 seconds / 1 hour by default)
