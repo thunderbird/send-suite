@@ -66,6 +66,7 @@ jobs:
 
           # The application key contains a "/" character, which needs to be escaped so sed doesn't break
           APP_KEY=$(echo '${{ secrets.TEST_B2_APPLICATION_KEY }}' | sed 's/\//\\\//')
+          echo "App key is $APP_KEY"
 
           sed -i "s/^TEST_B2_REGION=$/TEST_B2_REGION=${{ vars.TEST_B2_REGION }}/" .env
           sed -i "s/^TEST_B2_ENDPOINT=$/TEST_B2_ENDPOINT=${{ vars.TEST_B2_ENDPOINT }}/" .env
