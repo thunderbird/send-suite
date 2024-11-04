@@ -5,6 +5,7 @@ import pulumi_aws as aws
 import tb_pulumi
 import tb_pulumi.ci
 import tb_pulumi.cloudfront
+import tb_pulumi.cloudwatch
 import tb_pulumi.fargate
 import tb_pulumi.network
 import tb_pulumi.rds
@@ -148,5 +149,7 @@ ci_iam = tb_pulumi.ci.AwsAutomationUser(
     opts=pulumi.ResourceOptions(depends_on=[frontend]),
 )
 
-
-all_resources = project.flatten()
+monitoring_opts = resources['tb:cloudwatch:CloudWatchMonitoringGroup']
+monitoring = tb_pulumi.cloudwatch.CloudWatchMonitoringGroup(
+    name=f'{project.name_prefix}-monitoring', project=project, config=monitoring_opts
+)
