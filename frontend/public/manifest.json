@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "version": "0.1.21",
   "author": "Thunderbird Team",
   "name": "Thunderbird Send",
@@ -30,10 +30,11 @@
     "compose",
     "notifications",
     "activeTab",
+    "webRequest",
+    "webRequestBlocking",
     "tabs",
     "messagesRead",
     "messagesModify",
-    "cookies",
     "sensitiveDataUpload"
   ]
 }
