@@ -25,10 +25,13 @@ function setAccountConfigured(accountId) {
 }
 browser.webRequest.onBeforeSendHeaders.addListener(
   (details) => {
-    // Filter out the Origin header
-    details.requestHeaders = details.requestHeaders.filter(
-      (header) => header.name.toLowerCase() !== 'origin'
-    );
+    // Only filter headers for PUT requests
+    if (details.method === 'PUT') {
+      // Filter out the Origin header
+      details.requestHeaders = details.requestHeaders.filter(
+        (header) => header.name.toLowerCase() !== 'origin'
+      );
+    }
     return { requestHeaders: details.requestHeaders };
   },
   { urls: ['<all_urls>'] },
