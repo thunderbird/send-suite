@@ -8,6 +8,7 @@ import {
 } from '@prisma/client';
 import { randomBytes } from 'crypto';
 
+import { DAYS_TO_EXPIRY } from '@/config';
 import {
   ACCESSLINK_NOT_DELETED,
   ACCESSLINK_NOT_FOUND,
@@ -165,25 +166,35 @@ export async function acceptAccessLink(
 }
 
 export async function getContainerForAccessLink(linkId: string) {
-  const query = {
-    where: {
-      id: linkId,
-    },
-    select: {
-      share: {
-        select: {
-          container: {
-            include: {
-              items: {
-                where: {
-                  upload: {
-                    isNot: {
-                      reported: true,
+  const result = await fromPrismaV2(
+    prisma.accessLink.findUniqueOrThrow,
+    {
+      where: {
+        id: linkId,
+      },
+      select: {
+        share: {
+          select: {
+            container: {
+              include: {
+                items: {
+                  where: {
+                    createdAt: {
+                      gte: new Date(
+                        new Date().setDate(
+                          new Date().getDate() - DAYS_TO_EXPIRY
+                        )
+                      ),
+                    },
+                    upload: {
+                      isNot: {
+                        reported: true,
+                      },
                     },
                   },
-                },
-                include: {
-                  upload: true,
+                  include: {
+                    upload: true,
+                  },
                 },
               },
             },
@@ -191,11 +202,6 @@ export async function getContainerForAccessLink(linkId: string) {
         },
       },
     },
-  };
-
-  const result = await fromPrismaV2(
-    prisma.accessLink.findUniqueOrThrow,
-    query,
     ACCESSLINK_NOT_FOUND
   );
   return result?.share.container;

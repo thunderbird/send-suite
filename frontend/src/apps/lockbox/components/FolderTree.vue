@@ -41,6 +41,9 @@ defineProps<ReportProps>();
 </script>
 <template>
   <ul v-if="folder">
+    <div v-if="!folder?.items?.length">
+      <p>This folder is empty or the files uploaded to it have expired</p>
+    </div>
     <li v-for="file of folder.items" :key="file.uploadId">
       <div class="flex justify-between">
         <div>

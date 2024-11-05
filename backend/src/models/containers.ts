@@ -10,6 +10,7 @@ import { PermissionType } from '../types/custom';
 import {
   childrenIncludeOptions,
   fromPrismaV2,
+  fromPrismaV3,
   itemsIncludeOptions,
 } from './prisma-helper';
 const prisma = new PrismaClient();
@@ -68,33 +69,29 @@ export async function getItemsInContainer(id: number) {
   // Nested include syntax
   // per https://github.com/prisma/prisma/discussions/5810#discussioncomment-400341
 
-  const query = {
-    where: {
-      id,
-    },
-    include: {
-      ...childrenIncludeOptions,
-      ...itemsIncludeOptions,
-    },
-  };
-
-  return fromPrismaV2(
+  return fromPrismaV3(
     prisma.container.findUniqueOrThrow,
-    query,
+    {
+      where: {
+        id,
+      },
+      include: {
+        ...childrenIncludeOptions,
+        ...itemsIncludeOptions,
+      },
+    },
     CONTAINER_NOT_FOUND
   );
 }
 
 export async function getContainerWithAncestors(id: number) {
-  const query = {
-    where: {
-      id,
-    },
-  };
-
-  const container = await fromPrismaV2(
+  const container = await fromPrismaV3(
     prisma.container.findUniqueOrThrow,
-    query,
+    {
+      where: {
+        id,
+      },
+    },
     CONTAINER_NOT_FOUND
   );
 
