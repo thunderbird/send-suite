@@ -3,9 +3,11 @@ if [ "$NODE_ENV" = "production" ]; then
     echo 'Starting production build 🐧'
 fi
 
+# Get version from package.json and replace dots with hyphens
+VERSION=$(node -p "require('./package.json').version.replace(/\./g, '-')")
+
 # Remove old builds
 rm -rf dist && rm -rf dist-web
-rm ../send-suite-alpha.xpi
 rm -rf send-suite-alpha
 
 mkdir -p dist/assets
@@ -27,8 +29,8 @@ rm -rf dist/pages
 
 cd dist
 
-# Create xpi
-zip -r -FS ../send-suite-alpha.xpi * 
+# Create xpi with version number
+zip -r -FS ../send-suite-alpha-${VERSION}.xpi * 
 
 echo 'Add-on build complete 🎉'
 
