@@ -42,6 +42,7 @@ import {
 } from '../models/containers';
 
 import { getDataFromAuthenticatedRequest } from '@/auth/client';
+import { addExpiryToContainer } from '@/utils';
 
 const router: Router = Router();
 
@@ -81,7 +82,14 @@ router.get(
       container['parent'] = await getContainerWithAncestors(container.parentId);
     }
 
-    res.status(200).json(container);
+    const itemsWithExpiry = {
+      ...container,
+      items: container.items.map((items) => {
+        return { ...items, upload: addExpiryToContainer(items.upload) };
+      }),
+    };
+
+    res.status(200).json(itemsWithExpiry);
   })
 );
 
@@ -338,11 +346,7 @@ router.get(
   addErrorHandling(CONTAINER_ERRORS.SHARES_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
-    // const { userId } = req.body; // TODO: get from session
-    const result = await getSharesForContainer(
-      parseInt(containerId)
-      // parseInt(userId)
-    );
+    const result = await getSharesForContainer(parseInt(containerId));
     res.status(200).json({
       result,
     });

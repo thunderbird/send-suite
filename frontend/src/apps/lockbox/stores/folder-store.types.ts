@@ -49,6 +49,8 @@ export type UploadResponse = {
   owner?: {
     email: string;
   };
+  daysToExpiry?: number;
+  expired?: boolean;
 };
 
 export type Upload = UploadResponse;

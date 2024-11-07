@@ -1,5 +1,17 @@
-import { getCookie, getTokenExpiration } from '@/utils';
-import { describe, expect, it } from 'vitest';
+import { DAYS_TO_EXPIRY } from '@/config';
+import {
+  addExpiryToContainer,
+  formatDaysToExpiry,
+  getCookie,
+  getTokenExpiration,
+} from '@/utils';
+import { Upload } from '@prisma/client';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// Mock DAYS_TO_EXPIRY
+vi.mock('@/config', () => ({
+  DAYS_TO_EXPIRY: 15,
+}));
 
 describe('getCookie', () => {
   it('should return the correct cookie value when present', () => {
@@ -49,5 +61,102 @@ describe('getTokenExpiration', () => {
     expect(testFunc).toThrow(
       'Token expiration should be a round number specifying days'
     );
+  });
+});
+
+describe('addExpiryToContainer', () => {
+  beforeEach(() => {
+    // Set fixed date to January 15, 2024
+    vi.setSystemTime(new Date('2024-01-15'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('should calculate correct days to expiry for a new upload', () => {
+    const mockUpload: Upload = {
+      id: '1',
+      createdAt: new Date('2024-01-01'), // 14 days ago
+      ownerId: 1,
+      reported: false,
+      reportedAt: null,
+      size: 100,
+      type: 'image/jpeg',
+    };
+
+    const result = addExpiryToContainer(mockUpload);
+    expect(result.daysToExpiry).toBe(1); // 1 day left
+    expect(result.expired).toBeFalsy();
+  });
+
+  it('should mark as expired when exactly at expiry date', () => {
+    const mockUpload: Upload = {
+      id: '1',
+      createdAt: new Date('2023-12-31'), // 15 days ago
+      ownerId: 1,
+      reported: false,
+      reportedAt: null,
+      size: 100,
+      type: 'image/jpeg',
+    };
+
+    const result = addExpiryToContainer(mockUpload);
+    expect(result.daysToExpiry).toBe(0);
+    expect(result.expired).toBeTruthy();
+  });
+
+  it('should mark as expired when past expiry date', () => {
+    const mockUpload: Upload = {
+      id: '1',
+      createdAt: new Date('2023-12-30'), // 16 days ago
+      ownerId: 1,
+      reported: false,
+      reportedAt: null,
+      size: 100,
+      type: 'image/jpeg',
+    };
+
+    const result = addExpiryToContainer(mockUpload);
+    expect(result.daysToExpiry).toBe(0);
+    expect(result.expired).toBeTruthy();
+  });
+});
+
+describe('formatDaysToExpiry', () => {
+  it('should return 0 for negative days', () => {
+    expect(formatDaysToExpiry(-1)).toBe(0);
+  });
+
+  it('should return same number for positive days', () => {
+    expect(formatDaysToExpiry(1)).toBe(1);
+    expect(formatDaysToExpiry(5)).toBe(5);
+  });
+});
+
+describe('addExpiryToContainer', () => {
+  beforeEach(() => {
+    // Set fixed date to January 15, 2024
+    vi.setSystemTime(new Date('2024-01-15'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('should include days to expiry', () => {
+    const mockUpload: Upload = {
+      id: '1',
+      // createdAt: new Date(Date.now() - 2 * TIME_CONSTANTS.MILLISECONDS_PER_DAY),
+      createdAt: new Date('2024-01-13'), // 2 days ago
+      ownerId: 1,
+      reported: false,
+      reportedAt: null,
+      size: 100,
+      type: 'image/jpeg',
+    };
+
+    const result = addExpiryToContainer(mockUpload);
+    expect(result.daysToExpiry).toBe(DAYS_TO_EXPIRY - 2);
   });
 });

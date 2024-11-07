@@ -41,29 +41,44 @@ defineProps<ReportProps>();
 </script>
 <template>
   <ul v-if="folder">
-    <li v-for="file of folder.items" :key="file.uploadId">
+    <div v-if="!folder?.items?.length">
+      <p>This folder is empty or the files uploaded to it have expired</p>
+    </div>
+    <li
+      v-for="{
+        uploadId,
+        name,
+        wrappedKey,
+        upload: { daysToExpiry, expired, size, type },
+      } of folder.items"
+      :key="uploadId"
+    >
       <div class="flex justify-between">
         <div>
-          id: {{ file.uploadId }}<br />
-          file name: {{ file.name }}<br />
-          size: {{ file.upload.size }} bytes<br />
-          mime type: {{ file.upload.type }}
+          id: {{ uploadId }}<br />
+          file name: {{ name }}<br />
+          size: {{ size }} bytes<br />
+          mime type: {{ type }}<br />
+          <div>
+            <span v-if="expired" class="text-red-500">Expired</span>
+            <span v-else>expires in: {{ daysToExpiry }} days</span>
+          </div>
         </div>
         <button
           type="submit"
           class="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none: disabled:bg-gray-400"
-          :disabled="isDownloading.has(file.uploadId)"
+          :disabled="isDownloading.has(uploadId) || expired"
           @click.prevent="
             downloadContent({
-              uploadId: file.uploadId,
+              uploadId,
               containerId,
-              wrappedKey: file.wrappedKey,
-              name: file.name,
+              wrappedKey,
+              name,
             })
           "
         >
           <div
-            v-if="isDownloading.has(file.uploadId)"
+            v-if="isDownloading.has(uploadId)"
             class="flex justify-center items-center"
           >
             <span>Downloading</span>
@@ -74,7 +89,9 @@ defineProps<ReportProps>();
           </div>
         </button>
       </div>
-      <ReportContent :upload-id="file.uploadId" :container-id="containerId" />
+      <div v-if="!expired">
+        <ReportContent :upload-id="uploadId" :container-id="containerId" />
+      </div>
     </li>
   </ul>
 </template>
