@@ -173,6 +173,8 @@ resources:
           include_cookies: True
   tb:cloudwatch:CloudWatchMonitoringGroup:
     alarms: {}
+    notify_emails:
+      - rjung+cloudwatch@thunderbird.net
     # alarms:
     #   send-suite-staging-fargate-service:
     #     cpu_utilization:

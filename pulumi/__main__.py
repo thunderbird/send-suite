@@ -151,5 +151,8 @@ ci_iam = tb_pulumi.ci.AwsAutomationUser(
 
 monitoring_opts = resources['tb:cloudwatch:CloudWatchMonitoringGroup']
 monitoring = tb_pulumi.cloudwatch.CloudWatchMonitoringGroup(
-    name=f'{project.name_prefix}-monitoring', project=project, config=monitoring_opts
+    name=f'{project.name_prefix}-monitoring',
+    project=project,
+    notify_emails=monitoring_opts['notify_emails'],
+    config=monitoring_opts,
 )
