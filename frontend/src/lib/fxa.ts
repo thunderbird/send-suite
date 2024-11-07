@@ -28,11 +28,5 @@ export function formatSessionInfo(info) {
   if (!val.user) {
     return info;
   }
-  for (const key in val.user) {
-    console.log(`inspecting ${key}`);
-    if (typeof val.user[key] == 'string' && val.user[key].length > 20) {
-      val.user[key] = val.user[key].substring(0, 20) + '...';
-    }
-  }
   return JSON.stringify(val, null, 4);
 }

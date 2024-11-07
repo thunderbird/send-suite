@@ -1,6 +1,6 @@
 {
-  "manifest_version": 2,
-  "version": "0.1.21",
+  "manifest_version": 3,
+  "version": "0.1.23",
   "author": "Thunderbird Team",
   "name": "Thunderbird Send",
   "description": "Thunderbird and friends",
@@ -30,10 +30,11 @@
     "compose",
     "notifications",
     "activeTab",
+    "webRequest",
+    "webRequestBlocking",
     "tabs",
     "messagesRead",
     "messagesModify",
-    "cookies",
     "sensitiveDataUpload"
   ]
 }
