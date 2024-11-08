@@ -4,7 +4,7 @@ if [ "$NODE_ENV" = "production" ]; then
 fi
 
 # Get version from package.json and replace dots with hyphens
-VERSION=$(node -p "jq .version < package.json | sed 's/\./-/g")
+VERSION=$(jq -r .version < package.json | sed 's/\./-/g')
 
 # Remove old builds
 rm -rf dist && rm -rf dist-web

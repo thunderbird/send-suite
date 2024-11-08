@@ -3,7 +3,7 @@ cd ..
 mkdir frontend-source
 
 # Get version from package.json and replace dots with hyphens
-VERSION=$(node -p "jq .version < package.json | sed 's/\./-/g")
+VERSION=$(jq -r .version < frontend/package.json | sed 's/\./-/g')
 
 echo "Listing files in $(pwd)"
 ls -lh
