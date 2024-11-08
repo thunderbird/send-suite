@@ -8,6 +8,7 @@ import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import BreadCrumbs from '@/apps/lockbox/components/Breadcrumbs.vue';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
 import FolderTableRowCell from '@/apps/lockbox/elements/FolderTableRowCell.vue';
+import { getDaysToExpiryText } from '@/lib/helpers';
 import { IconDotsVertical, IconDownload, IconTrash } from '@tabler/icons-vue';
 import { useDebounceFn } from '@vueuse/core';
 import { useRoute, useRouter } from 'vue-router';
@@ -115,7 +116,7 @@ export default { props: { id: { type: String, default: 'null' } } };
               Last modified {{ dayjs().to(dayjs(item.updatedAt)) }}
             </div>
             <div v-if="item.upload.daysToExpiry" class="text-sm">
-              Expires in {{ item.upload.daysToExpiry }} days
+              {{ getDaysToExpiryText(item.upload.daysToExpiry) }}
             </div>
             <div v-if="!!item.upload.expired" class="text-sm text-red-600">
               Expired

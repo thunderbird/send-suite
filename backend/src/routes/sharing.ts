@@ -149,9 +149,10 @@ router.get(
 
     const itemsWithExpiry = {
       ...containerWithItems,
-      items: containerWithItems.items.map((items) => {
-        return { ...items, upload: addExpiryToContainer(items.upload) };
-      }),
+      items: containerWithItems.items.map((item) => ({
+        ...item,
+        upload: addExpiryToContainer(item.upload),
+      })),
     };
 
     res.status(200).json(itemsWithExpiry);
