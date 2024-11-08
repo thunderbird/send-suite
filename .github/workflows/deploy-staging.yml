@@ -173,14 +173,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-source
-          path: frontend-source.zip
+          path: frontend-source-*.zip
 
       - name: Archive the XPI
         id: xpi-archive
         uses: actions/upload-artifact@v4
         with:
           name: xpi
-          path: send-suite-alpha.xpi
+          path: send-suite-alpha-*.xpi
 
       - name: Deploy to staging
         id: frontend-deploy
