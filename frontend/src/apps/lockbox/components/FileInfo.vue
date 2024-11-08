@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
+import { ref } from 'vue';
 
-import FileNameForm from '@/apps/lockbox/elements/FileNameForm.vue';
-import TagLabel from '@/apps/lockbox/elements/TagLabel.vue';
 import Btn from '@/apps/lockbox/elements/Btn.vue';
+import FileNameForm from '@/apps/lockbox/elements/FileNameForm.vue';
 import { formatBytes } from '@/lib/utils';
-import { IconDownload, IconShare } from '@tabler/icons-vue';
-import AddTag from '@/apps/lockbox/components/AddTag.vue';
+import { IconDownload } from '@tabler/icons-vue';
 
 const folderStore = useFolderStore();
 
@@ -29,40 +27,35 @@ Note about shareOnly containers.
         <span v-if="!showForm" class="cursor- pointer" @click="showForm = true">
           {{ folderStore.selectedFile.name }}
         </span>
-        <FileNameForm v-if="showForm" @renameComplete="showForm = false" />
+        <FileNameForm v-if="showForm" @rename-complete="showForm = false" />
       </div>
       <div class="text-xs">
         {{ formatBytes(folderStore.selectedFile.upload.size) }}
       </div>
     </header>
-    <!-- sharing config -->
-    <!-- <CreateAccessLink :folderId="folderStore.selectedFile.id" /> -->
-    <!-- tags -->
-    <!-- <section class="flex flex-col gap-2">
-      <div class="font-semibold text-gray-600">Tags</div>
-      <div class="flex flex-wrap gap-1">
-        <TagLabel v-for="tag in folderStore.selectedFile.tags" :color="tag.color"> {{ tag.name }}</TagLabel>
-      </div>
-      {{ folderStore.selectedFile.id }}
-    </section> -->
-    <!-- meta -->
     <footer class="mt-auto flex flex-col gap-3">
       <label
-        class="flex flex-col gap-1"
         v-if="folderStore.selectedFile.createdAt"
+        class="flex flex-col gap-1"
       >
         <span class="text-xs font-semibold text-gray-600">Created</span>
         <div class="text-xs">{{ folderStore.selectedFile.createdAt }}</div>
       </label>
       <label
-        class="flex flex-col gap-1"
         v-if="folderStore.selectedFile.updatedAt"
+        class="flex flex-col gap-1"
       >
         <span class="text-xs font-semibold text-gray-600">Modified</span>
         <div class="text-xs">{{ folderStore.selectedFile.updatedAt }}</div>
       </label>
+      <label
+        v-if="folderStore.selectedFile.upload.expired"
+        class="flex flex-col gap-1"
+      >
+        <span class="text-xs font-semibold text-red-600">Expired</span>
+      </label>
       <div class="flex justify-end gap-2">
-        <Btn
+        <Btn v-if="!folderStore.selectedFile.upload.expired"
           ><IconDownload
             class="w-4 h-4"
             @click="
@@ -74,7 +67,6 @@ Note about shareOnly containers.
               )
             "
         /></Btn>
-        <!-- <Btn primary><IconShare class="w-4 h-4" /> Share</Btn> -->
       </div>
     </footer>
   </div>

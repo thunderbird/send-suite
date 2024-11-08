@@ -17,6 +17,8 @@ const ENVIRONMENT = process.env.NODE_ENV || ('development' as Environment);
 export const IS_ENV_DEV = ENVIRONMENT === 'development';
 export const IS_ENV_PROD = ENVIRONMENT === 'production';
 
+export const DAYS_TO_EXPIRY = 15;
+
 export { ENVIRONMENT };
 
 export default appConfig;

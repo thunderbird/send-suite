@@ -1,3 +1,14 @@
+import { Upload } from '@prisma/client';
+import { DAYS_TO_EXPIRY } from './config';
+
+// Time constants
+export const TIME_CONSTANTS = {
+  MILLISECONDS_PER_MINUTE: 60_000,
+  MINUTES_PER_HOUR: 60,
+  HOURS_PER_DAY: 24,
+  MILLISECONDS_PER_DAY: 24 * 60 * 60 * 1000,
+} as const;
+
 export function base64url(source) {
   // Encode in classical base64
   let encodedSource = Buffer.from(source).toString('base64');
@@ -47,13 +58,34 @@ export const getTokenExpiration = (days: number) => {
     );
   }
 
-  // we use days as a multiplier
-  const ONE_HOUR = 60;
-  const ONE_DAY = 24;
-  const ONE_MINUTE = 60_000;
-  const milliseconds = ONE_MINUTE * ONE_HOUR * ONE_DAY * days;
+  const milliseconds =
+    TIME_CONSTANTS.MILLISECONDS_PER_MINUTE *
+    TIME_CONSTANTS.MINUTES_PER_HOUR *
+    TIME_CONSTANTS.HOURS_PER_DAY *
+    days;
 
   const stringified = `${days}d`;
 
   return { milliseconds, stringified };
+};
+
+export const formatDaysToExpiry = (days: number): number => {
+  return Math.max(0, days);
+};
+
+export const addExpiryToContainer = ({ createdAt, ...upload }: Upload) => {
+  const daysToExpiry =
+    DAYS_TO_EXPIRY -
+    Math.floor(
+      (new Date().getTime() - new Date(createdAt).getTime()) /
+        TIME_CONSTANTS.MILLISECONDS_PER_DAY
+    );
+
+  const formattedDays = formatDaysToExpiry(daysToExpiry);
+
+  return {
+    ...upload,
+    daysToExpiry: formattedDays,
+    expired: daysToExpiry <= 0,
+  };
 };

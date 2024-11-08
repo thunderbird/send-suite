@@ -274,3 +274,10 @@ export const uploadWithTracker = ({
     });
   });
 };
+
+export const getDaysToExpiryText = (daysToExpiry: number) => {
+  if (daysToExpiry === 1) {
+    return `Expires in ${daysToExpiry} day`;
+  }
+  return `Expires in ${daysToExpiry} days`;
+};

@@ -19,6 +19,7 @@ import {
 } from '../errors/routes';
 
 import { getDataFromAuthenticatedRequest } from '@/auth/client';
+import { addExpiryToContainer } from '@/utils';
 import {
   getGroupMemberPermissions,
   requireJWT,
@@ -145,7 +146,16 @@ router.get(
   wrapAsyncHandler(async (req, res) => {
     const { linkId } = req.params;
     const containerWithItems = await getContainerForAccessLink(linkId);
-    res.status(200).json(containerWithItems);
+
+    const itemsWithExpiry = {
+      ...containerWithItems,
+      items: containerWithItems.items.map((item) => ({
+        ...item,
+        upload: addExpiryToContainer(item.upload),
+      })),
+    };
+
+    res.status(200).json(itemsWithExpiry);
   })
 );
 
