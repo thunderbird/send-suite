@@ -3,7 +3,13 @@ cd ..
 mkdir frontend-source
 
 # Get version from package.json and replace dots with hyphens
-VERSION=$(node -p "require('./frontend/package.json').version.replace(/\./g, '-')")
+VERSION=$(node -p "jq .version < package.json | sed 's/\./-/g")
+
+echo "Listing files in $(pwd)"
+ls -lh
+
+echo "Listing files in $(pwd)/frontend"
+ls -lh frontend/
 
 # Copy only necessary files
 cp -r frontend/src frontend-source/src
@@ -30,8 +36,4 @@ zip -r frontend-source-${VERSION}.zip frontend-source
 # Remove the directory
 rm -rf frontend-source
 
-mv frontend/send-suite-alpha.xpi  send-suite-alpha.xpi
-
 echo "Finished creating frontend-source-${VERSION}.zip!"
-
-
