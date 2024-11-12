@@ -29,13 +29,10 @@
     "storage",
     "compose",
     "notifications",
-    "activeTab",
     "webRequest",
     "webRequestBlocking",
     "<all_urls>",
-    "tabs",
     "messagesRead",
-    "messagesModify",
     "sensitiveDataUpload"
   ]
 }
