@@ -5,6 +5,7 @@ import pulumi_aws as aws
 import tb_pulumi
 import tb_pulumi.ci
 import tb_pulumi.cloudfront
+import tb_pulumi.cloudwatch
 import tb_pulumi.fargate
 import tb_pulumi.network
 import tb_pulumi.rds
@@ -146,4 +147,12 @@ ci_iam = tb_pulumi.ci.AwsAutomationUser(
     enable_s3_bucket_upload=True,
     s3_upload_buckets=['tb-send-suite-staging-frontend'],
     opts=pulumi.ResourceOptions(depends_on=[frontend]),
+)
+
+monitoring_opts = resources['tb:cloudwatch:CloudWatchMonitoringGroup']
+monitoring = tb_pulumi.cloudwatch.CloudWatchMonitoringGroup(
+    name=f'{project.name_prefix}-monitoring',
+    project=project,
+    notify_emails=monitoring_opts['notify_emails'],
+    config=monitoring_opts,
 )

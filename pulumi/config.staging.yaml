@@ -1,5 +1,8 @@
 ---
 resources:
+  domains:
+    backend: lockbox.thunderbird.dev
+    frontend: send.thunderbird.dev
   tb:network:MultiCidrVpc:
     vpc:
       cidr_block: 10.0.0.0/16
@@ -168,6 +171,12 @@ resources:
         comment: send-suite staging frontend
         logging_config:
           include_cookies: True
-  domains:
-    backend: lockbox.thunderbird.dev
-    frontend: send.thunderbird.dev
+  tb:cloudwatch:CloudWatchMonitoringGroup:
+    alarms: {}
+    notify_emails:
+      - rjung+cloudwatch@thunderbird.net
+    # alarms:
+    #   send-suite-staging-fargate-service:
+    #     cpu_utilization:
+    #       enabled: False
+    #       threshold: 80
