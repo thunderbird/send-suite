@@ -58,7 +58,6 @@ export async function requireJWT(
 
   const token = getJWTfromToken(jwtToken);
   if (!token) {
-    console.warn(`No token found for ${extractMethodAndRoute(req)}`);
     return res.status(403).json({ message: `Not authorized: Token not found` });
   }
 
