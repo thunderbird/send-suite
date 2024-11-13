@@ -2,7 +2,7 @@
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import { ref } from 'vue';
 
-import Btn from '@/apps/lockbox/elements/Btn.vue';
+import Btn from '@/apps/lockbox/elements/BtnComponent.vue';
 import FileNameForm from '@/apps/lockbox/elements/FileNameForm.vue';
 import { formatBytes } from '@/lib/utils';
 import { IconDownload } from '@tabler/icons-vue';

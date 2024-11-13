@@ -16,6 +16,7 @@ import { EXTENSION_READY, SHARE_ABORTED, SHARE_COMPLETE } from '@/lib/const';
 import { restoreKeysUsingLocalStorage } from '@/lib/keychain';
 import useApiStore from '@/stores/api-store';
 import ProgressBar from '../components/ProgressBar.vue';
+import BtnComponent from '../elements/BtnComponent.vue';
 import { useStatusStore } from '../stores/status-store';
 
 const userStore = useUserStore();
@@ -159,7 +160,13 @@ userStore.user.id ${userStore.user.id}
         <input v-model="password" type="password" :disabled="isUploading" />
       </label>
       <br />
-      <input type="submit" value="Encrypt and Upload" :disabled="isUploading" />
+      <BtnComponent>
+        <input
+          type="submit"
+          value="Encrypt and Upload"
+          :disabled="isUploading"
+        />
+      </BtnComponent>
     </form>
   </div>
   <div v-else>

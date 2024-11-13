@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Btn from '@/apps/lockbox/elements/Btn.vue';
+import Btn from '@/apps/lockbox/elements/BtnComponent.vue';
 import { formatSessionInfo, mozAcctLogin } from '@/lib/fxa';
 import { dbUserSetup } from '@/lib/helpers';
 import { CLIENT_MESSAGES } from '@/lib/messages';
