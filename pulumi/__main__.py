@@ -67,6 +67,7 @@ backend_dns = aws.route53.Record(
     type=aws.route53.RecordType.CNAME,
     ttl=60,
     records=[backend_fargate.resources['fargate_service_alb'].resources['albs']['send-suite'].dns_name],
+    opts=pulumi.ResourceOptions(depends_on=[backend_fargate]),
 )
 
 # Manage the CloudFront rewrite function; the code is managed in cloudfront-rewrite.js
@@ -129,6 +130,7 @@ frontend_dns = aws.route53.Record(
     type=aws.route53.RecordType.CNAME,
     ttl=60,
     records=[frontend.resources['cloudfront_distribution'].domain_name],
+    opts=pulumi.ResourceOptions(depends_on=[frontend]),
 )
 
 # These settings transcend the stack/environment, so we are not loading them from a config file

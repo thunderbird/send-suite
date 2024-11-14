@@ -86,8 +86,7 @@ resources:
           - FARGATE
         container_definitions:
           backend:
-            image: "768512802988.dkr.ecr.us-east-1.amazonaws.com/send:0.1.32"
-            desired_replicas: 3
+            image: "768512802988.dkr.ecr.us-east-1.amazonaws.com/send:46485f8b489f84128f8a03a988423fba37850bb8"
             portMappings:
               - name: send-suite
                 containerPort: 8080
