@@ -17,6 +17,7 @@ export default [
         __filename: 'readonly', // Commonly used alongside __dirname
         process: 'readonly', // Another common Node.js global
         require: 'readonly', // If using CommonJS modules
+        __APP_VERSION__: 'readonly', // Project version
       },
     },
   },

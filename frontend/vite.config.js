@@ -9,6 +9,8 @@ const packageJson = JSON.parse(
   fs.readFileSync(path.resolve(__dirname, './package.json'), 'utf8')
 );
 
+console.log('using packageJson:', packageJson);
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
@@ -26,6 +28,9 @@ export default defineConfig(({ mode }) => {
   console.log('Server Base URL:', SERVER_BASE_URL);
 
   return {
+    define: {
+      __APP_VERSION__: JSON.stringify(packageJson.version),
+    },
     plugins: [
       vue(),
       sentryVitePlugin({

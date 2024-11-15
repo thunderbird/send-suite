@@ -1,3 +1,4 @@
+import '@/lib/logger';
 import { initSentry } from '@/lib/sentry';
 import posthogPlugin from '@/plugins/posthog';
 import { createPinia } from 'pinia';
