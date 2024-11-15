@@ -8,7 +8,6 @@ const showDebugger = ref(false);
 const data = ref('');
 const { api } = useApiStore();
 const { validators } = useStatusStore();
-
 async function initialize() {
   showDebugger.value = true;
 
@@ -16,9 +15,8 @@ async function initialize() {
     const healthcheck = await api.call('health');
     isAPIOn.value = JSON.stringify(healthcheck);
 
-    const x = await validators();
-    console.log(x);
-    data.value = JSON.stringify(x);
+    const validationResult = await validators();
+    data.value = JSON.stringify(validationResult);
   }
 
   healthCheck();
