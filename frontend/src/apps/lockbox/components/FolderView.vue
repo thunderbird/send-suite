@@ -6,7 +6,7 @@ import { inject, onMounted, watch } from 'vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 
 import BreadCrumbs from '@/apps/lockbox/components/Breadcrumbs.vue';
-import Btn from '@/apps/lockbox/elements/Btn.vue';
+import Btn from '@/apps/lockbox/elements/BtnComponent.vue';
 import FolderTableRowCell from '@/apps/lockbox/elements/FolderTableRowCell.vue';
 import { getDaysToExpiryText } from '@/lib/helpers';
 import { IconDotsVertical, IconDownload, IconTrash } from '@tabler/icons-vue';

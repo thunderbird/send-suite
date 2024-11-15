@@ -3,6 +3,7 @@ import posthogPlugin from '@/plugins/posthog';
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 import ManagementPage from './ManagementPage.vue';
+import './style.css';
 const pinia = createPinia();
 const app = createApp(ManagementPage);
 

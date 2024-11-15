@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, inject } from 'vue';
-import TagLabel from '@/apps/lockbox/elements/TagLabel.vue';
 import { TagColors } from '@/apps/lockbox/const';
-import Btn from '@/apps/lockbox/elements/Btn.vue';
+import Btn from '@/apps/lockbox/elements/BtnComponent.vue';
+import TagLabel from '@/apps/lockbox/elements/TagLabel.vue';
+import { ref } from 'vue';
 
 const props = defineProps({
   type: String,
@@ -31,8 +31,12 @@ async function addTag() {
 
 <template>
   <form @submit.prevent="addTag">
-    <input type="text" v-model="name" ref="input" placeholder="new tag name" />
-    <div v-for="c in Object.keys(TagColors)" class="flex flex-row gap-1">
+    <input ref="input" v-model="name" type="text" placeholder="new tag name" />
+    <div
+      v-for="c in Object.keys(TagColors)"
+      :key="c"
+      class="flex flex-row gap-1"
+    >
       <TagLabel :color="c" @click="color = c">
         {{ c }}
       </TagLabel>

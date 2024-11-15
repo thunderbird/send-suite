@@ -3,6 +3,7 @@ import posthogPlugin from '@/plugins/posthog';
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 import Extension from './ExtensionPage.vue';
+import './style.css';
 const pinia = createPinia();
 const app = createApp(Extension);
 

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
 import useSharingStore from '@/apps/lockbox/stores/sharing-store';
+import { ref, watch } from 'vue';
 
-import Btn from '@/apps/lockbox/elements/Btn.vue';
-import { IconLink, IconEye, IconEyeOff } from '@tabler/icons-vue';
+import Btn from '@/apps/lockbox/elements/BtnComponent.vue';
+import { IconEye, IconEyeOff, IconLink } from '@tabler/icons-vue';
 
 const sharingStore = useSharingStore();
 

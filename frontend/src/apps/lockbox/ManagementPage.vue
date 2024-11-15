@@ -10,7 +10,7 @@ import { onMounted, ref } from 'vue';
 import BackupAndRestore from '@/apps/common/BackupAndRestore.vue';
 import FeedbackBox from '@/apps/common/FeedbackBox.vue';
 import { useMetricsUpdate } from '@/apps/common/mixins/metrics';
-import Btn from '@/apps/lockbox/elements/Btn.vue';
+import Btn from '@/apps/lockbox/elements/BtnComponent.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import { formatSessionInfo } from '@/lib/fxa';
 import { formatLoginURL } from '@/lib/helpers';
@@ -187,7 +187,7 @@ async function finishLogin() {
 
 <template>
   <h1>{{ salutation }}</h1>
-  <button @click.prevent="loginToMozAccount">Log into Mozilla Account</button>
+  <Btn @click.prevent="loginToMozAccount">Log into Mozilla Account</Btn>
   <br />
   <h1>Debug Info</h1>
   <form>
