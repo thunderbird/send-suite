@@ -10,3 +10,6 @@ else
     echo "Bun is not installed. Please check docs for installation details."
     exit 1
 fi
+
+# Make sure prisma types are available for development
+cd backend && pnpm db:generate

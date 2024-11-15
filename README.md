@@ -92,7 +92,7 @@ From here, you can do things like create folders, upload files to folders, and c
 
 ## TB Extension
 
-### Building the TB Extension
+### Building the TB Extension for development
 
 If this is the first time you're building the extension, you'll need to install the tooling on the host:
 
@@ -104,10 +104,10 @@ pnpm/yarn/npm install
 Build the extension:
 
 ```sh
-pnpm/yarn/npm run build
+pnpm/yarn/npm run build:dev
 ```
 
-This outputs to `frontend/dist/`.
+This outputs an xpi file at the root, you should see something like `send-suite-0.1.22.xpi`.
 
 ### Loading the TB Extension
 
@@ -119,7 +119,7 @@ To load this in Thunderbird:
 - Go to Settings and click `Add-ons and Themes` in the lower left-hand corner
 - In the "Manage your Extensions" window, click the gear icon in the upper right and choose `Debug Add-ons`
 - On the "Mozilla Thunderbird" page that appears, click the `Load Temporary Add-on...` button in the upper-right.
-- Navigate to the `send-suite/frontend/dist/` directory and choose the `manifest.json`
+- Navigate to the root directory and choose the xpi you generated earlier.
 
 ### Using the Extension
 
@@ -128,7 +128,6 @@ To load this in Thunderbird:
 - In the Lockbox Send configuration panel, click the `Log into Mozilla Account` button
 - In the popup, follow the Mozilla Account login flow
 - After you successfully log in, the popup should close (or you can manually close it)
-- **IMPORTANT**: in the Lockbox Send configuration panel, click the `Click after moz login` button to finish setting up the extension with the Mozilla Account.
 
 You can now right-click attachments in emails and choose "Convert to Lockbox Send". You'll be prompted for an optional password to protect the attachment.
 
@@ -139,26 +138,6 @@ Note: the link will only work on your local machine, as the URL is a `localhost`
 ### Authentication
 
 We're using jwt tokens to authenticate users. Once they go through the login flow, they get a jwt token that is stored as a secure cookie. This is passed on every request to the backend automatically. We use this token to know who is making the request and by decoding it we get user data such as userId and email. We can set how many days the token is valid for and once it expires, the user has to log in again.
-
-## Building
-
-To build the frontend run from the root `pnpm build:frontend`
-This will produce the static assets for deployment. It will generate the following directories:
-
-Web app: `frontend/dist`
-
-TB extension: `frontend/dist-extension`
-
-To test the web client locally, you can run
-`cd frontend`
-and `pnpm preview`
-This will create a server on `http://localhost:4173/`
-
-## Additional documentation
-
-See the `docs/` folder for a draft of the detailed documentation.
-
-[Here](https://typicode.github.io/husky/how-to.html#testing-hooks-without-committing) you can read more.
 
 ## Pre-commit hooks
 
@@ -186,6 +165,12 @@ You should see the output of the hook as if you actually commited your files.
 ### Skipping hooks
 
 If for some reason you're confident on a change and would like to skip pre-commit hooks. Add `--no-verify` at the end of your commit command.
+
+### More about hooks
+
+See the `docs/` folder for a draft of the detailed documentation.
+
+[Here](https://typicode.github.io/husky/how-to.html#testing-hooks-without-committing) you can read more.
 
 ## Sentry
 

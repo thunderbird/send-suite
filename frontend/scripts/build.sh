@@ -1,7 +1,10 @@
 # Check if environment NODE_ENV has been set to production
 if [ "$NODE_ENV" = "production" ]; then
     echo 'Starting production build 🐧'
+else
+    echo 'Starting development build 🐣'
 fi
+
 
 # Get version from package.json and replace dots with hyphens
 VERSION=$(jq -r .version < package.json | sed 's/\./-/g')
