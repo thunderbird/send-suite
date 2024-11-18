@@ -15,6 +15,8 @@ const TRACING_LEVELS_DEV = ['error', 'warn', 'debug'];
 
 const isProduction = ENVIRONMENT === 'production';
 
+const ignoredTraces = ['GET /'];
+
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   integrations: [
@@ -25,7 +27,13 @@ Sentry.init({
   ],
   // Performance Monitoring
   environment: process.env.NODE_ENV || 'development',
-  tracesSampleRate: 0,
+  tracesSampleRate: 0.5,
+  tracesSampler: (samplingContext) => {
+    if (ignoredTraces.includes(samplingContext?.name)) {
+      return false;
+    }
+    return true;
+  },
   // Set sampling rate for profiling - this is relative to tracesSampleRate
   profilesSampleRate: 1.0,
   release: packageJson.version,
