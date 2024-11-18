@@ -90,6 +90,14 @@ jobs:
           docker build -t $ECR_TAG ./backend
           docker push $ECR_TAG
           echo "backend-image=$ECR_TAG" >> $GITHUB_OUTPUT
+          echo -n "$ECR_TAG" > ecr_tag.txt
+
+      - name: Archive the ECR tag
+        id: tag-archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: ecr_tag
+          path: ecr_tag.txt
 
       # Deploy to staging
       - name: Deploy new image to staging
@@ -116,14 +124,6 @@ jobs:
           pulumi up -y --diff --target \
             'urn:pulumi:staging::send-suite::tb:fargate:FargateClusterWithLogging$aws:ecs/taskDefinition:TaskDefinition::send-suite-staging-fargate-taskdef' \
             --target-dependents
-
-          # Only push the config change back to the repo if it was successfully applied
-          # Don't do this, at least for now
-          # git config --global user.email 'services-dev@thunderbird.net'
-          # git config --global user.name 'GitHub Actions Workflow Automation'
-          # git add config.staging.yaml
-          # git commit -m "CI: Update staging image"
-          # git push
 
   frontend-merge:
     needs: detect-changes
