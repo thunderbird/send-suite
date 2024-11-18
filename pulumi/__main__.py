@@ -142,12 +142,15 @@ ci_iam = tb_pulumi.ci.AwsAutomationUser(
     enable_ecr_image_push=True,
     ecr_repositories=['send'],
     enable_fargate_deployments=True,
-    fargate_clusters=['send-suite-staging-fargate'],
-    fargate_task_role_arns=['arn:aws:iam::768512802988:role/send-suite-staging-fargate'],
+    fargate_clusters=['send-suite-staging-fargate', 'send-suite-prod-fargate'],
+    fargate_task_role_arns=[
+        'arn:aws:iam::768512802988:role/send-suite-staging-fargate',
+        'arn:aws:iam::768512802988:role/send-suite-prod-fargate',
+    ],
     enable_full_s3_access=True,
     s3_full_access_buckets=['tb-send-suite-pulumi'],
     enable_s3_bucket_upload=True,
-    s3_upload_buckets=['tb-send-suite-staging-frontend'],
+    s3_upload_buckets=['tb-send-suite-staging-frontend', 'tb-send-suite-prod-frontend'],
     opts=pulumi.ResourceOptions(depends_on=[frontend]),
 )
 

@@ -1,0 +1,106 @@
+---
+name: deploy-production
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download ECR tag artifact
+        uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          version: ${{ github.event.release.id }}
+          file: ecr_tag.zip
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: 'true'
+
+      - name: Retag image
+        id: retag-image
+        shell: bash
+        run: |
+          # Gather info
+          unzip ecr_tag.zip  # Produces ecr_tag.txt
+          source_tag=$(cat ecr_tag.txt)
+          cd backend
+          semver=$(jq -r .version < package.json)
+          target_tag="${{ steps.login-ecr.outputs.registry }}/${{ vars.PROJECT }}:$semver"
+
+          # Output the target tag
+          echo "target_tag=$target_tag" >> $GITHUB_OUTPUT
+
+          # Retag the image and push it
+          docker pull $source_tag
+          docker tag $source_tag $target_tag
+          docker push $target_tag
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Set up virtual environment
+        shell: bash
+        run: |
+          python -m pip install virtualenv
+          cd pulumi
+          virtualenv ./venv
+
+      - name: Set up Pulumi environment
+        id: pulumi-env
+        shell: bash
+        run: |
+          cd pulumi
+          source ./venv/bin/activate
+          curl -fsSL https://get.pulumi.com | sh
+          pip install -Ur requirements.txt
+
+      - name: Deploy version-tagged image to prod
+        shell: bash
+        run: |
+          # Pull the versioned tag from the previous step
+          target_tag="${{ steps.retag-image.outputs.target_tag }}"
+
+          # Change the image config option and try to apply the change
+          cd pulumi
+          cat << EOF > newimage.yaml
+          resources:
+            tb:fargate:FargateClusterWithLogging:
+              backend:
+                task_definition:
+                  container_definitions:
+                    backend:
+                      image: "$target_tag"
+          EOF
+          yq -i '. *= load("newimage.yaml")' config.prod.yaml
+          export PULUMI_CONFIG_PASSPHRASE='${{ secrets.PULUMI_PASSPHRASE_PROD }}'
+          source ./venv/bin/activate
+          pulumi login s3://tb-send-suite-pulumi
+          pulumi stack select prod
+          TBPULUMI_DISABLE_PROTECTION=True \
+            pulumi up -y --diff --target \
+            'urn:pulumi:prod::send-suite::tb:fargate:FargateClusterWithLogging$aws:ecs/taskDefinition:TaskDefinition::send-suite-prod-fargate-taskdef' \
+            --target-dependents
