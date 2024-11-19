@@ -18,7 +18,6 @@
     "open_in_tab": true,
     "browser_style": true
   },
-  "host_permissions": ["<all_urls>"],
   "cloud_file": {
     "name": "Thunderbird Send",
     "management_url": "index.management.html",
@@ -31,7 +30,6 @@
     "notifications",
     "webRequest",
     "webRequestBlocking",
-    "<all_urls>",
     "messagesRead",
     "sensitiveDataUpload"
   ]

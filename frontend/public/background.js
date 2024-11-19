@@ -1,4 +1,5 @@
 /// <reference types="thunderbird-webext-browser" />
+
 console.log('hello from the extension!', new Date().getTime());
 
 // ==============================================
@@ -27,19 +28,19 @@ browser.webRequest.onBeforeSendHeaders.addListener(
   (details) => {
     let requestHeaders = details.requestHeaders;
     // Remove the Origin header from requests to backblazeb2
-    if (
-      details.requestHeaders.find((header) =>
-        header.value.includes('backblazeb2')
-      )
-    ) {
-      // Filter out the Origin header
-      requestHeaders = details.requestHeaders.filter(
-        (header) => header.name.toLowerCase() !== 'origin'
-      );
-    }
+    const hostName = requestHeaders.find(
+      (header) => header.name.toLowerCase() === 'host'
+    ).value;
+
+    // Filter out the Origin header
+    requestHeaders = requestHeaders.filter(
+      (header) => header.name.toLowerCase() !== 'origin'
+    );
+
+    console.log(`altered a request for host ${hostName}`, requestHeaders);
     return { requestHeaders };
   },
-  { urls: ['<all_urls>'] },
+  { urls: ['https://*.backblazeb2.com/*'] },
   ['blocking', 'requestHeaders']
 );
 
