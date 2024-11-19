@@ -262,11 +262,17 @@ export const uploadWithTracker = ({
       if (xhr.status >= 200 && xhr.status < 300) {
         resolve(xhr.response);
       } else {
-        reject(new Error('UPLOAD_FAILED'));
+        const error = new Error('UPLOAD_FAILED');
+        console.error('Upload failed with status:', xhr.status);
+        reject(error);
       }
     };
 
-    xhr.onerror = () => reject(new Error('UPLOAD_FAILED'));
+    xhr.onerror = () => {
+      const error = new Error('UPLOAD_FAILED');
+      console.error('Upload failed with network error');
+      reject(error);
+    };
 
     // Convert ReadableStream to Blob and send
     new Response(readableStream).blob().then((uploadBlob) => {

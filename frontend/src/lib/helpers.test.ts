@@ -1,88 +1,94 @@
-import { HttpResponse, http } from 'msw';
-import { setupServer } from 'msw/node';
 import { describe, expect, it, vi } from 'vitest';
 import { uploadWithTracker } from './helpers';
 
-const TEST_URL = `${import.meta.env.VITE_SEND_SERVER_URL}/api`;
-const TEST_CONTENT = 'test-content';
-const TEST_BLOB = new Blob([TEST_CONTENT]);
-
 describe('helpers', () => {
-  const restHandlers = [
-    http.get(`${TEST_URL}/download/*`, () =>
-      HttpResponse.json({ blob: TEST_BLOB })
-    ),
-    http.put(`${TEST_URL}/upload`, async () =>
-      HttpResponse.json({ status: 'success' })
-    ),
-  ];
-
-  const server = setupServer(...restHandlers);
-
-  beforeAll(() => {
-    server.listen();
-  });
-
-  afterAll(() => {
-    server.close();
-  });
-
-  afterEach(() => {
-    server.resetHandlers();
-  });
-
   describe('uploadWithTracker', () => {
-    const TEST_URL = `${import.meta.env.VITE_SEND_SERVER_URL}/api`;
-    const TEST_CONTENT = 'test-content';
-    const TEST_BLOB = new Blob([TEST_CONTENT]);
+    let xhrMock: any;
 
-    describe('helpers', () => {
-      const restHandlers = [
-        http.get(`${TEST_URL}/download/*`, () =>
-          HttpResponse.json({ blob: TEST_BLOB })
-        ),
-        http.put(`${TEST_URL}/upload`, async () =>
-          HttpResponse.json({ status: 'success' })
-        ),
-      ];
+    beforeEach(() => {
+      xhrMock = {
+        open: vi.fn(),
+        send: vi.fn(),
+        setRequestHeader: vi.fn(),
+        upload: {
+          onprogress: null,
+        },
+        status: 200,
+        response: '{"status":"success"}',
+      };
 
-      const server = setupServer(...restHandlers);
+      // @ts-ignore
+      global.XMLHttpRequest = vi.fn(() => xhrMock);
+    });
 
-      beforeAll(() => {
-        server.listen();
+    it('should track upload progress', async () => {
+      const progressTracker = vi.fn();
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode('test-content'));
+          controller.close();
+        },
       });
 
-      afterAll(() => {
-        server.close();
+      const uploadPromise = uploadWithTracker({
+        url: 'test-url',
+        readableStream: stream,
+        progressTracker,
       });
 
-      afterEach(() => {
-        server.resetHandlers();
+      // Simulate upload progress
+      xhrMock.upload.onprogress({ lengthComputable: true, loaded: 50 });
+
+      // Simulate successful completion
+      xhrMock.onload();
+
+      const result = await uploadPromise;
+      expect(progressTracker).toHaveBeenCalledWith(50);
+      expect(result).toBe('{"status":"success"}');
+    });
+
+    it('catches errors', async () => {
+      const progressTracker = vi.fn();
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode('test-content'));
+          controller.close();
+        },
       });
 
-      describe('uploadWithTracker', () => {
-        it('should track upload progress', async () => {
-          const progressTracker = vi.fn();
-          const stream = new ReadableStream({
-            start(controller) {
-              controller.enqueue(new TextEncoder().encode(TEST_CONTENT));
-              controller.close();
-            },
-          });
+      xhrMock.status = 500;
 
-          try {
-            const result = await uploadWithTracker({
-              url: `${TEST_URL}/upload`,
-              readableStream: stream,
-              progressTracker,
-            });
-            expect(progressTracker).toHaveBeenCalled();
-            expect(result).toBe('{"status":"success"}');
-          } catch (error) {
-            console.log(error);
-          }
-        });
+      const uploadPromise = uploadWithTracker({
+        url: 'test-url',
+        readableStream: stream,
+        progressTracker,
       });
+
+      // Simulate completion with error
+      xhrMock.onload();
+
+      await expect(uploadPromise).rejects.toThrow('UPLOAD_FAILED');
+    });
+
+    it('catches network errors', async () => {
+      const progressTracker = vi.fn();
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode('test-content'));
+          controller.close();
+        },
+      });
+
+      const uploadPromise = uploadWithTracker({
+        url: 'test-url',
+        readableStream: stream,
+        progressTracker,
+      });
+
+      // Simulate network error
+      xhrMock.onerror();
+
+      await expect(uploadPromise).rejects.toThrow('UPLOAD_FAILED');
     });
   });
 });
