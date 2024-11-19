@@ -5,7 +5,7 @@ import { inject, onMounted, watch } from 'vue';
 
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 
-import BreadCrumbs from '@/apps/lockbox/components/Breadcrumbs.vue';
+import BreadCrumb from '@/apps/lockbox/components/BreadCrumb.vue';
 import Btn from '@/apps/lockbox/elements/BtnComponent.vue';
 import FolderTableRowCell from '@/apps/lockbox/elements/FolderTableRowCell.vue';
 import { getDaysToExpiryText } from '@/lib/helpers';
@@ -48,7 +48,7 @@ export default { props: { id: { type: String, default: 'null' } } };
 <template>
   <div class="w-full flex flex-col gap-3">
     <h2 class="font-bold">Your Files</h2>
-    <BreadCrumbs />
+    <BreadCrumb />
     <table class="w-full border-separate border-spacing-x-0 border-spacing-y-1">
       <thead>
         <tr>

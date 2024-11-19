@@ -1,15 +1,9 @@
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import vue from '@vitejs/plugin-vue';
-import { defineConfig, loadEnv } from 'vite';
-
-import fs from 'fs';
 import path from 'path';
+import { defineConfig, loadEnv } from 'vite';
+import { packageJson, sharedViteConfig } from './sharedViteConfig';
 
-const packageJson = JSON.parse(
-  fs.readFileSync(path.resolve(__dirname, './package.json'), 'utf8')
-);
-
-console.log('using packageJson:', packageJson);
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -28,9 +22,7 @@ export default defineConfig(({ mode }) => {
   console.log('Server Base URL:', SERVER_BASE_URL);
 
   return {
-    define: {
-      __APP_VERSION__: JSON.stringify(packageJson.version),
-    },
+    ...sharedViteConfig,
     plugins: [
       vue(),
       sentryVitePlugin({

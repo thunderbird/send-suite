@@ -219,7 +219,7 @@ TODO:
     });
 
     const destroyUrl = `https://oauth.stage.mozaws.net/v1/destroy`;
-    const accessToken = `get the access token`;
+    const accessToken = null; // this is still todo, adding null to avoid unnecessary errors
     if (accessToken) {
       const body = {
         token: accessToken,
