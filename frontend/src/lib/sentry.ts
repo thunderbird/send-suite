@@ -19,7 +19,7 @@ export const initSentry = (app: App) => {
       }),
     ],
     // Performance Monitoring
-    tracesSampleRate: 1.0, //  Capture 100% of the transactions
+    tracesSampleRate: 0.5,
     // Set 'tracePropagationTargets' to control for which URLs distributed tracing should be enabled
     // tracePropagationTargets: ['localhost', /^https:\/\/yourserver\.io\/api/],
     // Session Replay
