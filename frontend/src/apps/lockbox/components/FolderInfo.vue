@@ -1,16 +1,11 @@
 <script setup lang="ts">
-import { inject, ref, computed, watchEffect } from 'vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
+import { ref } from 'vue';
 
+import AccessLinksList from '@/apps/lockbox/components/AccessLinksList.vue';
 import CreateAccessLink from '@/apps/lockbox/components/CreateAccessLink.vue';
 import FolderNameForm from '@/apps/lockbox/elements/FolderNameForm.vue';
-import Avatar from '@/apps/lockbox/elements/Avatar.vue';
-import TagLabel from '@/apps/lockbox/elements/TagLabel.vue';
-import Btn from '@/apps/lockbox/elements/Btn.vue';
 import { formatBytes } from '@/lib/utils';
-import { IconDownload, IconShare } from '@tabler/icons-vue';
-import AddTag from '@/apps/lockbox/components/AddTag.vue';
-import AccessLinksList from '@/apps/lockbox/components/AccessLinksList.vue';
 
 const folderStore = useFolderStore();
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Btn from '@/apps/lockbox/elements/Btn.vue';
+import Btn from '@/apps/lockbox/elements/BtnComponent.vue';
 import { computed, onMounted, ref } from 'vue';
 
 import StatusBar from '@/apps/common/StatusBar.vue';

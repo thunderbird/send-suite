@@ -1,5 +1,8 @@
 ---
 resources:
+  domains:
+    backend: lockbox.thunderbird.dev
+    frontend: send.thunderbird.dev
   tb:network:MultiCidrVpc:
     vpc:
       cidr_block: 10.0.0.0/16
@@ -56,7 +59,7 @@ resources:
         - sentry-auth-token
   tb:fargate:FargateClusterWithLogging:
     backend:
-      desired_count: 3
+      desired_count: 1
       assign_public_ip: True
       ecr_resources:
         - arn:aws:ecr:us-east-1:768512802988:repository/send*
@@ -83,8 +86,7 @@ resources:
           - FARGATE
         container_definitions:
           backend:
-            image: "768512802988.dkr.ecr.us-east-1.amazonaws.com/send:0.1.30"
-            desired_replicas: 3
+            image: "768512802988.dkr.ecr.us-east-1.amazonaws.com/send:3a22c15a4baa7528657e88726e3ef0f730827d02"
             portMappings:
               - name: send-suite
                 containerPort: 8080
@@ -168,6 +170,12 @@ resources:
         comment: send-suite staging frontend
         logging_config:
           include_cookies: True
-  domains:
-    backend: lockbox.thunderbird.dev
-    frontend: send.thunderbird.dev
+  tb:cloudwatch:CloudWatchMonitoringGroup:
+    alarms: {}
+    notify_emails:
+      - rjung+cloudwatch@thunderbird.net
+    # alarms:
+    #   send-suite-staging-fargate-service:
+    #     cpu_utilization:
+    #       enabled: False
+    #       threshold: 80

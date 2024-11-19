@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 
-import Btn from '@/apps/lockbox/elements/Btn.vue';
+import Btn from '@/apps/lockbox/elements/BtnComponent.vue';
 import { IconPlus } from '@tabler/icons-vue';
 
 const folderStore = useFolderStore();

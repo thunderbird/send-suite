@@ -26,6 +26,7 @@ watchEffect(() => {
     <li
       v-for="node of path"
       v-if="folderStore.rootFolder"
+      :key="node.id"
       class="inline-block pl-1"
     >
       &nbsp;&gt;&nbsp;

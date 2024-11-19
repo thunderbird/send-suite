@@ -64,7 +64,5 @@ export const validator = async ({
     userStore.getBackup,
     keychain
   );
-
-  console.log('validations ran with result', validations);
   return validations;
 };

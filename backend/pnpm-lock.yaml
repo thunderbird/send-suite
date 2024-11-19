@@ -75,7 +75,7 @@ importers:
         specifier: ^5.1.1
         version: 5.16.2
       vite:
-        specifier: ^5.3.1
+        specifier: ^5.3.6
         version: 5.3.6(@types/node@20.14.10)
       ws:
         specifier: ^8.13.0
@@ -129,9 +129,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@20.14.10))
-      eslint:
-        specifier: ^8.56.0
-        version: 8.57.0
       eslint-config-prettier:
         specifier: ^9.1.0
         version: 9.1.0(eslint@8.57.0)

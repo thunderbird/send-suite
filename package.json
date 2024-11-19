@@ -8,6 +8,7 @@
   "main": "index.js",
   "scripts": {
     "prepare": "husky",
+    "build:frontend": "cd frontend && pnpm build-and-submit",
     "sort-package-json": "sort-package-json {frontend,backend}/package.json",
     "compare_envs": "bun run scripts/envs.ts",
     "test:frontend": "cd frontend && pnpm test",

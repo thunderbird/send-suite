@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import BackupAndRestore from '@/apps/common/BackupAndRestore.vue';
-import Btn from '@/apps/lockbox/elements/Btn.vue';
+import Btn from '@/apps/lockbox/elements/BtnComponent.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import { formatSessionInfo, mozAcctLogin } from '@/lib/fxa';
 import { dbUserSetup } from '@/lib/helpers';

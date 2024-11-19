@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "0.1.30",
+  "version": "0.1.32",
   "description": "",
   "keywords": [],
   "license": "ISC",
@@ -60,7 +60,7 @@
     "passport-openidconnect": "^0.1.1",
     "posthog-node": "^4.0.1",
     "prisma": "^5.1.1",
-    "vite": "^5.3.1",
+    "vite": "^5.3.6",
     "ws": "^8.13.0"
   },
   "devDependencies": {
@@ -80,7 +80,6 @@
     "@types/ws": "^8.5.5",
     "@typescript-eslint/parser": "^7.13.1",
     "@vitest/coverage-v8": "^1.6.0",
-    "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "globals": "^15.6.0",
     "lint-staged": "^15.2.7",

@@ -5,6 +5,7 @@ import pulumi_aws as aws
 import tb_pulumi
 import tb_pulumi.ci
 import tb_pulumi.cloudfront
+import tb_pulumi.cloudwatch
 import tb_pulumi.fargate
 import tb_pulumi.network
 import tb_pulumi.rds
@@ -66,6 +67,7 @@ backend_dns = aws.route53.Record(
     type=aws.route53.RecordType.CNAME,
     ttl=60,
     records=[backend_fargate.resources['fargate_service_alb'].resources['albs']['send-suite'].dns_name],
+    opts=pulumi.ResourceOptions(depends_on=[backend_fargate]),
 )
 
 # Manage the CloudFront rewrite function; the code is managed in cloudfront-rewrite.js
@@ -128,6 +130,7 @@ frontend_dns = aws.route53.Record(
     type=aws.route53.RecordType.CNAME,
     ttl=60,
     records=[frontend.resources['cloudfront_distribution'].domain_name],
+    opts=pulumi.ResourceOptions(depends_on=[frontend]),
 )
 
 # These settings transcend the stack/environment, so we are not loading them from a config file
@@ -139,11 +142,22 @@ ci_iam = tb_pulumi.ci.AwsAutomationUser(
     enable_ecr_image_push=True,
     ecr_repositories=['send'],
     enable_fargate_deployments=True,
-    fargate_clusters=['send-suite-staging-fargate'],
-    fargate_task_role_arns=['arn:aws:iam::768512802988:role/send-suite-staging-fargate'],
+    fargate_clusters=['send-suite-staging-fargate', 'send-suite-prod-fargate'],
+    fargate_task_role_arns=[
+        'arn:aws:iam::768512802988:role/send-suite-staging-fargate',
+        'arn:aws:iam::768512802988:role/send-suite-prod-fargate',
+    ],
     enable_full_s3_access=True,
     s3_full_access_buckets=['tb-send-suite-pulumi'],
     enable_s3_bucket_upload=True,
-    s3_upload_buckets=['tb-send-suite-staging-frontend'],
+    s3_upload_buckets=['tb-send-suite-staging-frontend', 'tb-send-suite-prod-frontend'],
     opts=pulumi.ResourceOptions(depends_on=[frontend]),
+)
+
+monitoring_opts = resources['tb:cloudwatch:CloudWatchMonitoringGroup']
+monitoring = tb_pulumi.cloudwatch.CloudWatchMonitoringGroup(
+    name=f'{project.name_prefix}-monitoring',
+    project=project,
+    notify_emails=monitoring_opts['notify_emails'],
+    config=monitoring_opts,
 )
