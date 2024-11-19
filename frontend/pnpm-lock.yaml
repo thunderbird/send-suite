@@ -74,7 +74,7 @@ importers:
         version: 7.13.1(eslint@8.57.0)(typescript@5.4.5)
       '@vitejs/plugin-vue':
         specifier: ^4.2.3
-        version: 4.6.2(vite@5.3.1(@types/node@20.14.6))(vue@3.4.29(typescript@5.4.5))
+        version: 4.6.2(vite@5.3.6(@types/node@20.14.6))(vue@3.4.29(typescript@5.4.5))
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@20.14.6)(happy-dom@14.12.3))
@@ -139,8 +139,8 @@ importers:
         specifier: ^3.3.2
         version: 3.3.2
       vite:
-        specifier: ^5.3.1
-        version: 5.3.1(@types/node@20.14.6)
+        specifier: ^5.3.6
+        version: 5.3.6(@types/node@20.14.6)
       vitest:
         specifier: ^1.6.0
         version: 1.6.0(@types/node@20.14.6)(happy-dom@14.12.3)
@@ -712,9 +712,6 @@ packages:
 
   '@types/eslint-config-prettier@6.11.3':
     resolution: {integrity: sha512-3wXCiM8croUnhg9LdtZUJQwNcQYGWxxdOWDjPe1ykCqJFPVpzAKfs/2dgSoCtAvdPeaponcWPI7mPcGGp9dkKQ==}
-
-  '@types/estree@1.0.5':
-    resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
 
   '@types/estree@1.0.6':
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
@@ -1849,6 +1846,9 @@ packages:
   picocolors@1.0.1:
     resolution: {integrity: sha512-anP1Z8qwhkbmu7MFP5iTt+wQKXgwzf7zTyGlcdzabySa9vd0Xt392U0rVmz9poOaBj0uHJKyyo9/upk0HrEQew==}
 
+  picocolors@1.1.1:
+    resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
+
   picomatch@2.3.1:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
     engines: {node: '>=8.6'}
@@ -1920,6 +1920,10 @@ packages:
 
   postcss@8.4.38:
     resolution: {integrity: sha512-Wglpdk03BSfXkHoQa3b/oulrotAkwrlLDRSOb9D0bN86FdRyE9lppSp33aHNPgBa0JKCoB+drFLZkQoRRYae5A==}
+    engines: {node: ^10 || ^12 || >=14}
+
+  postcss@8.4.49:
+    resolution: {integrity: sha512-OCVPnIObs4N29kxTjzLfUryOkvZEq+pf8jTF0lg8E7uETuWHA+v7j3c/xJmiqpX450191LlmZfUKkXxkTry7nA==}
     engines: {node: ^10 || ^12 || >=14}
 
   posthog-js@1.150.1:
@@ -2075,6 +2079,10 @@ packages:
 
   source-map-js@1.2.0:
     resolution: {integrity: sha512-itJW8lvSA0TXEphiRoawsCksnlf8SyvmFzIhltqAHluXd88pkCd+cXJVHTDwdCr0IzwptSm035IHQktUu1QUMg==}
+    engines: {node: '>=0.10.0'}
+
+  source-map-js@1.2.1:
+    resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
 
   stackback@0.0.2:
@@ -2276,8 +2284,8 @@ packages:
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
 
-  vite@5.3.1:
-    resolution: {integrity: sha512-XBmSKRLXLxiaPYamLv3/hnP/KXDai1NDexN0FpkTaZXTfycHvkRHoenpgl/fvuK/kPbB6xAgoyiryAhQNxYmAQ==}
+  vite@5.3.6:
+    resolution: {integrity: sha512-es78AlrylO8mTVBygC0gTC0FENv0C6T496vvd33ydbjF/mIi9q3XQ9A3NWo5qLGFKywvz10J26813OkLvcQleA==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
     peerDependencies:
@@ -3018,8 +3026,6 @@ snapshots:
 
   '@types/eslint-config-prettier@6.11.3': {}
 
-  '@types/estree@1.0.5': {}
-
   '@types/estree@1.0.6': {}
 
   '@types/firefox-webext-browser@120.0.4': {}
@@ -3129,9 +3135,9 @@ snapshots:
 
   '@ungap/structured-clone@1.2.0': {}
 
-  '@vitejs/plugin-vue@4.6.2(vite@5.3.1(@types/node@20.14.6))(vue@3.4.29(typescript@5.4.5))':
+  '@vitejs/plugin-vue@4.6.2(vite@5.3.6(@types/node@20.14.6))(vue@3.4.29(typescript@5.4.5))':
     dependencies:
-      vite: 5.3.1(@types/node@20.14.6)
+      vite: 5.3.6(@types/node@20.14.6)
       vue: 3.4.29(typescript@5.4.5)
 
   '@vitest/coverage-v8@1.6.0(vitest@1.6.0(@types/node@20.14.6)(happy-dom@14.12.3))':
@@ -3649,7 +3655,7 @@ snapshots:
 
   estree-walker@3.0.3:
     dependencies:
-      '@types/estree': 1.0.5
+      '@types/estree': 1.0.6
 
   esutils@2.0.3: {}
 
@@ -4242,6 +4248,8 @@ snapshots:
 
   picocolors@1.0.1: {}
 
+  picocolors@1.1.1: {}
+
   picomatch@2.3.1: {}
 
   pidtree@0.6.0: {}
@@ -4300,6 +4308,12 @@ snapshots:
       nanoid: 3.3.7
       picocolors: 1.0.1
       source-map-js: 1.2.0
+
+  postcss@8.4.49:
+    dependencies:
+      nanoid: 3.3.7
+      picocolors: 1.1.1
+      source-map-js: 1.2.1
 
   posthog-js@1.150.1:
     dependencies:
@@ -4445,6 +4459,8 @@ snapshots:
       is-fullwidth-code-point: 5.0.0
 
   source-map-js@1.2.0: {}
+
+  source-map-js@1.2.1: {}
 
   stackback@0.0.2: {}
 
@@ -4649,7 +4665,7 @@ snapshots:
       debug: 4.3.5(supports-color@5.5.0)
       pathe: 1.1.2
       picocolors: 1.0.1
-      vite: 5.3.1(@types/node@20.14.6)
+      vite: 5.3.6(@types/node@20.14.6)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -4660,10 +4676,10 @@ snapshots:
       - supports-color
       - terser
 
-  vite@5.3.1(@types/node@20.14.6):
+  vite@5.3.6(@types/node@20.14.6):
     dependencies:
       esbuild: 0.21.5
-      postcss: 8.4.38
+      postcss: 8.4.49
       rollup: 4.24.0
     optionalDependencies:
       '@types/node': 20.14.6
@@ -4698,7 +4714,7 @@ snapshots:
       strip-literal: 2.1.0
       tinybench: 2.8.0
       tinypool: 0.8.4
-      vite: 5.3.1(@types/node@20.14.6)
+      vite: 5.3.6(@types/node@20.14.6)
       vite-node: 1.6.0(@types/node@20.14.6)
       why-is-node-running: 2.2.2
     optionalDependencies:
