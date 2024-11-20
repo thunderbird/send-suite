@@ -77,7 +77,7 @@ resources:
           health_check:
             healthy_threshold: 2
             unhealthy_threshold: 5
-            interval: 15
+            interval: 30
       task_definition:
         network_mode: awsvpc
         cpu: 1024
@@ -86,7 +86,7 @@ resources:
           - FARGATE
         container_definitions:
           backend:
-            image: "768512802988.dkr.ecr.us-east-1.amazonaws.com/send:3a22c15a4baa7528657e88726e3ef0f730827d02"
+            image: "768512802988.dkr.ecr.us-east-1.amazonaws.com/send:554cc6d96c0d378269e4cbf949345dfe51118aa2"
             portMappings:
               - name: send-suite
                 containerPort: 8080
@@ -179,3 +179,29 @@ resources:
     #     cpu_utilization:
     #       enabled: False
     #       threshold: 80
+  tb:ci:AwsAutomationUser:
+    ci:
+      active_stack: staging
+      additional_policies:
+        - arn:aws:iam::768512802988:policy/send-suite-ci-frontend-cache-invalidation
+        - arn:aws:iam::768512802988:policy/send-suite-staging-frontend-cache-invalidation
+        - arn:aws:iam::768512802988:policy/send-suite-prod-frontend-cache-invalidation
+      enable_ecr_image_push: true
+      ecr_repositories:
+        - send
+      enable_fargate_deployments: true
+      fargate_clusters:
+        - send-suite-staging-fargate
+        - send-suite-prod-fargate
+      fargate_task_role_arns:
+        - arn:aws:iam::768512802988:role/send-suite-ci-fargate
+        - arn:aws:iam::768512802988:role/send-suite-staging-fargate
+        - arn:aws:iam::768512802988:role/send-suite-prod-fargate
+      enable_full_s3_access: true
+      s3_full_access_buckets:
+        - tb-send-suite-pulumi
+      enable_s3_bucket_upload: true
+      s3_upload_buckets:
+        - tb-send-suite-ci-frontend
+        - tb-send-suite-staging-frontend
+        - tb-send-suite-prod-frontend

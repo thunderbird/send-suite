@@ -34,4 +34,8 @@ cp frontend/scripts/build.sh frontend-source/scripts/build.sh
 # Create zip for submission
 zip -r frontend-source-${VERSION}.zip frontend-source
 
+if [ "$IS_CI_AUTOMATION" != "yes" ]; then
+    rm -rf frontend-source
+fi
+
 echo "Finished creating frontend-source-${VERSION}.zip!"

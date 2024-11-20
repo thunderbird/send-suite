@@ -162,7 +162,7 @@ jobs:
           pnpm install
 
           # Build static frontend assets and the .xpi
-          pnpm build-and-submit
+          IS_CI_AUTOMATION=yes pnpm build-and-submit
           popd
           mv frontend-source frontend-source-staging
           mv frontend-source.zip frontend-source-staging.zip
@@ -206,7 +206,7 @@ jobs:
           pnpm install
 
           # Build static frontend assets and the .xpi
-          pnpm build-and-submit
+          IS_CI_AUTOMATION=yes pnpm build-and-submit
           popd
           mv frontend-source frontend-source-prod
           mv frontend-source.zip frontend-source-prod.zip

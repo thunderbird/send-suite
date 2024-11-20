@@ -134,24 +134,9 @@ frontend_dns = aws.route53.Record(
 )
 
 # These settings transcend the stack/environment, so we are not loading them from a config file
+ci_opts = resources['tb:ci:AwsAutomationUser']['ci']
 ci_iam = tb_pulumi.ci.AwsAutomationUser(
-    name=f'{project.project}-ci',
-    project=project,
-    active_stack='staging',
-    additional_policies=[frontend.resources['invalidation_policy'].arn],
-    enable_ecr_image_push=True,
-    ecr_repositories=['send'],
-    enable_fargate_deployments=True,
-    fargate_clusters=['send-suite-staging-fargate', 'send-suite-prod-fargate'],
-    fargate_task_role_arns=[
-        'arn:aws:iam::768512802988:role/send-suite-staging-fargate',
-        'arn:aws:iam::768512802988:role/send-suite-prod-fargate',
-    ],
-    enable_full_s3_access=True,
-    s3_full_access_buckets=['tb-send-suite-pulumi'],
-    enable_s3_bucket_upload=True,
-    s3_upload_buckets=['tb-send-suite-staging-frontend', 'tb-send-suite-prod-frontend'],
-    opts=pulumi.ResourceOptions(depends_on=[frontend]),
+    name=f'{project.project}-ci', project=project, opts=pulumi.ResourceOptions(depends_on=[frontend]), **ci_opts
 )
 
 monitoring_opts = resources['tb:cloudwatch:CloudWatchMonitoringGroup']
