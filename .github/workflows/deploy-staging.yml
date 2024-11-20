@@ -40,8 +40,6 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.backend-changed == 'true'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       # Preparation for future steps
       - uses: actions/checkout@v4
@@ -129,8 +127,6 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.frontend-changed == 'true'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       # Preparation for future steps
       - uses: actions/checkout@v4
@@ -142,6 +138,50 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+      - name: Create staging .env file from secrets
+        shell: bash
+        run: |
+          cd frontend
+          cat << EOF > .env
+          VUE_BASE_URL=https://send.thunderbird.dev
+          VITE_SEND_SERVER_URL=https://lockbox.thunderbird.dev
+          VITE_SEND_CLIENT_URL=https://send.thunderbird.dev
+          VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN_STAGING }}
+          VITE_SENTRY_DSN=${{ vars.VITE_SENTRY_DSN_STAGING }}
+          VITE_POSTHOG_PROJECT_KEY=${{ secrets.VITE_POSTHOG_PROJECT_KEY_STAGING }}
+          VITE_POSTHOG_HOST=${{ vars.VITE_POSTHOG_HOST_STAGING }}
+          EOF
+
+      - name: Build the staging frontend's static assets
+        id: frontend-build-staging
+        shell: bash
+        run: |
+          # Initial setup of dependencies
+          pushd frontend
+          npm install -g pnpm
+          pnpm install
+
+          # Build static frontend assets and the .xpi
+          pnpm build-and-submit
+          popd
+          mv frontend-source frontend-source-staging
+          mv frontend-source.zip frontend-source-staging.zip
+
+      - name: Archive the staging frontend build
+        id: frontend-archive-staging
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-source-staging
+          path: frontend-source-staging
+          compression-level: 0
+
+      - name: Archive the staging XPI
+        id: xpi-archive-staging
+        uses: actions/upload-artifact@v4
+        with:
+          name: xpi-staging
+          path: send-suite-alpha-*.xpi
+      
       - name: Create production .env file from secrets
         shell: bash
         run: |
@@ -150,43 +190,46 @@ jobs:
           VUE_BASE_URL=https://send.thunderbird.dev
           VITE_SEND_SERVER_URL=https://lockbox.thunderbird.dev
           VITE_SEND_CLIENT_URL=https://send.thunderbird.dev
-          VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }}
-          VITE_SENTRY_DSN=${{ vars.VITE_SENTRY_DSN }}
-          VITE_POSTHOG_PROJECT_KEY=${{ secrets.VITE_POSTHOG_PROJECT_KEY }}
-          VITE_POSTHOG_HOST=${{ vars.VITE_POSTHOG_HOST }}
+          VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN_PROD }}
+          VITE_SENTRY_DSN=${{ vars.VITE_SENTRY_DSN_PROD }}
+          VITE_POSTHOG_PROJECT_KEY=${{ secrets.VITE_POSTHOG_PROJECT_KEY_PROD }}
+          VITE_POSTHOG_HOST=${{ vars.VITE_POSTHOG_HOST_PROD }}
           EOF
 
-      - name: Build the frontend's static assets
-        id: frontend-build
+      - name: Build the production frontend's static assets
+        id: frontend-build-prod
         shell: bash
         run: |
           # Initial setup of dependencies
-          cd frontend
+          pushd frontend
           npm install -g pnpm
           pnpm install
 
           # Build static frontend assets and the .xpi
           pnpm build-and-submit
+          popd
+          mv frontend-source frontend-source-prod
+          mv frontend-source.zip frontend-source-prod.zip
 
-      - name: Archive the frontend build
-        id: frontend-archive
+      - name: Archive the production frontend build
+        id: frontend-archive-prod
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-source
-          path: frontend-source-*.zip
+          name: frontend-source-prod
+          path: frontend-source-prod
 
-      - name: Archive the XPI
-        id: xpi-archive
+      - name: Archive the prod XPI
+        id: xpi-archive-prod
         uses: actions/upload-artifact@v4
         with:
-          name: xpi
+          name: xpi-prod
           path: send-suite-alpha-*.xpi
 
       - name: Deploy to staging
         id: frontend-deploy
         shell: bash
         run: |
-          cd frontend/dist-web
+          cd frontend-source-staging
           aws s3 cp . s3://tb-send-suite-staging-frontend/ --recursive
 
           # Invalidate the CDN
