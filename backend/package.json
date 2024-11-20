@@ -4,7 +4,7 @@
   "description": "",
   "keywords": [],
   "license": "ISC",
-  "author": "",
+  "author": "Thunderbird",
   "main": "index.js",
   "scripts": {
     "build": "pnpm exec tsc && tsc-alias && pnpm sentry:sourcemaps",
