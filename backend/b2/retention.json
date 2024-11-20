@@ -1,0 +1,5 @@
+{
+  "daysFromHidingToDeleting": 30,
+  "daysFromUploadingToHiding": 15,
+  "fileNamePrefix": "backup/"
+}

@@ -281,3 +281,6 @@ Move to the b2 rules directory
 
 Update the rules
 `b2 bucket update {YOUR_BUCKET_NAME} --cors-rules "$(<./rules.json)"`
+
+Updating retention rules
+`b2 bucket update {YOUR_BUCKET_NAME} --lifecycle-rule "$(<./retention.json)"`
