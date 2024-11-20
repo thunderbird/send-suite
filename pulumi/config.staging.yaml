@@ -179,3 +179,29 @@ resources:
     #     cpu_utilization:
     #       enabled: False
     #       threshold: 80
+  tb:ci:AwsAutomationUser:
+    ci:
+      active_stack: staging
+      additional_policies:
+        - arn:aws:iam::768512802988:policy/send-suite-ci-frontend-cache-invalidation
+        - arn:aws:iam::768512802988:policy/send-suite-staging-frontend-cache-invalidation
+        - arn:aws:iam::768512802988:policy/send-suite-prod-frontend-cache-invalidation
+      enable_ecr_image_push: true
+      ecr_repositories:
+        - send
+      enable_fargate_deployments: true
+      fargate_clusters:
+        - send-suite-staging-fargate
+        - send-suite-prod-fargate
+      fargate_task_role_arns:
+        - arn:aws:iam::768512802988:role/send-suite-ci-fargate
+        - arn:aws:iam::768512802988:role/send-suite-staging-fargate
+        - arn:aws:iam::768512802988:role/send-suite-prod-fargate
+      enable_full_s3_access: true
+      s3_full_access_buckets:
+        - tb-send-suite-pulumi
+      enable_s3_bucket_upload: true
+      s3_upload_buckets:
+        - tb-send-suite-ci-frontend
+        - tb-send-suite-staging-frontend
+        - tb-send-suite-prod-frontend
