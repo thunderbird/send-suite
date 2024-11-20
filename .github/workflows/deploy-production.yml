@@ -17,15 +17,19 @@ jobs:
   deploy-backend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out the code
+        if: contains(github.event.release.assets.*.name, 'ecr_tag.zip')
+        uses: actions/checkout@v4
 
       - name: Download ECR tag artifact
+        if: contains(github.event.release.assets.*.name, 'ecr_tag.zip')
         uses: dsaltares/fetch-gh-release-asset@master
         with:
           version: ${{ github.event.release.id }}
           file: ecr_tag.zip
 
       - name: Configure AWS credentials
+        if: contains(github.event.release.assets.*.name, 'ecr_tag.zip')
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: us-east-1
@@ -34,11 +38,13 @@ jobs:
 
       - name: Login to Amazon ECR
         id: login-ecr
+        if: contains(github.event.release.assets.*.name, 'ecr_tag.zip')
         uses: aws-actions/amazon-ecr-login@v2
         with:
           mask-password: 'true'
 
       - name: Retag image
+        if: contains(github.event.release.assets.*.name, 'ecr_tag.zip')
         id: retag-image
         shell: bash
         run: |
@@ -58,11 +64,13 @@ jobs:
           docker push $target_tag
 
       - name: Set up Python 3.12
+        if: contains(github.event.release.assets.*.name, 'ecr_tag.zip')
         uses: actions/setup-python@v5
         with:
           python-version: 3.12
 
       - name: Set up virtual environment
+        if: contains(github.event.release.assets.*.name, 'ecr_tag.zip')
         shell: bash
         run: |
           python -m pip install virtualenv
@@ -70,6 +78,7 @@ jobs:
           virtualenv ./venv
 
       - name: Set up Pulumi environment
+        if: contains(github.event.release.assets.*.name, 'ecr_tag.zip')
         id: pulumi-env
         shell: bash
         run: |
@@ -79,6 +88,7 @@ jobs:
           pip install -Ur requirements.txt
 
       - name: Deploy version-tagged image to prod
+        if: contains(github.event.release.assets.*.name, 'ecr_tag.zip')
         shell: bash
         run: |
           # Pull the versioned tag from the previous step
@@ -104,3 +114,34 @@ jobs:
             pulumi up -y --diff --target \
             'urn:pulumi:prod::send-suite::tb:fargate:FargateClusterWithLogging$aws:ecs/taskDefinition:TaskDefinition::send-suite-prod-fargate-taskdef' \
             --target-dependents
+
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download frontend source
+        if: contains(github.event.release.assets.*.name, 'frontend-source-prod.zip')
+        uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          version: ${{ github.event.release.id }}
+          file: frontend-source-prod.zip
+
+      - name: Configure AWS credentials
+        if: contains(github.event.release.assets.*.name, 'frontend-source-prod.zip')
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Deploy to production
+        if: contains(github.event.release.assets.*.name, 'frontend-source-prod.zip')
+        id: frontend-deploy
+        shell: bash
+        run: |
+          unzip -d frontend-source frontend-source-prod.zip
+          cd frontend-source
+          aws s3 cp . s3://tb-send-suite-prod-frontend/ --recursive
+
+          # Invalidate the CDN
+          aws cloudfront create-invalidation --distribution-id ${{ vars.PROD_CF_DISTRO_ID }} --paths "/*"
+
