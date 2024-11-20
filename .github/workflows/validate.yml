@@ -5,18 +5,16 @@ concurrency:
   group: validate
   cancel-in-progress: true
 
-
 on:
   push:
     branches:
-      - '**'
-      - '!main'
+      - "**"
+      - "!main"
 
 permissions:
   contents: read
 
 jobs:
-
   # This job detects which parts of the repo have been changed, setting future jobs up for conditional behavior.
   detect-changes:
     runs-on: ubuntu-latest
@@ -67,12 +65,19 @@ jobs:
           # Certain values here contain "/" characters, which need to be escaped so sed doesn't break
           APP_KEY=$(echo '${{ secrets.TEST_B2_APPLICATION_KEY }}' | sed 's/\//\\\//g')
           B2_ENDPOINT=$(echo '${{ vars.TEST_B2_ENDPOINT }}' | sed 's/\//\\\//g')
+          S3_ENDPOINT=$(echo '${{ secrets.TEST_S3_ENDPOINT }}' | sed 's/\//\\\//g')
 
           sed -i "s/^TEST_B2_REGION=$/TEST_B2_REGION=${{ vars.TEST_B2_REGION }}/" .env
           sed -i "s/^TEST_B2_ENDPOINT=$/TEST_B2_ENDPOINT=$B2_ENDPOINT/" .env
+          sed -i "s/^TEST_B2_APPLICATION_KEY=$/TEST_B2_APPLICATION_KEY=$APP_KEY/" .env
           sed -i "s/^TEST_B2_BUCKET_NAME=$/TEST_B2_BUCKET_NAME=${{ vars.TEST_B2_BUCKET_NAME }}/" .env
           sed -i "s/^TEST_B2_APPLICATION_KEY_ID=$/TEST_B2_APPLICATION_KEY_ID=${{ secrets.TEST_B2_APPLICATION_KEY_ID }}/" .env
-          sed -i "s/^TEST_B2_APPLICATION_KEY=$/TEST_B2_APPLICATION_KEY=$APP_KEY/" .env
+          sed -i "s/^TEST_S3_REGION=$/TEST_S3_REGION=${{ secrets.TEST_S3_REGION }}/" .env
+          sed -i "s/^TEST_S3_ENDPOINT=$/TEST_S3_ENDPOINT=$S3_ENDPOINT/" .env
+          sed -i "s/^TEST_S3_ACCESS_KEY=$/TEST_S3_ACCESS_KEY=${{ secrets.TEST_S3_ACCESS_KEY }}/" .env
+          sed -i "s/^TEST_S3_SECRET_KEY=$/TEST_S3_SECRET_KEY=${{ secrets.TEST_S3_SECRET_KEY }}/" .env
+          sed -i "s/^TEST_S3_BUCKET_NAME=$/TEST_S3_BUCKET_NAME=${{ secrets.TEST_S3_BUCKET_NAME }}/" .env
+
           pnpm ci:validate || true
 
   # When Pulumi code or configs change, run these steps
@@ -86,13 +91,13 @@ jobs:
       - name: Ruff formatting checks
         uses: chartboost/ruff-action@v1
         with:
-          src: './pulumi'
-          args: 'format --check'
+          src: "./pulumi"
+          args: "format --check"
 
       - name: Other linting with Ruff
         uses: chartboost/ruff-action@v1
         with:
-          src: './pulumi'
+          src: "./pulumi"
 
   # When the frontend code changes, run these steps
   frontend-lint:
