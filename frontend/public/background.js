@@ -24,20 +24,20 @@ function setAccountConfigured(accountId) {
     );
   }
 }
+
 browser.webRequest.onBeforeSendHeaders.addListener(
   (details) => {
+    const origin = browser.runtime.getURL('').slice(0, -1);
     let requestHeaders = details.requestHeaders;
     // Remove the Origin header from requests to backblazeb2
     const hostName = requestHeaders.find(
       (header) => header.name.toLowerCase() === 'host'
     ).value;
 
-    // Filter out the Origin header
-    requestHeaders = requestHeaders.filter(
-      (header) => header.name.toLowerCase() !== 'origin'
-    );
-
-    console.log(`altered a request for host ${hostName}`, requestHeaders);
+    console.log(`altered a request for host ${hostName}`, {
+      requestHeaders,
+      origin,
+    });
     return { requestHeaders };
   },
   { urls: ['https://*.backblazeb2.com/*'] },
