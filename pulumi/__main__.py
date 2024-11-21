@@ -18,6 +18,10 @@ CLOUDFRONT_REWRITE_CODE_FILE = 'cloudfront-rewrite.js'
 project = tb_pulumi.ThunderbirdPulumiProject()
 resources = project.config.get('resources')
 
+# Copy select secrets from Pulumi into AWS Secrets Manager
+pulumi_sm_opts = resources['tb:secrets:PulumiSecretsManager']['pulumi']
+pulumi_sm = tb_pulumi.secrets.PulumiSecretsManager(f'{project.name_prefix}-secrets', project, **pulumi_sm_opts)
+
 # Build the networking landscape
 vpc_opts = resources['tb:network:MultiCidrVpc']['vpc']
 vpc = tb_pulumi.network.MultiCidrVpc(f'{project.name_prefix}-vpc', project, **vpc_opts)
@@ -29,31 +33,20 @@ backend_sg = tb_pulumi.network.SecurityGroupWithRules(
     project,
     vpc_id=vpc.resources['vpc'].id,
     **backend_sg_opts,
-    opts=pulumi.ResourceOptions(depends_on=vpc),
+    opts=pulumi.ResourceOptions(depends_on=[vpc]),
 )
-
-# Copy select secrets from Pulumi into AWS Secrets Manager
-pulumi_sm_opts = resources['tb:secrets:PulumiSecretsManager']['pulumi']
-pulumi_sm = tb_pulumi.secrets.PulumiSecretsManager(
-    f'{project.name_prefix}-secrets', project, **pulumi_sm_opts, opts=pulumi.ResourceOptions(depends_on=vpc)
-)
-
-# NOTE: AWS Secrets Manager doesn't delete secrets right away, in case you accidentally delete
-#     something and need to recover it. If you delete a secret (leaving it pending deletion for a few
-#     days) and then try to create another by the same name, that creates a conflict. Because of
-#     this, secret ARNs get a randomized suffix added to them. This is done by AWS, and there is
-#     nothing we can do about it. Later, we use these ARNs as part of the task definition for the
-#     following Fargate cluster. You will probably have to run a `pulumi up` to create the secrets,
-#     then update the config file with the proper ARNs.
 
 # Create a Fargate cluster
 backend_fargate_opts = resources['tb:fargate:FargateClusterWithLogging']['backend']
+backend_subnets = [subnet for subnet in vpc.resources['subnets']]
 backend_fargate = tb_pulumi.fargate.FargateClusterWithLogging(
     f'{project.name_prefix}-fargate',
     project,
-    [subnet for subnet in vpc.resources['subnets']],
+    backend_subnets,
     security_groups=[backend_sg.resources['sg']],
-    opts=pulumi.ResourceOptions(depends_on=[vpc, pulumi_sm]),
+    opts=pulumi.ResourceOptions(
+        depends_on=[*vpc.resources['subnets'], backend_sg.resources['sg'], *backend_subnets, pulumi_sm]
+    ),
     **backend_fargate_opts,
 )
 
@@ -70,55 +63,12 @@ backend_dns = aws.route53.Record(
     opts=pulumi.ResourceOptions(depends_on=[backend_fargate]),
 )
 
-# Manage the CloudFront rewrite function; the code is managed in cloudfront-rewrite.js
-rewrite_code = None
-try:
-    with open(CLOUDFRONT_REWRITE_CODE_FILE, 'r') as fh:
-        rewrite_code = fh.read()
-except IOError:
-    pulumi.error(f'Could not read file {CLOUDFRONT_REWRITE_CODE_FILE}')
-
-cf_func = aws.cloudfront.Function(
-    f'{project.name_prefix}-func-rewrite',
-    code=rewrite_code,
-    comment='Rewrites inbound requests to direct them to the send-suite backend API',
-    name=f'{project.name_prefix}-rewrite',
-    publish=True,
-    runtime='cloudfront-js-2.0',
-)
-
-# Deliver frontend content via CloudFront; Ref:
-# https://www.pulumi.com/registry/packages/aws/api-docs/cloudfront/distribution/#distributionorigincustomoriginconfig
-api_origin = {
-    'origin_id': f'{project.name_prefix}-api',
-    'domain_name': backend_fargate.resources['fargate_service_alb'].resources['albs']['send-suite'].dns_name,
-    'custom_origin_config': {
-        'http_port': 80,
-        'https_port': 443,
-        'origin_protocol_policy': 'https-only',
-        'origin_ssl_protocols': ['TLSv1.2'],
-    },
-}
-
-behaviors = [
-    {
-        'allowed_methods': ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'PATCH', 'POST', 'PUT'],
-        'cache_policy_id': tb_pulumi.cloudfront.CACHE_POLICY_ID_DISABLED,
-        'cached_methods': ['GET', 'HEAD', 'OPTIONS'],
-        'function_associations': [{'event_type': 'viewer-request', 'function_arn': cf_func.arn}],
-        'origin_request_policy_id': tb_pulumi.cloudfront.ORIGIN_REQUEST_POLICY_ID_ALLVIEWER,
-        'path_pattern': '/api/*',
-        'target_origin_id': f'{project.name_prefix}-api',
-        'viewer_protocol_policy': 'redirect-to-https',
-    }
-]
-
 frontend_opts = resources['tb:cloudfront:CloudFrontS3Service']['frontend']
 frontend = tb_pulumi.cloudfront.CloudFrontS3Service(
-    behaviors=behaviors,
+    # behaviors=behaviors,
     name=f'{project.name_prefix}-frontend',
     project=project,
-    origins=[api_origin],
+    # origins=[api_origin],
     **frontend_opts,
 )
 
@@ -130,14 +80,15 @@ frontend_dns = aws.route53.Record(
     type=aws.route53.RecordType.CNAME,
     ttl=60,
     records=[frontend.resources['cloudfront_distribution'].domain_name],
-    opts=pulumi.ResourceOptions(depends_on=[frontend]),
+    opts=pulumi.ResourceOptions(depends_on=[frontend.resources['cloudfront_distribution']]),
 )
 
-# These settings transcend the stack/environment, so we are not loading them from a config file
-ci_opts = resources['tb:ci:AwsAutomationUser']['ci']
-ci_iam = tb_pulumi.ci.AwsAutomationUser(
-    name=f'{project.project}-ci', project=project, opts=pulumi.ResourceOptions(depends_on=[frontend]), **ci_opts
-)
+# This is only managed by a single stack, so a configuration may not exist for it
+if 'tb:ci:AwsAutomationUser' in resources and 'ci' in resources['tb:ci:AwsAutomationUser']:
+    ci_opts = resources['tb:ci:AwsAutomationUser']['ci']
+    ci_iam = tb_pulumi.ci.AwsAutomationUser(
+        name=f'{project.project}-ci', project=project, **ci_opts
+    )
 
 monitoring_opts = resources['tb:cloudwatch:CloudWatchMonitoringGroup']
 monitoring = tb_pulumi.cloudwatch.CloudWatchMonitoringGroup(
