@@ -28,16 +28,20 @@ function setAccountConfigured(accountId) {
 browser.webRequest.onBeforeSendHeaders.addListener(
   (details) => {
     const origin = browser.runtime.getURL('').slice(0, -1);
-    let requestHeaders = details.requestHeaders;
-    // Remove the Origin header from requests to backblazeb2
-    const hostName = requestHeaders.find(
-      (header) => header.name.toLowerCase() === 'host'
-    ).value;
+
+    // Remove our origin header from requests to backblazeb2.
+    const requestHeaders = details.requestHeaders.filter(
+      ({ name, value }) =>
+        !(name.toLowerCase() === 'origin' && value === origin)
+    );
+
+    const hostName = requestHeaders.find(({ name }) => name === 'Host')?.value;
 
     console.log(`altered a request for host ${hostName}`, {
       requestHeaders,
       origin,
     });
+
     return { requestHeaders };
   },
   { urls: ['https://*.backblazeb2.com/*'] },
