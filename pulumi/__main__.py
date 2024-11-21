@@ -86,9 +86,7 @@ frontend_dns = aws.route53.Record(
 # This is only managed by a single stack, so a configuration may not exist for it
 if 'tb:ci:AwsAutomationUser' in resources and 'ci' in resources['tb:ci:AwsAutomationUser']:
     ci_opts = resources['tb:ci:AwsAutomationUser']['ci']
-    ci_iam = tb_pulumi.ci.AwsAutomationUser(
-        name=f'{project.project}-ci', project=project, **ci_opts
-    )
+    ci_iam = tb_pulumi.ci.AwsAutomationUser(name=f'{project.project}-ci', project=project, **ci_opts)
 
 monitoring_opts = resources['tb:cloudwatch:CloudWatchMonitoringGroup']
 monitoring = tb_pulumi.cloudwatch.CloudWatchMonitoringGroup(
