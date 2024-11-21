@@ -32,10 +32,13 @@ mkdir frontend-source/scripts
 cp frontend/scripts/build.sh frontend-source/scripts/build.sh
 
 # Create zip for submission
-zip -r frontend-source-${VERSION}.zip frontend-source
-
 if [ "$IS_CI_AUTOMATION" != "yes" ]; then
+    # Is *not* CI automation; is probably local dev
+    zip -r frontend-source-${VERSION}.zip frontend-source
     rm -rf frontend-source
+    echo "Finished creating frontend-source-${VERSION}.zip!"
+else
+    # *IS* CI automation
+    zip -r frontend-source.zip frontend-source
+    echo "Finished creating frontend-source.zip!"
 fi
-
-echo "Finished creating frontend-source-${VERSION}.zip!"
