@@ -163,8 +163,8 @@ jobs:
 
           # Build static frontend assets and the .xpi
           IS_CI_AUTOMATION=yes pnpm build-and-submit
+          mv dist-web ../dist-web-staging
           popd
-          mv dist-web dist-web-staging
           mv frontend-source frontend-source-staging
           mv frontend-source.zip frontend-source-staging.zip
 
@@ -208,8 +208,8 @@ jobs:
 
           # Build static frontend assets and the .xpi
           IS_CI_AUTOMATION=yes pnpm build-and-submit
+          mv dist-web ../dist-web-prod
           popd
-          mv dist-web dist-web-prod
           mv frontend-source frontend-source-prod
           mv frontend-source.zip frontend-source-prod.zip
 
