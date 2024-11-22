@@ -1,4 +1,5 @@
 /// <reference types="thunderbird-webext-browser" />
+
 console.log('hello from the extension!', new Date().getTime());
 
 // ==============================================
@@ -23,18 +24,27 @@ function setAccountConfigured(accountId) {
     );
   }
 }
+
 browser.webRequest.onBeforeSendHeaders.addListener(
   (details) => {
-    // Only filter headers for PUT requests
-    if (details.method === 'PUT') {
-      // Filter out the Origin header
-      details.requestHeaders = details.requestHeaders.filter(
-        (header) => header.name.toLowerCase() !== 'origin'
-      );
-    }
-    return { requestHeaders: details.requestHeaders };
+    const origin = browser.runtime.getURL('').slice(0, -1);
+
+    // Remove our origin header from requests to backblazeb2.
+    const requestHeaders = details.requestHeaders.filter(
+      ({ name, value }) =>
+        !(name.toLowerCase() === 'origin' && value === origin)
+    );
+
+    const hostName = requestHeaders.find(({ name }) => name === 'Host')?.value;
+
+    console.log(`altered a request for host ${hostName}`, {
+      requestHeaders,
+      origin,
+    });
+
+    return { requestHeaders };
   },
-  { urls: ['<all_urls>'] },
+  { urls: ['https://*.backblazeb2.com/*'] },
   ['blocking', 'requestHeaders']
 );
 
