@@ -55,8 +55,6 @@ backend_dns = aws.route53.Record(
     f'{project.name_prefix}-dns-backend',
     zone_id='Z03528753AZVULC8BFCA',  # thunderbird.dev
     name=resources['domains']['backend'],
-    # Delete this record once this issue is resolved, deferring to the CloudFront rewrite instead
-    # https://bugzilla.mozilla.org/show_bug.cgi?id=1866867
     type=aws.route53.RecordType.CNAME,
     ttl=60,
     records=[backend_fargate.resources['fargate_service_alb'].resources['albs']['send-suite'].dns_name],
@@ -65,10 +63,8 @@ backend_dns = aws.route53.Record(
 
 frontend_opts = resources['tb:cloudfront:CloudFrontS3Service']['frontend']
 frontend = tb_pulumi.cloudfront.CloudFrontS3Service(
-    # behaviors=behaviors,
     name=f'{project.name_prefix}-frontend',
     project=project,
-    # origins=[api_origin],
     **frontend_opts,
 )
 
