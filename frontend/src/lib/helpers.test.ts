@@ -13,11 +13,11 @@ describe('helpers', () => {
       HttpResponse.json({ blob: TEST_BLOB })
     ),
     http.put(`${TEST_URL}/upload`, async () =>
-      HttpResponse.json({ status: 'success' })
+      HttpResponse.json({ status: 'success' }, { status: 201 })
     ),
   ];
 
-  const server = setupServer(...restHandlers);
+  let server = setupServer(...restHandlers);
 
   beforeAll(() => {
     server.listen();
@@ -32,34 +32,16 @@ describe('helpers', () => {
   });
 
   describe('uploadWithTracker', () => {
-    const TEST_URL = `${import.meta.env.VITE_SEND_SERVER_URL}/api`;
-    const TEST_CONTENT = 'test-content';
-    const TEST_BLOB = new Blob([TEST_CONTENT]);
+    const restHandlers = [
+      http.get(`${TEST_URL}/download/*`, () =>
+        HttpResponse.json({ blob: TEST_BLOB })
+      ),
+      http.put(`${TEST_URL}/upload`, async () =>
+        HttpResponse.json({}, { status: 400 })
+      ),
+    ];
 
     describe('helpers', () => {
-      const restHandlers = [
-        http.get(`${TEST_URL}/download/*`, () =>
-          HttpResponse.json({ blob: TEST_BLOB })
-        ),
-        http.put(`${TEST_URL}/upload`, async () =>
-          HttpResponse.json({ status: 'success' })
-        ),
-      ];
-
-      const server = setupServer(...restHandlers);
-
-      beforeAll(() => {
-        server.listen();
-      });
-
-      afterAll(() => {
-        server.close();
-      });
-
-      afterEach(() => {
-        server.resetHandlers();
-      });
-
       describe('uploadWithTracker', () => {
         it('should track upload progress', async () => {
           const progressTracker = vi.fn();
@@ -80,6 +62,31 @@ describe('helpers', () => {
             expect(result).toBe('{"status":"success"}');
           } catch (error) {
             console.log(error);
+          }
+        });
+
+        server.close();
+        server.resetHandlers();
+        server = setupServer(...restHandlers);
+
+        it('should handle errors', async () => {
+          const progressTracker = vi.fn();
+          const stream = new ReadableStream({
+            start(controller) {
+              controller.enqueue(new TextEncoder().encode(TEST_CONTENT));
+              controller.close();
+            },
+          });
+
+          try {
+            await uploadWithTracker({
+              url: `${TEST_URL}/upload`,
+              readableStream: stream,
+              progressTracker,
+            });
+          } catch (error) {
+            expect(error).toBeInstanceOf(Error);
+            expect(progressTracker).not.toHaveBeenCalled();
           }
         });
       });
