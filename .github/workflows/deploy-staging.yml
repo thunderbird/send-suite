@@ -11,7 +11,7 @@ on:
       - main
 
 permissions:
-    contents: read
+  contents: read
 
 jobs:
   detect-changes:
@@ -55,7 +55,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
         with:
-          mask-password: 'true'
+          mask-password: "true"
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -82,7 +82,7 @@ jobs:
       - name: Build, tag, and push backend image to Amazon ECR
         id: build-backend
         env:
-          ECR_TAG: '${{ steps.login-ecr.outputs.registry }}/${{ vars.PROJECT }}:${{ github.sha }}'
+          ECR_TAG: "${{ steps.login-ecr.outputs.registry }}/${{ vars.PROJECT }}:${{ github.sha }}"
         run: |
           # Build a docker container and push it to ECR so that it can be deployed to ECS.
           docker build -t $ECR_TAG ./backend
@@ -101,7 +101,7 @@ jobs:
       - name: Deploy new image to staging
         shell: bash
         env:
-          ECR_TAG: '${{ steps.login-ecr.outputs.registry }}/${{ vars.PROJECT }}:${{ github.sha }}'
+          ECR_TAG: "${{ steps.login-ecr.outputs.registry }}/${{ vars.PROJECT }}:${{ github.sha }}"
         run: |
           # Change the image config option and try to apply the change
           cd pulumi
@@ -164,6 +164,7 @@ jobs:
           # Build static frontend assets and the .xpi
           IS_CI_AUTOMATION=yes pnpm build-and-submit
           popd
+          mv dist-web dist-web-staging
           mv frontend-source frontend-source-staging
           mv frontend-source.zip frontend-source-staging.zip
 
@@ -171,8 +172,8 @@ jobs:
         id: frontend-archive-staging
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-source-staging
-          path: frontend-source-staging
+          name: dist-web-staging
+          path: dist-web-staging
           compression-level: 0
 
       - name: Archive the staging XPI
@@ -181,7 +182,7 @@ jobs:
         with:
           name: xpi-staging
           path: send-suite-alpha-*.xpi
-      
+
       - name: Create production .env file from secrets
         shell: bash
         run: |
@@ -208,6 +209,7 @@ jobs:
           # Build static frontend assets and the .xpi
           IS_CI_AUTOMATION=yes pnpm build-and-submit
           popd
+          mv dist-web dist-web-prod
           mv frontend-source frontend-source-prod
           mv frontend-source.zip frontend-source-prod.zip
 
@@ -215,8 +217,8 @@ jobs:
         id: frontend-archive-prod
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-source-prod
-          path: frontend-source-prod
+          name: dist-web-prod
+          path: dist-web-prod
 
       - name: Archive the prod XPI
         id: xpi-archive-prod
@@ -229,7 +231,7 @@ jobs:
         id: frontend-deploy
         shell: bash
         run: |
-          cd frontend-source-staging
+          cd dist-web-staging
           aws s3 cp . s3://tb-send-suite-staging-frontend/ --recursive
 
           # Invalidate the CDN
