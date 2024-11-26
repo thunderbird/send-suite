@@ -15,7 +15,7 @@ router.post('/api/metrics/page-load', (req, res) => {
     const dataFromToken = getDataFromAuthenticatedRequest(req);
     uniqueHash = dataFromToken.uniqueHash;
   } catch (error) {
-    console.log('no token present');
+    // will use anon_id
   }
 
   const data = req.body;
