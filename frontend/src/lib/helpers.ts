@@ -262,11 +262,12 @@ export const uploadWithTracker = ({
       if (xhr.status >= 200 && xhr.status < 300) {
         resolve(xhr.response);
       } else {
+        console.error('Upload failed:');
         reject(new Error('UPLOAD_FAILED'));
       }
     };
 
-    xhr.onerror = () => reject(new Error('UPLOAD_FAILED'));
+    xhr.onerror = () => reject(new Error('XHR: UPLOAD_FAILED'));
 
     // Convert ReadableStream to Blob and send
     new Response(readableStream).blob().then((uploadBlob) => {

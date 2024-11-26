@@ -1,13 +1,13 @@
 {
   "name": "thunderbird-send",
-  "version": "0.1.25",
+  "version": "0.1.26",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "NODE_ENV=production ./scripts/build.sh",
     "build-and-submit": "NODE_ENV=production ./scripts/build.sh && ./scripts/submit.sh",
     "build:dev": "./scripts/build.sh",
-    "build:watch": "nodemon -e vue,ts,js --watch './{src,public}/**/*' --exec 'pnpm build'",
+    "build:watch": "nodemon -e vue,ts,js,json --watch './{src,public}/**/*' --exec 'pnpm build'",
     "ci:validate": "pnpm lint:all; pnpm prettier:all; pnpm run test",
     "dev": "vite --host",
     "lint:all": "eslint src/**/*.ts --fix",

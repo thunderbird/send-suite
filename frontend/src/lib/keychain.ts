@@ -728,7 +728,7 @@ export async function restoreKeysUsingLocalStorage(
 ) {
   console.log('🔑 auto restoring keys');
   if (!keychain.getPassphraseValue()) {
-    console.error('Keychain passphrase is not initialized');
+    console.log('Keychain passphrase is not initialized');
     return;
   }
   return restoreKeys(keychain, api);

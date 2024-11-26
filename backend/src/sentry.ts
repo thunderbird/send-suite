@@ -15,7 +15,19 @@ const TRACING_LEVELS_DEV = ['error', 'warn', 'debug'];
 
 const isProduction = ENVIRONMENT === 'production';
 
-const ignoredTraces = ['GET /'];
+const ignoredTraces = [{ method: 'GET', endpoint: '/' }];
+
+const excludedUserAgents = ['headless', 'elb'];
+
+// Ignore events from health checks and headless browsers
+const hasExcludedUserAgent = (headers: Record<string, string | undefined>) => {
+  const userAgent = (
+    headers['user-agent'] ||
+    headers['User-Agent'] ||
+    ''
+  ).toLowerCase();
+  return excludedUserAgents.some((agent) => userAgent.includes(agent));
+};
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
@@ -27,13 +39,21 @@ Sentry.init({
   ],
   // Performance Monitoring
   environment: process.env.NODE_ENV || 'development',
+  beforeSendTransaction: (event) => {
+    if (hasExcludedUserAgent(event.request.headers)) {
+      return null;
+    }
+    return event;
+  },
   tracesSampleRate: 0.5,
   tracesSampler: (samplingContext) => {
-    if (ignoredTraces.includes(samplingContext?.name)) {
-      return false;
-    }
-    return true;
+    const shouldTrace = !ignoredTraces.some(
+      ({ endpoint }) => samplingContext?.attributes['http.route'] === endpoint
+    );
+
+    return shouldTrace;
   },
+
   // Set sampling rate for profiling - this is relative to tracesSampleRate
   profilesSampleRate: 1.0,
   release: packageJson.version,

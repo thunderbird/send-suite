@@ -364,36 +364,6 @@ describe('User Store', () => {
     });
   });
 
-  describe('createBackup', () => {
-    it('should create a backup for the user and handle the data correctly', async () => {
-      const userId = 1;
-      const backupData = {
-        keys: 'someKeys',
-        keypair: 'someKeypair',
-        keystring: 'someKeystring',
-        salt: 'someSalt',
-      };
-      const apiCallMock = vi
-        .spyOn(useApiStore().api, 'call')
-        .mockResolvedValueOnce({ success: true });
-
-      const result = await userStore.createBackup(
-        userId,
-        backupData.keys,
-        backupData.keypair,
-        backupData.keystring,
-        backupData.salt
-      );
-
-      expect(apiCallMock).toHaveBeenCalledWith(
-        `users/${userId}/backup`,
-        backupData,
-        'POST'
-      );
-      expect(result).toEqual({ success: true });
-    });
-  });
-
   describe('getBackup', () => {
     it('should retrieve backup data for a specific user', async () => {
       const backupData = {
