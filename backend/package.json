@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "0.1.32",
+  "version": "0.1.33",
   "description": "",
   "keywords": [],
   "license": "ISC",
@@ -25,8 +25,7 @@
     "start": "NODE_ENV=production node dist/index.js",
     "test": "vitest run --silent",
     "test:watch": "vitest --watch",
-    "typecheck": "tsc --noEmit",
-    "postversion": "bun run ./src/scripts/bump.ts"
+    "typecheck": "tsc --noEmit"
   },
   "lint-staged": {
     "*.{js,ts}": [
