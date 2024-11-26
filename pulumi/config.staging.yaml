@@ -191,7 +191,6 @@ resources:
         - send
       enable_fargate_deployments: true
       fargate_clusters:
-        - send-suite-ci-fargate
         - send-suite-staging-fargate
         - send-suite-prod-fargate
       fargate_task_role_arns:
