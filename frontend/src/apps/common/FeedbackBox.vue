@@ -25,9 +25,6 @@ import OpenerIcon from './OpenerIcon.vue';
 <style>
 .text {
   color: #000;
-
-  /* label */
-  /* font-family: Inter; */
   font-size: 9px;
   font-style: normal;
   font-weight: 700;
@@ -36,10 +33,6 @@ import OpenerIcon from './OpenerIcon.vue';
 .link-container {
   display: flex;
   gap: 1rem;
-  /* flex-direction: row; */
-  /* justify-content: space-between; */
-  /* align-items: center; */
-  /* color: var(--primary-default); */
 }
 .link-container a {
   display: flex;
