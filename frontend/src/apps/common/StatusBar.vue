@@ -5,9 +5,15 @@ import { useStatusStore } from '../lockbox/stores/status-store';
 
 const isAPIOn = ref('...');
 const showDebugger = ref(false);
+const isOpen = ref(false);
 const data = ref('');
 const { api } = useApiStore();
 const { validators } = useStatusStore();
+
+function open() {
+  isOpen.value = !isOpen.value;
+}
+
 async function initialize() {
   showDebugger.value = true;
 
@@ -27,22 +33,33 @@ async function initialize() {
 }
 </script>
 <template>
-  <div v-if="showDebugger" class="container">
-    <div>
-      <p>
-        Is the backend up? <span>{{ !!isAPIOn }}</span>
-      </p>
-    </div>
-    <p>This debugger checks api every 10s</p>
-    <code>{{ data }}</code>
-  </div>
+  <div class="toolbar">
+    <div v-if="!isOpen" :ondblclick="open">🟩</div>
+    <div v-if="isOpen">
+      <div v-if="showDebugger" class="container">
+        <div>
+          <p>
+            Is the backend up? <span>{{ !!isAPIOn }}</span>
+          </p>
+        </div>
+        <p>This debugger checks api every 10s</p>
+        <code>{{ data }}</code>
+      </div>
 
-  <button v-else @click="initialize">🐞</button>
+      <button v-else @click="initialize">🐞</button>
+      <button @dblclick="console.warn('Test error')">🐧</button>
+    </div>
+  </div>
 </template>
 
-<style>
+<style scoped>
 .container {
   outline: rebeccapurple 1px solid;
   padding: 1rem;
+}
+.toolbar {
+  position: absolute;
+  bottom: 1rem;
+  right: 2rem;
 }
 </style>

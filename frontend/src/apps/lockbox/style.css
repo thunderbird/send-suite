@@ -14,3 +14,10 @@
     @apply py-1 px-2 rounded border-gray-400 placeholder:text-gray-400;
   }
 }
+
+@layer base {
+  :root {
+    --primary-hover: #175fb6;
+    --primary-default: #1373d9;
+  }
+}

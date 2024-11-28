@@ -117,37 +117,48 @@ function passphraseIsComplex(phrase) {
 <template>
   <div class="flex">
     <div class="flex flex-col gap-4">
-      <header class="flex flex-col gap-4 px-4 py-4">
-        <h1>Key Recovery</h1>
-        <p v-if="bigMessageDisplay" style="font-size: x-large">
-          {{ bigMessageDisplay }}
-        </p>
-        <p>
-          Please make note of the following 12-word pass phrase. You will need
-          it to restore your keys whenever you log into a new device. This
-          guarantees that your files are encrypted on your device and your keys
-          are never stored on our servers.
-        </p>
-      </header>
-      <div class="w-full flex flex-col gap-3 px-4">
-        <p>Enter your {{ PHRASE_SIZE }} word pass phrase:</p>
-        <div>
-          <input
-            v-for="(n, index) in PHRASE_SIZE"
-            :key="index"
-            v-model="words[index]"
-          />
-        </div>
+      <div v-if="!shouldBackup && !shouldRestore">
+        <h3>You're all set. Happy sending!</h3>
+      </div>
+      <div v-if="shouldBackup || shouldRestore">
+        <header class="flex flex-col gap-4 px-4 py-4">
+          <h2>Key Recovery</h2>
+          <p v-if="bigMessageDisplay" style="font-size: x-large">
+            {{ bigMessageDisplay }}
+          </p>
+          <p>
+            Please make note of the following 12-word pass phrase. You will need
+            it to restore your keys whenever you log into a new device. This
+            guarantees that your files are encrypted on your device and your
+            keys are never stored on our servers.
+          </p>
+        </header>
+        <div class="w-full flex flex-col gap-3 px-4">
+          <p>Enter your {{ PHRASE_SIZE }} word pass phrase:</p>
+          <div>
+            <input
+              v-for="(n, index) in PHRASE_SIZE"
+              :key="index"
+              v-model="words[index]"
+            />
+          </div>
 
-        <Btn v-if="shouldBackup" primary @click.prevent="makeBackup"
-          >Encrypt and backup keys</Btn
-        >
-        <Btn v-if="shouldRestore" danger @click.prevent="restoreFromBackup"
-          >Restore keys from backup</Btn
-        >
+          <Btn v-if="shouldBackup" primary @click.prevent="makeBackup"
+            >Encrypt and backup keys</Btn
+          >
+          <Btn v-if="shouldRestore" primary @click.prevent="restoreFromBackup"
+            >Restore keys from backup</Btn
+          >
+        </div>
       </div>
     </div>
   </div>
-  <div @dblclick="console.warn('Test error')">Happy sending! 🐧</div>
+
   <StatusBar />
 </template>
+
+<style scoped>
+h2 {
+  font-size: 22px;
+}
+</style>
