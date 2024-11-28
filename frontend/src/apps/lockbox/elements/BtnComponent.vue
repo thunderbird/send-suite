@@ -3,7 +3,7 @@ type Props = {
   primary?: boolean;
   secondary?: boolean;
   danger?: boolean;
-  size?: 'medium' | 'default' | 'small' | 'xsmall';
+  size?: 'medium' | 'small' | 'xsmall';
 };
 
 withDefaults(defineProps<Props>(), {
