@@ -10,6 +10,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import FeedbackBox from '../common/FeedbackBox.vue';
 import SecureSendIcon from '../common/SecureSendIcon.vue';
+import StatusBar from '../common/StatusBar.vue';
 import TBBanner from '../common/TBBanner.vue';
 import useFolderStore from './stores/folder-store';
 
@@ -49,6 +50,7 @@ async function onSuccess() {
     >
     <FeedbackBox />
     <SecureSendIcon />
+    <StatusBar />
   </main>
 </template>
 
@@ -64,9 +66,6 @@ async function onSuccess() {
 }
 p {
   color: #000;
-
-  /* body/small */
-  /* font-family: Inter; */
   font-size: 13px;
   font-style: normal;
   font-weight: 400;
