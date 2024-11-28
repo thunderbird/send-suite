@@ -18,7 +18,7 @@ importers:
         specifier: ^2.40.0
         version: 2.47.0(vue@3.4.29(typescript@5.4.5))
       '@thunderbirdops/services-ui':
-        specifier: '*'
+        specifier: ^0.4.2
         version: 0.4.2(typescript@5.4.5)
       '@types/ua-parser-js':
         specifier: ^0.7.39
