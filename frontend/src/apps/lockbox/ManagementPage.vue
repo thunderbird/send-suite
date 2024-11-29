@@ -2,7 +2,6 @@
 <script setup lang="ts">
 import init from '@/lib/init';
 import useApiStore from '@/stores/api-store';
-import useConfigurationStore from '@/stores/configuration-store';
 import useKeychainStore from '@/stores/keychain-store';
 import useUserStore from '@/stores/user-store';
 import { onMounted, ref } from 'vue';
@@ -12,11 +11,12 @@ import FeedbackBox from '@/apps/common/FeedbackBox.vue';
 import { useMetricsUpdate } from '@/apps/common/mixins/metrics';
 import Btn from '@/apps/lockbox/elements/BtnComponent.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
-import { formatSessionInfo } from '@/lib/fxa';
 import { formatLoginURL } from '@/lib/helpers';
 import { CLIENT_MESSAGES } from '@/lib/messages';
 import { validateToken } from '@/lib/validations';
 import useMetricsStore from '@/stores/metrics';
+import SecureSendIcon from '../common/SecureSendIcon.vue';
+import TBBanner from '../common/TBBanner.vue';
 import { useExtensionStore } from './stores/extension-store';
 import { useStatusStore } from './stores/status-store';
 
@@ -28,7 +28,6 @@ const { validators } = useStatusStore();
 const { configureExtension } = useExtensionStore();
 const { initializeClientMetrics, sendMetricsToBackend } = useMetricsStore();
 const { updateMetricsIdentity } = useMetricsUpdate();
-const configurationStore = useConfigurationStore();
 
 const authUrl = ref('');
 const sessionInfo = ref(null);
@@ -36,7 +35,6 @@ const sessionInfo = ref(null);
 const salutation = ref('');
 const isLoggedIn = ref(false);
 
-const currentServerUrl = ref(configurationStore.serverUrl);
 const email = ref(null);
 const userId = ref(null);
 
@@ -186,43 +184,35 @@ async function finishLogin() {
 </script>
 
 <template>
-  <h1>{{ salutation }}</h1>
-  <Btn @click.prevent="loginToMozAccount">Log into Mozilla Account</Btn>
-  <br />
-  <h1>Debug Info</h1>
-  <form>
-    <label>
-      Server URL:
-      <input v-model="currentServerUrl" disabled />
-    </label>
-    <label>
-      Email:
-      <input v-model="email" disabled />
-    </label>
-    <label>
-      User ID:
-      <input v-model="userId" disabled />
-    </label>
-  </form>
-  <br />
-  <div v-if="isLoggedIn">
-    <BackupAndRestore />
+  <div class="container">
+    <TBBanner />
+    <h1>{{ salutation }}</h1>
+    <div v-if="isLoggedIn">
+      <BackupAndRestore />
+      <Btn @click.prevent="logOut">Log out</Btn>
+    </div>
+    <div v-else>
+      <Btn @click.prevent="loginToMozAccount">Log into Mozilla Account</Btn>
+    </div>
+    <FeedbackBox />
+    <SecureSendIcon />
   </div>
-  <Btn @click.prevent="showCurrentServerSession">ping session</Btn>
-  <br />
-  <pre v-if="sessionInfo">
-    {{ formatSessionInfo(sessionInfo) }}
-  </pre>
-  <Btn @click.prevent="logOut">Log out</Btn>
-  <FeedbackBox />
 </template>
 
 <style scoped>
-form {
-  max-width: 80%;
-
-  input {
-    width: 100%;
-  }
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: center;
+  gap: 1rem 0;
+  margin-top: 2rem;
+}
+p {
+  color: #000;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
 }
 </style>

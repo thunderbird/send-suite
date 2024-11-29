@@ -6,17 +6,16 @@ import init from '@/lib/init';
 import useKeychainStore from '@/stores/keychain-store';
 import useUserStore from '@/stores/user-store';
 
-import StatusBar from '@/apps/common/StatusBar.vue';
-
 import ErrorUploading from '@/apps/lockbox/components/ErrorUploading.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import useSharingStore from '@/apps/lockbox/stores/sharing-store';
 
+import ShieldIcon from '@/apps/common/ShieldIcon.vue';
 import { EXTENSION_READY, SHARE_ABORTED, SHARE_COMPLETE } from '@/lib/const';
 import { restoreKeysUsingLocalStorage } from '@/lib/keychain';
 import useApiStore from '@/stores/api-store';
 import ProgressBar from '../components/ProgressBar.vue';
-import BtnComponent from '../elements/BtnComponent.vue';
+import Btn from '../elements/BtnComponent.vue';
 import { useStatusStore } from '../stores/status-store';
 
 const userStore = useUserStore();
@@ -144,7 +143,6 @@ userStore.user.id ${userStore.user.id}
 
 <template>
   <div v-if="isAllowed">
-    <h1>Attach via Lockbox</h1>
     <div v-if="isError">
       <ErrorUploading />
     </div>
@@ -154,23 +152,36 @@ userStore.user.id ${userStore.user.id}
     </div>
 
     <form @submit.prevent="uploadAndShare">
-      <br />
-      <label>
-        Password for sharing:
-        <input v-model="password" type="password" :disabled="isUploading" />
-      </label>
-      <br />
-      <BtnComponent>
+      <h2>Password</h2>
+      <input v-model="password" type="password" :disabled="isUploading" />
+      <p>Password needed to access the file (optional)</p>
+      <Btn primary>
+        <ShieldIcon />
         <input
           type="submit"
           value="Encrypt and Upload"
           :disabled="isUploading"
         />
-      </BtnComponent>
+      </Btn>
     </form>
   </div>
   <div v-else>
     <p>{{ message }}</p>
   </div>
-  <StatusBar />
 </template>
+
+<style scoped>
+h2 {
+  font-size: 13px;
+}
+p {
+  font-size: 10px;
+  font-weight: 400;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+</style>

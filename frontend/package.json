@@ -33,6 +33,7 @@
     "@sentry/vite-plugin": "^2.20.1",
     "@sentry/vue": "^8.15.0",
     "@tabler/icons-vue": "^2.40.0",
+    "@thunderbirdops/services-ui": "^0.4.2",
     "@types/ua-parser-js": "^0.7.39",
     "dayjs": "^1.11.10",
     "get-random-values": "^3.0.0",
