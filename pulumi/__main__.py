@@ -85,7 +85,7 @@ frontend = tb_pulumi.cloudfront.CloudFrontS3Service(
     project=project,
     default_function_associations=[{'event_type': 'viewer-request', 'function_arn': cf_func.arn}],
     **frontend_opts,
-    opts=pulumi.ResourceOptions(depends_on=[cf_func])
+    opts=pulumi.ResourceOptions(depends_on=[cf_func]),
 )
 
 # Create a DNS record pointing to the frontend service
