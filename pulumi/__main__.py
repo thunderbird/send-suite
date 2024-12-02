@@ -61,10 +61,55 @@ backend_dns = aws.route53.Record(
     opts=pulumi.ResourceOptions(depends_on=[backend_fargate]),
 )
 
+# Manage the CloudFront rewrite function; the code is managed in cloudfront-rewrite.js
+rewrite_code = None
+try:
+    with open(CLOUDFRONT_REWRITE_CODE_FILE, 'r') as fh:
+        rewrite_code = fh.read()
+except IOError:
+    pulumi.error(f'Could not read file {CLOUDFRONT_REWRITE_CODE_FILE}')
+
+cf_func = aws.cloudfront.Function(
+    f'{project.name_prefix}-func-rewrite',
+    code=rewrite_code,
+    comment='Rewrites inbound requests to direct them to the send-suite backend API',
+    name=f'{project.name_prefix}-rewrite',
+    publish=True,
+    runtime='cloudfront-js-2.0',
+)
+
+# Deliver frontend content via CloudFront; Ref:
+# https://www.pulumi.com/registry/packages/aws/api-docs/cloudfront/distribution/#distributionorigincustomoriginconfig
+api_origin = {
+    'origin_id': f'{project.name_prefix}-api',
+    'domain_name': backend_fargate.resources['fargate_service_alb'].resources['albs']['send-suite'].dns_name,
+    'custom_origin_config': {
+        'http_port': 80,
+        'https_port': 443,
+        'origin_protocol_policy': 'https-only',
+        'origin_ssl_protocols': ['TLSv1.2'],
+    },
+}
+
+behaviors = [
+    {
+        'allowed_methods': ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'PATCH', 'POST', 'PUT'],
+        'cache_policy_id': tb_pulumi.cloudfront.CACHE_POLICY_ID_DISABLED,
+        'cached_methods': ['GET', 'HEAD', 'OPTIONS'],
+        'function_associations': [{'event_type': 'viewer-request', 'function_arn': cf_func.arn}],
+        'origin_request_policy_id': tb_pulumi.cloudfront.ORIGIN_REQUEST_POLICY_ID_ALLVIEWER,
+        'path_pattern': '/api/*',
+        'target_origin_id': f'{project.name_prefix}-api',
+        'viewer_protocol_policy': 'redirect-to-https',
+    }
+]
+
 frontend_opts = resources['tb:cloudfront:CloudFrontS3Service']['frontend']
 frontend = tb_pulumi.cloudfront.CloudFrontS3Service(
+    behaviors=behaviors,
     name=f'{project.name_prefix}-frontend',
     project=project,
+    origins=[api_origin],
     **frontend_opts,
 )
 
