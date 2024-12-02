@@ -3,7 +3,7 @@ import OpenerIcon from './OpenerIcon.vue';
 </script>
 
 <template>
-  <div style="margin-top: 1rem">
+  <div style="margin-top: 1rem" data-testid="feedback-box">
     <p class="text">
       Please take a moment to give us feedback or raise issues on:
     </p>

@@ -55,7 +55,7 @@ async function initialize() {
   </header>
 
   <!-- This is for debugging purposes only -->
-  <div class="toolbar">
+  <div class="toolbar" data-testid="status-bar">
     <div v-if="!isToolbarOpen" title="debugging options" :ondblclick="open">
       {{ statusIndicator }}
     </div>
