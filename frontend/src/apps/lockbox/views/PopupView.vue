@@ -154,7 +154,7 @@ userStore.user.id ${userStore.user.id}
     <form @submit.prevent="uploadAndShare">
       <h2>Password</h2>
       <input v-model="password" type="password" :disabled="isUploading" />
-      <p>Password needed to access the file (optional)</p>
+      <p>(Optional) Password to access the file</p>
       <Btn primary>
         <ShieldIcon />
         <input

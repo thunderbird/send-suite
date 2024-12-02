@@ -45,7 +45,10 @@ async function onSuccess() {
     <h2>Account</h2>
     <p>You’ll need to login to your Mozilla account to use Thunderbird Send</p>
     <p v-if="user?.id">Your session has expired, please log back in</p>
-    <Btn primary @click.prevent="mozAcctLogin(onSuccess)"
+    <Btn
+      primary
+      data-testid="login-button"
+      @click.prevent="mozAcctLogin(onSuccess)"
       >Login to Mozilla Account</Btn
     >
     <FeedbackBox />
