@@ -91,5 +91,11 @@
     "typescript": "^5.1.6",
     "typescript-eslint": "^7.13.0",
     "vitest": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=22.11.0"
+  },
+  "volta": {
+    "node": "22.11.0"
   }
 }

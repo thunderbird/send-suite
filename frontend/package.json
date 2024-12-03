@@ -81,5 +81,11 @@
     "vitest-localstorage-mock": "^0.0.1",
     "vitest-websocket-mock": "^0.3.0",
     "vue-eslint-parser": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=22.11.0"
+  },
+  "volta": {
+    "node": "22.11.0"
   }
 }
