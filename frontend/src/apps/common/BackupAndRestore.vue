@@ -6,7 +6,6 @@ import useKeychainStore from '@/stores/keychain-store';
 
 // move the following imports elsewhere
 import { backupKeys, restoreKeys } from '@/lib/keychain';
-import logger from '@/logger';
 import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
 import { useExtensionStore } from '../lockbox/stores/extension-store';
@@ -83,7 +82,13 @@ const showKeyRecovery = computed(() => {
 
 async function makeBackup() {
   bigMessageDisplay.value = '';
-  logger.info(passphrase.value);
+  const userConfirmed = confirm(
+    'Are you sure you want to backup your keys? You will not be able to change your passphrase after this.'
+  );
+
+  if (!userConfirmed) {
+    return;
+  }
 
   if (!passphraseIsComplex(passphrase.value)) {
     bigMessageDisplay.value = MSG_NOT_COMPLEX;

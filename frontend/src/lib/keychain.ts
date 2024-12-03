@@ -411,7 +411,7 @@ export class Keychain {
   async get(id: number): Promise<CryptoKey> {
     const wrappedKeyStr = this._keys[id];
     if (!wrappedKeyStr) {
-      throw Error('Key does not exist');
+      throw Error(`You don't have the key to decrypt this container`);
     }
     const unwrappedKey = await this.rsa.unwrapContainerKey(
       wrappedKeyStr,
@@ -793,11 +793,12 @@ export async function restoreKeys(
 
     msg.value = '✅ Restore complete';
   } catch (e) {
-    console.error(
-      `Could not restore keys. Please make sure your backup prase hasn't changed.`,
-      e
-    );
+    const KEY_RESTORE_ERROR = `Could not restore keys. Please make sure your backup phrase is correct.`;
+
+    console.error(KEY_RESTORE_ERROR, e);
+
     msg.value = MSG_INCORRECT_PASSPHRASE;
+    throw new Error(KEY_RESTORE_ERROR);
   }
 }
 

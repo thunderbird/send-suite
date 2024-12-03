@@ -26,7 +26,6 @@ export default class Downloader {
     try {
       wrappingKey = await this.keychain.get(folderId);
     } catch (e) {
-      console.log(`cannot unwrap content key - no key for folder`);
       return false;
     }
 

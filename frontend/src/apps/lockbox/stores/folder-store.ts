@@ -215,16 +215,21 @@ const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
 
     setUploadSize(formattedBlob.size);
 
-    const newItem = await uploader.doUpload(
-      formattedBlob,
-      folderId,
-      api,
-      setProgress
-    );
-    if (newItem && rootFolder.value) {
-      rootFolder.value.items = [...rootFolder.value.items, newItem];
+    try {
+      const newItem = await uploader.doUpload(
+        formattedBlob,
+        folderId,
+        api,
+        setProgress
+      );
+      if (newItem && rootFolder.value) {
+        rootFolder.value.items = [...rootFolder.value.items, newItem];
+      }
+      return newItem;
+    } catch (error) {
+      progress.error = error.message;
+      throw new Error('Upload failed');
     }
-    return newItem;
   }
 
   async function deleteFolder(folderId: number): Promise<void> {

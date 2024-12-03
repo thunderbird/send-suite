@@ -17,7 +17,6 @@ const {
   shouldBackup,
   words: wordsProp,
   shouldRestore,
-  shouldOverrideVisibility,
 } = defineProps<Props>();
 
 const words = ref(wordsProp);
@@ -33,19 +32,22 @@ const words = ref(wordsProp);
   <p>Your {{ PHRASE_SIZE }} word pass phrase:</p>
   <div>
     <input
-      v-for="(n, index) in PHRASE_SIZE"
+      v-for="(_, index) in PHRASE_SIZE"
       :key="index"
       v-model="words[index]"
     />
   </div>
 
-  <Btn
-    v-if="shouldBackup || shouldOverrideVisibility"
-    primary
-    @click.prevent="makeBackup"
+  <Btn v-if="shouldBackup" primary @click.prevent="makeBackup"
     >Encrypt and backup keys</Btn
   >
   <Btn v-if="shouldRestore" primary @click.prevent="restoreFromBackup"
     >Restore keys from backup</Btn
+  >
+  <Btn
+    v-if="shouldOverrideVisibility"
+    :danger="true"
+    @click.prevent="makeBackup"
+    >Overwrite Keys and Backup</Btn
   >
 </template>
