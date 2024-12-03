@@ -128,12 +128,12 @@ function passphraseIsComplex(phrase) {
 </script>
 
 <template>
-  <div class="flex">
-    <div class="flex flex-col gap-4">
+  <div class="container">
+    <div class="content">
       <div v-if="!shouldBackup && !shouldRestore">
         <h3>You're all set. Happy sending!</h3>
       </div>
-      <header class="flex gap-4 py-4" :onclick="toggleVisible">
+      <header :onclick="toggleVisible">
         <h3>Key Recovery</h3>
         <ExpandIcon :is-open="showKeyRecovery" />
       </header>
@@ -141,7 +141,7 @@ function passphraseIsComplex(phrase) {
         {{ bigMessageDisplay }}
       </p>
       <div v-if="showKeyRecovery">
-        <main class="w-full flex flex-col gap-3 px-4">
+        <main class="recovery-main">
           <key-recovery
             :make-backup="makeBackup"
             :restore-from-backup="restoreFromBackup"
@@ -161,6 +161,7 @@ function passphraseIsComplex(phrase) {
 h2 {
   font-size: 22px;
 }
+
 header {
   display: inline-flex;
   height: 34px;
@@ -171,5 +172,25 @@ header {
   border-radius: 6px;
   border: 1px solid var(--surface-border, #e4e4e7);
   cursor: pointer;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.container {
+  display: flex;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.recovery-main {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0 1rem;
 }
 </style>
