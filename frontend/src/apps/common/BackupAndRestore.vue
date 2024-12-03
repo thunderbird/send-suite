@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Btn from '@/apps/lockbox/elements/BtnComponent.vue';
 import { computed, onMounted, ref } from 'vue';
 
 import StatusBar from '@/apps/common/StatusBar.vue';
@@ -11,9 +10,10 @@ import logger from '@/logger';
 import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
 import { useExtensionStore } from '../lockbox/stores/extension-store';
+import { MIN_WORD_LENGTH, PHRASE_SIZE } from './constants';
+import ExpandIcon from './ExpandIcon.vue';
+import KeyRecovery from './KeyRecovery.vue';
 
-const PHRASE_SIZE = 12;
-const MIN_WORD_LENGTH = 5;
 const MSG_NOT_COMPLEX = `Please enter ${PHRASE_SIZE} different words. Each word must be at least ${MIN_WORD_LENGTH} letters long.`;
 const words = ref([
   'aaaaa',
@@ -41,6 +41,7 @@ const bigMessageDisplay = ref('');
 const shouldRestore = ref(false);
 const shouldBackup = ref(false);
 const hasBackedUpKeys = ref<string>(null);
+const shouldOverrideVisibility = ref(false);
 
 function hideBackupRestore() {
   shouldRestore.value = false;
@@ -67,6 +68,18 @@ const userSetPassword = keychain.getPassphraseValue();
 if (!!userSetPassword && userSetPassword !== passphrase.value) {
   words.value = userSetPassword.split(' ');
 }
+
+const toggleVisible = () => {
+  shouldOverrideVisibility.value = !shouldOverrideVisibility.value;
+};
+
+const showKeyRecovery = computed(() => {
+  return (
+    shouldBackup.value ||
+    shouldRestore.value ||
+    !!shouldOverrideVisibility.value
+  );
+});
 
 async function makeBackup() {
   bigMessageDisplay.value = '';
@@ -120,36 +133,23 @@ function passphraseIsComplex(phrase) {
       <div v-if="!shouldBackup && !shouldRestore">
         <h3>You're all set. Happy sending!</h3>
       </div>
-      <div v-if="shouldBackup || shouldRestore">
-        <header class="flex flex-col gap-4 px-4 py-4">
-          <h2>Key Recovery</h2>
-          <p v-if="bigMessageDisplay" style="font-size: x-large">
-            {{ bigMessageDisplay }}
-          </p>
-          <p>
-            Please make note of the following 12-word pass phrase. You will need
-            it to restore your keys whenever you log into a new device. This
-            guarantees that your files are encrypted on your device and your
-            keys are never stored on our servers.
-          </p>
-        </header>
-        <div class="w-full flex flex-col gap-3 px-4">
-          <p>Enter your {{ PHRASE_SIZE }} word pass phrase:</p>
-          <div>
-            <input
-              v-for="(n, index) in PHRASE_SIZE"
-              :key="index"
-              v-model="words[index]"
-            />
-          </div>
-
-          <Btn v-if="shouldBackup" primary @click.prevent="makeBackup"
-            >Encrypt and backup keys</Btn
-          >
-          <Btn v-if="shouldRestore" primary @click.prevent="restoreFromBackup"
-            >Restore keys from backup</Btn
-          >
-        </div>
+      <header class="flex gap-4 py-4" :onclick="toggleVisible">
+        <h3>Key Recovery</h3>
+        <ExpandIcon :is-open="showKeyRecovery" />
+      </header>
+      <p v-if="bigMessageDisplay" style="font-size: larger">
+        {{ bigMessageDisplay }}
+      </p>
+      <div v-if="showKeyRecovery">
+        <main class="w-full flex flex-col gap-3 px-4">
+          <key-recovery
+            :make-backup="makeBackup"
+            :restore-from-backup="restoreFromBackup"
+            :should-backup="shouldBackup"
+            :words="words"
+            :should-restore="shouldRestore"
+          />
+        </main>
       </div>
     </div>
   </div>
@@ -160,5 +160,16 @@ function passphraseIsComplex(phrase) {
 <style scoped>
 h2 {
   font-size: 22px;
+}
+header {
+  display: inline-flex;
+  height: 34px;
+  padding: 1px 0px;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  border-radius: 6px;
+  border: 1px solid var(--surface-border, #e4e4e7);
+  cursor: pointer;
 }
 </style>
