@@ -9,6 +9,7 @@ type Props = {
   shouldBackup: boolean;
   words: string[];
   shouldRestore: boolean;
+  shouldOverrideVisibility: boolean;
 };
 const {
   makeBackup,
@@ -16,6 +17,7 @@ const {
   shouldBackup,
   words: wordsProp,
   shouldRestore,
+  shouldOverrideVisibility,
 } = defineProps<Props>();
 
 const words = ref(wordsProp);
@@ -37,7 +39,10 @@ const words = ref(wordsProp);
     />
   </div>
 
-  <Btn v-if="shouldBackup" primary @click.prevent="makeBackup"
+  <Btn
+    v-if="shouldBackup || shouldOverrideVisibility"
+    primary
+    @click.prevent="makeBackup"
     >Encrypt and backup keys</Btn
   >
   <Btn v-if="shouldRestore" primary @click.prevent="restoreFromBackup"

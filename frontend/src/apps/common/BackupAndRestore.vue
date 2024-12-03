@@ -148,6 +148,7 @@ function passphraseIsComplex(phrase) {
             :should-backup="shouldBackup"
             :words="words"
             :should-restore="shouldRestore"
+            :should-override-visibility="shouldOverrideVisibility"
           />
         </main>
       </div>
