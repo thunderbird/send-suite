@@ -24,10 +24,10 @@ const words = ref(wordsProp);
 
 <template>
   <p>
-    Please make note of the following 12-word pass phrase. You will need it to
-    restore your keys whenever you log into a new device. This guarantees that
-    your files are encrypted on your device and your keys are never stored on
-    our servers.
+    Please make note of the following {{ PHRASE_SIZE }}-word pass phrase. You
+    will need it to restore your keys whenever you log into a new device. This
+    guarantees that your files are encrypted on your device and your keys are
+    never stored on our servers.
   </p>
   <p>Your {{ PHRASE_SIZE }} word pass phrase:</p>
   <div>
