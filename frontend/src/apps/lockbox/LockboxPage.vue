@@ -7,6 +7,7 @@ import useKeychainStore from '@/stores/keychain-store';
 import useMetricsStore from '@/stores/metrics';
 import useUserStore from '@/stores/user-store';
 import { onMounted } from 'vue';
+import ErrorBoundary from '../common/ErrorBoundary.vue';
 import { INIT_ERRORS } from './const';
 
 const userStore = useUserStore();
@@ -42,5 +43,7 @@ updateMetricsIdentity();
 </script>
 
 <template>
-  <router-view></router-view>
+  <ErrorBoundary>
+    <router-view></router-view>
+  </ErrorBoundary>
 </template>

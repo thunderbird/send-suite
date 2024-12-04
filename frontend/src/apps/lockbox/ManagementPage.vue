@@ -10,6 +10,7 @@ import BackupAndRestore from '@/apps/common/BackupAndRestore.vue';
 import FeedbackBox from '@/apps/common/FeedbackBox.vue';
 import { useMetricsUpdate } from '@/apps/common/mixins/metrics';
 import Btn from '@/apps/lockbox/elements/BtnComponent.vue';
+import LogOutButton from '@/apps/lockbox/elements/LogOutButton.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import { formatLoginURL } from '@/lib/helpers';
 import { CLIENT_MESSAGES } from '@/lib/messages';
@@ -189,7 +190,7 @@ async function finishLogin() {
     <h1>{{ salutation }}</h1>
     <div v-if="isLoggedIn">
       <BackupAndRestore />
-      <Btn @click.prevent="logOut">Log out</Btn>
+      <log-out-button :log-out="logOut" />
     </div>
     <div v-else>
       <Btn @click.prevent="loginToMozAccount">Log into Mozilla Account</Btn>

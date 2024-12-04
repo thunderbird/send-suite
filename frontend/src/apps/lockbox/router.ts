@@ -127,7 +127,11 @@ router.beforeEach(async (to, from, next) => {
   }
 
   if (autoRestoresKeys) {
-    await restoreKeysUsingLocalStorage(keychain, api);
+    try {
+      await restoreKeysUsingLocalStorage(keychain, api);
+    } catch (error) {
+      console.error('Error restoring keys', error);
+    }
   }
   next();
 });

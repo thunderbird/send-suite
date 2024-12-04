@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import BackupAndRestore from '@/apps/common/BackupAndRestore.vue';
+import LogOutButton from '@/apps/lockbox/elements/LogOutButton.vue';
 import useUserStore from '@/stores/user-store';
-import Btn from '../elements/BtnComponent.vue';
 
 const userStore = useUserStore();
 
@@ -13,7 +13,7 @@ async function logOut() {
 <template>
   <div class="container">
     <BackupAndRestore />
-    <Btn size="small" @click.prevent="logOut">Log out</Btn>
+    <log-out-button :log-out="logOut" />
   </div>
 </template>
 
