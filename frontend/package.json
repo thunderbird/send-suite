@@ -63,7 +63,7 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-vue": "^9.26.0",
     "globals": "^15.6.0",
-    "happy-dom": "^14.10.1",
+    "happy-dom": ">=15.10.2",
     "lint-staged": "^15.2.7",
     "mock-socket": "^9.3.1",
     "msw": "^2.3.0",
@@ -87,5 +87,11 @@
   },
   "volta": {
     "node": "22.11.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "@sentry/browser@>=8.0.0-alpha.1 <8.33.0": ">=8.33.0",
+      "cookie@<0.7.0": ">=0.7.0"
+    }
   }
 }
