@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import Btn from '@/apps/lockbox/elements/BtnComponent.vue';
-import { ref } from 'vue';
+import ButtonComponent from '@/apps/lockbox/elements/BtnComponent.vue';
+import posthog from 'posthog-js';
+import { computed, ref } from 'vue';
 import { PHRASE_SIZE } from './constants';
 
 type Props = {
@@ -17,7 +18,12 @@ const {
   shouldBackup,
   words: wordsProp,
   shouldRestore,
+  shouldOverrideVisibility,
 } = defineProps<Props>();
+
+const showOverride = computed(() => {
+  return posthog.isFeatureEnabled('overwrite_keys') && shouldOverrideVisibility;
+});
 
 const words = ref(wordsProp);
 </script>
@@ -44,10 +50,10 @@ const words = ref(wordsProp);
   <Btn v-if="shouldRestore" primary @click.prevent="restoreFromBackup"
     >Restore keys from backup</Btn
   >
-  <Btn
-    v-if="shouldOverrideVisibility"
+  <button-component
+    v-if="showOverride"
     :danger="true"
     @click.prevent="makeBackup"
-    >Overwrite Keys and Backup</Btn
+    >Overwrite Keys and Backup</button-component
   >
 </template>
