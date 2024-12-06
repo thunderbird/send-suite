@@ -1,3 +1,7 @@
+#!/bin/sh
+echo 'installing backend deps 🤖'
+pnpm install --frozen-lockfile
+
 # Check if environment NODE_ENV has been set to production
 if [ "$NODE_ENV" = "production" ]; then
     echo 'Starting with NODE_ENV on production 🐧'
