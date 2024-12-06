@@ -44,11 +44,14 @@ const words = ref(wordsProp);
     />
   </div>
 
-  <Btn v-if="shouldBackup" primary @click.prevent="makeBackup"
-    >Encrypt and backup keys</Btn
+  <button-component v-if="shouldBackup" primary @click.prevent="makeBackup"
+    >Encrypt and backup keys</button-component
   >
-  <Btn v-if="shouldRestore" primary @click.prevent="restoreFromBackup"
-    >Restore keys from backup</Btn
+  <button-component
+    v-if="shouldRestore"
+    primary
+    @click.prevent="restoreFromBackup"
+    >Restore keys from backup</button-component
   >
   <button-component
     v-if="showOverride"
