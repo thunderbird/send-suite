@@ -24,6 +24,9 @@ jobs:
       frontend-changed: ${{ steps.check.outputs.frontend-changed }}
     steps:
       - uses: actions/checkout@v4
+      - uses: setup-node@v4
+        with:
+          node-version: '22'
 
       # - name: Setup tmate session
       #   uses: mxschmitt/action-tmate@v3
@@ -44,12 +47,12 @@ jobs:
   backend-tests:
     needs: detect-changes
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [22.x]
     if: needs.detect-changes.outputs.backend-changed == 'true'
     steps:
       - uses: actions/checkout@v4
+      - uses: setup-node@v4
+        with:
+          node-version: '22'      
 
       - name: Install dependencies
         id: install-dependencies
@@ -87,12 +90,12 @@ jobs:
   iac-lint:
     needs: detect-changes
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [22.x]
     if: needs.detect-changes.outputs.iac-changed == 'true'
     steps:
       - uses: actions/checkout@v4
+      - uses: setup-node@v4
+        with:
+          node-version: '22'      
 
       - name: Ruff formatting checks
         uses: chartboost/ruff-action@v1
@@ -112,6 +115,9 @@ jobs:
     if: needs.detect-changes.outputs.frontend-changed == 'true'
     steps:
       - uses: actions/checkout@v4
+      - uses: setup-node@v4
+        with:
+          node-version: '22'      
 
       - name: Install dependencies
         id: install-dependencies
