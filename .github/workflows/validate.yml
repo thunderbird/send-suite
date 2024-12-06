@@ -26,7 +26,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
       # - name: Setup tmate session
       #   uses: mxschmitt/action-tmate@v3
@@ -55,7 +55,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: setup-node@v4
         with:
-          node-version: '22'      
+          node-version: "22"
 
       - name: Install dependencies
         id: install-dependencies
@@ -101,7 +101,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: setup-node@v4
         with:
-          node-version: '22'      
+          node-version: "22"
 
       - name: Ruff formatting checks
         uses: chartboost/ruff-action@v1
@@ -123,7 +123,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: setup-node@v4
         with:
-          node-version: '22'      
+          node-version: "22"
 
       - name: Install dependencies
         id: install-dependencies
