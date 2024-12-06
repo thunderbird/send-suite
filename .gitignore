@@ -5,6 +5,7 @@ seed.ts
 # Dev droppings
 .env
 .env.production
+.fenv*
 dev.db*
 shell.nix*
 node_modules
