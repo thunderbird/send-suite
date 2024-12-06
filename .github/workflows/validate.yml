@@ -24,7 +24,7 @@ jobs:
       frontend-changed: ${{ steps.check.outputs.frontend-changed }}
     steps:
       - uses: actions/checkout@v4
-      - uses: setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "22"
 
@@ -53,7 +53,7 @@ jobs:
     if: needs.detect-changes.outputs.backend-changed == 'true'
     steps:
       - uses: actions/checkout@v4
-      - uses: setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "22"
 
@@ -99,7 +99,7 @@ jobs:
     if: needs.detect-changes.outputs.iac-changed == 'true'
     steps:
       - uses: actions/checkout@v4
-      - uses: setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "22"
 
@@ -121,7 +121,7 @@ jobs:
     if: needs.detect-changes.outputs.frontend-changed == 'true'
     steps:
       - uses: actions/checkout@v4
-      - uses: setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "22"
 
