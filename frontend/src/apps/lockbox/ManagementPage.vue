@@ -18,6 +18,7 @@ import { validateToken } from '@/lib/validations';
 import useMetricsStore from '@/stores/metrics';
 import SecureSendIcon from '../common/SecureSendIcon.vue';
 import TBBanner from '../common/TBBanner.vue';
+import UserDashboard from '../common/UserDashboard.vue';
 import { useExtensionStore } from './stores/extension-store';
 import { useStatusStore } from './stores/status-store';
 
@@ -189,6 +190,7 @@ async function finishLogin() {
     <TBBanner />
     <h1>{{ salutation }}</h1>
     <div v-if="isLoggedIn">
+      <UserDashboard />
       <BackupAndRestore />
       <log-out-button :log-out="logOut" />
     </div>
