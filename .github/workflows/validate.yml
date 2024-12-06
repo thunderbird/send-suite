@@ -44,6 +44,9 @@ jobs:
   backend-tests:
     needs: detect-changes
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [22.x]
     if: needs.detect-changes.outputs.backend-changed == 'true'
     steps:
       - uses: actions/checkout@v4
@@ -84,6 +87,9 @@ jobs:
   iac-lint:
     needs: detect-changes
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [22.x]
     if: needs.detect-changes.outputs.iac-changed == 'true'
     steps:
       - uses: actions/checkout@v4
