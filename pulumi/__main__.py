@@ -14,7 +14,6 @@ import tb_pulumi.secrets
 
 CLOUDFRONT_REWRITE_CODE_FILE = 'cloudfront-rewrite.js'
 
-
 project = tb_pulumi.ThunderbirdPulumiProject()
 resources = project.config.get('resources')
 
@@ -35,6 +34,20 @@ backend_sg = tb_pulumi.network.SecurityGroupWithRules(
     **backend_sg_opts,
     opts=pulumi.ResourceOptions(depends_on=[vpc]),
 )
+
+# Only build an RDS database cluster with a jumphost in the CI environment, so we can verify this part of our codebase
+if project.stack == 'ci':
+    db_opts = resources['tb:rds:RdsDatabaseGroup']['citest']
+    db = tb_pulumi.rds.RdsDatabaseGroup(
+        name=f'{project.name_prefix}-rds',
+        project=project,
+        db_name='dbtest',
+        subnets=vpc.resources['subnets'],
+        vpc_cidr=vpc.resources['vpc'].cidr_block,
+        vpc_id=vpc.resources['vpc'].id,
+        opts=pulumi.ResourceOptions(depends_on=[vpc]),
+        **db_opts,
+    )
 
 # Create a Fargate cluster
 backend_fargate_opts = resources['tb:fargate:FargateClusterWithLogging']['backend']
@@ -77,6 +90,7 @@ cf_func = aws.cloudfront.Function(
     publish=True,
     runtime='cloudfront-js-2.0',
 )
+project.resources['cf_rewrite_function'] = cf_func
 
 # Deliver frontend content via CloudFront
 frontend_opts = resources['tb:cloudfront:CloudFrontS3Service']['frontend']
