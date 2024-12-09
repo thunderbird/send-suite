@@ -1,9 +1,8 @@
-<script setup lang="tsx">
+<script setup lang="ts">
 import { MAX_FILE_SIZE_HUMAN_READABLE } from '@/lib/const';
-import prettyBytes from 'pretty-bytes';
-import { trpc } from './trpc';
-
+import { trpc } from '@/lib/trpc';
 import { useQuery } from '@tanstack/vue-query';
+import prettyBytes from 'pretty-bytes';
 
 const { data: size, error } = useQuery({
   queryKey: ['getTotalSize'],

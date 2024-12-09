@@ -9,6 +9,7 @@ import { onMounted, ref } from 'vue';
 import BackupAndRestore from '@/apps/common/BackupAndRestore.vue';
 import FeedbackBox from '@/apps/common/FeedbackBox.vue';
 import { useMetricsUpdate } from '@/apps/common/mixins/metrics';
+import UserDashboard from '@/apps/common/UserDashboard.vue';
 import Btn from '@/apps/lockbox/elements/BtnComponent.vue';
 import LogOutButton from '@/apps/lockbox/elements/LogOutButton.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
@@ -18,7 +19,6 @@ import { validateToken } from '@/lib/validations';
 import useMetricsStore from '@/stores/metrics';
 import SecureSendIcon from '../common/SecureSendIcon.vue';
 import TBBanner from '../common/TBBanner.vue';
-import UserDashboard from '../common/UserDashboard.vue';
 import { useExtensionStore } from './stores/extension-store';
 import { useStatusStore } from './stores/status-store';
 
