@@ -22,13 +22,37 @@ export const userRouter = router({
       userId,
       ContainerType.FOLDER
     );
-    return folders
+    // Get the total size of all the uploads that haven't expired
+
+    const expired = folders
       .flatMap((folder) =>
         folder.items
+          // Add expiry information to each upload
           .map((item) => addExpiryToContainer(item.upload))
-          .filter((i) => i.expired === false)
-          .map((i) => i.size)
+          // Filter out the expired uploads
+          .filter((item) => item.expired === true)
+          // Get the size of each upload
+          .map((item) => item.size)
       )
-      .reduce((a, b) => a + b, 0);
+      // Make a sum of all the sizes that haven't expired
+      .reduce((sizeA, sizeB) => sizeA + sizeB, 0);
+
+    const active = folders
+      .flatMap((folder) =>
+        folder.items
+          // Add expiry information to each upload
+          .map((item) => addExpiryToContainer(item.upload))
+          // Filter out the expired uploads
+          .filter((item) => item.expired === false)
+          // Get the size of each upload
+          .map((item) => item.size)
+      )
+      // Make a sum of all the sizes that haven't expired
+      .reduce((sizeA, sizeB) => sizeA + sizeB, 0);
+
+    return {
+      expired,
+      active,
+    };
   }),
 });
