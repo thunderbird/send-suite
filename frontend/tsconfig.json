@@ -21,9 +21,16 @@
     "esModuleInterop": true,
     "allowJs": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "server/*": ["../backend/src/*"],
+      "prisma/*": ["../backend/node_modules/@prisma/*"]
     },
-    "types": ["vite/client", "vitest/globals", "@types/firefox-webext-browser"]
+    "types": [
+      "vite/client",
+      "vitest/globals",
+      "@types/firefox-webext-browser",
+      "@trpc/server"
+    ]
   },
   "exclude": ["node_modules", "dist"]
 }

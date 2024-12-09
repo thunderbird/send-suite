@@ -1,4 +1,7 @@
 // Configure sentry
+import { initTRPC } from '@trpc/server';
+import * as trpcExpress from '@trpc/server/adapters/express';
+
 import './sentry';
 
 import cookieParser from 'cookie-parser';
@@ -19,9 +22,14 @@ import users from './routes/users';
 import wsMsgHandler from './wsMsgHandler';
 import wsUploadHandler from './wsUploadHandler';
 
+import { ContainerType } from '@prisma/client';
 import * as Sentry from '@sentry/node';
+import { z } from 'zod';
+import { getDataFromAuthenticatedRequest } from './auth/client';
 import { errorHandler } from './errors/routes';
+import { getAllUserGroupContainers, getUserById } from './models/users';
 import metricsRoute from './routes/metrics';
+import { addExpiryToContainer } from './utils';
 
 const PORT = 8080;
 const HOST = '0.0.0.0';
@@ -66,25 +74,74 @@ app.use((req, res, next) => {
 app.set('trust proxy', 1); // trust first proxy
 app.use(cookieParser());
 
-app.get('/', (req, res) => {
+app.get('/', (_, res) => {
   res.status(200).send('echo');
 });
 
-app.get('/echo', (req, res) => {
+app.get('/echo', (_, res) => {
   res.status(200).json({ message: 'API echo response' });
 });
 
-app.get('/error', (req, res) => {
+app.get('/error', (_, res) => {
   console.error('catching error on purpose');
 
   res.status(200).json({ message: 'API is simulating an error' });
 });
 
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (_, res) => {
   res.status(200).json({
     session: 'API is alive',
   });
 });
+
+/* tRPC */
+const createContext = ({ req }: trpcExpress.CreateExpressContextOptions) => {
+  // We can make queries simpler by passing the user object directly to the context
+  const { id, email, uniqueHash } = getDataFromAuthenticatedRequest(req);
+  return {
+    user: { id, email, uniqueHash },
+  };
+};
+type Context = Awaited<ReturnType<typeof createContext>>;
+
+const t = initTRPC.context<Context>().create();
+export const trpcAppRouter = t.router({
+  getUser: t.procedure.query(({ ctx }) => {
+    return { ...ctx.user };
+  }),
+
+  getUserData: t.procedure
+    .input(z.object({ name: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const userData = await getUserById(ctx.user.id);
+
+      return { name: 'Bilbo ' + input.name, userData: userData };
+    }),
+
+  getTotalUsedStorage: t.procedure.query(async ({ ctx }) => {
+    const userId = ctx.user.id;
+    const folders = await getAllUserGroupContainers(
+      userId,
+      ContainerType.FOLDER
+    );
+    return folders
+      .flatMap((folder) =>
+        folder.items
+          .map((item) => addExpiryToContainer(item.upload))
+          .filter((i) => i.expired === false)
+          .map((i) => i.size)
+      )
+      .reduce((a, b) => a + b, 0);
+  }),
+});
+
+app.use(
+  '/trpc',
+  trpcExpress.createExpressMiddleware({
+    router: trpcAppRouter,
+    createContext,
+  })
+);
 
 app.use('/api/users', users);
 app.use('/api/containers', containers);
@@ -131,3 +188,5 @@ server.on('upgrade', (req, socket, head) => {
     });
   }
 });
+
+export type AppRouter = typeof trpcAppRouter;
