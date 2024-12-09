@@ -16,6 +16,8 @@ permissions:
 jobs:
   detect-changes:
     runs-on: ubuntu-latest
+    env:
+      IS_CI_AUTOMATION: "yes"
     outputs:
       backend-changed: ${{ steps.check.outputs.backend-changed }}
       iac-changed: ${{ steps.check.outputs.iac-changed }}
@@ -40,6 +42,8 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.backend-changed == 'true'
     runs-on: ubuntu-latest
+    env:
+      IS_CI_AUTOMATION: "yes"
     steps:
       # Preparation for future steps
       - uses: actions/checkout@v4
@@ -127,6 +131,8 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.frontend-changed == 'true'
     runs-on: ubuntu-latest
+    env:
+      IS_CI_AUTOMATION: "yes"
     steps:
       # Preparation for future steps
       - uses: actions/checkout@v4

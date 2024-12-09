@@ -16,6 +16,8 @@ permissions:
 jobs:
   deploy-backend:
     runs-on: ubuntu-latest
+    env:
+      IS_CI_AUTOMATION: "yes"
     steps:
       - name: Check out the code
         if: contains(github.event.release.assets.*.name, 'ecr_tag.zip')
@@ -41,7 +43,7 @@ jobs:
         if: contains(github.event.release.assets.*.name, 'ecr_tag.zip')
         uses: aws-actions/amazon-ecr-login@v2
         with:
-          mask-password: 'true'
+          mask-password: "true"
 
       - name: Retag image
         if: contains(github.event.release.assets.*.name, 'ecr_tag.zip')
@@ -117,6 +119,8 @@ jobs:
 
   deploy-frontend:
     runs-on: ubuntu-latest
+    env:
+      IS_CI_AUTOMATION: "yes"
     steps:
       - name: Download frontend source
         if: contains(github.event.release.assets.*.name, 'frontend-source-prod.zip')
@@ -144,4 +148,3 @@ jobs:
 
           # Invalidate the CDN
           aws cloudfront create-invalidation --distribution-id ${{ vars.PROD_CF_DISTRO_ID }} --paths "/*"
-
