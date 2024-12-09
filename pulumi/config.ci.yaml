@@ -104,7 +104,7 @@ resources:
           - FARGATE
         container_definitions:
           backend:
-            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:0.1.12
+            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:05e4dbb73fbb13a3412eb923ba68a9fd1dada490
             portMappings:
               - name: send-suite
                 containerPort: 8080
@@ -120,21 +120,21 @@ resources:
               initProcessEnabled: True
             secrets:
               - name: B2_APPLICATION_KEY
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/b2-application-key
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/b2-application-key-reqbH9
               - name: B2_APPLICATION_KEY_ID
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/b2-application-key-id
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/b2-application-key-id-PWr4uo
               - name: DATABASE_URL
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/database_url
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/database-url-GBWdJj
               - name: FXA_ALLOW_LIST
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/fxa-allow-list
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/fxa-allow-list-jQxGEA
               - name: FXA_CLIENT_ID
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/fxa-client-id
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/fxa-client-id-kJaUGt
               - name: FXA_CLIENT_SECRET
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/fxa-client-secret
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/fxa-client-secret-HFKbzq
               - name: POSTHOG_API_KEY
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/posthog-api-key
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/posthog-api-key-WnBiQB
               - name: SENTRY_AUTH_TOKEN
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/sentry-auth-token
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/sentry-auth-token-fcx5c2
             environment:
               - name: B2_BUCKET_NAME
                 value: tb-send-suite-ci-object-store
@@ -163,7 +163,7 @@ resources:
               - name: FXA_REDIRECT_URI
                 value: https://lockbox-ci.thunderbird.dev/lockbox/fxa
               - name: NODE_ENV
-                value: production
+                value: dev
               - name: POSTHOG_HOST
                 value: https://us.i.posthog.com
               - name: SENTRY_DSN
