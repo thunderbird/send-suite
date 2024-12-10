@@ -22,7 +22,7 @@ export const containersRouter = router({
           // Get the size of each upload
           .map((item) => item.size)
       )
-      // Make a sum of all the sizes that haven't expired
+      // Make a sum of all the sizes that have expired
       .reduce((sizeA, sizeB) => sizeA + sizeB, 0);
 
     const active = folders
