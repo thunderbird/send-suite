@@ -27,7 +27,8 @@ import * as Sentry from '@sentry/node';
 import { getDataFromAuthenticatedRequest } from './auth/client';
 import { errorHandler } from './errors/routes';
 import metricsRoute from './routes/metrics';
-import { userRouter } from './trpc-users';
+import { containersRouter } from './trpc/containers';
+import { usersRouter } from './trpc/users';
 
 const PORT = 8080;
 const HOST = '0.0.0.0';
@@ -97,7 +98,6 @@ export const publicProcedure = t.publicProcedure;
 export const mergeRouters = t.mergeRouters;
 
 /* tRPC */
-
 // Create context for every trpc request
 export const createContext = ({
   req,
@@ -107,9 +107,12 @@ export const createContext = ({
     user: { id: id.toString(), email, uniqueHash },
   };
 };
-export type Context = Awaited<ReturnType<typeof createContext>>;
-
-const appRouter = mergeRouters(userRouter);
+// Put together all our routers
+const appRouter = mergeRouters(
+  usersRouter,
+  containersRouter
+  /* Add more routers here */
+);
 
 app.use(
   '/trpc',

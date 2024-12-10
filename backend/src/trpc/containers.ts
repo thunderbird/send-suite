@@ -1,21 +1,9 @@
+import { getAllUserGroupContainers } from '@/models/users';
+import { addExpiryToContainer } from '@/utils';
 import { ContainerType } from '@prisma/client';
-import { z } from 'zod';
-import { getAllUserGroupContainers, getUserById } from './models/users';
-import { router, publicProcedure as t } from './trpc';
-import { addExpiryToContainer } from './utils';
+import { router, publicProcedure as t } from '../trpc';
 
-export const userRouter = router({
-  getUser: t.query(({ ctx }) => {
-    return { user: Number(ctx.user.id) };
-  }),
-
-  getUserData: t
-    .input(z.object({ name: z.string() }))
-    .query(async ({ input, ctx }) => {
-      const userData = await getUserById(Number(ctx.user.id));
-      return { name: 'Bilbo ' + input.name, userData: userData };
-    }),
-
+export const containersRouter = router({
   getTotalUsedStorage: t.query(async ({ ctx }) => {
     const userId = Number(ctx.user.id);
     const folders = await getAllUserGroupContainers(
