@@ -34,7 +34,7 @@
     "@sentry/vue": "^8.15.0",
     "@tabler/icons-vue": "^2.40.0",
     "@tanstack/vue-query": "^5.62.2",
-    "@thunderbirdops/services-ui": "^0.4.2",
+    "@thunderbirdops/services-ui": "^0.6.2",
     "@trpc/client": "11.0.0-rc.648",
     "@types/ua-parser-js": "^0.7.39",
     "dayjs": "^1.11.10",
