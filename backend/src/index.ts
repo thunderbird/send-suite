@@ -1,6 +1,6 @@
 // Configure sentry
-import { initTRPC } from '@trpc/server';
 import * as trpcExpress from '@trpc/server/adapters/express';
+import * as t from './trpc';
 
 import './sentry';
 
@@ -22,14 +22,13 @@ import users from './routes/users';
 import wsMsgHandler from './wsMsgHandler';
 import wsUploadHandler from './wsUploadHandler';
 
-import { ContainerType } from '@prisma/client';
 import * as Sentry from '@sentry/node';
-import { z } from 'zod';
+
 import { getDataFromAuthenticatedRequest } from './auth/client';
 import { errorHandler } from './errors/routes';
-import { getAllUserGroupContainers, getUserById } from './models/users';
 import metricsRoute from './routes/metrics';
-import { addExpiryToContainer } from './utils';
+import { containersRouter } from './trpc/containers';
+import { usersRouter } from './trpc/users';
 
 const PORT = 8080;
 const HOST = '0.0.0.0';
@@ -94,51 +93,31 @@ app.get('/api/health', (_, res) => {
   });
 });
 
+export const router = t.router;
+export const publicProcedure = t.publicProcedure;
+export const mergeRouters = t.mergeRouters;
+
 /* tRPC */
-const createContext = ({ req }: trpcExpress.CreateExpressContextOptions) => {
-  // We can make queries simpler by passing the user object directly to the context
+// Create context for every trpc request
+export const createContext = ({
+  req,
+}: trpcExpress.CreateExpressContextOptions) => {
   const { id, email, uniqueHash } = getDataFromAuthenticatedRequest(req);
   return {
-    user: { id, email, uniqueHash },
+    user: { id: id.toString(), email, uniqueHash },
   };
 };
-type Context = Awaited<ReturnType<typeof createContext>>;
-
-const t = initTRPC.context<Context>().create();
-export const trpcAppRouter = t.router({
-  getUser: t.procedure.query(({ ctx }) => {
-    return { ...ctx.user };
-  }),
-
-  getUserData: t.procedure
-    .input(z.object({ name: z.string() }))
-    .query(async ({ input, ctx }) => {
-      const userData = await getUserById(ctx.user.id);
-
-      return { name: 'Bilbo ' + input.name, userData: userData };
-    }),
-
-  getTotalUsedStorage: t.procedure.query(async ({ ctx }) => {
-    const userId = ctx.user.id;
-    const folders = await getAllUserGroupContainers(
-      userId,
-      ContainerType.FOLDER
-    );
-    return folders
-      .flatMap((folder) =>
-        folder.items
-          .map((item) => addExpiryToContainer(item.upload))
-          .filter((i) => i.expired === false)
-          .map((i) => i.size)
-      )
-      .reduce((a, b) => a + b, 0);
-  }),
-});
+// Put together all our routers
+const appRouter = mergeRouters(
+  usersRouter,
+  containersRouter
+  /* Add more routers here */
+);
 
 app.use(
   '/trpc',
   trpcExpress.createExpressMiddleware({
-    router: trpcAppRouter,
+    router: appRouter,
     createContext,
   })
 );
@@ -189,4 +168,4 @@ server.on('upgrade', (req, socket, head) => {
   }
 });
 
-export type AppRouter = typeof trpcAppRouter;
+export type AppRouter = typeof appRouter;

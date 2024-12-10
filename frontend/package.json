@@ -67,7 +67,7 @@
     "eslint-plugin-vue": "^9.26.0",
     "globals": "^15.6.0",
     "happy-dom": ">=15.10.2",
-    "lint-staged": "^15.2.7",
+    "lint-staged": "^15.2.11",
     "mock-socket": "^9.3.1",
     "msw": "^2.3.0",
     "nodemon": "^3.1.7",

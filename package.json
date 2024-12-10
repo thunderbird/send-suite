@@ -25,7 +25,11 @@
     "install:backend": "cd backend && pnpm install"
   },
   "engines": {
-    "bun": "1.1.13"
+    "bun": "1.1.13",
+    "node": ">=22.11.0"
+  },
+  "volta": {
+    "node": "22.11.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.46.0",

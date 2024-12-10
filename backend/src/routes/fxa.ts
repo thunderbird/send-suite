@@ -24,7 +24,8 @@ import { AuthResponse } from './auth';
 
 const router: Router = Router();
 const ONE_DAY = 1;
-const tokenExpiration = getTokenExpiration(ONE_DAY);
+const ONE_WEEK = ONE_DAY * 7;
+const tokenExpiration = getTokenExpiration(ONE_WEEK);
 
 // Route for obtaining an authorization URL for Mozilla account.
 router.get(
