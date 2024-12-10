@@ -18,6 +18,8 @@ jobs:
   # This job detects which parts of the repo have been changed, setting future jobs up for conditional behavior.
   detect-changes:
     runs-on: ubuntu-latest
+    env:
+      IS_CI_AUTOMATION: "yes"
     outputs:
       backend-changed: ${{ steps.check.outputs.backend-changed }}
       iac-changed: ${{ steps.check.outputs.iac-changed }}
@@ -47,6 +49,8 @@ jobs:
   backend-tests:
     needs: detect-changes
     runs-on: ubuntu-latest
+    env:
+      IS_CI_AUTOMATION: "yes"
     strategy:
       matrix:
         node-version: [22.x]
@@ -93,6 +97,8 @@ jobs:
   iac-lint:
     needs: detect-changes
     runs-on: ubuntu-latest
+    env:
+      IS_CI_AUTOMATION: "yes"
     strategy:
       matrix:
         node-version: [22.x]
@@ -118,6 +124,8 @@ jobs:
   frontend-lint:
     needs: detect-changes
     runs-on: ubuntu-latest
+    env:
+      IS_CI_AUTOMATION: "yes"
     if: needs.detect-changes.outputs.frontend-changed == 'true'
     steps:
       - uses: actions/checkout@v4
