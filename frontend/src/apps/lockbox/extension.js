@@ -5,6 +5,7 @@ import { VueQueryPlugin } from '@tanstack/vue-query';
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 
+import '@thunderbirdops/services-ui/style.css';
 import Extension from './ExtensionPage.vue';
 import './style.css';
 const pinia = createPinia();

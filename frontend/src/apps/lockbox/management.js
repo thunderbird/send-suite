@@ -2,6 +2,7 @@ import '@/lib/logger';
 import { initSentry } from '@/lib/sentry';
 import posthogPlugin from '@/plugins/posthog';
 import { VueQueryPlugin } from '@tanstack/vue-query';
+import '@thunderbirdops/services-ui/style.css';
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 import ManagementPage from './ManagementPage.vue';
