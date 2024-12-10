@@ -14,7 +14,6 @@ import tb_pulumi.secrets
 
 CLOUDFRONT_REWRITE_CODE_FILE = 'cloudfront-rewrite.js'
 
-
 project = tb_pulumi.ThunderbirdPulumiProject()
 resources = project.config.get('resources')
 
@@ -35,6 +34,20 @@ backend_sg = tb_pulumi.network.SecurityGroupWithRules(
     **backend_sg_opts,
     opts=pulumi.ResourceOptions(depends_on=[vpc]),
 )
+
+# Only build an RDS database cluster with a jumphost in the CI environment, so we can verify this part of our codebase
+if project.stack == 'ci':
+    db_opts = resources['tb:rds:RdsDatabaseGroup']['citest']
+    db = tb_pulumi.rds.RdsDatabaseGroup(
+        name=f'{project.name_prefix}-rds',
+        project=project,
+        db_name='dbtest',
+        subnets=vpc.resources['subnets'],
+        vpc_cidr=vpc.resources['vpc'].cidr_block,
+        vpc_id=vpc.resources['vpc'].id,
+        opts=pulumi.ResourceOptions(depends_on=[vpc]),
+        **db_opts,
+    )
 
 # Create a Fargate cluster
 backend_fargate_opts = resources['tb:fargate:FargateClusterWithLogging']['backend']
@@ -61,11 +74,32 @@ backend_dns = aws.route53.Record(
     opts=pulumi.ResourceOptions(depends_on=[backend_fargate]),
 )
 
+# Manage the CloudFront rewrite function; the code is managed in cloudfront-rewrite.js
+rewrite_code = None
+try:
+    with open(CLOUDFRONT_REWRITE_CODE_FILE, 'r') as fh:
+        rewrite_code = fh.read()
+except IOError:
+    pulumi.error(f'Could not read file {CLOUDFRONT_REWRITE_CODE_FILE}')
+
+cf_func = aws.cloudfront.Function(
+    f'{project.name_prefix}-func-rewrite',
+    code=rewrite_code,
+    comment='Rewrites inbound requests to direct them to the send-suite backend API',
+    name=f'{project.name_prefix}-rewrite',
+    publish=True,
+    runtime='cloudfront-js-2.0',
+)
+project.resources['cf_rewrite_function'] = cf_func
+
+# Deliver frontend content via CloudFront
 frontend_opts = resources['tb:cloudfront:CloudFrontS3Service']['frontend']
 frontend = tb_pulumi.cloudfront.CloudFrontS3Service(
     name=f'{project.name_prefix}-frontend',
     project=project,
+    default_function_associations=[{'event_type': 'viewer-request', 'function_arn': cf_func.arn}],
     **frontend_opts,
+    opts=pulumi.ResourceOptions(depends_on=[cf_func]),
 )
 
 # Create a DNS record pointing to the frontend service

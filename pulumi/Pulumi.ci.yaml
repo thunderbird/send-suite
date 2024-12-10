@@ -13,7 +13,7 @@ config:
   send-suite:posthog-api-key:
     secure: v1:3fRMgg50jMwqlzA5:7VqMN88AYvzkb43iR89c07kawn3qM2u7
   send-suite:sentry-auth-token:
-    secure: v1:09y2h04wC19e0k6N:EjnmOGvkmR0aB8rOdU3FDbbQJqYqex37xGfVxQ==
+    secure: v1:bNT27ZenX/BFuUN3:nJBIrM12Ibf17i8YOYKnv3/y519FMMBsHdPm043Rx7TJpylMLbHPEiAr+qARs/mab9EAqHCIk4h2v1faLB4ZFabRjm5tlsZ++5HYHr/eCyktJOCrtuy1g1pN2TEsd04k8kTmMa4eI3zUzHnkfj3C06eR3D/KWGt6aw6ScKp9SushPkSJsdgtMZ3D62xe9C4qlVsvzLFdsDxLu9IWcuidmLJFB81W/b6sKTNf+cKPCuWlp4jPXhjgDKVSBFk645TG2g9wHulTcV/uz1W2BqM67WyGeA==
   send-suite:jwt-access-token-secret:
     secure: v1:EzRRIbhS0KaYLs8N:vnxISSNryblJ95UDCWScNFv/sBBKgXYjftcDreC103AfbLcjKf88BhYFXP4uQR0SqeSBdVBJ54TdRP+lJwdrao5R5umlfKqlI2+DCfFGksI1VYdTkV2gW/42EyMN1th3K2nYRg==
   send-suite:jwt-refresh-token-secret:

@@ -64,6 +64,12 @@ resources:
         - posthog-api-key
         - sentry-auth-token
       recovery_window_in_days: 0
+  
+  tb:rds:RdsDatabaseGroup:
+    citest:
+      build_jumphost: True
+      jumphost_public_key: ""
+      jumphost_source_cidrs: []
 
   tb:fargate:FargateClusterWithLogging:
     backend:
@@ -96,7 +102,7 @@ resources:
           - FARGATE
         container_definitions:
           backend:
-            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:0.1.12
+            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:05e4dbb73fbb13a3412eb923ba68a9fd1dada490
             portMappings:
               - name: send-suite
                 containerPort: 8080
@@ -112,21 +118,21 @@ resources:
               initProcessEnabled: True
             secrets:
               - name: B2_APPLICATION_KEY
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/b2-application-key
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/b2-application-key-reqbH9
               - name: B2_APPLICATION_KEY_ID
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/b2-application-key-id
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/b2-application-key-id-PWr4uo
               - name: DATABASE_URL
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/database_url
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/database-url-GBWdJj
               - name: FXA_ALLOW_LIST
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/fxa-allow-list
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/fxa-allow-list-jQxGEA
               - name: FXA_CLIENT_ID
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/fxa-client-id
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/fxa-client-id-kJaUGt
               - name: FXA_CLIENT_SECRET
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/fxa-client-secret
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/fxa-client-secret-HFKbzq
               - name: POSTHOG_API_KEY
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/posthog-api-key
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/posthog-api-key-WnBiQB
               - name: SENTRY_AUTH_TOKEN
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/sentry-auth-token
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/sentry-auth-token-fcx5c2
             environment:
               - name: B2_BUCKET_NAME
                 value: tb-send-suite-ci-object-store
@@ -138,7 +144,7 @@ resources:
                 value: https://lockbox-ci.thunderbird.dev/
               - name: COMBINED_LOG
                 value: logs/combined.log
-              - name: ciELOPER_TIMEZONE
+              - name: DEVELOPER_TIMEZONE
                 value: US/Eastern
               - name: DATABASE_ENGINE
                 value: postgres
@@ -155,7 +161,7 @@ resources:
               - name: FXA_REDIRECT_URI
                 value: https://lockbox-ci.thunderbird.dev/lockbox/fxa
               - name: NODE_ENV
-                value: production
+                value: dev
               - name: POSTHOG_HOST
                 value: https://us.i.posthog.com
               - name: SENTRY_DSN
@@ -184,7 +190,6 @@ resources:
     notify_emails:
       - rjung+cloudwatch@thunderbird.net
     # alarms:
-    #   send-suite-staging-fargate-service:
-    #     cpu_utilization:
-    #       enabled: False
-    #       threshold: 80
+    #   send-suite-ci-fargate-fargateservicealb-alb-send-suite:
+    #     target_5xx:
+    #       threshold: 1000
