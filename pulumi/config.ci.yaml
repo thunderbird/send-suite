@@ -144,7 +144,7 @@ resources:
                 value: https://lockbox-ci.thunderbird.dev/
               - name: COMBINED_LOG
                 value: logs/combined.log
-              - name: ciELOPER_TIMEZONE
+              - name: DEVELOPER_TIMEZONE
                 value: US/Eastern
               - name: DATABASE_ENGINE
                 value: postgres
@@ -190,6 +190,6 @@ resources:
     notify_emails:
       - rjung+cloudwatch@thunderbird.net
     # alarms:
-    #   send-suite-ci-monitoring-fargate-fargateservicealb-targetgroup-send-suite:
-    #     unhealthy_hosts:
-    #       enabled: False
+    #   send-suite-ci-fargate-fargateservicealb-alb-send-suite:
+    #     target_5xx:
+    #       threshold: 1000
