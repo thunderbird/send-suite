@@ -165,6 +165,8 @@ resources:
                 value: dev
               - name: POSTHOG_HOST
                 value: https://us.i.posthog.com
+              - name: SEND_BACKEND_CORS_ORIGINS
+                VALUE: send-ci.thunderbird.dev
               - name: SENTRY_DSN
                 value: https://85b7b08be94b8991ed121578d807f755@o4505428107853824.ingest.us.sentry.io/4507567071232000
               - name: SENTRY_ORG
