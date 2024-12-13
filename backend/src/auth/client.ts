@@ -4,6 +4,8 @@ import type { Request } from 'express';
 import jwt from 'jsonwebtoken';
 import { Issuer, generators } from 'openid-client';
 
+export const defaultOrigins = 'http://localhost:5173,http://localhost:4173';
+
 export function generateState() {
   // State is the random value that we pass to the auth server.
   // They pass it back to us so we can compare to the original.
@@ -31,6 +33,12 @@ export function isEmailInAllowList(email: string, allowList: string[]) {
   // check against @domans
   const domains = allowList.some((entry) => email.endsWith(entry));
   return domains;
+}
+
+export async function getAllowedOrigins() {
+  const envOrigins = process.env.SEND_BACKEND_CORS_ORIGINS || defaultOrigins;
+  // Force this to be an array of strings of non-zero length
+  return envOrigins.split(',').filter(String);
 }
 
 export async function checkAllowList(email: string | undefined | null) {

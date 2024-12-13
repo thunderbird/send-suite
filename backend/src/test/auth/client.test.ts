@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { beforeEach } from 'node:test';
+import { after, before, beforeEach } from 'node:test';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   checkAllowList,
+  defaultOrigins,
   generateState,
+  getAllowedOrigins,
   getClient,
   getDataFromAuthenticatedRequest,
   getIssuer,
@@ -90,6 +92,45 @@ describe('Auth Client', () => {
       expect(result).toBe(false);
     });
   });
+});
+
+describe('getAllowedOrigins', () => {
+  let originalEnv;
+  
+  // Back up the environment before we mess with it
+  before(() => {
+    originalEnv = process.env
+  })
+
+  // Test various environment variable inputs
+  it('should return default values when no environment variable is provided', async () => {
+    delete(process.env.SEND_BACKEND_CORS_ORIGINS);
+    const origins = await getAllowedOrigins();
+    expect(origins).toEqual(defaultOrigins.split(',').filter(String))
+  });
+
+  it('should return default values when an empty origin is provided', async () => {
+    process.env.SEND_BACKEND_CORS_ORIGINS = '';
+    const origins = await getAllowedOrigins();
+    expect(origins).toEqual(defaultOrigins.split(',').filter(String))
+  });
+
+  it('should not throw errors when a single valid origin is provided', async () => {
+    process.env.SEND_BACKEND_CORS_ORIGINS = 'http://localhost:12345';
+    const origins = await getAllowedOrigins();
+    expect(origins).toEqual(['http://localhost:12345'])
+  });
+
+  it('should not throw errors when multiple valid origins are provided', async () => {
+    process.env.SEND_BACKEND_CORS_ORIGINS = 'http://localhost:12345,http://thebestsite.edu';
+    const origins = await getAllowedOrigins();
+    expect(origins).toEqual(['http://localhost:12345', 'http://thebestsite.edu'])
+  });
+
+  // Restore the original environment
+  after(() => {
+    process.env = originalEnv
+  })
 });
 
 describe('checkAllowList', () => {

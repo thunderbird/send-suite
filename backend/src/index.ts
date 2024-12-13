@@ -10,6 +10,8 @@ import 'dotenv/config';
 import express from 'express';
 import WebSocket from 'ws';
 
+import { getAllowedOrigins } from './auth/client';
+
 import auth from './routes/auth';
 import containers from './routes/containers';
 import download from './routes/download';
@@ -42,9 +44,7 @@ const app = express();
 app.use(express.static('public'));
 app.use(express.json({ limit: '5mb' }));
 
-const defaultOrigins = 'http://localhost:5173,http://localhost:4173'
-const envOrigins = process.env.SEND_BACKEND_CORS_ORIGINS || defaultOrigins
-const allowedOrigins = envOrigins.split(',')
+const allowedOrigins = getAllowedOrigins()
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
