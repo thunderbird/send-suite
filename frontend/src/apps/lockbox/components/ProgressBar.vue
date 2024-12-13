@@ -2,15 +2,10 @@
 import { useStatusStore } from '../stores/status-store';
 
 const { progress } = useStatusStore();
-
-type Props = {
-  type: string;
-};
-defineProps<Props>();
 </script>
 <template>
   <div>
-    <p>{{ type }}</p>
+    <p>{{ progress.text }}</p>
   </div>
   <div>
     <div class="progress-bar-container">

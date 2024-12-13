@@ -57,7 +57,7 @@ export interface FolderStore {
 const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
   const { api } = useApiStore();
   const { user } = useUserStore();
-  const { setUploadSize, setProgress, progress } = useStatusStore();
+  const { setUploadSize, progress } = useStatusStore();
   const { keychain } = useKeychainStore();
 
   const uploader = new Uploader(user, keychain, api);
@@ -220,7 +220,7 @@ const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
         formattedBlob,
         folderId,
         api,
-        setProgress
+        progress
       );
       if (newItem && rootFolder.value) {
         rootFolder.value.items = [...rootFolder.value.items, newItem];
