@@ -71,6 +71,7 @@ resources:
       build_jumphost: False
       jumphost_public_key: ""
       jumphost_source_cidrs: []
+      secret_recovery_window_in_days: 0
 
   tb:fargate:FargateClusterWithLogging:
     backend:
@@ -97,8 +98,8 @@ resources:
         network_mode: awsvpc
         # Adjust sizing as necessary; 256 cpu/512 ram are minimum values. Values must match listings in the table here:
         # https://docs.aws.amazon.com/AmazonECS/latest/cieloperguide/task_definition_parameters.html#task_size
-        cpu: 256
-        memory: 512
+        cpu: 512
+        memory: 1024
         requires_compatibilities:
           - FARGATE
         container_definitions:
@@ -119,21 +120,21 @@ resources:
               initProcessEnabled: True
             secrets:
               - name: B2_APPLICATION_KEY
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/b2-application-key-reqbH9
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/b2-application-key-VXIRAn
               - name: B2_APPLICATION_KEY_ID
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/b2-application-key-id-PWr4uo
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/b2-application-key-id-sEK5sx
               - name: DATABASE_URL
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/database-url-GBWdJj
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/database-url-NQPYRh
               - name: FXA_ALLOW_LIST
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/fxa-allow-list-jQxGEA
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/fxa-allow-list-iplRwx
               - name: FXA_CLIENT_ID
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/fxa-client-id-kJaUGt
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/fxa-client-id-ZOFxD4
               - name: FXA_CLIENT_SECRET
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/fxa-client-secret-HFKbzq
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/fxa-client-secret-Tqmo8Q
               - name: POSTHOG_API_KEY
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/posthog-api-key-WnBiQB
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/posthog-api-key-VFZRnV
               - name: SENTRY_AUTH_TOKEN
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/sentry-auth-token-fcx5c2
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/ci/sentry-auth-token-wnTzDJ
             environment:
               - name: B2_BUCKET_NAME
                 value: tb-send-suite-ci-object-store
