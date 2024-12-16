@@ -89,7 +89,11 @@ export async function sendBlob(
       'POST'
     );
 
-    const encrypted = await encrypt(stream, aesKey);
+    progressTracker.setText('Encrypting file');
+    const encrypted = await encrypt(stream, aesKey, progressTracker);
+
+    progressTracker.setProgress(0);
+    progressTracker.setText('Uploading file');
 
     // Create a ReadableStream from the Uint8Array
     const readableStream = new ReadableStream({
