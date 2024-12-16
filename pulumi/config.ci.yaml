@@ -67,7 +67,8 @@ resources:
   
   tb:rds:RdsDatabaseGroup:
     citest:
-      build_jumphost: True
+      skip_final_snapshot: True
+      build_jumphost: False
       jumphost_public_key: ""
       jumphost_source_cidrs: []
 

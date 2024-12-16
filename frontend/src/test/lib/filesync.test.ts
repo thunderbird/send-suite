@@ -12,6 +12,7 @@ import { encryptStream } from '@/lib/ece';
 import * as useApiStore from '@/stores/api-store';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
+import { mockProgressTracker } from './helpers';
 
 const API_URL = `${import.meta.env.VITE_SEND_SERVER_URL}/api`;
 const UPLOAD_ID = `abcdefg1234567`;
@@ -253,13 +254,12 @@ describe(`Filesync`, () => {
       const keychain = new Keychain();
       const key = await keychain.content.generateKey();
       const blob = new Blob([new Uint8Array(2)]);
-      const progressTracker = vi.fn();
 
       const result = await sendBlob(
         blob,
         key,
         mockedApi as any,
-        progressTracker
+        mockProgressTracker
       );
 
       expect(result).toEqual(SUCCESSFUL_UPLOAD_RESPONSE.id);
@@ -286,10 +286,9 @@ describe(`Filesync`, () => {
       const keychain = new Keychain();
       const key = await keychain.content.generateKey();
       const blob = new Blob([new Uint8Array(2)]);
-      const progressTracker = vi.fn();
 
       await expect(
-        sendBlob(blob, key, mockedApi as any, progressTracker)
+        sendBlob(blob, key, mockedApi as any, mockProgressTracker)
       ).rejects.toThrow();
     });
   });

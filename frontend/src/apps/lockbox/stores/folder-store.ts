@@ -18,6 +18,8 @@ import { NamedBlob } from '@/lib/filesync';
 import { backupKeys } from '@/lib/keychain';
 import { CLIENT_MESSAGES } from '@/lib/messages';
 import { checkBlobSize, formatBlob } from '@/lib/utils';
+
+import useMetricsStore from '@/stores/metrics';
 import { useStatusStore } from './status-store';
 
 export interface FolderStore {
@@ -57,7 +59,8 @@ export interface FolderStore {
 const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
   const { api } = useApiStore();
   const { user } = useUserStore();
-  const { setUploadSize, setProgress, progress } = useStatusStore();
+  const { setUploadSize, progress } = useStatusStore();
+  const { metrics } = useMetricsStore();
   const { keychain } = useKeychainStore();
 
   const uploader = new Uploader(user, keychain, api);
@@ -220,7 +223,7 @@ const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
         formattedBlob,
         folderId,
         api,
-        setProgress
+        progress
       );
       if (newItem && rootFolder.value) {
         rootFolder.value.items = [...rootFolder.value.items, newItem];
@@ -276,7 +279,8 @@ const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
       uploadId,
       containerId,
       wrappedKeyStr,
-      name
+      name,
+      metrics
     );
   }
 

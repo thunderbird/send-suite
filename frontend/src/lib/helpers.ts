@@ -1,8 +1,5 @@
 import { FolderStore } from '@/apps/lockbox/stores/folder-store';
-import {
-  ProgressTracker,
-  StatusStore,
-} from '@/apps/lockbox/stores/status-store';
+import { ProgressTracker } from '@/apps/lockbox/stores/status-store';
 import init from '@/lib/init';
 import { UserStore } from '@/stores/user-store';
 import { Canceler, JsonResponse } from '@/types';
@@ -90,7 +87,7 @@ export async function _upload(
 
       size += buf.length;
       console.log('Uploaded', size, 'bytes', '- timestamp:', Date.now());
-      progressTracker(size);
+      progressTracker.setProgress(size);
       state = await reader.read();
       while (
         ws.bufferedAmount > ECE_RECORD_SIZE * 2 &&
@@ -118,7 +115,11 @@ export async function _upload(
   }
 }
 
-export async function encrypt(stream: ReadableStream, key: CryptoKey) {
+export async function encrypt(
+  stream: ReadableStream,
+  key: CryptoKey,
+  progressTracker: ProgressTracker
+): Promise<Uint8Array> {
   try {
     let size = 0;
     const chunks: Uint8Array[] = [];
@@ -135,9 +136,10 @@ export async function encrypt(stream: ReadableStream, key: CryptoKey) {
     while (!state.done) {
       const buf = state.value;
       chunks.push(buf);
+      progressTracker.setProgress(size);
 
       size += buf.length;
-      console.log('Uploaded', size, 'bytes', '- timestamp:', Date.now());
+      console.log('Encrypted', size, 'bytes', '- timestamp:', Date.now());
       state = await reader.read();
     }
     const concatenated = concatenateUint8Arrays(chunks);
@@ -237,7 +239,7 @@ export const matchMeta = (to: RouteLocationNormalized, key: string) => {
 type UploadOptions = {
   url: string;
   readableStream: ReadableStream;
-  progressTracker: StatusStore['setProgress'];
+  progressTracker: ProgressTracker;
 };
 
 export const uploadWithTracker = ({
@@ -245,6 +247,7 @@ export const uploadWithTracker = ({
   readableStream,
   progressTracker,
 }: UploadOptions) => {
+  const { setProgress } = progressTracker;
   // Track upload progress using XMLHttpRequest
   return new Promise<string>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -254,7 +257,7 @@ export const uploadWithTracker = ({
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable) {
         const uploadProgress = event.loaded;
-        progressTracker(uploadProgress);
+        setProgress(uploadProgress);
       }
     };
 

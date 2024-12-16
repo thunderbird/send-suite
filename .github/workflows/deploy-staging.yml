@@ -16,12 +16,17 @@ permissions:
 jobs:
   detect-changes:
     runs-on: ubuntu-latest
+    env:
+      IS_CI_AUTOMATION: "yes"
     outputs:
       backend-changed: ${{ steps.check.outputs.backend-changed }}
       iac-changed: ${{ steps.check.outputs.iac-changed }}
       frontend-changed: ${{ steps.check.outputs.frontend-changed }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
 
       - uses: dorny/paths-filter@v3
         id: check
@@ -40,9 +45,14 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.backend-changed == 'true'
     runs-on: ubuntu-latest
+    env:
+      IS_CI_AUTOMATION: "yes"
     steps:
       # Preparation for future steps
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -127,9 +137,14 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.frontend-changed == 'true'
     runs-on: ubuntu-latest
+    env:
+      IS_CI_AUTOMATION: "yes"
     steps:
       # Preparation for future steps
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

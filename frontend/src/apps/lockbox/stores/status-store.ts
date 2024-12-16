@@ -16,9 +16,15 @@ export const useStatusStore = defineStore('status', () => {
   const total = ref(0);
   const progressed = ref(0);
   const error = ref<string>('');
+  const text = ref<string>('');
+
   const debouncedUpdate = useDebounceFn((updatedValue: number) => {
     progressed.value = updatedValue;
-  }, 100);
+  }, 1);
+
+  function setText(message: string) {
+    text.value = message;
+  }
 
   function setUploadSize(size: number) {
     total.value = size;
@@ -29,8 +35,21 @@ export const useStatusStore = defineStore('status', () => {
     debouncedUpdate(number);
   }
 
+  function initialize() {
+    total.value = 0;
+    progressed.value = 0;
+    error.value = '';
+    text.value = '';
+  }
+
   const percentage = computed(() => {
     const result = (progressed.value * 100) / total.value;
+    if (Number.isNaN(result)) {
+      return 0;
+    }
+    if (result > 100) {
+      return 100;
+    }
     return Math.round(result);
   });
 
@@ -40,14 +59,20 @@ export const useStatusStore = defineStore('status', () => {
     validators,
     setProgress,
     setUploadSize,
+    setText,
     progress: {
       total,
       progressed,
       percentage,
       error,
+      text,
+      initialize,
+      setProgress,
+      setUploadSize,
+      setText,
     },
   };
 });
 
 export type StatusStore = ReturnType<typeof useStatusStore>;
-export type ProgressTracker = StatusStore['setProgress'];
+export type ProgressTracker = StatusStore['progress'];

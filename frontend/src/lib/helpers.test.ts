@@ -1,3 +1,4 @@
+import { mockProgressTracker } from '@/test/lib/helpers';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { describe, expect, it, vi } from 'vitest';
@@ -44,7 +45,6 @@ describe('helpers', () => {
     describe('helpers', () => {
       describe('uploadWithTracker', () => {
         it('should track upload progress', async () => {
-          const progressTracker = vi.fn();
           const stream = new ReadableStream({
             start(controller) {
               controller.enqueue(new TextEncoder().encode(TEST_CONTENT));
@@ -56,9 +56,9 @@ describe('helpers', () => {
             const result = await uploadWithTracker({
               url: `${TEST_URL}/upload`,
               readableStream: stream,
-              progressTracker,
+              progressTracker: mockProgressTracker,
             });
-            expect(progressTracker).toHaveBeenCalled();
+            expect(mockProgressTracker.setProgress).toHaveBeenCalled();
             expect(result).toBe('{"status":"success"}');
           } catch (error) {
             console.log(error);
@@ -82,7 +82,7 @@ describe('helpers', () => {
             await uploadWithTracker({
               url: `${TEST_URL}/upload`,
               readableStream: stream,
-              progressTracker,
+              progressTracker: mockProgressTracker,
             });
           } catch (error) {
             expect(error).toBeInstanceOf(Error);
