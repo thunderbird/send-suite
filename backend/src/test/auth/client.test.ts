@@ -104,14 +104,12 @@ describe('getAllowedOrigins', () => {
   // Test various environment variable inputs
   it('should throw an error when no environment variable is provided', async () => {
     delete(process.env.SEND_BACKEND_CORS_ORIGINS);
-    const origins = await getAllowedOrigins();
-    expect(origins).toThrowError('Environment variable SEND_BACKEND_CORS_ORIGINS must be set')
+    expect(() => getAllowedOrigins()).toThrowError('Environment variable SEND_BACKEND_CORS_ORIGINS must be set')
   });
 
-  it('should return default values when an empty origin is provided', async () => {
+  it('should throw an error when an empty origin is provided', async () => {
     process.env.SEND_BACKEND_CORS_ORIGINS = '';
-    const origins = await getAllowedOrigins();
-    expect(origins).toThrowError('At least one valid origin must be set in SEND_BACKEND_CORS_ORIGINS')
+    expect(() => getAllowedOrigins()).toThrowError('Environment variable SEND_BACKEND_CORS_ORIGINS must be set')
   });
 
   it('should return an array with the correct single item when a single valid origin is provided', async () => {

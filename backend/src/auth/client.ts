@@ -40,12 +40,7 @@ export function getAllowedOrigins() {
   }
 
   // Force this to be an array of strings of non-zero length
-  const origins = envOrigins.split(',').filter(String);
-
-  if (origins.length == 0) {
-    throw new Error('At least one valid origin must be set in SEND_BACKEND_CORS_ORIGINS')
-  }
-  return origins
+  return envOrigins.split(',').filter(String);
 }
 
 export async function checkAllowList(email: string | undefined | null) {
