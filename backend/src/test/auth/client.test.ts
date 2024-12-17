@@ -3,7 +3,6 @@ import { after, before, beforeEach } from 'node:test';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   checkAllowList,
-  defaultOrigins,
   generateState,
   getAllowedOrigins,
   getClient,
@@ -103,25 +102,25 @@ describe('getAllowedOrigins', () => {
   })
 
   // Test various environment variable inputs
-  it('should return default values when no environment variable is provided', async () => {
+  it('should throw an error when no environment variable is provided', async () => {
     delete(process.env.SEND_BACKEND_CORS_ORIGINS);
     const origins = await getAllowedOrigins();
-    expect(origins).toEqual(defaultOrigins.split(',').filter(String))
+    expect(origins).toThrowError('Environment variable SEND_BACKEND_CORS_ORIGINS must be set')
   });
 
   it('should return default values when an empty origin is provided', async () => {
     process.env.SEND_BACKEND_CORS_ORIGINS = '';
     const origins = await getAllowedOrigins();
-    expect(origins).toEqual(defaultOrigins.split(',').filter(String))
+    expect(origins).toThrowError('At least one valid origin must be set in SEND_BACKEND_CORS_ORIGINS')
   });
 
-  it('should not throw errors when a single valid origin is provided', async () => {
+  it('should return an array with the correct single item when a single valid origin is provided', async () => {
     process.env.SEND_BACKEND_CORS_ORIGINS = 'http://localhost:12345';
     const origins = await getAllowedOrigins();
     expect(origins).toEqual(['http://localhost:12345'])
   });
 
-  it('should not throw errors when multiple valid origins are provided', async () => {
+  it('should return the correct array when multiple valid origins are provided', async () => {
     process.env.SEND_BACKEND_CORS_ORIGINS = 'http://localhost:12345,http://thebestsite.edu';
     const origins = await getAllowedOrigins();
     expect(origins).toEqual(['http://localhost:12345', 'http://thebestsite.edu'])

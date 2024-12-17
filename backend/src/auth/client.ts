@@ -4,8 +4,6 @@ import type { Request } from 'express';
 import jwt from 'jsonwebtoken';
 import { Issuer, generators } from 'openid-client';
 
-export const defaultOrigins = 'http://localhost:5173,http://localhost:4173';
-
 export function generateState() {
   // State is the random value that we pass to the auth server.
   // They pass it back to us so we can compare to the original.
@@ -35,10 +33,19 @@ export function isEmailInAllowList(email: string, allowList: string[]) {
   return domains;
 }
 
-export async function getAllowedOrigins() {
-  const envOrigins = process.env.SEND_BACKEND_CORS_ORIGINS || defaultOrigins;
+export function getAllowedOrigins() {
+  const envOrigins = process.env.SEND_BACKEND_CORS_ORIGINS
+  if (!envOrigins) {
+    throw new Error('Environment variable SEND_BACKEND_CORS_ORIGINS must be set')
+  }
+
   // Force this to be an array of strings of non-zero length
-  return envOrigins.split(',').filter(String);
+  const origins = envOrigins.split(',').filter(String);
+
+  if (origins.length == 0) {
+    throw new Error('At least one valid origin must be set in SEND_BACKEND_CORS_ORIGINS')
+  }
+  return origins
 }
 
 export async function checkAllowList(email: string | undefined | null) {
