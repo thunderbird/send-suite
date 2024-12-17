@@ -124,6 +124,12 @@ describe('getAllowedOrigins', () => {
     expect(origins).toEqual(['http://localhost:12345', 'http://thebestsite.edu'])
   });
 
+  it('should handle spaces between origin strings', async () => {
+    process.env.SEND_BACKEND_CORS_ORIGINS = 'http://localhost:12345, http://thebestsite.edu, https://spaceforeand.aft ,';
+    const origins = await getAllowedOrigins();
+    expect(origins).toEqual(['http://localhost:12345', 'http://thebestsite.edu', 'https://spaceforeand.aft'])
+  })
+
   // Restore the original environment
   after(() => {
     process.env = originalEnv

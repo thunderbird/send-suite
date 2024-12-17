@@ -40,7 +40,10 @@ export function getAllowedOrigins() {
   }
 
   // Force this to be an array of strings of non-zero length
-  return envOrigins.split(',').filter(String);
+  return envOrigins
+    .split(',')
+    .map(n => n.trim())
+    .filter(String);
 }
 
 export async function checkAllowList(email: string | undefined | null) {
