@@ -33,6 +33,19 @@ export function isEmailInAllowList(email: string, allowList: string[]) {
   return domains;
 }
 
+export function getAllowedOrigins() {
+  const envOrigins = process.env.SEND_BACKEND_CORS_ORIGINS
+  if (!envOrigins) {
+    throw new Error('Environment variable SEND_BACKEND_CORS_ORIGINS must be set')
+  }
+
+  // Force this to be an array of strings of non-zero length
+  return envOrigins
+    .split(',')
+    .map(n => n.trim())
+    .filter(String);
+}
+
 export async function checkAllowList(email: string | undefined | null) {
   if (!email) {
     throw new Error('checkAllowList requires an email');
