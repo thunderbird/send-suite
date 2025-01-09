@@ -9,9 +9,9 @@ config:
   send-suite:fxa-allow-list:
     secure: v1:zh2awlDg3/zntRBc:JUHPT5lNHVceLQxl3ocjTuFT/g==
   send-suite:fxa-client-id:
-    secure: v1:uIppPgtAcRYYAf7Z:5ksM5sbbm9gOwWA7CnleIYHNUQ==
+    secure: v1:TNegpT9kNf+HoatL:FL1WvJv5YmPFpXRz/cefJ/s6ECXYdRRG5DytMNQVm58=
   send-suite:fxa-client-secret:
-    secure: v1:5xrBuwmFiGmNQwYX:2iDMop+qvHCT1VhfqPWAcOfXEA==
+    secure: v1:yB2PAYtZnrB6aP2B:n00hGqMJqPwlHewqYFELstpQueq/YDwjRqdg0/qeyNAwwWoP2hkRbSTS028mRpR9dJZSLjZlZd75qpX2Ho9VfSMIP/mLrF94xzv/fN2TOKU=
   send-suite:jwt-access-token-secret:
     secure: v1:gy+Gx1fxTMaEkSmP:vKhg//vdL5i+qvmEvUtgLyZXhECKz3bM4J9MnChSVsKc/w47fMGZOQL+W7xmZXyrfEFMMiMpaFP955COef9yvu6QSoTsvMWHA41Gzp3MvxOCUE6F4s3UbBLsDIB9CaY7DvzSHFk=
   send-suite:jwt-refresh-token-secret:
@@ -19,4 +19,4 @@ config:
   send-suite:posthog-api-key:
     secure: v1:DffkeIw+6ISV8lmR:pHtpRFJyWJbye+XsDuIbbKfhng==
   send-suite:sentry-auth-token:
-    secure: v1:1CBl7kjcqZe69Jqm:f2CsHnsceSTq0PhzpFOA+siOqA==
+    secure: v1:C8gxmPqSQmsTARkQ:yaO5xfZgMABdMi2vyPpj1e2cj1FvOjfBVOeyQQdf57KULO6iM9b/j3NYbU/ftqPipONFFc3zLQLfnX36ubQCo46gXYPVkyziomDGAJTNxAB77pZ24mscG/lbZ6zKoCNIojAe9ITjPotOVFC8ERV88TZ/B2S46HMvfwWN5zVcs+dZ47bk+YcZ8uV1AC8x4LdskvLSNxz2jENBLkWsSdObyzbsF62Qjilcntj+FNkdjtfvv3oZXi+z7vh1aEhatTcm/m4uwEyNPwQrDt8TokeubEZZug==
