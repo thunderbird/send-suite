@@ -1,14 +1,30 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue';
+import { BASE_URL } from '@/apps/common/constants';
 import useSharingStore from '@/apps/lockbox/stores/sharing-store';
+import { useClipboard } from '@vueuse/core';
+import { vTooltip } from 'floating-vue';
+import { ref, watchEffect } from 'vue';
+
+type Props = {
+  folderId: number;
+};
 const sharingStore = useSharingStore();
-const props = defineProps({
-  folderId: Number,
-});
+const props = defineProps<Props>();
+const clipboard = useClipboard();
+
+const tooltipText = ref('Click to copy');
 
 watchEffect(async () => {
   await sharingStore.fetchAccessLinks(props.folderId);
 });
+
+function copyToClipboard(id: string) {
+  clipboard.copy(`${BASE_URL}/share/${id}`);
+  tooltipText.value = 'Copied!';
+  setTimeout(() => {
+    tooltipText.value = 'Click to copy';
+  }, 3000);
+}
 
 /*
 A note: we don't store the password.
@@ -27,13 +43,32 @@ TODO: implement "regeneration" of links
     class="text-xs font-semibold text-gray-600"
     >Existing Links</span
   >
-  <section class="flex flex-col gap-3" v-for="link in sharingStore.links">
-    <label class="flex flex-col gap-2">
-      <input type="text" class="!rounded-r-none" :value="link.id" />
-    </label>
-    <label class="flex flex-col gap-2 hidden">
+  <section
+    v-for="link in sharingStore.links"
+    :key="link.id"
+    class="flex flex-col gap-3"
+  >
+    <input
+      v-tooltip="tooltipText"
+      type="text"
+      :value="`${BASE_URL}/share/${link.id}`"
+      @click="copyToClipboard(link.id)"
+    />
+    <label class="flex-col gap-2 hidden">
       <span class="text-xs font-semibold text-gray-600">Link Expires</span>
       <input :value="link.expiryDate" type="datetime-local" />
     </label>
   </section>
 </template>
+
+<style lang="css" scoped>
+:global(.v-tooltip) {
+  --v-tooltip-arrow-size: 4px;
+  display: block;
+  font-size: 12px;
+  padding: 4px 8px;
+  color: white;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.8);
+}
+</style>

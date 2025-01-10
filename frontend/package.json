@@ -38,6 +38,7 @@
     "@trpc/client": "11.0.0-rc.648",
     "@types/ua-parser-js": "^0.7.39",
     "dayjs": "^1.11.13",
+    "floating-vue": "^5.2.2",
     "get-random-values": "^3.0.0",
     "install": "^0.13.0",
     "jszip": "^3.10.1",
