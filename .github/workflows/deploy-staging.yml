@@ -113,8 +113,13 @@ jobs:
         env:
           ECR_TAG: "${{ steps.login-ecr.outputs.registry }}/${{ vars.PROJECT }}:${{ github.sha }}"
         run: |
-          # Change the image config option and try to apply the change
+          # Update the PATH to include the right version of Pulumi; this is non-trivial or impossible
+          # to do with the GHA workflow "env" settings above.
+          export PATH="/home/runner/.pulumi/bin:$PATH"
+
           cd pulumi
+          
+          # Create a YAML config stump containing only the nested tree leading to the image tag update
           cat << EOF > newimage.yaml
           resources:
             tb:fargate:FargateClusterWithLogging:
@@ -124,7 +129,11 @@ jobs:
                     backend:
                       image: "$ECR_TAG"
           EOF
+          
+          # Use yq to merge the stump into the main config
           yq -i '. *= load("newimage.yaml")' config.staging.yaml
+
+          # Set up the Pulumi environment and update the service
           export PULUMI_CONFIG_PASSPHRASE="${{ secrets.PULUMI_PASSPHRASE_STAGING }}"
           source ./venv/bin/activate
           pulumi login s3://tb-send-suite-pulumi

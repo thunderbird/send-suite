@@ -93,10 +93,14 @@ jobs:
         if: contains(github.event.release.assets.*.name, 'ecr_tag.zip')
         shell: bash
         run: |
+          # Update the PATH to include the right version of Pulumi; this is non-trivial or impossible
+          # to do with the GHA workflow "env" settings.
+          export PATH="/home/runner/.pulumi/bin:$PATH"
+
           # Pull the versioned tag from the previous step
           target_tag="${{ steps.retag-image.outputs.target_tag }}"
 
-          # Change the image config option and try to apply the change
+          # Create a YAML config stump containing only the nested tree leading to the image tag update
           cd pulumi
           cat << EOF > newimage.yaml
           resources:
@@ -107,8 +111,12 @@ jobs:
                     backend:
                       image: "$target_tag"
           EOF
+          
+          # Use yq to merge the stump into the main config
           yq -i '. *= load("newimage.yaml")' config.prod.yaml
           export PULUMI_CONFIG_PASSPHRASE='${{ secrets.PULUMI_PASSPHRASE_PROD }}'
+
+          # Set up the Pulumi environment and update the service
           source ./venv/bin/activate
           pulumi login s3://tb-send-suite-pulumi
           pulumi stack select prod
