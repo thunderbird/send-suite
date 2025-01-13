@@ -1,1 +1,1 @@
-tb_pulumi @ git+https://github.com/thunderbird/pulumi.git@v0.0.10
+tb_pulumi @ git+https://github.com/thunderbird/pulumi.git@issue-79
