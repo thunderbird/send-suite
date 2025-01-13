@@ -280,7 +280,8 @@ const useFolderStore: () => FolderStore = defineStore('folderManager', () => {
       containerId,
       wrappedKeyStr,
       name,
-      metrics
+      metrics,
+      progress
     );
   }
 

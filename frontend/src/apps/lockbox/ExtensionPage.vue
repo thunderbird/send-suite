@@ -9,6 +9,7 @@ import { onMounted } from 'vue';
 import { useMetricsUpdate } from '@/apps/common/mixins/metrics';
 import useApiStore from '@/stores/api-store';
 import useMetricsStore from '@/stores/metrics';
+import { ModalsContainer } from 'vue-final-modal';
 import SecureSendIcon from '../common/SecureSendIcon.vue';
 import StatusBar from '../common/StatusBar.vue';
 import TBBanner from '../common/TBBanner.vue';
@@ -38,6 +39,7 @@ useMetricsUpdate();
     <FeedbackBox />
     <SecureSendIcon />
     <StatusBar />
+    <ModalsContainer />
   </div>
 </template>
 

@@ -35,7 +35,8 @@ export async function getBlob(
   isMessage = true,
   filename = 'dummy.file',
   type = 'text/plain',
-  api: ApiConnection
+  api: ApiConnection,
+  progressTracker: ProgressTracker
 ): Promise<string | void> {
   try {
     const bucketResponse = await api.call<{ url: string }>(
@@ -46,7 +47,17 @@ export async function getBlob(
       throw new Error('BUCKET_URL_NOT_FOUND');
     }
 
-    const downloadedBlob = await _download(bucketResponse.url);
+    console.log('setting size to', size);
+
+    progressTracker.initialize();
+    progressTracker.setUploadSize(size);
+    progressTracker.setText('Downloading file');
+
+    const downloadedBlob = await _download({
+      url: bucketResponse.url,
+      progressTracker,
+    });
+
     let plaintext: ArrayBufferLike | string;
     if (key) {
       const plainStream = decryptStream(blobStream(downloadedBlob), key);

@@ -1,3 +1,4 @@
+import { ProgressTracker } from '@/apps/lockbox/stores/status-store';
 import { ApiConnection } from '@/lib/api';
 import { getBlob } from '@/lib/filesync';
 import { Keychain } from '@/lib/keychain';
@@ -16,7 +17,8 @@ export default class Downloader {
     folderId: number,
     wrappedKeyStr: string,
     filename: string,
-    metrics: ReturnType<typeof useMetricsStore>['metrics']
+    metrics: ReturnType<typeof useMetricsStore>['metrics'],
+    progressTracker: ProgressTracker
   ): Promise<boolean> {
     if (!id) {
       return false;
@@ -47,7 +49,16 @@ export default class Downloader {
       );
 
     try {
-      await getBlob(id, size, contentKey, false, filename, type, this.api);
+      await getBlob(
+        id,
+        size,
+        contentKey,
+        false,
+        filename,
+        type,
+        this.api,
+        progressTracker
+      );
 
       metrics.capture('download.size', { size, type });
       return true;

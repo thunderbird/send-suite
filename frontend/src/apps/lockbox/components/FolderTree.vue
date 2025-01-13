@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import ModalComponentV2 from '@/apps/common/ModalComponentV2.vue';
 import ReportContent from '@/apps/lockbox/components/ReportContent.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import { ref } from 'vue';
+import { useModal, useModalSlot } from 'vue-final-modal';
 import { FolderResponse } from '../stores/folder-store.types';
+import DownloadConfirmation from './DownloadConfirmation.vue';
 import SpinnerAnimated from './SpinnerAnimated.vue';
 const folderStore = useFolderStore();
 
@@ -11,7 +14,7 @@ type ReportProps = {
   containerId: FolderResponse['id'];
 };
 
-const isDownloading = ref(new Map());
+const isDownloading = ref<Props[]>([]);
 const isError = ref(false);
 
 type Props = {
@@ -21,20 +24,52 @@ type Props = {
   name: string;
 };
 
-async function downloadContent({
-  uploadId,
-  containerId,
-  wrappedKey,
-  name,
-}: Props) {
-  isDownloading.value.set(uploadId, true);
+const onDownloadConfirm = async () => {
+  await downloadConfirmed();
+  return Promise.resolve(true);
+};
+
+const { open, close: closefn } = useModal({
+  component: ModalComponentV2,
+  attrs: {
+    title: 'Download File',
+  },
+  slots: {
+    default: useModalSlot({
+      component: DownloadConfirmation,
+      attrs: {
+        closefn: () => {
+          isDownloading.value.pop();
+          return closefn();
+        },
+        confirm: onDownloadConfirm,
+      },
+    }),
+  },
+});
+
+async function setDownload({ uploadId, containerId, wrappedKey, name }: Props) {
+  isDownloading.value.push({
+    uploadId,
+    containerId,
+    wrappedKey,
+    name,
+  });
+}
+
+async function downloadConfirmed() {
+  const item = isDownloading.value.pop();
   try {
-    await folderStore.downloadContent(uploadId, containerId, wrappedKey, name);
+    await folderStore.downloadContent(
+      item.uploadId,
+      item.containerId,
+      item.wrappedKey,
+      item.name
+    );
   } catch (error) {
     isError.value = true;
     console.error(error);
   }
-  isDownloading.value.delete(uploadId);
 }
 
 defineProps<ReportProps>();
@@ -67,18 +102,20 @@ defineProps<ReportProps>();
         <button
           type="submit"
           class="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none: disabled:bg-gray-400"
-          :disabled="isDownloading.has(uploadId) || expired"
           @click.prevent="
-            downloadContent({
-              uploadId,
-              containerId,
-              wrappedKey,
-              name,
-            })
+            () => {
+              open();
+              setDownload({
+                uploadId,
+                containerId,
+                wrappedKey,
+                name,
+              });
+            }
           "
         >
           <div
-            v-if="isDownloading.has(uploadId)"
+            v-if="isDownloading.find((item) => item.uploadId === uploadId)"
             class="flex justify-center items-center"
           >
             <span>Downloading</span>
