@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { VueFinalModal } from 'vue-final-modal';
-import CloseIcon from './CloseIcon.vue';
+import CloseIcon from '../CloseIcon.vue';
 
 defineProps<{
   title?: string;

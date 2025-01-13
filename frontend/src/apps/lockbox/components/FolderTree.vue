@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import ModalComponentV2 from '@/apps/common/ModalComponentV2.vue';
+import DownloadModal from '@/apps/common/modals/DownloadModal.vue';
 import ReportContent from '@/apps/lockbox/components/ReportContent.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import { ref } from 'vue';
 import { useModal, useModalSlot } from 'vue-final-modal';
 import { FolderResponse } from '../stores/folder-store.types';
 import DownloadConfirmation from './DownloadConfirmation.vue';
-import SpinnerAnimated from './SpinnerAnimated.vue';
 const folderStore = useFolderStore();
 
 type ReportProps = {
@@ -30,9 +29,9 @@ const onDownloadConfirm = async () => {
 };
 
 const { open, close: closefn } = useModal({
-  component: ModalComponentV2,
+  component: DownloadModal,
   attrs: {
-    title: 'Download File',
+    title: 'Download File?',
   },
   slots: {
     default: useModalSlot({
@@ -43,6 +42,7 @@ const { open, close: closefn } = useModal({
           return closefn();
         },
         confirm: onDownloadConfirm,
+        text: `This file is not created or administered by Thunderbird Send. Make sure you trust the sender.`,
       },
     }),
   },
@@ -114,16 +114,7 @@ defineProps<ReportProps>();
             }
           "
         >
-          <div
-            v-if="isDownloading.find((item) => item.uploadId === uploadId)"
-            class="flex justify-center items-center"
-          >
-            <span>Downloading</span>
-            <SpinnerAnimated />
-          </div>
-          <div v-else>
-            <span class="font-bold">Download</span>
-          </div>
+          <span class="font-bold">Download</span>
         </button>
       </div>
       <div v-if="!expired">

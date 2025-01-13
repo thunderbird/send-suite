@@ -1,7 +1,12 @@
 <script setup lang="ts">
+import { onUnmounted } from 'vue';
 import { useStatusStore } from '../stores/status-store';
 
 const { progress } = useStatusStore();
+
+onUnmounted(() => {
+  progress.initialize();
+});
 </script>
 <template>
   <div>

@@ -15,7 +15,7 @@ import { useDebounceFn } from '@vueuse/core';
 import { useRoute, useRouter } from 'vue-router';
 import { ItemResponse } from '../stores/folder-store.types';
 import { useModal, useModalSlot } from 'vue-final-modal';
-import ModalComponentV2 from '@/apps/common/ModalComponentV2.vue';
+import DownloadModal from '@/apps/common/modals/DownloadModal.vue';
 import DownloadConfirmation from './DownloadConfirmation.vue';
 
 const folderStore = useFolderStore();
@@ -35,9 +35,9 @@ const onDownloadConfirm = () =>
   );
 
 const { open, close: closefn } = useModal({
-  component: ModalComponentV2,
+  component: DownloadModal,
   attrs: {
-    title: 'Download File',
+    title: 'Download File?',
   },
   slots: {
     default: useModalSlot({

@@ -3,9 +3,10 @@ import { defineProps, ref } from 'vue';
 import BtnComponent from '../elements/BtnComponent.vue';
 import ProgressBar from './ProgressBar.vue';
 
-const { closefn, confirm } = defineProps<{
+const { closefn, confirm, text } = defineProps<{
   closefn: () => Promise<string>;
   confirm: () => Promise<boolean>;
+  text?: string;
 }>();
 
 const isDownloading = ref(false);
@@ -24,8 +25,7 @@ const onConfirm = async () => {
   </div>
   <div v-else>
     <p>
-      This file is not created or administered by Thunderbird Send. Make sure
-      you trust the sender.
+      {{ text }}
     </p>
     <div class="flex justify-center space-x-4 mt-8">
       <BtnComponent primary @click="onConfirm">Yes</BtnComponent>

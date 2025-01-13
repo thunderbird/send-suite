@@ -47,8 +47,6 @@ export async function getBlob(
       throw new Error('BUCKET_URL_NOT_FOUND');
     }
 
-    console.log('setting size to', size);
-
     progressTracker.initialize();
     progressTracker.setUploadSize(size);
     progressTracker.setText('Downloading file');
