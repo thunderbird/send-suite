@@ -86,7 +86,7 @@ resources:
           - FARGATE
         container_definitions:
           backend:
-            image: "768512802988.dkr.ecr.us-east-1.amazonaws.com/send:78a6c27b5060ef62250ab5a88af6063977f2f60d"
+            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:ae1eca82821d595f84064c942cd809a9943b97e9
             portMappings:
               - name: send-suite
                 containerPort: 8080
@@ -143,9 +143,9 @@ resources:
               - name: FXA_ENTRYPOINT
                 value: tblockbox
               - name: FXA_METRICS_FLOW_URL
-                value: https://accounts.prod.mozaws.net/metrics-flow
+                value: https://accounts.firefox.com/metrics-flow
               - name: FXA_MOZ_ISSUER
-                value: https://accounts.prod.mozaws.net
+                value: https://accounts.firefox.com
               - name: FXA_REDIRECT_URI
                 value: https://send-backend-prod.thunderbird.dev/lockbox/fxa
               - name: NODE_ENV
