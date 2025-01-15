@@ -153,6 +153,8 @@ model AccessLink {
   // Postgres (for example) gives us a 32 bit Int.
 
   expiryDate        DateTime?
+  // If a link is not password protected, we store the random password hash
+  passwordHash      String?
 }
 
 
