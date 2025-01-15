@@ -114,13 +114,21 @@ export async function getAccessLinksForContainer(containerId: number) {
         select: {
           id: true,
           expiryDate: true,
+          passwordHash: true,
         },
       },
     },
   };
 
   const shares = await fromPrismaV2(prisma.share.findMany, query);
-  return shares.flatMap((share) => share.accessLinks.map((link) => link));
+  return shares.flatMap((share) =>
+    share.accessLinks.map((link) => {
+      // If there password hash is present, we add it to the id so that the full shareable link can be shown to the user
+      return link.passwordHash
+        ? { ...link, id: link.id + `#${link.passwordHash}` }
+        : link;
+    })
+  );
 }
 
 export async function updateContainerName(containerId: number, name: string) {

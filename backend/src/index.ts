@@ -30,6 +30,7 @@ import { getDataFromAuthenticatedRequest } from './auth/client';
 import { errorHandler } from './errors/routes';
 import metricsRoute from './routes/metrics';
 import { containersRouter } from './trpc/containers';
+import { sharingRouter } from './trpc/sharing';
 import { usersRouter } from './trpc/users';
 
 const PORT = 8080;
@@ -44,7 +45,7 @@ const app = express();
 app.use(express.static('public'));
 app.use(express.json({ limit: '5mb' }));
 
-const allowedOrigins = getAllowedOrigins()
+const allowedOrigins = getAllowedOrigins();
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
@@ -107,7 +108,8 @@ export const createContext = ({
 // Put together all our routers
 const appRouter = mergeRouters(
   usersRouter,
-  containersRouter
+  containersRouter,
+  sharingRouter
   /* Add more routers here */
 );
 
