@@ -1,8 +1,8 @@
 ---
 resources:
   domains:
-    backend: send-backend-prod.thunderbird.dev
-    frontend: send-frontend-prod.thunderbird.dev
+    backend: send-backend.thunderbird.dev
+    frontend: send-frontend.thunderbird.dev
   tb:network:MultiCidrVpc:
     vpc:
       cidr_block: 10.100.0.0/16
@@ -69,7 +69,7 @@ resources:
         send-suite:
           listener_port: 443
           listener_proto: HTTPS
-          listener_cert_arn: arn:aws:acm:us-east-1:768512802988:certificate/e6a7ce3b-ba6d-4b88-ac4b-e26eb85394a2
+          listener_cert_arn: arn:aws:acm:us-east-1:768512802988:certificate/bb9b7bf5-a7e1-4156-9caa-10af86af5da5
           container_port: 8080
           container_name: backend
           # "name" field is arbitrary, but must be unique and no longer than 32 chars
@@ -129,7 +129,7 @@ resources:
               - name: B2_REGION
                 value: auto
               - name: BASE_URL
-                value: https://send-backend-prod.thunderbird.dev/
+                value: https://send-backend.tb.pro/
               - name: COMBINED_LOG
                 value: logs/combined.log
               - name: DEVELOPER_TIMEZONE
@@ -147,13 +147,13 @@ resources:
               - name: FXA_MOZ_ISSUER
                 value: https://accounts.firefox.com
               - name: FXA_REDIRECT_URI
-                value: https://send-backend-prod.thunderbird.dev/lockbox/fxa
+                value: https://send-backend.tb.pro/lockbox/fxa
               - name: NODE_ENV
                 value: production
               - name: POSTHOG_HOST
                 value: https://us.i.posthog.com
               - name: SEND_BACKEND_CORS_ORIGINS
-                VALUE: https://send-frontend-prod.thunderbird.dev
+                VALUE: https://send.tb.pro
               - name: SENTRY_DSN
                 value: https://85b7b08be94b8991ed121578d807f755@o4505428107853824.ingest.us.sentry.io/4507567071232000
               - name: SENTRY_ORG
@@ -165,10 +165,10 @@ resources:
   tb:cloudfront:CloudFrontS3Service:
     frontend:
       service_bucket_name: tb-send-suite-prod-frontend
-      certificate_arn: arn:aws:acm:us-east-1:768512802988:certificate/bb3bc7dc-7271-4e8f-9661-340b3953e56c
+      certificate_arn: arn:aws:acm:us-east-1:768512802988:certificate/b5b36587-83f9-457b-bdb3-ac9ed2c58cec
       distribution:
         aliases:
-          - send-frontend-prod.thunderbird.dev
+          - send.tb.pro
         comment: send-suite prod frontend
         logging_config:
           include_cookies: True
