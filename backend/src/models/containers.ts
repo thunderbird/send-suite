@@ -123,7 +123,7 @@ export async function getAccessLinksForContainer(containerId: number) {
   const shares = await fromPrismaV2(prisma.share.findMany, query);
   return shares.flatMap((share) =>
     share.accessLinks.map((link) => {
-      // If there is a password
+      // If there password hash is present, we add it to the id so that the full shareable link can be shown to the user
       return link.passwordHash
         ? { ...link, id: link.id + `#${link.passwordHash}` }
         : link;
