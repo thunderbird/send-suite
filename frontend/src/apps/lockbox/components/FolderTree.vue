@@ -25,7 +25,6 @@ type Props = {
 
 const onDownloadConfirm = async () => {
   await downloadConfirmed();
-  return Promise.resolve(true);
 };
 
 const { open, close: closefn } = useModal({
@@ -67,7 +66,7 @@ async function downloadConfirmed() {
       item.name
     );
   } catch (error) {
-    isError.value = true;
+    isError.value = error;
     console.error(error);
   }
 }

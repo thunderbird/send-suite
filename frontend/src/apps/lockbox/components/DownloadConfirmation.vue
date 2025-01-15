@@ -1,25 +1,36 @@
 <script setup lang="ts">
+import ErrorGeneric from '@/apps/common/errors/ErrorGeneric.vue';
 import { defineProps, ref } from 'vue';
 import BtnComponent from '../elements/BtnComponent.vue';
 import ProgressBar from './ProgressBar.vue';
 
 const { closefn, confirm, text } = defineProps<{
   closefn: () => Promise<string>;
-  confirm: () => Promise<boolean>;
+  confirm: () => Promise<void>;
   text?: string;
 }>();
 
 const isDownloading = ref(false);
+const isError = ref<string>();
 
 const onConfirm = async () => {
   isDownloading.value = true;
-  await confirm();
-  isDownloading.value = false;
-  closefn();
+  try {
+    await confirm();
+    closefn();
+  } catch (e) {
+    console.log(e);
+    isError.value = e;
+  } finally {
+    isDownloading.value = false;
+  }
 };
 </script>
 
 <template>
+  <div v-if="isError">
+    <ErrorGeneric :error-message="isError" />
+  </div>
   <div v-if="isDownloading">
     <ProgressBar />
   </div>

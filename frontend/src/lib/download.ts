@@ -26,10 +26,10 @@ export default class Downloader {
     if (!folderId) {
       return false;
     }
-    let wrappingKey: CryptoKey;
-    try {
-      wrappingKey = await this.keychain.get(folderId);
-    } catch (e) {
+
+    const wrappingKey = await this.keychain.get(folderId);
+
+    if (!wrappingKey) {
       return false;
     }
 
