@@ -2,6 +2,7 @@ import { FolderResponse, Item } from '@/apps/lockbox/stores/folder-store.types';
 import { getContainerKeyFromChallenge } from '@/lib/challenge';
 import { Keychain, Util } from '@/lib/keychain';
 import Sharer from '@/lib/share';
+import { trpc } from '@/lib/trpc';
 import useApiStore from '@/stores/api-store';
 import useKeychainStore from '@/stores/keychain-store';
 import useUserStore from '@/stores/user-store';
@@ -54,13 +55,23 @@ const useSharingStore = defineStore('sharingManager', () => {
     linkId: string,
     password: string
   ): Promise<boolean> {
-    // Check for existence of link.
-    const { unwrappedKey, containerId } = await getContainerKeyFromChallenge(
+    const containerKey = await getContainerKeyFromChallenge(
       linkId,
       password,
       api,
       keychain as Keychain
     );
+
+    if (!containerKey?.unwrappedKey) {
+      await trpc.incrementPasswordRetryCount.mutate({
+        linkId,
+      });
+
+      return false;
+    }
+
+    // Check for existence of link.
+    const { unwrappedKey, containerId } = containerKey;
 
     if (user.id) {
       // // Use the AccessLink to make the User a member of the shared folder.

@@ -18,6 +18,7 @@ export const IS_ENV_DEV = ENVIRONMENT === 'development';
 export const IS_ENV_PROD = ENVIRONMENT === 'production';
 
 export const DAYS_TO_EXPIRY = 15;
+export const MAX_ACCESS_LINK_RETRIES = 5;
 
 export { ENVIRONMENT };
 

@@ -1,6 +1,8 @@
 import { UserStore } from '@/stores/user-store';
 import { ApiConnection } from './api';
+import { MAX_ACCESS_LINK_RETRIES } from './const';
 import { Keychain } from './keychain';
+import { trpc } from './trpc';
 
 export const validateToken = async (api: ApiConnection): Promise<boolean> => {
   try {
@@ -65,4 +67,12 @@ export const validator = async ({
     keychain
   );
   return validations;
+};
+
+export const getCanRetry = async (linkId: string) => {
+  const { retryCount } = await trpc.getPasswordRetryCount.query({ linkId });
+  if (retryCount >= MAX_ACCESS_LINK_RETRIES) {
+    return false;
+  }
+  return true;
 };

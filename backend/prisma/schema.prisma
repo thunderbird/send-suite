@@ -155,6 +155,8 @@ model AccessLink {
   expiryDate        DateTime?
   // If a link is not password protected, we store the generated random password hash
   passwordHash      String?
+  retryCount        Int     @default(0)
+  locked            Boolean @default(false)
 }
 
 

@@ -8,6 +8,7 @@ import {
 } from '@prisma/client';
 import { randomBytes } from 'crypto';
 
+import { MAX_ACCESS_LINK_RETRIES } from '@/config';
 import {
   ACCESSLINK_NOT_DELETED,
   ACCESSLINK_NOT_FOUND,
@@ -131,6 +132,63 @@ export async function updateAccessLink(linkId: string, password: string) {
     select: {
       id: true,
       passwordHash: true,
+    },
+  });
+}
+
+export async function incrementAccessLinkRetryCount(linkId: string) {
+  const response = await prisma.accessLink.update({
+    where: {
+      id: linkId,
+    },
+    data: {
+      retryCount: {
+        increment: 1,
+      },
+    },
+    select: {
+      id: true,
+      retryCount: true,
+      locked: true,
+    },
+  });
+
+  if (response.retryCount >= MAX_ACCESS_LINK_RETRIES) {
+    await prisma.accessLink.update({
+      where: {
+        id: linkId,
+      },
+      data: {
+        locked: true,
+      },
+    });
+  }
+
+  return response;
+}
+
+export async function getAccessLinkRetryCount(linkId: string) {
+  return await prisma.accessLink.findFirst({
+    where: {
+      id: linkId,
+    },
+    select: {
+      id: true,
+      retryCount: true,
+    },
+  });
+}
+
+export async function resetAccessLinkRetryCount(linkId: string) {
+  return await prisma.accessLink.update({
+    where: {
+      id: linkId,
+    },
+    data: {
+      retryCount: 0,
+    },
+    select: {
+      id: true,
     },
   });
 }
