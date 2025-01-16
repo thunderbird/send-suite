@@ -17,6 +17,7 @@ import { formatLoginURL } from '@/lib/helpers';
 import { CLIENT_MESSAGES } from '@/lib/messages';
 import { validateToken } from '@/lib/validations';
 import useMetricsStore from '@/stores/metrics';
+import { ModalsContainer } from 'vue-final-modal';
 import SecureSendIcon from '../common/SecureSendIcon.vue';
 import TBBanner from '../common/TBBanner.vue';
 import { useExtensionStore } from './stores/extension-store';
@@ -199,6 +200,7 @@ async function finishLogin() {
     </div>
     <FeedbackBox />
     <SecureSendIcon />
+    <ModalsContainer />
   </div>
 </template>
 

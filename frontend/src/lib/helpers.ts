@@ -12,8 +12,24 @@ import {
 } from './ece';
 import { Keychain } from './keychain';
 import { asyncInitWebSocket, delay, listenForResponse } from './utils';
-export async function _download(url: string): Promise<Blob> {
+
+type DownloadOptions = {
+  url: string;
+  progressTracker: ProgressTracker;
+};
+
+export async function _download({
+  url,
+  progressTracker,
+}: DownloadOptions): Promise<Blob> {
   const xhr = new XMLHttpRequest();
+  const { setProgress } = progressTracker;
+  xhr.onprogress = (event) => {
+    if (event.lengthComputable) {
+      const downloadProgress = event.loaded;
+      setProgress(downloadProgress);
+    }
+  };
 
   return new Promise((resolve, reject) => {
     xhr.addEventListener('loadend', async function () {

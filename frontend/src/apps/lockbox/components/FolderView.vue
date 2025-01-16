@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/no-use-v-if-with-v-for -->
 <script setup lang="ts">
 import { DayJsKey } from '@/types';
-import { inject, onMounted, watch } from 'vue';
+import { inject, onMounted, ref, watch } from 'vue';
 
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import '@thunderbirdops/services-ui/style.css';
@@ -13,6 +13,10 @@ import { IconDotsVertical, IconDownload, IconTrash } from '@tabler/icons-vue';
 import { ExpiryBadge } from '@thunderbirdops/services-ui';
 import { useDebounceFn } from '@vueuse/core';
 import { useRoute, useRouter } from 'vue-router';
+import { ItemResponse } from '../stores/folder-store.types';
+import { useModal, useModalSlot } from 'vue-final-modal';
+import DownloadModal from '@/apps/common/modals/DownloadModal.vue';
+import DownloadConfirmation from './DownloadConfirmation.vue';
 
 const folderStore = useFolderStore();
 
@@ -20,6 +24,36 @@ const dayjs = inject(DayJsKey);
 
 const route = useRoute();
 const router = useRouter();
+const itemRef = ref<ItemResponse>();
+
+const onDownloadConfirm = () =>
+  folderStore.downloadContent(
+    itemRef.value.uploadId,
+    itemRef.value.containerId,
+    itemRef.value.wrappedKey,
+    itemRef.value.name
+  );
+
+const { open, close: closefn } = useModal({
+  component: DownloadModal,
+  attrs: {
+    title: 'Download File?',
+  },
+  slots: {
+    default: useModalSlot({
+      component: DownloadConfirmation,
+      attrs: {
+        closefn: () => closefn(),
+        confirm: onDownloadConfirm,
+      },
+    }),
+  },
+});
+
+const openModal = (item: ItemResponse) => {
+  itemRef.value = item;
+  open();
+};
 
 const gotoRoute = useDebounceFn(() => {
   const id = Number(route.params.id);
@@ -131,14 +165,7 @@ export default { props: { id: { type: String, default: 'null' } } };
                 <Btn
                   v-if="!item.upload.expired"
                   secondary
-                  @click="
-                    folderStore.downloadContent(
-                      item.uploadId,
-                      item.containerId,
-                      item.wrappedKey,
-                      item.name
-                    )
-                  "
+                  @click="openModal(item)"
                 >
                   <IconDownload class="w-4 h-4" />
                 </Btn>
