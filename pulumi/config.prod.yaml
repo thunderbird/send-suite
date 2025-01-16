@@ -147,7 +147,7 @@ resources:
               - name: FXA_MOZ_ISSUER
                 value: https://accounts.firefox.com
               - name: FXA_REDIRECT_URI
-                value: https://send-backend.tb.pro/lockbox/fxa
+                value: https://send-backend.tb.pro/fxa
               - name: NODE_ENV
                 value: production
               - name: POSTHOG_HOST
