@@ -102,8 +102,13 @@ router.get(
     /* TODO: We have to replace send for lockbox because fxa isn't enabled for send
       We should remove this and return the actual url once fxa is enabled 
       https://github.com/thunderbird/send-suite/issues/216
+      Additionally, we're checking if the issuer is staging to avoid this problem in prod. 
+      Please follow this ticket to clean up all url replacements
+      https://github.com/thunderbird/send-suite/issues/450
        */
-    const responseURL = url.replace('send', 'lockbox');
+    const responseURL = process.env.FXA_MOZ_ISSUER.includes('stage')
+      ? url.replace('send', 'lockbox')
+      : url;
 
     res.status(200).json({
       url: responseURL,
