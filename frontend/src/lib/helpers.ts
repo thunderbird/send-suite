@@ -26,8 +26,8 @@ export async function _download({
   const { setProgress } = progressTracker;
   xhr.onprogress = (event) => {
     if (event.lengthComputable) {
-      const uploadProgress = event.loaded;
-      setProgress(uploadProgress);
+      const downloadProgress = event.loaded;
+      setProgress(downloadProgress);
     }
   };
 
