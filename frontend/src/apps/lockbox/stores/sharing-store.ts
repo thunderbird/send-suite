@@ -10,6 +10,12 @@ import { UserType } from '@/types';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
+type AccessLinks = {
+  id: string;
+  expiryDate: Date | null;
+  passwordHash: string;
+}[];
+
 const useSharingStore = defineStore('sharingManager', () => {
   const { api } = useApiStore();
   const { user } = useUserStore();
@@ -17,7 +23,7 @@ const useSharingStore = defineStore('sharingManager', () => {
 
   const sharer = new Sharer(user as UserType, keychain as Keychain, api);
 
-  const _links = ref([]);
+  const _links = ref<AccessLinks>([]);
 
   const links = computed(() => {
     return [..._links.value];

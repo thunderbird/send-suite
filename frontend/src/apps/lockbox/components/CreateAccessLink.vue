@@ -60,7 +60,11 @@ async function newAccessLink() {
   }
 
   accessUrl.value = url;
-  mutate();
+
+  if (!password.value.length) {
+    mutate();
+  }
+
   // Copy url to clipboard
   clipboard.copy(url);
 

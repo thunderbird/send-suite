@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { BASE_URL } from '@/apps/common/constants';
 import useSharingStore from '@/apps/lockbox/stores/sharing-store';
+import { getDaysUntilDate } from '@/lib/utils';
+import { ExpiryBadge } from '@thunderbirdops/services-ui';
 import { useClipboard } from '@vueuse/core';
 import { vTooltip } from 'floating-vue';
 import { ref, watchEffect } from 'vue';
@@ -8,6 +10,7 @@ import { ref, watchEffect } from 'vue';
 type Props = {
   folderId: number;
 };
+
 const sharingStore = useSharingStore();
 const props = defineProps<Props>();
 const clipboard = useClipboard();
@@ -54,9 +57,18 @@ TODO: implement "regeneration" of links
       :value="`${BASE_URL}/share/${link.id}`"
       @click="copyToClipboard(link.id)"
     />
-    <label class="flex-col gap-2 hidden">
-      <span class="text-xs font-semibold text-gray-600">Link Expires</span>
-      <input :value="link.expiryDate" type="datetime-local" />
-    </label>
+    <div class="flex gap-2">
+      <ExpiryBadge
+        v-if="link.expiryDate"
+        :time-remaining="getDaysUntilDate(link.expiryDate)"
+        :warning-threshold="10"
+        :time-unit="'day'"
+        class="my-2"
+      />
+      <span v-if="!link.passwordHash" class="flex text-xs">
+        <div>🔐</div>
+        <div>Password</div></span
+      >
+    </div>
   </section>
 </template>
