@@ -212,9 +212,9 @@ jobs:
         run: |
           cd frontend
           cat << EOF > .env
-          VUE_BASE_URL=https://send.thunderbird.dev
-          VITE_SEND_SERVER_URL=https://lockbox.thunderbird.dev
-          VITE_SEND_CLIENT_URL=https://send.thunderbird.dev
+          VUE_BASE_URL=https://send.tb.pro
+          VITE_SEND_SERVER_URL=https://send-backend.tb.pro
+          VITE_SEND_CLIENT_URL=https://send.tb.pro
           VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN_PROD }}
           VITE_SENTRY_DSN=${{ vars.VITE_SENTRY_DSN_PROD }}
           VITE_POSTHOG_PROJECT_KEY=${{ secrets.VITE_POSTHOG_PROJECT_KEY_PROD }}

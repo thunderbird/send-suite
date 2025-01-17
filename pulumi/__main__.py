@@ -13,9 +13,13 @@ import tb_pulumi.secrets
 
 
 CLOUDFRONT_REWRITE_CODE_FILE = 'cloudfront-rewrite.js'
+NO_ROUTE53_STACKS = ['prod']
 
 project = tb_pulumi.ThunderbirdPulumiProject()
 resources = project.config.get('resources')
+route53_zone_id = (
+    project.pulumi_config.require_secret('route53_zone_id') if project.stack not in NO_ROUTE53_STACKS else None
+)
 
 # Copy select secrets from Pulumi into AWS Secrets Manager
 pulumi_sm_opts = resources['tb:secrets:PulumiSecretsManager']['pulumi']
@@ -63,16 +67,17 @@ backend_fargate = tb_pulumi.fargate.FargateClusterWithLogging(
     **backend_fargate_opts,
 )
 
-# Create a DNS record pointing to the backend service
-backend_dns = aws.route53.Record(
-    f'{project.name_prefix}-dns-backend',
-    zone_id='Z03528753AZVULC8BFCA',  # thunderbird.dev
-    name=resources['domains']['backend'],
-    type=aws.route53.RecordType.CNAME,
-    ttl=60,
-    records=[backend_fargate.resources['fargate_service_alb'].resources['albs']['send-suite'].dns_name],
-    opts=pulumi.ResourceOptions(depends_on=[backend_fargate]),
-)
+# Sometimes create a DNS record pointing to the backend service
+if project.stack not in NO_ROUTE53_STACKS:
+    backend_dns = aws.route53.Record(
+        f'{project.name_prefix}-dns-backend',
+        zone_id=route53_zone_id,
+        name=resources['domains']['backend'],
+        type=aws.route53.RecordType.CNAME,
+        ttl=60,
+        records=[backend_fargate.resources['fargate_service_alb'].resources['albs']['send-suite'].dns_name],
+        opts=pulumi.ResourceOptions(depends_on=[backend_fargate]),
+    )
 
 # Manage the CloudFront rewrite function; the code is managed in cloudfront-rewrite.js
 rewrite_code = None
@@ -102,16 +107,17 @@ frontend = tb_pulumi.cloudfront.CloudFrontS3Service(
     opts=pulumi.ResourceOptions(depends_on=[cf_func]),
 )
 
-# Create a DNS record pointing to the frontend service
-frontend_dns = aws.route53.Record(
-    f'{project.name_prefix}-dns-frontend',
-    zone_id='Z03528753AZVULC8BFCA',  # thunderbird.dev
-    name=resources['domains']['frontend'],
-    type=aws.route53.RecordType.CNAME,
-    ttl=60,
-    records=[frontend.resources['cloudfront_distribution'].domain_name],
-    opts=pulumi.ResourceOptions(depends_on=[frontend.resources['cloudfront_distribution']]),
-)
+# Sometimes create a DNS record pointing to the frontend service
+if project.stack not in NO_ROUTE53_STACKS:
+    frontend_dns = aws.route53.Record(
+        f'{project.name_prefix}-dns-frontend',
+        zone_id=route53_zone_id,
+        name=resources['domains']['frontend'],
+        type=aws.route53.RecordType.CNAME,
+        ttl=60,
+        records=[frontend.resources['cloudfront_distribution'].domain_name],
+        opts=pulumi.ResourceOptions(depends_on=[frontend.resources['cloudfront_distribution']]),
+    )
 
 # This is only managed by a single stack, so a configuration may not exist for it
 if 'tb:ci:AwsAutomationUser' in resources and 'ci' in resources['tb:ci:AwsAutomationUser']:

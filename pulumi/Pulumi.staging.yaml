@@ -20,3 +20,5 @@ config:
     secure: v1:93Lg1vCPTFiPsH81:mhrg+6JJ+w28NC/qTxA+Uyl5/TOcVF05qCUwkdQsCYrEAdFnZueW+9MFuukCYltxTHbAJw0q4BJl0KAT6AWxBIbmXQ5xGjqUI9h8sdmzgEJPecASDELRVzaYd3dATvBxWyXNnA==
   send-suite:database-url:
     secure: v1:1Mqh9iYtVQJjVZhk:KSsr8wJYdDjFc1LqNMsEahFlJGBlPlXBxS/E1khpQfQtkogBI35wTI0uv8GWPOO/IcB4oszbeStpBPhBMieQP/OoiC55g6Q69DvwsXrN7Kfsb+oRAr5eA3qXfecC2hu/VDNHLasDLjrD59t6gGh7u+7o6WoQ/zce
+  send-suite:route53_zone_id:
+    secure: v1:7DgM6+BsjhMbav2f:Jt+3WNYiWq4n60SfBP79SgdYq7ImS3ioGTVwSFRKBJos/18V
