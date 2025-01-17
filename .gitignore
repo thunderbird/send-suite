@@ -2,9 +2,11 @@ seed.ts
 .pnpm-store
 
 
-# Dev droppings
-.env
-.env.production
+# Do not track .env files and variants
+.*env*
+# Only track .env.sample
+!.env.sample
+
 dev.db*
 shell.nix*
 node_modules
