@@ -120,6 +120,21 @@ export async function createAccessLink(
   );
 }
 
+export async function updateAccessLink(linkId: string, password: string) {
+  return await fromPrismaV2(prisma.accessLink.update, {
+    where: {
+      id: linkId,
+    },
+    data: {
+      passwordHash: password,
+    },
+    select: {
+      id: true,
+      passwordHash: true,
+    },
+  });
+}
+
 export async function getAccessLinkChallenge(linkId: string) {
   const query = {
     where: {

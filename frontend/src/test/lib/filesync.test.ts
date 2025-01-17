@@ -12,6 +12,7 @@ import { encryptStream } from '@/lib/ece';
 import * as useApiStore from '@/stores/api-store';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
+import { mockProgressTracker } from './helpers';
 
 const API_URL = `${import.meta.env.VITE_SEND_SERVER_URL}/api`;
 const UPLOAD_ID = `abcdefg1234567`;
@@ -85,6 +86,7 @@ describe(`Filesync`, () => {
     it(`should download and decrypt the upload`, async () => {
       const fetchSpy = vi.spyOn(global, 'fetch');
       const { api } = useApiStore.default();
+      const progress = mockProgressTracker;
 
       expect(async () => {
         const isMessage = true;
@@ -95,7 +97,8 @@ describe(`Filesync`, () => {
           isMessage,
           fileName,
           metadata.type,
-          api
+          api,
+          progress
         );
         expect(result).toBe(fileContents);
       }).not.toThrow();
@@ -117,6 +120,7 @@ describe(`Filesync`, () => {
         )
       );
       const { api } = useApiStore.default();
+      const progress = mockProgressTracker;
 
       expect(async () => {
         const isMessage = true;
@@ -127,7 +131,8 @@ describe(`Filesync`, () => {
           isMessage,
           fileName,
           metadata.type,
-          api
+          api,
+          progress
         );
       }).rejects.toThrowError('BUCKET_URL_NOT_FOUND');
 
@@ -147,6 +152,7 @@ describe(`Filesync`, () => {
       );
       const fetchSpy = vi.spyOn(global, 'fetch');
       const { api } = useApiStore.default();
+      const progress = mockProgressTracker;
 
       expect(async () => {
         const isMessage = true;
@@ -157,7 +163,8 @@ describe(`Filesync`, () => {
           isMessage,
           fileName,
           metadata.type,
-          api
+          api,
+          progress
         );
       }).rejects.toThrowError('BUCKET_URL_NOT_FOUND');
 
@@ -177,6 +184,7 @@ describe(`Filesync`, () => {
       });
 
       const { api } = useApiStore.default();
+      const progress = mockProgressTracker;
 
       server.use(
         http.get(`${API_URL}/download/${UPLOAD_ID}/signed`, async () =>
@@ -194,7 +202,8 @@ describe(`Filesync`, () => {
           isMessage,
           fileName,
           metadata.type,
-          api
+          api,
+          progress
         );
       }).rejects.toThrowError('DOWNLOAD ERROR');
 
@@ -253,13 +262,12 @@ describe(`Filesync`, () => {
       const keychain = new Keychain();
       const key = await keychain.content.generateKey();
       const blob = new Blob([new Uint8Array(2)]);
-      const progressTracker = vi.fn();
 
       const result = await sendBlob(
         blob,
         key,
         mockedApi as any,
-        progressTracker
+        mockProgressTracker
       );
 
       expect(result).toEqual(SUCCESSFUL_UPLOAD_RESPONSE.id);
@@ -286,10 +294,9 @@ describe(`Filesync`, () => {
       const keychain = new Keychain();
       const key = await keychain.content.generateKey();
       const blob = new Blob([new Uint8Array(2)]);
-      const progressTracker = vi.fn();
 
       await expect(
-        sendBlob(blob, key, mockedApi as any, progressTracker)
+        sendBlob(blob, key, mockedApi as any, mockProgressTracker)
       ).rejects.toThrow();
     });
   });

@@ -1,16 +1,16 @@
 <script setup lang="ts">
+import { onUnmounted } from 'vue';
 import { useStatusStore } from '../stores/status-store';
 
 const { progress } = useStatusStore();
 
-type Props = {
-  type: string;
-};
-defineProps<Props>();
+onUnmounted(() => {
+  progress.initialize();
+});
 </script>
 <template>
   <div>
-    <p>{{ type }}</p>
+    <p>{{ progress.text }}</p>
   </div>
   <div>
     <div class="progress-bar-container">

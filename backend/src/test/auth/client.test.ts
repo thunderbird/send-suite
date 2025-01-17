@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { beforeEach } from 'node:test';
+import { after, before, beforeEach } from 'node:test';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   checkAllowList,
   generateState,
+  getAllowedOrigins,
   getClient,
   getDataFromAuthenticatedRequest,
   getIssuer,
@@ -90,6 +91,56 @@ describe('Auth Client', () => {
       expect(result).toBe(false);
     });
   });
+});
+
+describe('getAllowedOrigins', () => {
+  let originalEnv;
+  
+  // Back up the environment before we mess with it
+  before(() => {
+    originalEnv = process.env
+  })
+
+  // Test various environment variable inputs
+  it('should throw an error when no environment variable is provided', async () => {
+    delete(process.env.SEND_BACKEND_CORS_ORIGINS);
+    expect(() => getAllowedOrigins()).toThrowError('Environment variable SEND_BACKEND_CORS_ORIGINS must be set')
+  });
+
+  it('should throw an error when an empty origin is provided', async () => {
+    process.env.SEND_BACKEND_CORS_ORIGINS = '';
+    expect(() => getAllowedOrigins()).toThrowError('Environment variable SEND_BACKEND_CORS_ORIGINS must be set')
+  });
+
+  it('should return an array with the correct single item when a single valid origin is provided', async () => {
+    process.env.SEND_BACKEND_CORS_ORIGINS = 'http://localhost:12345';
+    const origins = await getAllowedOrigins();
+    expect(origins).toEqual(['http://localhost:12345'])
+  });
+
+  it('should return the correct array when multiple valid origins are provided', async () => {
+    process.env.SEND_BACKEND_CORS_ORIGINS = 'http://localhost:12345,http://thebestsite.edu';
+    const origins = await getAllowedOrigins();
+    expect(origins).toEqual([
+      'http://localhost:12345',
+      'http://thebestsite.edu'
+    ])
+  });
+
+  it('should handle spaces between origin strings', async () => {
+    process.env.SEND_BACKEND_CORS_ORIGINS = 'http://localhost:12345, http://thebestsite.edu, https://spaceforeand.aft ,';
+    const origins = await getAllowedOrigins();
+    expect(origins).toEqual([
+      'http://localhost:12345',
+      'http://thebestsite.edu',
+      'https://spaceforeand.aft'
+    ])
+  })
+
+  // Restore the original environment
+  after(() => {
+    process.env = originalEnv
+  })
 });
 
 describe('checkAllowList', () => {

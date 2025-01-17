@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BackupAndRestore from '@/apps/common/BackupAndRestore.vue';
+import UserDashboard from '@/apps/common/UserDashboard.vue';
 import LogOutButton from '@/apps/lockbox/elements/LogOutButton.vue';
 import useUserStore from '@/stores/user-store';
 
@@ -12,6 +13,7 @@ async function logOut() {
 </script>
 <template>
   <div class="container">
+    <UserDashboard />
     <BackupAndRestore />
     <log-out-button :log-out="logOut" />
   </div>

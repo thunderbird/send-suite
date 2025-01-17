@@ -6,7 +6,6 @@ export type AsyncJsonResponse<T = { [key: string]: any }> = Promise<
 
 export class ApiConnection {
   serverUrl: string;
-  authToken: string;
 
   constructor(serverUrl: string) {
     if (!serverUrl) {
@@ -15,11 +14,6 @@ export class ApiConnection {
     // using new URL() trims off excess whitespace and trailing '/'
     const u = new URL(serverUrl);
     this.serverUrl = u.origin;
-
-    const token = localStorage.getItem('token');
-    if (token) {
-      this.authToken = token;
-    }
   }
 
   toString(): string {

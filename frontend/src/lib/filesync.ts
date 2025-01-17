@@ -35,7 +35,8 @@ export async function getBlob(
   isMessage = true,
   filename = 'dummy.file',
   type = 'text/plain',
-  api: ApiConnection
+  api: ApiConnection,
+  progressTracker: ProgressTracker
 ): Promise<string | void> {
   try {
     const bucketResponse = await api.call<{ url: string }>(
@@ -46,7 +47,15 @@ export async function getBlob(
       throw new Error('BUCKET_URL_NOT_FOUND');
     }
 
-    const downloadedBlob = await _download(bucketResponse.url);
+    progressTracker.initialize();
+    progressTracker.setUploadSize(size);
+    progressTracker.setText('Downloading file');
+
+    const downloadedBlob = await _download({
+      url: bucketResponse.url,
+      progressTracker,
+    });
+
     let plaintext: ArrayBufferLike | string;
     if (key) {
       const plainStream = decryptStream(blobStream(downloadedBlob), key);
@@ -89,7 +98,11 @@ export async function sendBlob(
       'POST'
     );
 
-    const encrypted = await encrypt(stream, aesKey);
+    progressTracker.setText('Encrypting file');
+    const encrypted = await encrypt(stream, aesKey, progressTracker);
+
+    progressTracker.setProgress(0);
+    progressTracker.setText('Uploading file');
 
     // Create a ReadableStream from the Uint8Array
     const readableStream = new ReadableStream({

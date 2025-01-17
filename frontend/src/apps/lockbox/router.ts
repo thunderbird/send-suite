@@ -6,7 +6,6 @@ import Received from '@/apps/lockbox/components/Received.vue';
 import Sent from '@/apps/lockbox/components/Sent.vue';
 import Lockbox from '@/apps/lockbox/pages/WebPage.vue';
 
-import Recovery from '@/apps/common/Recovery.vue';
 import Share from '@/apps/lockbox/pages/Share.vue';
 import { matchMeta } from '@/lib/helpers';
 import { restoreKeysUsingLocalStorage } from '@/lib/keychain';
@@ -85,9 +84,6 @@ export const routes: RouteRecordRaw[] = [
     path: '/share/:linkId',
     component: Share,
   },
-
-  // Backup and Recovery for keypair and keys
-  { path: '/recovery', component: Recovery },
 ];
 
 const router = createRouter({

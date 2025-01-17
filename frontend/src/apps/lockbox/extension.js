@@ -1,15 +1,11 @@
-import '@/lib/logger';
 import { initSentry } from '@/lib/sentry';
-import posthogPlugin from '@/plugins/posthog';
-import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 import Extension from './ExtensionPage.vue';
-import './style.css';
-const pinia = createPinia();
+import { mountApp, setupApp } from './setup';
+
 const app = createApp(Extension);
 
 initSentry(app);
 
-app.use(pinia);
-app.use(posthogPlugin);
-app.mount('#extension-page');
+setupApp(app)
+mountApp(app, '#extension-page');

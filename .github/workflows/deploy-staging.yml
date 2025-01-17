@@ -16,12 +16,17 @@ permissions:
 jobs:
   detect-changes:
     runs-on: ubuntu-latest
+    env:
+      IS_CI_AUTOMATION: "yes"
     outputs:
       backend-changed: ${{ steps.check.outputs.backend-changed }}
       iac-changed: ${{ steps.check.outputs.iac-changed }}
       frontend-changed: ${{ steps.check.outputs.frontend-changed }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
 
       - uses: dorny/paths-filter@v3
         id: check
@@ -40,9 +45,14 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.backend-changed == 'true'
     runs-on: ubuntu-latest
+    env:
+      IS_CI_AUTOMATION: "yes"
     steps:
       # Preparation for future steps
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -103,8 +113,13 @@ jobs:
         env:
           ECR_TAG: "${{ steps.login-ecr.outputs.registry }}/${{ vars.PROJECT }}:${{ github.sha }}"
         run: |
-          # Change the image config option and try to apply the change
+          # Update the PATH to include the right version of Pulumi; this is non-trivial or impossible
+          # to do with the GHA workflow "env" settings above.
+          export PATH="/home/runner/.pulumi/bin:$PATH"
+
           cd pulumi
+          
+          # Create a YAML config stump containing only the nested tree leading to the image tag update
           cat << EOF > newimage.yaml
           resources:
             tb:fargate:FargateClusterWithLogging:
@@ -114,7 +129,11 @@ jobs:
                     backend:
                       image: "$ECR_TAG"
           EOF
+          
+          # Use yq to merge the stump into the main config
           yq -i '. *= load("newimage.yaml")' config.staging.yaml
+
+          # Set up the Pulumi environment and update the service
           export PULUMI_CONFIG_PASSPHRASE="${{ secrets.PULUMI_PASSPHRASE_STAGING }}"
           source ./venv/bin/activate
           pulumi login s3://tb-send-suite-pulumi
@@ -127,9 +146,14 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.frontend-changed == 'true'
     runs-on: ubuntu-latest
+    env:
+      IS_CI_AUTOMATION: "yes"
     steps:
       # Preparation for future steps
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

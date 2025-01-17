@@ -148,7 +148,7 @@ userStore.user.id ${userStore.user.id}
     </div>
 
     <div v-if="isUploading">
-      <ProgressBar type="Uploading" />
+      <ProgressBar />
     </div>
 
     <form @submit.prevent="uploadAndShare">

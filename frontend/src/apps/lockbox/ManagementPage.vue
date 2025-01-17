@@ -9,6 +9,7 @@ import { onMounted, ref } from 'vue';
 import BackupAndRestore from '@/apps/common/BackupAndRestore.vue';
 import FeedbackBox from '@/apps/common/FeedbackBox.vue';
 import { useMetricsUpdate } from '@/apps/common/mixins/metrics';
+import UserDashboard from '@/apps/common/UserDashboard.vue';
 import Btn from '@/apps/lockbox/elements/BtnComponent.vue';
 import LogOutButton from '@/apps/lockbox/elements/LogOutButton.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
@@ -16,6 +17,7 @@ import { formatLoginURL } from '@/lib/helpers';
 import { CLIENT_MESSAGES } from '@/lib/messages';
 import { validateToken } from '@/lib/validations';
 import useMetricsStore from '@/stores/metrics';
+import { ModalsContainer } from 'vue-final-modal';
 import SecureSendIcon from '../common/SecureSendIcon.vue';
 import TBBanner from '../common/TBBanner.vue';
 import { useExtensionStore } from './stores/extension-store';
@@ -189,6 +191,7 @@ async function finishLogin() {
     <TBBanner />
     <h1>{{ salutation }}</h1>
     <div v-if="isLoggedIn">
+      <UserDashboard />
       <BackupAndRestore />
       <log-out-button :log-out="logOut" />
     </div>
@@ -197,6 +200,7 @@ async function finishLogin() {
     </div>
     <FeedbackBox />
     <SecureSendIcon />
+    <ModalsContainer />
   </div>
 </template>
 

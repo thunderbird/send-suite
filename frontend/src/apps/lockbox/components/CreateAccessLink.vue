@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import useSharingStore from '@/apps/lockbox/stores/sharing-store';
+import { trpc } from '@/lib/trpc';
+import { useMutation } from '@tanstack/vue-query';
 import { ref, watch } from 'vue';
 
 import Btn from '@/apps/lockbox/elements/BtnComponent.vue';
 import { IconEye, IconEyeOff, IconLink } from '@tabler/icons-vue';
+import { useDebounceFn } from '@vueuse/core';
 
 const sharingStore = useSharingStore();
 
-const props = defineProps({
-  folderId: Number,
-});
+const props = defineProps<{
+  folderId: number;
+}>();
 
 const emit = defineEmits(['createAccessLinkComplete', 'createAccessLinkError']);
 
@@ -17,6 +20,21 @@ const password = ref('');
 const expiration = ref(null);
 const accessUrl = ref('');
 const showPassword = ref(false);
+
+const { mutate } = useMutation({
+  mutationKey: ['getAccessLink'],
+  mutationFn: async () => {
+    const [url, hash] = accessUrl.value.split('share/')[1].split('#');
+    await trpc.addPasswordToAccessLink.mutate({
+      linkId: url,
+      password: hash,
+    });
+  },
+});
+
+const refreshAccessLinks = useDebounceFn(async () => {
+  await sharingStore.fetchAccessLinks(props.folderId);
+}, 1000);
 
 async function newAccessLink() {
   const url = await sharingStore.createAccessLink(
@@ -26,11 +44,13 @@ async function newAccessLink() {
   );
 
   if (!url) {
-    // emit('createAccessLinkError');
+    emit('createAccessLinkError');
     return;
   }
 
   accessUrl.value = url;
+  mutate();
+  await refreshAccessLinks();
 }
 
 watch(
@@ -44,28 +64,68 @@ watch(
 );
 </script>
 <template>
-  <section class="flex flex-col gap-3">
-    <label class="flex flex-col gap-2">
-      <span class="text-xs font-semibold text-gray-600">Create Share Link</span>
-      <input type="text" v-model="accessUrl" class="!rounded-r-none" />
+  <section class="form-section">
+    <label class="form-label">
+      <span class="label-text">Create Share Link</span>
+      <input v-model="accessUrl" type="text" class="input-field" />
     </label>
-    <label class="flex flex-col gap-2">
-      <span class="text-xs font-semibold text-gray-600">Link Expires</span>
+    <label class="form-label">
+      <span class="label-text">Link Expires</span>
       <input v-model="expiration" type="datetime-local" />
     </label>
-    <label class="flex flex-col gap-2 relative">
-      <span class="text-xs font-semibold text-gray-600">Password</span>
-      <input :type="showPassword ? 'text' : 'password'" v-model="password" />
+    <label class="form-label password-field">
+      <span class="label-text">Password</span>
+      <input v-model="password" :type="showPassword ? 'text' : 'password'" />
       <button
+        class="toggle-password"
         @click.prevent="showPassword = !showPassword"
-        class="absolute right-3 bottom-2 select-none"
       >
-        <IconEye v-if="showPassword" class="w-4 h-4" />
-        <IconEyeOff v-else class="w-4 h-4" />
+        <IconEye v-if="showPassword" class="icon" />
+        <IconEyeOff v-else class="icon" />
       </button>
     </label>
   </section>
-  <Btn class="mb-8" @click="newAccessLink"
-    >Create Share Link <IconLink class="w-4 h-4"
-  /></Btn>
+  <Btn class="create-button" @click="newAccessLink">
+    Create Share Link <IconLink class="icon" />
+  </Btn>
 </template>
+
+<style scoped>
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.form-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label-text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgb(75, 85, 99);
+}
+
+.password-field {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.5rem;
+  user-select: none;
+}
+
+.icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.create-button {
+  margin-bottom: 2rem;
+}
+</style>

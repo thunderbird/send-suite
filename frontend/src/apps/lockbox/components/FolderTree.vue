@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import DownloadModal from '@/apps/common/modals/DownloadModal.vue';
 import ReportContent from '@/apps/lockbox/components/ReportContent.vue';
 import useFolderStore from '@/apps/lockbox/stores/folder-store';
 import { ref } from 'vue';
+import { useModal, useModalSlot } from 'vue-final-modal';
 import { FolderResponse } from '../stores/folder-store.types';
-import SpinnerAnimated from './SpinnerAnimated.vue';
+import DownloadConfirmation from './DownloadConfirmation.vue';
 const folderStore = useFolderStore();
 
 type ReportProps = {
@@ -11,7 +13,7 @@ type ReportProps = {
   containerId: FolderResponse['id'];
 };
 
-const isDownloading = ref(new Map());
+const isDownloading = ref<Props[]>([]);
 const isError = ref(false);
 
 type Props = {
@@ -21,20 +23,52 @@ type Props = {
   name: string;
 };
 
-async function downloadContent({
-  uploadId,
-  containerId,
-  wrappedKey,
-  name,
-}: Props) {
-  isDownloading.value.set(uploadId, true);
+const onDownloadConfirm = async () => {
+  await downloadConfirmed();
+};
+
+const { open, close: closefn } = useModal({
+  component: DownloadModal,
+  attrs: {
+    title: 'Download File?',
+  },
+  slots: {
+    default: useModalSlot({
+      component: DownloadConfirmation,
+      attrs: {
+        closefn: () => {
+          isDownloading.value.pop();
+          return closefn();
+        },
+        confirm: onDownloadConfirm,
+        text: `This file is not created or administered by Thunderbird Send. Make sure you trust the sender.`,
+      },
+    }),
+  },
+});
+
+async function setDownload({ uploadId, containerId, wrappedKey, name }: Props) {
+  isDownloading.value.push({
+    uploadId,
+    containerId,
+    wrappedKey,
+    name,
+  });
+}
+
+async function downloadConfirmed() {
+  const item = isDownloading.value.pop();
   try {
-    await folderStore.downloadContent(uploadId, containerId, wrappedKey, name);
+    await folderStore.downloadContent(
+      item.uploadId,
+      item.containerId,
+      item.wrappedKey,
+      item.name
+    );
   } catch (error) {
-    isError.value = true;
+    isError.value = error;
     console.error(error);
   }
-  isDownloading.value.delete(uploadId);
 }
 
 defineProps<ReportProps>();
@@ -67,26 +101,19 @@ defineProps<ReportProps>();
         <button
           type="submit"
           class="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none: disabled:bg-gray-400"
-          :disabled="isDownloading.has(uploadId) || expired"
           @click.prevent="
-            downloadContent({
-              uploadId,
-              containerId,
-              wrappedKey,
-              name,
-            })
+            () => {
+              open();
+              setDownload({
+                uploadId,
+                containerId,
+                wrappedKey,
+                name,
+              });
+            }
           "
         >
-          <div
-            v-if="isDownloading.has(uploadId)"
-            class="flex justify-center items-center"
-          >
-            <span>Downloading</span>
-            <SpinnerAnimated />
-          </div>
-          <div v-else>
-            <span class="font-bold">Download</span>
-          </div>
+          <span class="font-bold">Download</span>
         </button>
       </div>
       <div v-if="!expired">

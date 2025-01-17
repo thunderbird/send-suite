@@ -77,7 +77,7 @@ async function doUpload() {
   </div>
 
   <div v-if="isUploading">
-    <ProgressBar type="Uploading" />
+    <ProgressBar />
     <UploadingProgress />
   </div>
 
