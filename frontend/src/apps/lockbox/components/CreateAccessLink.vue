@@ -6,7 +6,7 @@ import { ref, watch } from 'vue';
 
 import Btn from '@/apps/lockbox/elements/BtnComponent.vue';
 import { IconEye, IconEyeOff, IconLink } from '@tabler/icons-vue';
-import { useDebounceFn } from '@vueuse/core';
+import { useClipboard, useDebounceFn } from '@vueuse/core';
 
 const sharingStore = useSharingStore();
 
@@ -20,6 +20,9 @@ const password = ref('');
 const expiration = ref(null);
 const accessUrl = ref('');
 const showPassword = ref(false);
+const tooltipText = ref('Copied to clipboard');
+const clipboard = useClipboard();
+const accessUrlInput = ref<HTMLInputElement | null>(null);
 
 const { mutate } = useMutation({
   mutationKey: ['getAccessLink'],
@@ -36,6 +39,14 @@ const refreshAccessLinks = useDebounceFn(async () => {
   await sharingStore.fetchAccessLinks(props.folderId);
 }, 1000);
 
+function copyToClipboard(url: string) {
+  clipboard.copy(url);
+  tooltipText.value = 'Copied!';
+  setTimeout(() => {
+    tooltipText.value = 'Click to copy';
+  }, 3000);
+}
+
 async function newAccessLink() {
   const url = await sharingStore.createAccessLink(
     props.folderId,
@@ -50,6 +61,12 @@ async function newAccessLink() {
 
   accessUrl.value = url;
   mutate();
+  // Copy url to clipboard
+  clipboard.copy(url);
+
+  // Focus the input
+  accessUrlInput.value?.focus();
+
   await refreshAccessLinks();
 }
 
@@ -67,7 +84,14 @@ watch(
   <section class="form-section">
     <label class="form-label">
       <span class="label-text">Create Share Link</span>
-      <input v-model="accessUrl" type="text" class="input-field" />
+      <input
+        ref="accessUrlInput"
+        v-model="accessUrl"
+        v-tooltip="tooltipText"
+        type="text"
+        class="input-field"
+        @click="copyToClipboard(accessUrl)"
+      />
     </label>
     <label class="form-label">
       <span class="label-text">Link Expires</span>

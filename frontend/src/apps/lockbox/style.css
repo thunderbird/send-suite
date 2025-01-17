@@ -73,3 +73,14 @@
     --colour-send-primary-accent-2: #1f8ddb;
   }
 }
+
+/* Tooltip */
+:global(.v-tooltip) {
+  --v-tooltip-arrow-size: 4px;
+  display: block;
+  font-size: 12px;
+  padding: 4px 8px;
+  color: white;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.8);
+}

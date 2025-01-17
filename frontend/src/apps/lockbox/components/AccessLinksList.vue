@@ -60,15 +60,3 @@ TODO: implement "regeneration" of links
     </label>
   </section>
 </template>
-
-<style lang="css" scoped>
-:global(.v-tooltip) {
-  --v-tooltip-arrow-size: 4px;
-  display: block;
-  font-size: 12px;
-  padding: 4px 8px;
-  color: white;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.8);
-}
-</style>
