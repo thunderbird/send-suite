@@ -1,8 +1,5 @@
 ---
 resources:
-  domains:
-    backend: send-backend.thunderbird.dev
-    frontend: send-frontend.thunderbird.dev
   tb:network:MultiCidrVpc:
     vpc:
       cidr_block: 10.100.0.0/16
