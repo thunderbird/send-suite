@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
   const SERVER_BASE_URLS = {
     // backend is the docker network name by default
     development: 'http://backend:8080',
-    production: process.env.VITE_SEND_SERVER_URL,
+    production: env.VITE_SEND_SERVER_URL,
   };
 
   const SERVER_BASE_URL = SERVER_BASE_URLS[mode];
