@@ -69,6 +69,7 @@ const useSharingStore = defineStore('sharingManager', () => {
       keychain as Keychain
     );
 
+    // If the password is incorrect, increment the password retry count.
     if (!containerKey?.unwrappedKey) {
       await trpc.incrementPasswordRetryCount.mutate({
         linkId,

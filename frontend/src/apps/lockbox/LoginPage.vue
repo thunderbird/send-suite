@@ -6,7 +6,6 @@ import { CLIENT_MESSAGES } from '@/lib/messages';
 import useApiStore from '@/stores/api-store';
 import useKeychainStore from '@/stores/keychain-store';
 import useUserStore from '@/stores/user-store';
-import { ExpiryBadge } from '@thunderbirdops/services-ui';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import FeedbackBox from '../common/FeedbackBox.vue';
@@ -45,7 +44,6 @@ async function onSuccess() {
     <TBBanner />
     <h2>Account</h2>
     <p>You’ll need to login to your Mozilla account to use Thunderbird Send</p>
-    <ExpiryBadge />
     <p v-if="user?.id">Your session has expired, please log back in</p>
     <Btn
       primary
