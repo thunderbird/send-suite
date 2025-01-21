@@ -41,7 +41,7 @@ const { open, close: closefn } = useModal({
           return closefn();
         },
         confirm: onDownloadConfirm,
-        text: `This file is not created or administered by Thunderbird Send. Make sure you trust the sender.`,
+        text: `Please note that you are downloading a file shared via Send. Send does not scan files for viruses, malware, or other harmful content. We recommend that you only download files from trusted sources and use your own virus protection software. Send is not responsible for any issues that may arise from this download.`,
       },
     }),
   },
