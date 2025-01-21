@@ -96,7 +96,7 @@ cloudflare_backend_record = (
         type='CNAME',
         content=backend_fargate.resources['fargate_service_alb'].resources['albs']['send-suite'].dns_name,
         proxied=False,
-        ttl=60,  # ttl units are *minutes*
+        ttl=1,  # ttl units are *minutes*
     )
     if project.stack in INCLUDE_CLOUDFLARE_STACKS
     else None
