@@ -2,7 +2,7 @@
 import { BASE_URL } from '@/apps/common/constants';
 import useSharingStore from '@/apps/lockbox/stores/sharing-store';
 import { getDaysUntilDate } from '@/lib/utils';
-import { ExpiryBadge } from '@thunderbirdops/services-ui';
+import { ExpiryBadge, ExpiryUnitTypes } from '@thunderbirdops/services-ui';
 import { useClipboard } from '@vueuse/core';
 import { vTooltip } from 'floating-vue';
 import { ref, watchEffect } from 'vue';
@@ -63,7 +63,7 @@ TODO: implement "regeneration" of links
           v-if="link.expiryDate"
           :time-remaining="getDaysUntilDate(link.expiryDate)"
           :warning-threshold="10"
-          :time-unit="'day'"
+          :time-unit="ExpiryUnitTypes.Days"
           class="my-2"
         />
       </div>
