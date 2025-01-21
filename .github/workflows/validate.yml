@@ -51,9 +51,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IS_CI_AUTOMATION: "yes"
-    strategy:
-      matrix:
-        node-version: [22.x]
     if: needs.detect-changes.outputs.backend-changed == 'true'
     steps:
       - uses: actions/checkout@v4
@@ -99,9 +96,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IS_CI_AUTOMATION: "yes"
-    strategy:
-      matrix:
-        node-version: [22.x]
     if: needs.detect-changes.outputs.iac-changed == 'true'
     steps:
       - uses: actions/checkout@v4
