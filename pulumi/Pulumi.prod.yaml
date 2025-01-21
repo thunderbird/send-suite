@@ -22,7 +22,5 @@ config:
     secure: v1:0PLzOnxApK9BJORt:LJzdVHrSaZT35bc+Dg4R3NrSi0t4xDyjsVYTlOlVotyO2E3YBjIOyicv5ZRsDMNvnBqHkcdEy2JtZkAWVJRqLbCjl8CHbJrXtW0FrvA1hWW2bCClB6twQSwc114gkrNEhl2gMu08bF9045Dc+jo5b3vvsNzyndfdPmwcO7eu6D/eyOu4gwgmhyfiOhCllBHMEw2C4domvilrEe3QhCQJ4J4J6Gfgdy/EVIsvoBfqrsNEplFSKQLXqPZv4q74gcQnyhx0fgZPPgQqNl011NyE9nYAFw==
   send-suite:cloudflare_zone_id:
     secure: v1:ILxVN9y3R+krEhiH:Oc2h1mkyaBIUWwZC+2vGSh9wzBWZ8Pv4vMBOi5A8KmHLfWuELCDp51wcDhy4yT21
-  send-suite:cloudflare_api_token:
-    secure: v1:9yk4fTIcKWfqSqKy:aE7ZfPUCDlzfDyz6uugcZNYWL5EbzR7f1mOqc36fJIVWuYSlod0psAyOwm9hydKXWm1y9OSqiqI=
   cloudflare:apiToken:
     secure: v1:/i/PRTJT4/TjZaLr:WYSaS07MmlpcIOFD+x757p+PPewWoBDdpYp1hrFHq+J5GQAdsIx+EmGi2b+TCzbCrl3kx0JZMng=
