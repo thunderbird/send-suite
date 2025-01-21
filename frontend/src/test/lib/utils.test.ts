@@ -21,9 +21,9 @@ describe('getDaysUntilDate', () => {
     expect(getDaysUntilDate(currentDate)).toBe(0);
   });
 
-  it('should return negative days for past date', () => {
+  it('should not return negative days for past date', () => {
     const pastDate = new Date('2024-01-10'); // 5 days ago
-    expect(getDaysUntilDate(pastDate)).toBe(-5);
+    expect(getDaysUntilDate(pastDate)).toBe(0);
   });
 
   it('should handle date at end of month correctly', () => {
@@ -54,6 +54,6 @@ describe('getDaysUntilDate', () => {
   });
 
   it('should handle invalid date strings', () => {
-    expect(getDaysUntilDate('invalid-date')).toBe(NaN);
+    expect(getDaysUntilDate('invalid-date')).toBe(0);
   });
 });

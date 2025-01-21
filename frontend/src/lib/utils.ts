@@ -196,5 +196,6 @@ export const getDaysUntilDate = (date: Date | string): number => {
   const targetDate = date instanceof Date ? date : new Date(date);
   const now = new Date();
   const diff = targetDate.getTime() - now.getTime();
-  return Math.ceil(diff / (1000 * 3600 * 24));
+  const result = Math.ceil(diff / (1000 * 3600 * 24));
+  return !result || result < 0 ? 0 : result;
 };
