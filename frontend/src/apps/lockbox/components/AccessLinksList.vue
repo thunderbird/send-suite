@@ -58,17 +58,26 @@ TODO: implement "regeneration" of links
       @click="copyToClipboard(link.id)"
     />
     <div class="flex gap-2">
-      <ExpiryBadge
-        v-if="link.expiryDate"
-        :time-remaining="getDaysUntilDate(link.expiryDate)"
-        :warning-threshold="10"
-        :time-unit="'day'"
-        class="my-2"
-      />
-      <span v-if="!link.passwordHash" class="flex text-xs">
-        <div>🔐</div>
-        <div>Password</div></span
+      <div>
+        <ExpiryBadge
+          v-if="link.expiryDate"
+          :time-remaining="getDaysUntilDate(link.expiryDate)"
+          :warning-threshold="10"
+          :time-unit="'day'"
+          class="my-2"
+        />
+      </div>
+      <div
+        v-if="!link.passwordHash"
+        class="flex text-xs justify-center self-center"
       >
+        <div>🔐</div>
+        <div>Password</div>
+      </div>
+      <div v-if="link.locked" class="flex text-xs justify-center self-center">
+        <div>⛔️</div>
+        <div>Locked</div>
+      </div>
     </div>
   </section>
 </template>

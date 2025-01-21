@@ -14,6 +14,7 @@ type AccessLinks = {
   id: string;
   expiryDate: Date | null;
   passwordHash: string;
+  locked: boolean;
 }[];
 
 const useSharingStore = defineStore('sharingManager', () => {
