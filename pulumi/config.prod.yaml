@@ -1,5 +1,9 @@
 ---
 resources:
+  domains:
+    # In CloudFlare, the TLD is implied by the zone, so we must define only the more specific parts of the domains
+    backend: send-backend
+    frontend: send
   tb:network:MultiCidrVpc:
     vpc:
       cidr_block: 10.100.0.0/16

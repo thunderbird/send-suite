@@ -2,6 +2,7 @@
 
 import pulumi
 import pulumi_aws as aws
+import pulumi_cloudflare as cloudflare
 import tb_pulumi
 import tb_pulumi.ci
 import tb_pulumi.cloudfront
@@ -13,12 +14,16 @@ import tb_pulumi.secrets
 
 
 CLOUDFRONT_REWRITE_CODE_FILE = 'cloudfront-rewrite.js'
-NO_ROUTE53_STACKS = ['prod']
+EXCLUDE_ROUTE53_STACKS = ['prod']  # Do not build R53 records for these environments
+INCLUDE_CLOUDFLARE_STACKS = ['prod']  # Do build CloudFlare records for these environments
 
 project = tb_pulumi.ThunderbirdPulumiProject()
 resources = project.config.get('resources')
+cloudflare_zone_id = (
+    project.pulumi_config.require_secret('cloudflare_zone_id') if project.stack in INCLUDE_CLOUDFLARE_STACKS else None
+)
 route53_zone_id = (
-    project.pulumi_config.require_secret('route53_zone_id') if project.stack not in NO_ROUTE53_STACKS else None
+    project.pulumi_config.require_secret('route53_zone_id') if project.stack not in EXCLUDE_ROUTE53_STACKS else None
 )
 
 # Copy select secrets from Pulumi into AWS Secrets Manager
@@ -68,16 +73,34 @@ backend_fargate = tb_pulumi.fargate.FargateClusterWithLogging(
 )
 
 # Sometimes create a DNS record pointing to the backend service
-if project.stack not in NO_ROUTE53_STACKS:
-    backend_dns = aws.route53.Record(
+route53_backend_record = (
+    aws.route53.Record(
         f'{project.name_prefix}-dns-backend',
         zone_id=route53_zone_id,
         name=resources['domains']['backend'],
         type=aws.route53.RecordType.CNAME,
-        ttl=60,
+        ttl=60,  # ttl units are *seconds*
         records=[backend_fargate.resources['fargate_service_alb'].resources['albs']['send-suite'].dns_name],
         opts=pulumi.ResourceOptions(depends_on=[backend_fargate]),
     )
+    if project.stack not in EXCLUDE_ROUTE53_STACKS
+    else None
+)
+
+# Special case where prod DNS is hosted at CloudFlare
+cloudflare_backend_record = (
+    cloudflare.Record(
+        f'{project.name_prefix}-dns-backend',
+        zone_id=cloudflare_zone_id,
+        name=resources['domains']['backend'],
+        type='CNAME',
+        content=backend_fargate.resources['fargate_service_alb'].resources['albs']['send-suite'].dns_name,
+        proxied=False,
+        ttl=60,  # ttl units are *minutes*
+    )
+    if project.stack in INCLUDE_CLOUDFLARE_STACKS
+    else None
+)
 
 # Manage the CloudFront rewrite function; the code is managed in cloudfront-rewrite.js
 rewrite_code = None
@@ -108,16 +131,35 @@ frontend = tb_pulumi.cloudfront.CloudFrontS3Service(
 )
 
 # Sometimes create a DNS record pointing to the frontend service
-if project.stack not in NO_ROUTE53_STACKS:
-    frontend_dns = aws.route53.Record(
+route53_frontend_record = (
+    aws.route53.Record(
         f'{project.name_prefix}-dns-frontend',
         zone_id=route53_zone_id,
         name=resources['domains']['frontend'],
         type=aws.route53.RecordType.CNAME,
-        ttl=60,
+        ttl=60,  # ttl units are *seconds*
         records=[frontend.resources['cloudfront_distribution'].domain_name],
         opts=pulumi.ResourceOptions(depends_on=[frontend.resources['cloudfront_distribution']]),
     )
+    if project.stack not in EXCLUDE_ROUTE53_STACKS
+    else None
+)
+
+# Special case where prod DNS is hosted at CloudFlare
+cloudflare_frontend_record = (
+    cloudflare.Record(
+        f'{project.name_prefix}-dns-frontend',
+        zone_id=cloudflare_zone_id,
+        name=resources['domains']['frontend'],
+        type='CNAME',
+        content=frontend.resources['cloudfront_distribution'].domain_name,
+        proxied=False,
+        ttl=1,  # ttl units are *minutes*
+    )
+    if project.stack in INCLUDE_CLOUDFLARE_STACKS
+    else None
+)
+
 
 # This is only managed by a single stack, so a configuration may not exist for it
 if 'tb:ci:AwsAutomationUser' in resources and 'ci' in resources['tb:ci:AwsAutomationUser']:
