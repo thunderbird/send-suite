@@ -143,6 +143,8 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
+  // If a file has exceeded the maximum number of retries, it will be locked.
+  // We redirect the user to the locked page.
   if (requiresRetryCountCheck) {
     const canRetry = await getCanRetry(to.params.linkId as string);
     if (!canRetry) {
