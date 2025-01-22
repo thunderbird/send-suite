@@ -10,7 +10,7 @@ import BreadCrumb from '@/apps/lockbox/components/BreadCrumb.vue';
 import Btn from '@/apps/lockbox/elements/BtnComponent.vue';
 import FolderTableRowCell from '@/apps/lockbox/elements/FolderTableRowCell.vue';
 import { IconDotsVertical, IconDownload, IconTrash } from '@tabler/icons-vue';
-import { ExpiryBadge } from '@thunderbirdops/services-ui';
+import { ExpiryUnitTypes, ExpiryBadge } from '@thunderbirdops/services-ui';
 import { useDebounceFn } from '@vueuse/core';
 import { useRoute, useRouter } from 'vue-router';
 import { ItemResponse } from '../stores/folder-store.types';
@@ -153,7 +153,7 @@ export default { props: { id: { type: String, default: 'null' } } };
             <ExpiryBadge
               :time-remaining="item.upload.daysToExpiry"
               :warning-threshold="10"
-              :time-unit="'day'"
+              :time-unit="ExpiryUnitTypes.Days"
               class="my-2"
             />
           </FolderTableRowCell>

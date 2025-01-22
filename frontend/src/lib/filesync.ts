@@ -9,7 +9,13 @@ export type NamedBlob = Blob & { name: string };
 
 export type Canceler = Record<string, () => void>;
 
-async function _saveFile(file: Record<string, any>): Promise<void> {
+interface SaveFileData {
+  plaintext: ArrayBuffer;
+  name: string;
+  type: string;
+}
+
+async function _saveFile(file: SaveFileData): Promise<void> {
   return new Promise(function (resolve) {
     const dataView = new DataView(file.plaintext);
     const blob = new Blob([dataView], { type: file.type });

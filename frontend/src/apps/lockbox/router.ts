@@ -6,12 +6,15 @@ import Received from '@/apps/lockbox/components/Received.vue';
 import Sent from '@/apps/lockbox/components/Sent.vue';
 import Lockbox from '@/apps/lockbox/pages/WebPage.vue';
 
-import Share from '@/apps/lockbox/pages/Share.vue';
+import Share from '@/apps/lockbox/pages/SharePage.vue';
 import { matchMeta } from '@/lib/helpers';
 import { restoreKeysUsingLocalStorage } from '@/lib/keychain';
 import useApiStore from '@/stores/api-store';
 import useKeychainStore from '@/stores/keychain-store';
+
+import { getCanRetry } from '@/lib/validations';
 import LoginPage from './LoginPage.vue';
+import LockedPage from './pages/LockedPage.vue';
 import { useStatusStore } from './stores/status-store';
 
 enum META_OPTIONS {
@@ -19,6 +22,7 @@ enum META_OPTIONS {
   requiresValidToken = 'requiresValidToken',
   autoRestoresKeys = 'autoRestoresKeys',
   requiresBackedUpKeys = 'requiresBackedUpKeys',
+  requiresRetryCountCheck = 'requiresRetryCountCheck',
 }
 
 export const routes: RouteRecordRaw[] = [
@@ -83,6 +87,11 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/share/:linkId',
     component: Share,
+    meta: { [META_OPTIONS.requiresRetryCountCheck]: true },
+  },
+  {
+    path: '/locked/:linkId',
+    component: LockedPage,
   },
 ];
 
@@ -105,6 +114,10 @@ router.beforeEach(async (to, from, next) => {
   const requiresValidToken = matchMeta(to, META_OPTIONS.requiresValidToken);
   const autoRestoresKeys = matchMeta(to, META_OPTIONS.autoRestoresKeys);
   const requiresBackedUpKeys = matchMeta(to, META_OPTIONS.requiresBackedUpKeys);
+  const requiresRetryCountCheck = matchMeta(
+    to,
+    META_OPTIONS.requiresRetryCountCheck
+  );
 
   const { hasLocalStorageSession, isTokenValid, hasBackedUpKeys } =
     await validators();
@@ -127,6 +140,15 @@ router.beforeEach(async (to, from, next) => {
       await restoreKeysUsingLocalStorage(keychain, api);
     } catch (error) {
       console.error('Error restoring keys', error);
+    }
+  }
+
+  // If a file has exceeded the maximum number of retries, it will be locked.
+  // We redirect the user to the locked page.
+  if (requiresRetryCountCheck) {
+    const canRetry = await getCanRetry(to.params.linkId as string);
+    if (!canRetry) {
+      next(`/locked/${to.params.linkId}/`);
     }
   }
   next();

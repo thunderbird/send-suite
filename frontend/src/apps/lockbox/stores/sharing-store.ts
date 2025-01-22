@@ -2,12 +2,20 @@ import { FolderResponse, Item } from '@/apps/lockbox/stores/folder-store.types';
 import { getContainerKeyFromChallenge } from '@/lib/challenge';
 import { Keychain, Util } from '@/lib/keychain';
 import Sharer from '@/lib/share';
+import { trpc } from '@/lib/trpc';
 import useApiStore from '@/stores/api-store';
 import useKeychainStore from '@/stores/keychain-store';
 import useUserStore from '@/stores/user-store';
 import { UserType } from '@/types';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
+
+type AccessLinks = {
+  id: string;
+  expiryDate: Date | null;
+  passwordHash: string;
+  locked: boolean;
+}[];
 
 const useSharingStore = defineStore('sharingManager', () => {
   const { api } = useApiStore();
@@ -16,7 +24,7 @@ const useSharingStore = defineStore('sharingManager', () => {
 
   const sharer = new Sharer(user as UserType, keychain as Keychain, api);
 
-  const _links = ref([]);
+  const _links = ref<AccessLinks>([]);
 
   const links = computed(() => {
     return [..._links.value];
@@ -54,13 +62,24 @@ const useSharingStore = defineStore('sharingManager', () => {
     linkId: string,
     password: string
   ): Promise<boolean> {
-    // Check for existence of link.
-    const { unwrappedKey, containerId } = await getContainerKeyFromChallenge(
+    const containerKey = await getContainerKeyFromChallenge(
       linkId,
       password,
       api,
       keychain as Keychain
     );
+
+    // If the password is incorrect, increment the password retry count.
+    if (!containerKey?.unwrappedKey) {
+      await trpc.incrementPasswordRetryCount.mutate({
+        linkId,
+      });
+
+      return false;
+    }
+
+    // Check for existence of link.
+    const { unwrappedKey, containerId } = containerKey;
 
     if (user.id) {
       // // Use the AccessLink to make the User a member of the shared folder.

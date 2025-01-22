@@ -16,6 +16,6 @@ function acceptAccessLinkComplete() {
     <ViewShare />
   </template>
   <template v-else>
-    <AcceptAccessLink @acceptAccessLinkComplete="acceptAccessLinkComplete" />
+    <AcceptAccessLink @accept-access-link-complete="acceptAccessLinkComplete" />
   </template>
 </template>

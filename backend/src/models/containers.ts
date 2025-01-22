@@ -105,7 +105,7 @@ export async function getContainerWithAncestors(id: number) {
 }
 
 export async function getAccessLinksForContainer(containerId: number) {
-  const query = {
+  const shares = await fromPrismaV2(prisma.share.findMany, {
     where: {
       containerId,
     },
@@ -115,12 +115,11 @@ export async function getAccessLinksForContainer(containerId: number) {
           id: true,
           expiryDate: true,
           passwordHash: true,
+          locked: true,
         },
       },
     },
-  };
-
-  const shares = await fromPrismaV2(prisma.share.findMany, query);
+  });
   return shares.flatMap((share) =>
     share.accessLinks.map((link) => {
       // If there password hash is present, we add it to the id so that the full shareable link can be shown to the user

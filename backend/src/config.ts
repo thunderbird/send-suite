@@ -19,6 +19,9 @@ export const IS_ENV_PROD = ENVIRONMENT === 'production';
 
 export const DAYS_TO_EXPIRY = 15;
 
+// Determines how many times a file can be attempted to be downloaded with the wrong password before it gets locked
+export const MAX_ACCESS_LINK_RETRIES = 5;
+
 export { ENVIRONMENT };
 
 export default appConfig;
