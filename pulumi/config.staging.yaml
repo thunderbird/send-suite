@@ -86,7 +86,7 @@ resources:
           - FARGATE
         container_definitions:
           backend:
-            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:43061258d5d77f69b01303f1d9432f0254c9880b
+            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:d3d0d713d2423c83225e7df8cac419787e7d2757
             portMappings:
               - name: send-suite
                 containerPort: 8080
