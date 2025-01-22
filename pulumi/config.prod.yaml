@@ -1,5 +1,9 @@
 ---
 resources:
+  domains:
+    # In CloudFlare, the TLD is implied by the zone, so we must define only the more specific parts of the domains
+    backend: send-backend
+    frontend: send
   tb:network:MultiCidrVpc:
     vpc:
       cidr_block: 10.100.0.0/16
@@ -83,7 +87,7 @@ resources:
           - FARGATE
         container_definitions:
           backend:
-            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:prod-alpha-0
+            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:43061258d5d77f69b01303f1d9432f0254c9880b
             portMappings:
               - name: send-suite
                 containerPort: 8080

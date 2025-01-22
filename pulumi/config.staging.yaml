@@ -86,7 +86,7 @@ resources:
           - FARGATE
         container_definitions:
           backend:
-            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:c5da255294b11947ee3f9ecf7c255827c709d942
+            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:43061258d5d77f69b01303f1d9432f0254c9880b
             portMappings:
               - name: send-suite
                 containerPort: 8080
@@ -153,7 +153,7 @@ resources:
               - name: POSTHOG_HOST
                 value: https://us.i.posthog.com
               - name: SEND_BACKEND_CORS_ORIGINS
-                VALUE: https://send.thunderbird.dev
+                value: https://send.thunderbird.dev
               - name: SENTRY_DSN
                 value: https://85b7b08be94b8991ed121578d807f755@o4505428107853824.ingest.us.sentry.io/4507567071232000
               - name: SENTRY_ORG
