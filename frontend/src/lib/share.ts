@@ -1,4 +1,4 @@
-import { FolderResponse, Item } from '@/apps/lockbox/stores/folder-store.types';
+import { FolderResponse, Item } from '@/apps/send/stores/folder-store.types';
 import { ApiConnection } from '@/lib/api';
 import { CONTAINER_TYPE } from '@/lib/const';
 import { Keychain, Util } from '@/lib/keychain';

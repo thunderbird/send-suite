@@ -1,4 +1,4 @@
-import { ProgressTracker } from '@/apps/lockbox/stores/status-store';
+import { ProgressTracker } from '@/apps/send/stores/status-store';
 import { vi } from 'vitest';
 
 const progressTracker = vi.fn();

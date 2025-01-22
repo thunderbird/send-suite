@@ -2,8 +2,8 @@
 
 A set of mini-applications that extend the functionality of Thunderbird:
 
-- Send: email attachments using the CloudFile API
-- Lockbox: file storage and sharing
+- Send extension: email attachments using the CloudFile API
+- Send web: file storage and sharing
 - Messages: easy to use private chat (between individuals or groups)
 
 All of these services are end-to-end encrypted.

@@ -2,8 +2,8 @@ import {
   Item,
   ItemResponse,
   UploadResponse,
-} from '@/apps/lockbox/stores/folder-store.types';
-import { ProgressTracker } from '@/apps/lockbox/stores/status-store';
+} from '@/apps/send/stores/folder-store.types';
+import { ProgressTracker } from '@/apps/send/stores/status-store';
 import { ApiConnection } from '@/lib/api';
 import { NamedBlob, sendBlob } from '@/lib/filesync';
 import { Keychain } from '@/lib/keychain';

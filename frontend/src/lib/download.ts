@@ -1,4 +1,4 @@
-import { ProgressTracker } from '@/apps/lockbox/stores/status-store';
+import { ProgressTracker } from '@/apps/send/stores/status-store';
 import { ApiConnection } from '@/lib/api';
 import { getBlob } from '@/lib/filesync';
 import { Keychain } from '@/lib/keychain';

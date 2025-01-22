@@ -8,7 +8,7 @@ import useKeychainStore from '@/stores/keychain-store';
 import { backupKeys, restoreKeys } from '@/lib/keychain';
 import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
-import { useExtensionStore } from '../lockbox/stores/extension-store';
+import { useExtensionStore } from '../send/stores/extension-store';
 import { MIN_WORD_LENGTH, PHRASE_SIZE } from './constants';
 import ExpandIcon from './ExpandIcon.vue';
 import KeyRecovery from './KeyRecovery.vue';

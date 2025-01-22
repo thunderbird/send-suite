@@ -1,5 +1,5 @@
-import { INIT_ERRORS } from '@/apps/lockbox/const';
-import { FolderStore } from '@/apps/lockbox/stores/folder-store.types';
+import { INIT_ERRORS } from '@/apps/send/const';
+import { FolderStore } from '@/apps/send/stores/folder-store.types';
 import { Keychain } from '@/lib/keychain';
 import { UserStore } from '@/stores/user-store';
 

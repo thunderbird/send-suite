@@ -19,7 +19,7 @@ async function setup() {
   await page.goto("https://localhost:8088");
   expect(await page.content()).toContain("echo");
 
-  await page.goto("http://localhost:5173/lockbox");
+  await page.goto("http://localhost:5173/send");
 
   const loginPromptTImeout = setTimeout(() => {
     console.log(`
@@ -42,18 +42,16 @@ test("App loads", async () => {
   const { context, page } = await setup();
 
   // Check that the app opens on my files
-  const homeIcon = page.getByText("🏠");
-  expect(homeIcon).toBeVisible();
+  const loginButton = page.getByTestId("login-button");
+  expect(loginButton).toBeVisible();
 
   const profileButton = page.getByRole("link", { name: "Profile" });
   await profileButton.click();
 
   // Expect a title "to contain" a substring.
-  await expect(page).toHaveTitle(/Send alpha2/);
+  await expect(page).toHaveTitle(/Thunderbird Send/);
 
   // Check that we're on the profile page
-  const loginButton = page.getByText("Log into Moz Acct");
-  expect(loginButton).toBeVisible();
 
   console.log("saving context");
 
