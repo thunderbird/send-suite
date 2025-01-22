@@ -45,7 +45,7 @@ export const sharingRouter = router({
         const res = await getAccessLinkRetryCount(input.linkId);
         retryCount = res.retryCount;
       } catch (error) {
-        console.error('Error incrementing password retry count', error);
+        console.error('Error getting password retry count', error);
       }
       return { id, retryCount };
     }),
