@@ -1,5 +1,4 @@
 import { Storage } from '@/lib/storage';
-import logger from '@/logger';
 import { Backup as BackupUserStore } from '@/stores/user-store.types';
 
 export type JwkKeyPair = Record<'publicKey' | 'privateKey', string>;
@@ -671,20 +670,14 @@ async function decryptAll(
   }: DecryptParams
 ) {
   const salt = Util.base64ToArrayBuffer(saltStr);
-  // logger.info(`got salt`);
-  logger.info(salt);
 
   const key = await keychainFromParams.password.unwrapContentKey(
     passwordWrappedKeyStr,
     password,
     salt
   );
-  // logger.info(`got key`);
-  // logger.info(key);
 
   const protectedKeypair = JSON.parse(protectedKeypairStr);
-  // logger.info(`got keypair`);
-  // logger.info(protectedKeypair);
   const publicKeyCiphertext = protectedKeypair.publicKey;
   const privateKeyCiphertext = protectedKeypair.privateKey;
 
@@ -693,15 +686,11 @@ async function decryptAll(
     key,
     salt
   );
-  // logger.info(`got public key`);
-  // logger.info(publicKeyJwk);
   const privateKeyJwk = await keychainFromParams.backup.decryptBackup(
     privateKeyCiphertext,
     key,
     salt
   );
-  // logger.info(`got private key`);
-  // logger.info(privateKeyJwk);
 
   const protectedContainerKeys = JSON.parse(protectedContainerKeysStr);
   const containerKeys = await decryptKeys(
@@ -710,7 +699,6 @@ async function decryptAll(
     key,
     salt
   );
-  // logger.info(containerKeys);
 
   return {
     publicKeyJwk,
