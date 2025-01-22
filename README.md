@@ -78,7 +78,7 @@ Finally, run the full stack:
 pnpm dev
 ```
 
-Congrats! Now you should be able to see the app on `http://localhost:5173/` and the backend running on
+Congrats! Now you should be able to see the app on `http://localhost:5173/` and the backend running on `https://localhost:8088/`
 
 ### Troubleshooting
 
