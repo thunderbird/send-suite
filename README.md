@@ -1,4 +1,4 @@
-# Lockbox/Send
+# Thunderbird Send
 
 ## Prerequisites
 
@@ -7,15 +7,50 @@ You'll need the following to run the server and use the client:
 - An account on the FXA staging server
 - The client id and secret for the FXA staging server (in 1Password, in the Services vault)
 
-## Webapp
+Make sure you install [docker](https://www.docker.com/get-started/) for local development.
 
-### How to set up and run webapp
+## Setting up the apps
 
-First, clone the repo and create/edit `backend/.env`:
+Clone this repo
 
 ```sh
 git clone git@github.com:thunderbird/send-suite.git
 cd send-suite
+```
+
+and install the package managers we use
+
+```sh
+npm install -g bun
+npm install -g pnpm
+```
+
+Or alternatively
+
+```sh
+curl -fsSL https://bun.sh/install | bash
+curl -fsSL https://get.pnpm.io/install.sh | sh -
+```
+
+Finally, install the dependencies (this command will install both frontend and backend)
+
+```sh
+pnpm install
+```
+
+### Creating your environment
+
+You can run the setup automatically with
+
+```sh
+pnpm run setup
+```
+
+Or follow this process:
+
+Create/edit `backend/.env`:
+
+```sh
 cd backend
 
 cp .env.sample .env
@@ -37,27 +72,13 @@ cd ..
 # back out to the main directory before proceeding
 ```
 
-Finally, install the dependencies
-
-```sh
-npm install -g bun
-```
-
-Or alternatively
-
-```sh
-curl -fsSL https://bun.sh/install | bash
-```
-
-```sh
-pnpm install
-```
-
-To run the full stack:
+Finally, run the full stack:
 
 ```sh
 pnpm dev
 ```
+
+Congrats! Now you should be able to see the app on `http://localhost:5173/` and the backend running on `https://localhost:8088/`
 
 ### Troubleshooting
 
