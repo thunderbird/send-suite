@@ -1,9 +1,9 @@
-import { expect, describe, it, beforeEach, vi } from 'vitest';
+import useSharingStore from '@/apps/send/stores/sharing-store';
 import { createPinia, setActivePinia } from 'pinia';
-import useSharingStore from '@/apps/lockbox/stores/sharing-store';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import Sharer from '@/lib/share';
 import { Util } from '@/lib/keychain';
+import Sharer from '@/lib/share';
 
 const URL = 'http://just.kidding';
 

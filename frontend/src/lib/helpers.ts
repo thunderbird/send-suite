@@ -1,5 +1,5 @@
-import { FolderStore } from '@/apps/lockbox/stores/folder-store';
-import { ProgressTracker } from '@/apps/lockbox/stores/status-store';
+import { FolderStore } from '@/apps/send/stores/folder-store';
+import { ProgressTracker } from '@/apps/send/stores/status-store';
 import init from '@/lib/init';
 import { UserStore } from '@/stores/user-store';
 import { Canceler, JsonResponse } from '@/types';

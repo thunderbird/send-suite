@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ButtonComponent from '@/apps/lockbox/elements/BtnComponent.vue';
+import ButtonComponent from '@/apps/send/elements/BtnComponent.vue';
 import posthog from 'posthog-js';
 import { computed, ref } from 'vue';
 import { PHRASE_SIZE } from './constants';

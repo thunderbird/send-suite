@@ -1,5 +1,5 @@
-import FolderView from '@/apps/lockbox/components/FolderView.vue';
-import { routes } from '@/apps/lockbox/router';
+import FolderView from '@/apps/send/components/FolderView.vue';
+import { routes } from '@/apps/send/router';
 import { DayJsKey } from '@/types';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
@@ -13,7 +13,7 @@ const { goToRootFolderSpy } = vi.hoisted(() => {
 });
 
 // Setup testing environment
-vi.mock('@/apps/lockbox/stores/folder-store', () => {
+vi.mock('@/apps/send/stores/folder-store', () => {
   return {
     esmodule: true,
     default: vi.fn(() => ({

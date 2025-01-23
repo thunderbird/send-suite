@@ -6,7 +6,7 @@
 <script setup lang="ts">
 import useApiStore from '@/stores/api-store';
 import { onMounted, ref } from 'vue';
-import { useStatusStore } from '../lockbox/stores/status-store';
+import { useStatusStore } from '../send/stores/status-store';
 const { api } = useApiStore();
 const { validators } = useStatusStore();
 

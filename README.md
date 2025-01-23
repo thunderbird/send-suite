@@ -145,12 +145,12 @@ To load this in Thunderbird:
 ### Using the Extension
 
 - After loading the extension, go to Settings and click `Composition` in the left-hand menu.
-- Scroll down to "Attachments" and click the `Add Lockbox Send` button
-- In the Lockbox Send configuration panel, click the `Log into Mozilla Account` button
+- Scroll down to "Attachments" and click the `Add Thunderbird Send` button
+- In the Thunderbird Send configuration panel, click the `Log into Mozilla Account` button
 - In the popup, follow the Mozilla Account login flow
 - After you successfully log in, the popup should close (or you can manually close it)
 
-You can now right-click attachments in emails and choose "Convert to Lockbox Send". You'll be prompted for an optional password to protect the attachment.
+You can now right-click attachments in emails and choose "Convert to Thunderbird Send". You'll be prompted for an optional password to protect the attachment.
 
 Successful conversion results in a "beautiful" link being added to your message body.
 
@@ -241,7 +241,7 @@ You can use VSCode's debugger for the backend.
       "name": "Launch",
       "type": "chrome",
       "request": "launch",
-      "url": "http://localhost:5173/lockbox",
+      "url": "http://localhost:5173/send",
       "skipFiles": [
         "<node_internals>/**",
         "${workspaceFolder}/node_modules/**/*.js"

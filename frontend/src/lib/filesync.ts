@@ -1,4 +1,4 @@
-import { ProgressTracker } from '@/apps/lockbox/stores/status-store';
+import { ProgressTracker } from '@/apps/send/stores/status-store';
 import { decryptStream } from '@/lib/ece';
 import { _download, encrypt, uploadWithTracker } from '@/lib/helpers';
 import { blobStream } from '@/lib/streams';

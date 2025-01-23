@@ -2,16 +2,16 @@
 
 A set of mini-applications that extend the functionality of Thunderbird:
 
-- Send: email attachments using the CloudFile API
-- Lockbox: file storage and sharing
+- Send extension: email attachments using the CloudFile API
+- Send web: file storage and sharing
 - Messages: easy to use private chat (between individuals or groups)
 
 All of these services are end-to-end encrypted.
 
 ## Tooling
 
-- Node.js (v20 was used for development, though an earlier LTS should work)
-- `npm` (examples will use `pnpm`, but `npm` or `yarn` should be fine)
+- Node.js (v22 was used for development, though an earlier LTS should work)
+- `pnpm` (examples will use `pnpm`, but `npm` or `yarn` should be fine)
 - `docker` with the `compose` plugin
 
 ## Quick start
@@ -43,9 +43,9 @@ cd frontend
 docker compose up
 ```
 
-### Open the Lockbox UI in the browser
+### Open the Send UI in the browser
 
-Visit `http://localhost:5173/lockbox/`
+Visit `http://localhost:5173/`
 
 ### Set up your encryption keys and user
 
