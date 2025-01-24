@@ -176,4 +176,4 @@ jobs:
         shell: bash
         run: |
           cd frontend
-          pnpm deploy:xpi
+          pnpm deploy-xpi
