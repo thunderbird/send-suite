@@ -39,9 +39,6 @@ importers:
       floating-vue:
         specifier: ^5.2.2
         version: 5.2.2(vue@3.5.13(typescript@5.7.2))
-      form-data:
-        specifier: ^4.0.1
-        version: 4.0.1
       get-random-values:
         specifier: ^3.0.0
         version: 3.0.0
@@ -121,6 +118,9 @@ importers:
       eslint-plugin-vue:
         specifier: ^9.32.0
         version: 9.32.0(eslint@8.57.0)
+      form-data:
+        specifier: ^4.0.1
+        version: 4.0.1
       globals:
         specifier: ^15.13.0
         version: 15.13.0
