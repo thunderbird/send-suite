@@ -121,7 +121,6 @@ function submitXpi(xpiPath: string, version: string, jwt: string): void {
     });
 }
 
-// Pull the file name out of the command
 const packageVersion = getPackageVersion();
 const jwToken = generateJwt();
 const xpiPath = getXpiPath();
