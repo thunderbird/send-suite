@@ -6,31 +6,30 @@ import useKeychainStore from '@/stores/keychain-store';
 
 // move the following imports elsewhere
 import { backupKeys, restoreKeys } from '@/lib/keychain';
+import { generatePassphrase } from '@/lib/passphrase';
 import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
 import { useExtensionStore } from '../send/stores/extension-store';
-import { MIN_WORD_LENGTH, PHRASE_SIZE } from './constants';
+import { PHRASE_SIZE } from './constants';
 import ExpandIcon from './ExpandIcon.vue';
 import KeyRecovery from './KeyRecovery.vue';
 
-const MSG_NOT_COMPLEX = `Please enter ${PHRASE_SIZE} different words. Each word must be at least ${MIN_WORD_LENGTH} letters long.`;
-const words = ref([
-  'aaaaa',
-  'bbbbb',
-  'ccccc',
-  'ddddd',
-  'eeeee',
-  'fffff',
-  'ggggg',
-  'hhhhh',
-  'iiiii',
-  'jjjjj',
-  'kkkkk',
-  'lllll',
-]);
-const passphrase = computed(() => {
+const words = ref(generatePassphrase(PHRASE_SIZE));
+
+const regeneratePassphrase = () => {
+  words.value = generatePassphrase(PHRASE_SIZE);
+};
+
+const passphraseString = computed(() => {
   return words.value.join(' ');
 });
+
+const setPassphrase = (newPassphrase: string) => {
+  let res = newPassphrase.replace(/\s+/g, '');
+  console.log('newPassphrase', res);
+
+  words.value = res.split('-');
+};
 
 const { api } = useApiStore();
 const { getBackup } = useUserStore();
@@ -41,6 +40,12 @@ const shouldRestore = ref(false);
 const shouldBackup = ref(false);
 const hasBackedUpKeys = ref<string>(null);
 const shouldOverrideVisibility = ref(false);
+
+const userSetPassword = keychain.getPassphraseValue();
+
+if (!!userSetPassword && userSetPassword !== passphraseString.value) {
+  words.value = userSetPassword.split(' ');
+}
 
 function hideBackupRestore() {
   shouldRestore.value = false;
@@ -61,12 +66,6 @@ onMounted(async () => {
     }
   }
 });
-
-const userSetPassword = keychain.getPassphraseValue();
-
-if (!!userSetPassword && userSetPassword !== passphrase.value) {
-  words.value = userSetPassword.split(' ');
-}
 
 const toggleVisible = () => {
   shouldOverrideVisibility.value = !shouldOverrideVisibility.value;
@@ -90,12 +89,7 @@ async function makeBackup() {
     return;
   }
 
-  if (!passphraseIsComplex(passphrase.value)) {
-    bigMessageDisplay.value = MSG_NOT_COMPLEX;
-    return;
-  }
-
-  keychain.storePassPhrase(passphrase.value);
+  keychain.storePassPhrase(passphraseString.value);
 
   try {
     await backupKeys(keychain, api, bigMessageDisplay);
@@ -114,21 +108,13 @@ async function restoreFromBackup() {
   bigMessageDisplay.value = '';
 
   try {
-    await restoreKeys(keychain, api, bigMessageDisplay, passphrase.value);
-    keychain.storePassPhrase(passphrase.value);
+    await restoreKeys(keychain, api, bigMessageDisplay, passphraseString.value);
+    keychain.storePassPhrase(passphraseString.value);
     hideBackupRestore();
     configureExtension();
   } catch (e) {
     bigMessageDisplay.value = e;
   }
-}
-
-function passphraseIsComplex(phrase) {
-  const wordArr = phrase.split(' ');
-  const wordSet = new Set(wordArr);
-  const wordsAreLong = wordArr.every((word) => word.length >= MIN_WORD_LENGTH);
-  const wordsAreUnique = wordSet.size >= PHRASE_SIZE;
-  return wordsAreLong && wordsAreUnique;
 }
 </script>
 
@@ -153,7 +139,9 @@ function passphraseIsComplex(phrase) {
             :should-backup="shouldBackup"
             :words="words"
             :should-restore="shouldRestore"
-            :should-override-visibility="shouldOverrideVisibility"
+            :regenerate-passphrase="regeneratePassphrase"
+            :set-passphrase="setPassphrase"
+            :override-visibility="shouldOverrideVisibility"
           />
         </main>
       </div>

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import ButtonComponent from '@/apps/send/elements/BtnComponent.vue';
-import posthog from 'posthog-js';
+import { CopyIcon } from '@thunderbirdops/services-ui';
+import { useClipboard } from '@vueuse/core';
 import { computed, ref } from 'vue';
-import { PHRASE_SIZE } from './constants';
 
 type Props = {
   makeBackup: () => void;
@@ -10,7 +10,9 @@ type Props = {
   shouldBackup: boolean;
   words: string[];
   shouldRestore: boolean;
-  shouldOverrideVisibility: boolean;
+  regeneratePassphrase: () => void;
+  setPassphrase: (newPassphrase: string) => void;
+  overrideVisibility: boolean;
 };
 const {
   makeBackup,
@@ -18,45 +20,68 @@ const {
   shouldBackup,
   words: wordsProp,
   shouldRestore,
-  shouldOverrideVisibility,
+  setPassphrase,
 } = defineProps<Props>();
 
-const showOverride = computed(() => {
-  return posthog.isFeatureEnabled('overwrite_keys') && shouldOverrideVisibility;
-});
+const words = computed(() => wordsProp);
+const userSetPassword = ref('');
+const { copy } = useClipboard();
 
-const words = ref(wordsProp);
+const onCopy = (text: string) => {
+  copy(text);
+};
+
+const submit = () => {
+  setPassphrase(userSetPassword.value);
+  restoreFromBackup();
+};
 </script>
 
 <template>
   <p>
-    Please make note of the following {{ PHRASE_SIZE }}-word pass phrase. You
-    will need it to restore your keys whenever you log into a new device. This
-    guarantees that your files are encrypted on your device and your keys are
-    never stored on our servers.
+    The following key is used to restore your profile whenever you log into a
+    new device. This guarantees that your files are encrypted on your device and
+    your key is never stored on our servers. Please copy and/or download this
+    key to a safe location for use later.
   </p>
-  <p>Your {{ PHRASE_SIZE }} word pass phrase:</p>
-  <div>
-    <input
-      v-for="(_, index) in PHRASE_SIZE"
-      :key="index"
-      v-model="words[index]"
-    />
+
+  <div v-if="shouldBackup">
+    <select value="Memorable passphrase">
+      <option value="Memorable passphrase" selected>
+        Memorable passphrase
+      </option>
+      <option
+        disabled
+        aria-details="not available during beta"
+        aria-disabled="true"
+        value="Random passphrase"
+      >
+        Random passphrase (unavailable during beta)
+      </option>
+    </select>
+    <button-component primary @click.prevent="regeneratePassphrase"
+      >Generate</button-component
+    >
+  </div>
+
+  <div v-if="shouldBackup || overrideVisibility" class="flex">
+    <input class="w-full" type="text" :value="words.join(' - ')" disabled />
+    <button @click.prevent="onCopy(words.join(' - '))">
+      <CopyIcon />
+    </button>
+  </div>
+
+  <div v-if="shouldRestore" class="flex">
+    <input v-model="userSetPassword" class="w-full" type="text" />
+    <button @click.prevent="onCopy(words.join(' - '))">
+      <CopyIcon />
+    </button>
   </div>
 
   <button-component v-if="shouldBackup" primary @click.prevent="makeBackup"
     >Encrypt and backup keys</button-component
   >
-  <button-component
-    v-if="shouldRestore"
-    primary
-    @click.prevent="restoreFromBackup"
+  <button-component v-if="shouldRestore" primary @click.prevent="submit"
     >Restore keys from backup</button-component
-  >
-  <button-component
-    v-if="showOverride"
-    :danger="true"
-    @click.prevent="makeBackup"
-    >Overwrite Keys and Backup</button-component
   >
 </template>

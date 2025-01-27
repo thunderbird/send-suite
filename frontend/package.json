@@ -30,6 +30,7 @@
     ]
   },
   "dependencies": {
+    "@scure/bip39": "^1.5.4",
     "@sentry/vite-plugin": "^2.22.7",
     "@sentry/vue": "^8.45.1",
     "@tabler/icons-vue": "^2.47.0",
