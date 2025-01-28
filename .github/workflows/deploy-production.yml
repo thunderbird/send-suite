@@ -176,4 +176,5 @@ jobs:
         shell: bash
         run: |
           cd frontend
+          unzip xpi-prod.zip
           pnpm deploy-xpi
