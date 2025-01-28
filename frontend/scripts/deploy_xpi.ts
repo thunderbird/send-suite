@@ -58,8 +58,6 @@ function generateJwt(): string {
     const apiKey = config.api_key;
     const apiSecret = config.api_secret;
 
-    console.log('apiSecret:', apiSecret);
-
     // Craft the payload
     return jwt.sign(
         {},
@@ -85,11 +83,9 @@ function getXpiPath(): string {
 function submitXpi(xpiPath: string, version: string, jwt: string): void {
     const reqHost = 'addons.thunderbird.net';
     const reqPathBase = '/api/v3/addons';
-    const packageName = 'tb-send';
-    const org = 'thunderbird.mozilla.org';
+    const packageName = 'send';
+    const org = 'thunderbird.net';
     
-    console.log(`Submitting XPI version ${version} in file ${xpiPath}...`)
-
     // Simulate a request to submit the XPI via the webform
     let form = new FormData();
     form.append('upload', fs.createReadStream(xpiPath));
@@ -106,6 +102,7 @@ function submitXpi(xpiPath: string, version: string, jwt: string): void {
         headers: headers,
     };
     let request = https.request(requestOpts);
+    console.log(`Opts: ${JSON.stringify(requestOpts)}`)
     form.pipe(request);
 
     // React to the response
