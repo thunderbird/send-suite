@@ -1,4 +1,3 @@
-import * as http from 'http';
 import * as https from 'https';
 import * as jwt from 'jsonwebtoken';
 import * as fs from 'fs';
@@ -58,8 +57,6 @@ function generateJwt(): string {
     const apiKey = config.api_key;
     const apiSecret = config.api_secret;
 
-    console.log('apiSecret:', apiSecret);
-
     // Craft the payload
     return jwt.sign(
         {},
@@ -85,8 +82,8 @@ function getXpiPath(): string {
 function submitXpi(xpiPath: string, version: string, jwt: string): void {
     const reqHost = 'addons.thunderbird.net';
     const reqPathBase = '/api/v3/addons';
-    const packageName = 'tb-send';
-    const org = 'thunderbird.mozilla.org';
+    const packageName = 'send';
+    const org = 'thunderbird.net';
     
     console.log(`Submitting XPI version ${version} in file ${xpiPath}...`)
 
@@ -102,16 +99,16 @@ function submitXpi(xpiPath: string, version: string, jwt: string): void {
     const requestOpts = {
         method: 'PUT',
         host: reqHost,
-        path: `${reqPathBase}/${packageName}@${org}/versions/${version}`,
+        path: `${reqPathBase}/${packageName}@${org}/versions/${version}/`,
         headers: headers,
     };
+    
     let request = https.request(requestOpts);
     form.pipe(request);
 
     // React to the response
     request.on('response', function(resp) {
-        console.log(`Got response: ${resp.statusCode} ${resp.statusMessage}`);
-        if (resp.statusCode == 200) {
+        if (resp.statusCode == 202) {
             console.log('SUCCESS!');
             process.exit(0)
         } else {
