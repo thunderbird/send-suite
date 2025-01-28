@@ -206,7 +206,7 @@ jobs:
         with:
           name: xpi-staging
           path: send-suite-alpha-*.xpi
-
+      
       - name: Create production .env file from secrets
         shell: bash
         run: |

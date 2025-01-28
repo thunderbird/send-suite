@@ -174,7 +174,10 @@ jobs:
         if: contains(github.event.release.assets.*.name, 'xpi-prod.zip')
         id: xpi-deploy
         shell: bash
+        env:
+          ATN_API_KEY: "${{ secrets.ATN_API_KEY }}"
+          ATN_API_SECRET: "${{ secrets.ATN_API_SECRET }}"
         run: |
           cd frontend
           unzip xpi-prod.zip
-          pnpm deploy-xpi
+          pnpm deploy-xpi ../xpi-prod.zip
