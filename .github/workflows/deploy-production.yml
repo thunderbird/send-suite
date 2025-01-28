@@ -178,6 +178,6 @@ jobs:
           ATN_API_KEY: "${{ secrets.ATN_API_KEY }}"
           ATN_API_SECRET: "${{ secrets.ATN_API_SECRET }}"
         run: |
-          cd frontend
           unzip xpi-prod.zip
+          cd frontend
           pnpm deploy-xpi ../xpi-prod.zip
