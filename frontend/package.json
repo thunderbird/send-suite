@@ -1,6 +1,6 @@
 {
   "name": "thunderbird-send",
-  "version": "0.1.30",
+  "version": "0.1.32",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,6 +9,7 @@
     "build:dev": "./scripts/build.sh",
     "build:watch": "nodemon -e vue,ts,js,json --watch './{src,public}/**/*' --exec 'pnpm build'",
     "ci:validate": "pnpm lint:all; pnpm prettier:all; pnpm run test",
+    "deploy-xpi": "bun run ./scripts/deploy_xpi.ts",
     "dev": "vite --host",
     "lint:all": "eslint src/**/*.ts --fix",
     "prettier:all": "prettier --write .",
@@ -67,8 +68,10 @@
     "buffer": "^6.0.3",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-vue": "^9.32.0",
+    "form-data": "^4.0.1",
     "globals": "^15.13.0",
     "happy-dom": "^15.11.7",
+    "jsonwebtoken": "9.0.2",
     "lint-staged": "^15.2.11",
     "mock-socket": "^9.3.1",
     "msw": "^2.6.9",

@@ -131,14 +131,14 @@ jobs:
       IS_CI_AUTOMATION: "yes"
     steps:
       - name: Download frontend source
-        if: contains(github.event.release.assets.*.name, 'frontend-source-prod.zip')
+        if: contains(github.event.release.assets.*.name, 'dist-web-prod.zip')
         uses: dsaltares/fetch-gh-release-asset@master
         with:
           version: ${{ github.event.release.id }}
-          file: frontend-source-prod.zip
+          file: dist-web-prod.zip
 
       - name: Configure AWS credentials
-        if: contains(github.event.release.assets.*.name, 'frontend-source-prod.zip')
+        if: contains(github.event.release.assets.*.name, 'dist-web-prod.zip')
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: us-east-1
@@ -146,13 +146,38 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Deploy to production
-        if: contains(github.event.release.assets.*.name, 'frontend-source-prod.zip')
+        if: contains(github.event.release.assets.*.name, 'dist-web-prod.zip')
         id: frontend-deploy
         shell: bash
         run: |
-          unzip -d frontend-source frontend-source-prod.zip
+          unzip -d frontend-source dist-web-prod.zip
           cd frontend-source
           aws s3 cp . s3://tb-send-suite-prod-frontend/ --recursive
 
           # Invalidate the CDN
           aws cloudfront create-invalidation --distribution-id ${{ vars.PROD_CF_DISTRO_ID }} --paths "/*"
+
+  deploy-xpi:
+    runs-on: ubuntu-latest
+    env:
+      IS_CI_AUTOMATION: "yes"
+    steps:
+      - name: Download XPI artifact
+        id: xpi-download
+        if: contains(github.event.release.assets.*.name, 'xpi-prod.zip')
+        uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          version: ${{ github.event.release.id }}
+          file: xpi-prod.zip
+      
+      - name: Deploy to ATN
+        if: contains(github.event.release.assets.*.name, 'xpi-prod.zip')
+        id: xpi-deploy
+        shell: bash
+        env:
+          ATN_API_KEY: "${{ secrets.ATN_API_KEY }}"
+          ATN_API_SECRET: "${{ secrets.ATN_API_SECRET }}"
+        run: |
+          unzip xpi-prod.zip
+          cd frontend
+          pnpm deploy-xpi ../xpi-prod.zip
