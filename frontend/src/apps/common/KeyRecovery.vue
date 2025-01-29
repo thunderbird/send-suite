@@ -45,7 +45,7 @@ const submit = () => {
     key to a safe location for use later.
   </p>
 
-  <div v-if="shouldBackup">
+  <div v-if="shouldBackup" class="container">
     <select value="Memorable passphrase">
       <option value="Memorable passphrase" selected>
         Memorable passphrase
@@ -64,7 +64,7 @@ const submit = () => {
     >
   </div>
 
-  <div v-if="shouldBackup || overrideVisibility" class="flex">
+  <div v-if="shouldBackup || overrideVisibility" class="container">
     <input class="w-full" type="text" :value="words.join(' - ')" disabled />
     <button @click.prevent="onCopy(words.join(' - '))">
       <CopyIcon />
@@ -73,9 +73,6 @@ const submit = () => {
 
   <div v-if="shouldRestore" class="flex">
     <input v-model="userSetPassword" class="w-full" type="text" />
-    <button @click.prevent="onCopy(words.join(' - '))">
-      <CopyIcon />
-    </button>
   </div>
 
   <button-component v-if="shouldBackup" primary @click.prevent="makeBackup"
@@ -85,3 +82,11 @@ const submit = () => {
     >Restore keys from backup</button-component
   >
 </template>
+
+<style scoped>
+.container {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: 0.5rem;
+}
+</style>

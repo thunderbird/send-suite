@@ -124,10 +124,10 @@ async function restoreFromBackup() {
       <div v-if="!shouldBackup && !shouldRestore">
         <h3>You're all set. Happy sending!</h3>
       </div>
-      <header :onclick="toggleVisible">
+      <div :onclick="toggleVisible" class="toggle">
         <h3>Key Recovery</h3>
         <ExpandIcon :is-open="showKeyRecovery" />
-      </header>
+      </div>
       <p v-if="bigMessageDisplay" style="font-size: larger">
         {{ bigMessageDisplay }}
       </p>
@@ -155,8 +155,7 @@ async function restoreFromBackup() {
 h2 {
   font-size: 22px;
 }
-
-header {
+.toggle {
   display: inline-flex;
   height: 34px;
   padding: 1px 0px;
@@ -168,10 +167,6 @@ header {
   cursor: pointer;
   gap: 1rem;
   padding: 1rem;
-}
-
-.container {
-  display: flex;
 }
 
 .content {
