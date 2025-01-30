@@ -1,10 +1,8 @@
 import dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
+import { getIsEnvProd, ID_FOR_PROD, ID_FOR_STAGING } from './config';
 dotenv.config();
-
-const idForProduction = `"id": "tb-send@thunderbird.net"`;
-const idForStaging = ` "id": "send@thunderbird.net"`;
 
 async function updateManifestConfig(): Promise<void> {
   try {
@@ -16,13 +14,13 @@ async function updateManifestConfig(): Promise<void> {
 
     // Replace the id in the image line
     const updateManifestID = manifestContent.replace(
-      idForStaging,
-      idForProduction
+      ID_FOR_STAGING,
+      ID_FOR_PROD
     );
 
     // When building for prod, replace the manifest ID
-    console.log(process.env.BASE_URL);
-    if (process.env.BASE_URL.includes('https://send.tb.pro')) {
+    const isProd = getIsEnvProd();
+    if (isProd) {
       fs.writeFileSync(manifestPath, updateManifestID, 'utf8');
     }
   } catch (error) {
