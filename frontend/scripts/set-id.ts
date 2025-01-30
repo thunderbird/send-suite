@@ -3,8 +3,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 dotenv.config();
 
-const idForProduction = 'tb-send@thunderbird.net';
-const idForStaging = 'send@thunderbird.net';
+const idForProduction = `"id": "tb-send@thunderbird.net"`;
+const idForStaging = ` "id": "send@thunderbird.net"`;
 
 async function updateManifestConfig(): Promise<void> {
   try {
