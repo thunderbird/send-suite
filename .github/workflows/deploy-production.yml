@@ -111,7 +111,7 @@ jobs:
                     backend:
                       image: "$target_tag"
           EOF
-          
+
           # Use yq to merge the stump into the main config
           yq -i '. *= load("newimage.yaml")' config.prod.yaml
           export PULUMI_CONFIG_PASSPHRASE='${{ secrets.PULUMI_PASSPHRASE_PROD }}'
@@ -169,7 +169,7 @@ jobs:
         with:
           version: ${{ github.event.release.id }}
           file: xpi-prod.zip
-      
+
       - name: Deploy to ATN
         if: contains(github.event.release.assets.*.name, 'xpi-prod.zip')
         id: xpi-deploy
@@ -177,6 +177,7 @@ jobs:
         env:
           ATN_API_KEY: "${{ secrets.ATN_API_KEY }}"
           ATN_API_SECRET: "${{ secrets.ATN_API_SECRET }}"
+          BASE_URL: https://send-backend.tb.pro/
         run: |
           unzip xpi-prod.zip
           cd frontend

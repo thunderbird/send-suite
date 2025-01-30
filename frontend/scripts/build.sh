@@ -5,6 +5,8 @@ else
     echo 'Starting development build 🐣'
 fi
 
+# Pre-build makes sure the ID for the xpi is set to prod/staging
+bun run scripts/set-id.ts
 
 # Get version from package.json and replace dots with hyphens
 VERSION=$(jq -r .version < package.json | sed 's/\./-/g')

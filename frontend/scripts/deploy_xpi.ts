@@ -1,121 +1,119 @@
+import FormData from 'form-data';
+import * as fs from 'fs';
 import * as https from 'https';
 import * as jwt from 'jsonwebtoken';
-import * as fs from 'fs';
 import * as path from 'path';
-var FormData = require('form-data');
+import { getIsEnvProd, PACKAGE_NAME } from './config';
 
 interface PackageJson {
-    version: string;
+  version: string;
 }
 
-function getEnvConfig(): {api_key: string, api_secret: string} {
-    let configErrors = false;
+function getEnvConfig(): { api_key: string; api_secret: string } {
+  let configErrors = false;
 
-    let apiKey = process.env.ATN_API_KEY;
-    let apiSecret = process.env.ATN_API_SECRET;
+  const apiKey = process.env.ATN_API_KEY;
+  const apiSecret = process.env.ATN_API_SECRET;
 
-    if (!apiKey) {
-        console.error('ATN_API_KEY is unset');
-        configErrors = true;
-    }
+  if (!apiKey) {
+    console.error('ATN_API_KEY is unset');
+    configErrors = true;
+  }
 
-    if (!apiSecret) {
-        console.error('ATN_API_SECRET is unset');
-        configErrors = true;
-    }
+  if (!apiSecret) {
+    console.error('ATN_API_SECRET is unset');
+    configErrors = true;
+  }
 
-    if (configErrors) {
-        throw Error('Set all unset environment variables and try again')
-    } else {
-        return {api_key: apiKey, api_secret: apiSecret};
-    }
+  if (configErrors) {
+    throw Error('Set all unset environment variables and try again');
+  } else {
+    return { api_key: apiKey, api_secret: apiSecret };
+  }
 }
 
 function getPackageVersion(): string {
-    const packageJsonPath = path.resolve(__dirname, '../package.json');
-    const packageJsonContent = JSON.parse(
-        fs.readFileSync(packageJsonPath, 'utf8')
-    ) as PackageJson;
-    return packageJsonContent.version;
+  const packageJsonPath = path.resolve(__dirname, '../package.json');
+  const packageJsonContent = JSON.parse(
+    fs.readFileSync(packageJsonPath, 'utf8')
+  ) as PackageJson;
+  return packageJsonContent.version;
 }
 
 function generateJwtId(): string {
-    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    const idLength = 64;
-    let jwtId = '';
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const idLength = 64;
+  let jwtId = '';
 
-    for (let i = 0; i < idLength; i++) {
-        jwtId += alphabet.charAt(Math.floor(Math.random() * alphabet.length));
-    }
+  for (let i = 0; i < idLength; i++) {
+    jwtId += alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+  }
 
-    return jwtId;
+  return jwtId;
 }
 
 function generateJwt(): string {
-    // Gather the data we need for the PWT payload
-    const config = getEnvConfig();
-    const apiKey = config.api_key;
-    const apiSecret = config.api_secret;
+  // Gather the data we need for the PWT payload
+  const config = getEnvConfig();
+  const apiKey = config.api_key;
+  const apiSecret = config.api_secret;
 
-    // Craft the payload
-    return jwt.sign(
-        {},
-        apiSecret,
-        {
-            algorithm: 'HS256',
-            expiresIn: '1 minute',
-            issuer: apiKey,
-            jwtid: generateJwtId(),
-        }
-    );
+  // Craft the payload
+  return jwt.sign({}, apiSecret, {
+    algorithm: 'HS256',
+    expiresIn: '1 minute',
+    issuer: apiKey,
+    jwtid: generateJwtId(),
+  });
 }
 
 function getXpiPath(): string {
-    let xpiPath = process.argv[process.argv.length - 1];
-    if (xpiPath.endsWith('.xpi')) {
-        return xpiPath;
-    } else {
-        throw Error(`XPI Path "${xpiPath} is invalid`);
-    }
+  const xpiPath = process.argv[process.argv.length - 1];
+  if (xpiPath.endsWith('.xpi')) {
+    return xpiPath;
+  } else {
+    throw Error(`XPI Path "${xpiPath} is invalid`);
+  }
 }
 
 function submitXpi(xpiPath: string, version: string, jwt: string): void {
-    const reqHost = 'addons.thunderbird.net';
-    const reqPathBase = '/api/v3/addons';
-    const packageName = 'send';
-    const org = 'thunderbird.net';
-    
-    console.log(`Submitting XPI version ${version} in file ${xpiPath}...`)
+  const isProd = getIsEnvProd();
+  const reqHost = 'addons.thunderbird.net';
+  const reqPathBase = '/api/v3/addons';
+  const packageName = isProd ? PACKAGE_NAME.production : PACKAGE_NAME.staging;
+  const org = 'thunderbird.net';
 
-    // Simulate a request to submit the XPI via the webform
-    let form = new FormData();
-    form.append('upload', fs.createReadStream(xpiPath));
+  console.log(`Submitting XPI version ${version} in file ${xpiPath}...`);
 
-    // Add our auth header to the form headers
-    let headers = form.getHeaders();
-    headers.Authorization = `JWT ${jwt}`;
+  // Simulate a request to submit the XPI via the webform
+  const form = new FormData();
+  form.append('upload', fs.createReadStream(xpiPath));
 
-    // Form a request and ship the XPI
-    const requestOpts = {
-        method: 'PUT',
-        host: reqHost,
-        path: `${reqPathBase}/${packageName}@${org}/versions/${version}/`,
-        headers: headers,
-    };
-    
-    let request = https.request(requestOpts);
-    form.pipe(request);
+  // Add our auth header to the form headers
+  const headers = form.getHeaders();
+  headers.Authorization = `JWT ${jwt}`;
 
-    // React to the response
-    request.on('response', function(resp) {
-        if (resp.statusCode == 202) {
-            console.log('SUCCESS!');
-            process.exit(0)
-        } else {
-            console.log('FAILURE!');
-            process.exit(1)
-        }
-    });
+  // Form a request and ship the XPI
+  const requestOpts = {
+    method: 'PUT',
+    host: reqHost,
+    path: `${reqPathBase}/${packageName}@${org}/versions/${version}/`,
+    headers: headers,
+  };
+
+  const request = https.request(requestOpts);
+  form.pipe(request);
+
+  // React to the response
+  request.on('response', function (resp) {
+    if (resp.statusCode == 202) {
+      console.log('SUCCESS!');
+      process.exit(0);
+    } else {
+      console.log('FAILURE!');
+      process.exit(1);
+    }
+  });
 }
 
 const packageVersion = getPackageVersion();
