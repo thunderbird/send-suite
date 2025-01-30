@@ -22,7 +22,7 @@ async function updateManifestConfig(): Promise<void> {
 
     // When building for prod, replace the manifest ID
     console.log(process.env.BASE_URL);
-    if (process.env.BASE_URL.includes('send-backend.tb.pro')) {
+    if (process.env.BASE_URL.includes('https://send.tb.pro')) {
       fs.writeFileSync(manifestPath, updateManifestID, 'utf8');
     }
   } catch (error) {
