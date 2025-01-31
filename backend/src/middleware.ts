@@ -55,17 +55,24 @@ export async function requireJWT(
   next: NextFunction
 ) {
   const jwtToken = getCookie(req?.headers?.cookie, 'authorization');
+  const jwtRefreshToken = getCookie(req?.headers?.cookie, 'refresh_token');
 
   const token = getJWTfromToken(jwtToken);
-  if (!token) {
+  const refreshToken = getJWTfromToken(jwtRefreshToken);
+
+  if (!token && !refreshToken) {
     return res.status(403).json({ message: `Not authorized: Token not found` });
   }
 
   try {
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    next();
+    return next();
   } catch (error) {
-    return res.status(403).json({ message: `Not authorized: Invalid token` });
+    // catch error and try to refresh token
+    console.log('should refresh token');
+    return res.status(401).json({
+      message: `Not authorized: Token expired`,
+    });
   }
 }
 
