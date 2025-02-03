@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 import init from '@/lib/init';
 
@@ -14,8 +14,9 @@ import ShieldIcon from '@/apps/common/ShieldIcon.vue';
 import { EXTENSION_READY, SHARE_ABORTED, SHARE_COMPLETE } from '@/lib/const';
 import { restoreKeysUsingLocalStorage } from '@/lib/keychain';
 import useApiStore from '@/stores/api-store';
+import { IconEye, IconEyeClosed } from '@tabler/icons-vue';
 import ProgressBar from '../components/ProgressBar.vue';
-import Btn from '../elements/BtnComponent.vue';
+import { default as Btn } from '../elements/BtnComponent.vue';
 import { useStatusStore } from '../stores/status-store';
 
 const userStore = useUserStore();
@@ -33,6 +34,11 @@ const password = ref('');
 const fileBlob = ref<Blob>(null);
 const isAllowed = ref(true);
 const message = ref('');
+const passwordFieldType = ref<'password' | 'text'>('password');
+
+const isPasswordVisible = computed(() => {
+  return passwordFieldType.value === 'text';
+});
 
 // TODO: Make it so you can mix-and-match.
 // i.e., you can convert attachment to tb send
@@ -96,6 +102,11 @@ function shareAborted() {
   window.close();
 }
 
+function togglePasswordVisibility() {
+  passwordFieldType.value =
+    passwordFieldType.value === 'password' ? 'text' : 'password';
+}
+
 onMounted(async () => {
   try {
     await restoreKeysUsingLocalStorage(keychain, api);
@@ -153,7 +164,17 @@ userStore.user.id ${userStore.user.id}
 
     <form @submit.prevent="uploadAndShare">
       <h2>Password</h2>
-      <input v-model="password" type="password" :disabled="isUploading" />
+      <div class="password">
+        <input
+          v-model="password"
+          :type="passwordFieldType"
+          :disabled="isUploading"
+        />
+        <button @click.prevent="togglePasswordVisibility">
+          <IconEye v-if="!isPasswordVisible" />
+          <IconEyeClosed v-if="isPasswordVisible" />
+        </button>
+      </div>
       <p>(Optional) Password to access the file</p>
       <Btn primary>
         <ShieldIcon />
@@ -183,5 +204,15 @@ form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.password {
+  position: relative;
+}
+.password button {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 </style>

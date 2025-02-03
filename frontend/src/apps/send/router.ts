@@ -12,7 +12,10 @@ import { restoreKeysUsingLocalStorage } from '@/lib/keychain';
 import useApiStore from '@/stores/api-store';
 import useKeychainStore from '@/stores/keychain-store';
 
+import { IS_DEV } from '@/lib/config';
 import { getCanRetry } from '@/lib/validations';
+import NotFoundPage from '../common/NotFoundPage.vue';
+import ExtensionPage from './ExtensionPage.vue';
 import LoginPage from './LoginPage.vue';
 import LockedPage from './pages/LockedPage.vue';
 import { useStatusStore } from './stores/status-store';
@@ -92,6 +95,21 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/locked/:linkId',
     component: LockedPage,
+  },
+
+  /* 
+  TESTING ONLY
+  These routes are only available in development mode and are used to render the extension.
+  Intended only to be used for testing. 
+   */
+  {
+    path: '/extension',
+    children: IS_DEV ? [{ path: 'popup', component: ExtensionPage }] : [],
+  },
+  // Catch all non defined routes
+  {
+    path: '/:pathMatch(.*)*',
+    component: NotFoundPage,
   },
 ];
 
