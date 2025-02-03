@@ -34,10 +34,10 @@ const password = ref('');
 const fileBlob = ref<Blob>(null);
 const isAllowed = ref(true);
 const message = ref('');
-const passWordFieldType = ref<'password' | 'text'>('password');
+const passwordFieldType = ref<'password' | 'text'>('password');
 
 const isPasswordVisible = computed(() => {
-  return passWordFieldType.value === 'text';
+  return passwordFieldType.value === 'text';
 });
 
 // TODO: Make it so you can mix-and-match.
@@ -103,8 +103,8 @@ function shareAborted() {
 }
 
 function togglePasswordVisibility() {
-  passWordFieldType.value =
-    passWordFieldType.value === 'password' ? 'text' : 'password';
+  passwordFieldType.value =
+    passwordFieldType.value === 'password' ? 'text' : 'password';
 }
 
 onMounted(async () => {
@@ -167,7 +167,7 @@ userStore.user.id ${userStore.user.id}
       <div class="password">
         <input
           v-model="password"
-          :type="passWordFieldType"
+          :type="passwordFieldType"
           :disabled="isUploading"
         />
         <button @click.prevent="togglePasswordVisibility">
