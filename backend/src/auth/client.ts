@@ -94,7 +94,7 @@ export function getDataFromAuthenticatedRequest(req: Request) {
 }
 
 const ONE_MINUTE = 60 * 1000;
-const FIFTEEN_MINUTES = ONE_MINUTE * 15;
+const FIFTEEN_MINUTES = ONE_MINUTE * 1;
 
 export const signJwt = (signedData: AuthResponse, res: Response) => {
   // Sign the jwt and pass it as a cookie

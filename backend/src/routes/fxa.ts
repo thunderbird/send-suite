@@ -176,6 +176,7 @@ router.get(
 
       await updateUniqueHash(user.id, uniqueHash);
 
+      // We'll use this data to sign the JWTs
       const signedData: AuthResponse = {
         uniqueHash,
         id: user.id,
