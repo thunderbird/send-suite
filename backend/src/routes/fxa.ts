@@ -12,7 +12,7 @@ import {
   getIssuer,
   signJwt,
 } from '../auth/client';
-import { ENVIRONMENT } from '../config';
+import { ENVIRONMENT, JWT_REFRESH_TOKEN_EXPIRY } from '../config';
 import {
   addErrorHandling,
   AUTH_ERRORS,
@@ -25,9 +25,7 @@ import {
 import { AuthResponse } from './auth';
 
 const router: Router = Router();
-const ONE_DAY = 1;
-const ONE_WEEK = ONE_DAY * 7;
-const refreshTokenExpiration = getTokenExpiration(ONE_WEEK);
+const refreshTokenExpiration = getTokenExpiration(JWT_REFRESH_TOKEN_EXPIRY);
 
 // Route for obtaining an authorization URL for Mozilla account.
 router.get(

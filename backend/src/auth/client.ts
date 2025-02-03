@@ -1,3 +1,4 @@
+import { JWT_EXPIRTY } from '@/config';
 import { AuthResponse } from '@/routes/auth';
 import { getCookie } from '@/utils';
 import type { Request, Response } from 'express';
@@ -93,15 +94,12 @@ export function getDataFromAuthenticatedRequest(req: Request) {
   return user;
 }
 
-const ONE_MINUTE = 60 * 1000;
-const FIFTEEN_MINUTES = ONE_MINUTE * 1;
-
 export const signJwt = (signedData: AuthResponse, res: Response) => {
   // Sign the jwt and pass it as a cookie
   const jwtToken = jwt.sign(signedData, process.env.ACCESS_TOKEN_SECRET!);
 
   res.cookie('authorization', `Bearer ${jwtToken}`, {
-    maxAge: FIFTEEN_MINUTES,
+    maxAge: JWT_EXPIRTY,
     httpOnly: true,
     sameSite: 'none',
     secure: true,
