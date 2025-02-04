@@ -32,6 +32,7 @@ import metricsRoute from './routes/metrics';
 import { containersRouter } from './trpc/containers';
 import { sharingRouter } from './trpc/sharing';
 import { usersRouter } from './trpc/users';
+import { getCookie } from './utils';
 
 const PORT = 8080;
 const HOST = '0.0.0.0';
@@ -100,10 +101,33 @@ export const mergeRouters = t.mergeRouters;
 export const createContext = ({
   req,
 }: trpcExpress.CreateExpressContextOptions) => {
-  const { id, email, uniqueHash } = getDataFromAuthenticatedRequest(req);
-  return {
-    user: { id: id.toString(), email, uniqueHash },
-  };
+  const jwtToken = getCookie(req?.headers?.cookie, 'authorization');
+  const jwtRefreshToken = getCookie(req?.headers?.cookie, 'refresh_token');
+
+  // Make user data available to all trpc requests unless the user is not authenticated
+  try {
+    const { id, email, uniqueHash } = getDataFromAuthenticatedRequest(req);
+    return {
+      user: {
+        id: id.toString(),
+        email,
+        uniqueHash,
+      },
+      cookies: {
+        jwtToken,
+        jwtRefreshToken,
+      },
+    };
+  } catch (error) {
+    // If the user is not authenticated, we return only the cookies
+    return {
+      user: null,
+      cookies: {
+        jwtToken,
+        jwtRefreshToken,
+      },
+    };
+  }
 };
 // Put together all our routers
 const appRouter = mergeRouters(
@@ -121,6 +145,7 @@ app.use(
   })
 );
 
+// REST API routes
 app.use('/api/users', users);
 app.use('/api/containers', containers);
 app.use('/api/uploads', uploads);

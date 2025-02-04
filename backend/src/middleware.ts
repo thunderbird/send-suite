@@ -1,11 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
-import jwt from 'jsonwebtoken';
-import {
-  getDataFromAuthenticatedRequest,
-  getJWTfromToken,
-} from './auth/client';
+import { getDataFromAuthenticatedRequest } from './auth/client';
+import { validateJWT } from './auth/jwt';
 import { fromPrismaV2 } from './models/prisma-helper';
 import {
   allPermissions,
@@ -49,23 +46,34 @@ export function reject(
   return;
 }
 
+/**
+ * This Express middleware verifies the JWT token in the request cookies.
+ * Returns 403 if token is missing, 401 if token needs refresh, or calls next() if valid.
+ * Note: This middleware mirrors `isAuthed` from backend/src/trpc/middlewares.ts
+ * These middlewares should be maintained in tandem to avoid unintended behavior
+ */
 export async function requireJWT(
   req: Request,
   res: Response,
   next: NextFunction
 ) {
   const jwtToken = getCookie(req?.headers?.cookie, 'authorization');
+  const jwtRefreshToken = getCookie(req?.headers?.cookie, 'refresh_token');
 
-  const token = getJWTfromToken(jwtToken);
-  if (!token) {
+  const validationResult = validateJWT({ jwtToken, jwtRefreshToken });
+
+  if (!validationResult) {
     return res.status(403).json({ message: `Not authorized: Token not found` });
   }
 
-  try {
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    next();
-  } catch (error) {
-    return res.status(403).json({ message: `Not authorized: Invalid token` });
+  if (validationResult === 'valid') {
+    return next();
+  }
+
+  if (validationResult === 'shouldRefresh') {
+    return res.status(401).json({
+      message: `Not authorized: Token expired`,
+    });
   }
 }
 

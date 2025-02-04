@@ -47,6 +47,7 @@ export class ApiConnection {
     options?: O
   ): Promise<O extends { fullResponse: true } ? Response : T | null> {
     const url = `${this.serverUrl}/api/${path}`;
+    const refreshTokenUrl = `${this.serverUrl}/api/auth/refresh`;
     const opts: Record<string, any> = {
       mode: 'cors',
       credentials: 'include', // include cookies
@@ -69,6 +70,19 @@ export class ApiConnection {
     } catch (e) {
       console.log(e);
       return null;
+    }
+
+    // 403 means the user is not authenticated or has an expired session
+    // we retry the request once if that is the case
+    if (resp.status === 401) {
+      try {
+        // Refresh token
+        await fetch(refreshTokenUrl, opts);
+        resp = await fetch(url, opts);
+      } catch (error) {
+        console.log(error);
+        return null;
+      }
     }
 
     if (!resp.ok) {

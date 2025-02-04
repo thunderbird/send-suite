@@ -1,10 +1,13 @@
+import { getAccessLinksForContainer as getAccessLinks } from '@/models/containers';
 import { getAllUserGroupContainers } from '@/models/users';
 import { addExpiryToContainer } from '@/utils';
 import { ContainerType } from '@prisma/client';
+import { z } from 'zod';
 import { router, publicProcedure as t } from '../trpc';
+import { isAuthed } from './middlewares';
 
 export const containersRouter = router({
-  getTotalUsedStorage: t.query(async ({ ctx }) => {
+  getTotalUsedStorage: t.use(isAuthed).query(async ({ ctx }) => {
     const userId = Number(ctx.user.id);
     const folders = await getAllUserGroupContainers(
       userId,
@@ -43,4 +46,12 @@ export const containersRouter = router({
       active,
     };
   }),
+
+  getAccessLinksForContainer: t
+    .use(isAuthed)
+    .input(z.object({ containerId: z.number() }))
+    .query(async ({ input }) => {
+      const accessLinks = await getAccessLinks(input.containerId);
+      return accessLinks;
+    }),
 });

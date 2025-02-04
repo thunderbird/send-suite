@@ -6,11 +6,13 @@ import { Request, Router } from 'express';
 import jwt from 'jsonwebtoken';
 import {
   checkAllowList,
+  clearCookie,
   generateState,
   getClient,
   getIssuer,
+  signJwt,
 } from '../auth/client';
-import { ENVIRONMENT } from '../config';
+import { ENVIRONMENT, JWT_REFRESH_TOKEN_EXPIRY } from '../config';
 import {
   addErrorHandling,
   AUTH_ERRORS,
@@ -23,9 +25,7 @@ import {
 import { AuthResponse } from './auth';
 
 const router: Router = Router();
-const ONE_DAY = 1;
-const ONE_WEEK = ONE_DAY * 7;
-const tokenExpiration = getTokenExpiration(ONE_WEEK);
+const refreshTokenExpiration = getTokenExpiration(JWT_REFRESH_TOKEN_EXPIRY);
 
 // Route for obtaining an authorization URL for Mozilla account.
 router.get(
@@ -174,23 +174,29 @@ router.get(
 
       await updateUniqueHash(user.id, uniqueHash);
 
+      // We'll use this data to sign the JWTs
       const signedData: AuthResponse = {
         uniqueHash,
         id: user.id,
         email: user.email,
       };
 
-      // Sign the jwt and pass it as a cookie
-      const jwtToken = jwt.sign(signedData, process.env.ACCESS_TOKEN_SECRET!, {
-        expiresIn: tokenExpiration.stringified,
-      });
+      const refreshTokenToken = jwt.sign(
+        signedData,
+        process.env.REFRESH_TOKEN_SECRET!,
+        {
+          expiresIn: refreshTokenExpiration.stringified,
+        }
+      );
 
-      res.cookie('authorization', `Bearer ${jwtToken}`, {
-        maxAge: tokenExpiration.milliseconds,
+      res.cookie('refresh_token', `Bearer ${refreshTokenToken}`, {
+        maxAge: refreshTokenExpiration.milliseconds,
         httpOnly: true,
         sameSite: 'none',
         secure: true,
       });
+
+      signJwt(signedData, res);
 
       res.redirect('/login-success.html');
     } catch (error) {
@@ -217,12 +223,8 @@ TODO:
 - handle errors
   */
 
-    res.cookie('authorization', `null`, {
-      maxAge: 0,
-      httpOnly: true,
-      sameSite: 'none',
-      secure: true,
-    });
+    clearCookie('authorization', res);
+    clearCookie('refresh_token', res);
 
     const destroyUrl = `https://oauth.stage.mozaws.net/v1/destroy`;
     const accessToken = null; // this is still todo, adding null to avoid unnecessary errors

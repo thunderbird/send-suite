@@ -1,6 +1,7 @@
+import { JWT_EXPIRY } from '@/config';
 import { AuthResponse } from '@/routes/auth';
 import { getCookie } from '@/utils';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { Issuer, generators } from 'openid-client';
 
@@ -34,15 +35,17 @@ export function isEmailInAllowList(email: string, allowList: string[]) {
 }
 
 export function getAllowedOrigins() {
-  const envOrigins = process.env.SEND_BACKEND_CORS_ORIGINS
+  const envOrigins = process.env.SEND_BACKEND_CORS_ORIGINS;
   if (!envOrigins) {
-    throw new Error('Environment variable SEND_BACKEND_CORS_ORIGINS must be set')
+    throw new Error(
+      'Environment variable SEND_BACKEND_CORS_ORIGINS must be set'
+    );
   }
 
   // Force this to be an array of strings of non-zero length
   return envOrigins
     .split(',')
-    .map(n => n.trim())
+    .map((n) => n.trim())
     .filter(String);
 }
 
@@ -90,3 +93,24 @@ export function getDataFromAuthenticatedRequest(req: Request) {
   const user = getUserFromJWT(token);
   return user;
 }
+
+export const signJwt = (signedData: AuthResponse, res: Response) => {
+  // Sign the jwt and pass it as a cookie
+  const jwtToken = jwt.sign(signedData, process.env.ACCESS_TOKEN_SECRET!);
+
+  res.cookie('authorization', `Bearer ${jwtToken}`, {
+    maxAge: JWT_EXPIRY,
+    httpOnly: true,
+    sameSite: 'none',
+    secure: true,
+  });
+};
+
+export const clearCookie = (cookieName: string, res: Response) => {
+  res.cookie(cookieName, `null`, {
+    maxAge: 0,
+    httpOnly: true,
+    sameSite: 'none',
+    secure: true,
+  });
+};
