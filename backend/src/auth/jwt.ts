@@ -6,10 +6,15 @@ type Args = {
   jwtRefreshToken: string;
 };
 
+/**
+ * The output is either 'valid' or 'shouldRefresh' or null. No other string is possible.
+ **/
+type ValidationResult = 'valid' | 'shouldRefresh' | null;
+
 export const validateJWT = ({
   jwtRefreshToken,
   jwtToken,
-}: Args): 'valid' | 'shouldRefresh' | null => {
+}: Args): ValidationResult => {
   const token = getJWTfromToken(jwtToken);
   const refreshToken = getJWTfromToken(jwtRefreshToken);
 

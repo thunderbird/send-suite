@@ -1,4 +1,4 @@
-import { JWT_EXPIRTY } from '@/config';
+import { JWT_EXPIRY } from '@/config';
 import { AuthResponse } from '@/routes/auth';
 import { getCookie } from '@/utils';
 import type { Request, Response } from 'express';
@@ -99,7 +99,7 @@ export const signJwt = (signedData: AuthResponse, res: Response) => {
   const jwtToken = jwt.sign(signedData, process.env.ACCESS_TOKEN_SECRET!);
 
   res.cookie('authorization', `Bearer ${jwtToken}`, {
-    maxAge: JWT_EXPIRTY,
+    maxAge: JWT_EXPIRY,
     httpOnly: true,
     sameSite: 'none',
     secure: true,

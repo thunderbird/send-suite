@@ -27,7 +27,7 @@ const ONE_WEEK = ONE_DAY * 7;
 export const DAYS_TO_EXPIRY = 15;
 
 // JWT expiry
-export const JWT_EXPIRTY = FIFTEEN_MINUTES;
+export const JWT_EXPIRY = FIFTEEN_MINUTES;
 export const JWT_REFRESH_TOKEN_EXPIRY = ONE_WEEK;
 
 // Determines how many times a file can be attempted to be downloaded with the wrong password before it gets locked

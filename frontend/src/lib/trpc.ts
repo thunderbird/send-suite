@@ -1,6 +1,7 @@
 /**
  * This is the client-side code that uses the inferred types from the server
  */
+import logger from '@/logger';
 import { createTRPCClient, httpBatchLink, retryLink } from '@trpc/client';
 import { AppRouter } from 'server/index';
 
@@ -24,10 +25,10 @@ export const trpc = createTRPCClient<AppRouter>({
             credentials: 'include',
           })
             .then(() => {
-              console.log('revalidated token');
+              logger.info('revalidated token');
             })
             .catch((err) => {
-              console.log('could not revalidate token', err);
+              logger.info('could not revalidate token', err);
             });
           return opts.attempts <= 3;
         }
