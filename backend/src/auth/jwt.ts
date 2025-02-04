@@ -11,6 +11,13 @@ type Args = {
  **/
 type ValidationResult = 'valid' | 'shouldRefresh' | null;
 
+/**
+ * This function validates the JWT token and returns a string indicating whether the token is valid or not.
+ * If the token is invalid, it will try to refresh the token.
+ * @param jwtToken - JWT token
+ * @param jwtRefreshToken - JWT refresh token
+ * @returns 'valid' if the token is valid, 'shouldRefresh' if the token needs to be refreshed, or null if the token is missing
+ **/
 export const validateJWT = ({
   jwtRefreshToken,
   jwtToken,
