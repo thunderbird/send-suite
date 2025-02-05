@@ -151,6 +151,7 @@ export default { props: { id: { type: String, default: 'null' } } };
               Last modified {{ dayjs().to(dayjs(item.updatedAt)) }}
             </div>
             <ExpiryBadge
+              v-if="item.upload.daysToExpiry !== undefined"
               :time-remaining="item.upload.daysToExpiry"
               :warning-threshold="10"
               :time-unit="ExpiryUnitTypes.Days"
