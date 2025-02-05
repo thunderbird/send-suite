@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import { DAYS_TO_EXPIRY } from '@/config';
 import { after, before, beforeEach } from 'node:test';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import {
@@ -8,8 +10,10 @@ import {
   getClient,
   getDataFromAuthenticatedRequest,
   getIssuer,
+  getStorageLimit,
   getUserFromJWT,
   isEmailInAllowList,
+  signJwt,
 } from '../../auth/client';
 
 const { mockedDecode } = vi.hoisted(() => ({
@@ -17,7 +21,7 @@ const { mockedDecode } = vi.hoisted(() => ({
 }));
 
 vi.mock('jsonwebtoken', () => ({
-  default: { decode: mockedDecode },
+  default: { decode: mockedDecode, sign: vi.fn() },
 }));
 
 describe('Auth Client', () => {
@@ -95,52 +99,58 @@ describe('Auth Client', () => {
 
 describe('getAllowedOrigins', () => {
   let originalEnv;
-  
+
   // Back up the environment before we mess with it
   before(() => {
-    originalEnv = process.env
-  })
+    originalEnv = process.env;
+  });
 
   // Test various environment variable inputs
   it('should throw an error when no environment variable is provided', async () => {
-    delete(process.env.SEND_BACKEND_CORS_ORIGINS);
-    expect(() => getAllowedOrigins()).toThrowError('Environment variable SEND_BACKEND_CORS_ORIGINS must be set')
+    delete process.env.SEND_BACKEND_CORS_ORIGINS;
+    expect(() => getAllowedOrigins()).toThrowError(
+      'Environment variable SEND_BACKEND_CORS_ORIGINS must be set'
+    );
   });
 
   it('should throw an error when an empty origin is provided', async () => {
     process.env.SEND_BACKEND_CORS_ORIGINS = '';
-    expect(() => getAllowedOrigins()).toThrowError('Environment variable SEND_BACKEND_CORS_ORIGINS must be set')
+    expect(() => getAllowedOrigins()).toThrowError(
+      'Environment variable SEND_BACKEND_CORS_ORIGINS must be set'
+    );
   });
 
   it('should return an array with the correct single item when a single valid origin is provided', async () => {
     process.env.SEND_BACKEND_CORS_ORIGINS = 'http://localhost:12345';
     const origins = await getAllowedOrigins();
-    expect(origins).toEqual(['http://localhost:12345'])
+    expect(origins).toEqual(['http://localhost:12345']);
   });
 
   it('should return the correct array when multiple valid origins are provided', async () => {
-    process.env.SEND_BACKEND_CORS_ORIGINS = 'http://localhost:12345,http://thebestsite.edu';
-    const origins = await getAllowedOrigins();
-    expect(origins).toEqual([
-      'http://localhost:12345',
-      'http://thebestsite.edu'
-    ])
-  });
-
-  it('should handle spaces between origin strings', async () => {
-    process.env.SEND_BACKEND_CORS_ORIGINS = 'http://localhost:12345, http://thebestsite.edu, https://spaceforeand.aft ,';
+    process.env.SEND_BACKEND_CORS_ORIGINS =
+      'http://localhost:12345,http://thebestsite.edu';
     const origins = await getAllowedOrigins();
     expect(origins).toEqual([
       'http://localhost:12345',
       'http://thebestsite.edu',
-      'https://spaceforeand.aft'
-    ])
-  })
+    ]);
+  });
+
+  it('should handle spaces between origin strings', async () => {
+    process.env.SEND_BACKEND_CORS_ORIGINS =
+      'http://localhost:12345, http://thebestsite.edu, https://spaceforeand.aft ,';
+    const origins = await getAllowedOrigins();
+    expect(origins).toEqual([
+      'http://localhost:12345',
+      'http://thebestsite.edu',
+      'https://spaceforeand.aft',
+    ]);
+  });
 
   // Restore the original environment
   after(() => {
-    process.env = originalEnv
-  })
+    process.env = originalEnv;
+  });
 });
 
 describe('checkAllowList', () => {
@@ -272,5 +282,94 @@ describe('getUserFromJWT', () => {
         'No token found in request: This should not happen if the user is authenticated'
       );
     });
+  });
+});
+
+describe('signJwt', () => {
+  beforeAll(() => {
+    vi.unstubAllEnvs();
+    vi.stubEnv('ACCESS_TOKEN_SECRET', 'test_secret');
+  });
+
+  it('should set cookie with correct parameters', () => {
+    const mockRes = {
+      cookie: vi.fn(),
+    };
+    const mockSignedData = {
+      tier: 'PRO',
+      email: 'test@example.com',
+    };
+
+    //@ts-ignore
+    signJwt(mockSignedData as any, mockRes);
+
+    expect(mockRes.cookie).toHaveBeenCalledWith(
+      'authorization',
+      expect.stringContaining('Bearer '),
+      expect.objectContaining({
+        httpOnly: true,
+        sameSite: 'none',
+        secure: true,
+        maxAge: expect.any(Number),
+      })
+    );
+  });
+});
+
+describe('getStorageLimit', () => {
+  beforeAll(() => {
+    vi.unstubAllEnvs();
+    vi.stubEnv('ACCESS_TOKEN_SECRET', 'your_secret');
+  });
+
+  it('should return hasLimitedStorage false for non-EPHEMERAL tier', () => {
+    const mockedTokenData = { tier: 'PRO' };
+    mockedDecode.mockReturnValue(mockedTokenData);
+
+    const req = {
+      headers: {
+        cookie: 'authorization=Bearer%20valid.token.here',
+      },
+    };
+
+    // @ts-ignore
+    const result = getStorageLimit(req as Request);
+    expect(result).toEqual({
+      hasLimitedStorage: false,
+      daysToExpiry: DAYS_TO_EXPIRY,
+    });
+  });
+
+  it('should return hasLimitedStorage true for EPHEMERAL tier', () => {
+    const mockedTokenData = { tier: 'EPHEMERAL' };
+    mockedDecode.mockReturnValue(mockedTokenData);
+
+    const req = {
+      headers: {
+        cookie: 'authorization=Bearer%20valid.token.here',
+      },
+    };
+
+    // @ts-ignore
+    const result = getStorageLimit(req as Request);
+    expect(result).toEqual({
+      hasLimitedStorage: true,
+      daysToExpiry: DAYS_TO_EXPIRY,
+    });
+  });
+
+  it('should throw error when no authorization is present', () => {
+    const req = {
+      headers: {
+        cookie: '',
+      },
+    };
+
+    expect(() => {
+      //@ts-ignore
+      getStorageLimit(req as Request);
+    }).toThrowError(
+      'No token found in request: This should not happen if the user is authenticated'
+    );
   });
 });
