@@ -1,4 +1,4 @@
-import { JWT_EXPIRY } from '@/config';
+import { DAYS_TO_EXPIRY, JWT_EXPIRY } from '@/config';
 import { AuthResponse } from '@/routes/auth';
 import { getCookie } from '@/utils';
 import type { Request, Response } from 'express';
@@ -113,4 +113,10 @@ export const clearCookie = (cookieName: string, res: Response) => {
     sameSite: 'none',
     secure: true,
   });
+};
+
+export const getStorageLimit = (req: Request) => {
+  const { tier } = getDataFromAuthenticatedRequest(req);
+  const hasLimitedStorage = tier === 'EPHEMERAL';
+  return { hasLimitedStorage, daysToExpiry: DAYS_TO_EXPIRY };
 };
