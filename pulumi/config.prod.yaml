@@ -102,25 +102,25 @@ resources:
               initProcessEnabled: True
             secrets:
               - name: B2_APPLICATION_KEY
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/b2-application-key-eFMxNP
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/b2-application-key-v9ZNC4
               - name: B2_APPLICATION_KEY_ID
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/b2-application-key-id-CaDhQB
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/b2-application-key-id-dDIEel
               - name: DATABASE_URL
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/database-url-6DVZu0
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/database-url-982JJ2
               - name: FXA_ALLOW_LIST
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/fxa-allow-list-TJp4vu
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/fxa-allow-list-F99h1B
               - name: FXA_CLIENT_ID
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/fxa-client-id-epEw7g
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/fxa-client-id-7fcXj9
               - name: FXA_CLIENT_SECRET
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/fxa-client-secret-19zpdC
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/fxa-client-secret-pTRedr
               - name: POSTHOG_API_KEY
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/posthog-api-key-0ePj3R
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/posthog-api-key-kZnbXG
               - name: SENTRY_AUTH_TOKEN
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/sentry-auth-token-BaVQtE
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/sentry-auth-token-5GrIxf
               - name: ACCESS_TOKEN_SECRET
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/jwt-access-token-secret-G0EwkB
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/jwt-access-token-secret-oeDqPx
               - name: REFRESH_TOKEN_SECRET
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/jwt-refresh-token-secret-BcM2Gy
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/jwt-refresh-token-secret-c5oqtD
             environment:
               - name: B2_BUCKET_NAME
                 value: tb-send-suite-prod-object-store
