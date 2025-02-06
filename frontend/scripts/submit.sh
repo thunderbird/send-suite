@@ -5,12 +5,6 @@ mkdir frontend-source
 # Get version from package.json and replace dots with hyphens
 VERSION=$(jq -r .version < frontend/package.json | sed 's/\./-/g')
 
-echo "Listing files in $(pwd)"
-ls -lh
-
-echo "Listing files in $(pwd)/frontend"
-ls -lh frontend/
-
 # Copy only necessary files
 cp -r frontend/src frontend-source/src
 cp -r frontend/public frontend-source/public

@@ -162,6 +162,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+      # Staging build steps
       - name: Create staging .env file from secrets
         shell: bash
         run: |
@@ -205,8 +206,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: xpi-staging
-          path: send-suite-alpha-*.xpi
+          path: send-suite-*.xpi
       
+      # Production build steps
       - name: Create production .env file from secrets
         shell: bash
         run: |
