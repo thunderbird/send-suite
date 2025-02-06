@@ -9,7 +9,13 @@ resources:
 
   tb:network:MultiCidrVpc:
     vpc:
-      cidr_block: 10.255.0.0/16
+      cidr_block: 10.32.0.0/16 # Very roomy total of 65,536 available IPs
+      subnets:
+        # Split into two subnets with exactly half the IPs (32,768) each
+        us-east-1a:
+          - 10.32.0.0/17
+        us-east-1b:
+          - 10.32.128.0/17
       egress_via_internet_gateway: True
       enable_dns_hostnames: True
       enable_internet_gateway: True
@@ -21,13 +27,6 @@ resources:
         - ssm
       endpoint_gateways:
         - s3
-      subnets:
-        us-east-1a:
-          - 10.255.101.0/24
-        us-east-1b:
-          - 10.255.102.0/24
-        us-east-1c:
-          - 10.255.103.0/24
 
   tb:network:SecurityGroupWithRules:
     backend:
