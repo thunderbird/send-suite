@@ -29,7 +29,7 @@ resources:
         - s3
 
   tb:network:SecurityGroupWithRules:
-    backend:
+    backend-lb:
       rules:
         ingress:
           - cidr_blocks: ["0.0.0.0/0"]
@@ -37,8 +37,16 @@ resources:
             protocol: tcp
             from_port: 443
             to_port: 443
-          - cidr_blocks: ["10.255.0.0/16"]
-            description: Private backend port
+        egress:
+          - cidr_blocks: ["0.0.0.0/0"]
+            description: Outbound traffic
+            protocol: tcp
+            from_port: 0
+            to_port: 65535
+    backend-container:
+      rules:
+        ingress:
+          - description: Private backend port
             protocol: tcp
             from_port: 8080
             to_port: 8080
@@ -103,7 +111,7 @@ resources:
           - FARGATE
         container_definitions:
           backend:
-            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:ae1eca82821d595f84064c942cd809a9943b97e9
+            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:d9d212cf94a4135175da1e795c75e2addc66e07f
             portMappings:
               - name: send-suite
                 containerPort: 8080
