@@ -142,24 +142,6 @@ jobs:
             'urn:pulumi:staging::send-suite::tb:fargate:FargateClusterWithLogging$aws:ecs/taskDefinition:TaskDefinition::send-suite-staging-fargate-taskdef' \
             --target-dependents
 
-  deploy-xpi-staging:
-    runs-on: ubuntu-latest
-    env:
-      IS_CI_AUTOMATION: "yes"
-    steps:
-      - name: Deploy to ATN
-        id: xpi-deploy
-        shell: bash
-        env:
-          ATN_API_KEY: "${{ secrets.ATN_API_KEY }}"
-          ATN_API_SECRET: "${{ secrets.ATN_API_SECRET }}"
-          BASE_URL: https://send.thunderbird.dev/
-        run: |
-          rm -f send-suite-*.xpi
-          unzip xpi-staging.zip
-          cd frontend
-          pnpm deploy-xpi $(find .. -name 'send-suite-*.xpi')
-
   frontend-merge:
     needs: detect-changes
     if: needs.detect-changes.outputs.frontend-changed == 'true'
@@ -263,6 +245,17 @@ jobs:
         with:
           name: dist-web-prod
           path: dist-web-prod
+
+      - name: Deploy to ATN
+        id: xpi-deploy
+        shell: bash
+        env:
+          ATN_API_KEY: "${{ secrets.ATN_API_KEY }}"
+          ATN_API_SECRET: "${{ secrets.ATN_API_SECRET }}"
+          BASE_URL: https://send.thunderbird.dev/
+        run: |
+          cd frontend
+          pnpm deploy-xpi $(find .. -name 'send-suite-*.xpi')
 
       - name: Archive the prod XPI
         id: xpi-archive-prod
