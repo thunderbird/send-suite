@@ -157,33 +157,6 @@ jobs:
           # Invalidate the CDN
           aws cloudfront create-invalidation --distribution-id ${{ vars.PROD_CF_DISTRO_ID }} --paths "/*"
 
-  deploy-xpi-staging:
-    runs-on: ubuntu-latest
-    env:
-      IS_CI_AUTOMATION: "yes"
-    steps:
-      - name: Download XPI artifact
-        id: xpi-download
-        if: contains(github.event.release.assets.*.name, 'xpi-staging.zip')
-        uses: dsaltares/fetch-gh-release-asset@master
-        with:
-          version: ${{ github.event.release.id }}
-          file: xpi-prod.zip
-
-      - name: Deploy to ATN
-        if: contains(github.event.release.assets.*.name, 'xpi-staging.zip')
-        id: xpi-deploy
-        shell: bash
-        env:
-          ATN_API_KEY: "${{ secrets.ATN_API_KEY }}"
-          ATN_API_SECRET: "${{ secrets.ATN_API_SECRET }}"
-          BASE_URL: https://send.thunderbird.dev/
-        run: |
-          rm -f send-suite-*.xpi
-          unzip xpi-staging.zip
-          cd frontend
-          pnpm deploy-xpi $(find .. -name 'send-suite-*.xpi')
-
   deploy-xpi-prod:
     runs-on: ubuntu-latest
     env:

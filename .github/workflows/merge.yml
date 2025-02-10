@@ -118,7 +118,7 @@ jobs:
           export PATH="/home/runner/.pulumi/bin:$PATH"
 
           cd pulumi
-          
+
           # Create a YAML config stump containing only the nested tree leading to the image tag update
           cat << EOF > newimage.yaml
           resources:
@@ -129,7 +129,7 @@ jobs:
                     backend:
                       image: "$ECR_TAG"
           EOF
-          
+
           # Use yq to merge the stump into the main config
           yq -i '. *= load("newimage.yaml")' config.staging.yaml
 
@@ -141,6 +141,24 @@ jobs:
           pulumi up -y --diff --target \
             'urn:pulumi:staging::send-suite::tb:fargate:FargateClusterWithLogging$aws:ecs/taskDefinition:TaskDefinition::send-suite-staging-fargate-taskdef' \
             --target-dependents
+
+  deploy-xpi-staging:
+    runs-on: ubuntu-latest
+    env:
+      IS_CI_AUTOMATION: "yes"
+    steps:
+      - name: Deploy to ATN
+        id: xpi-deploy
+        shell: bash
+        env:
+          ATN_API_KEY: "${{ secrets.ATN_API_KEY }}"
+          ATN_API_SECRET: "${{ secrets.ATN_API_SECRET }}"
+          BASE_URL: https://send.thunderbird.dev/
+        run: |
+          rm -f send-suite-*.xpi
+          unzip xpi-staging.zip
+          cd frontend
+          pnpm deploy-xpi $(find .. -name 'send-suite-*.xpi')
 
   frontend-merge:
     needs: detect-changes
@@ -207,7 +225,7 @@ jobs:
         with:
           name: xpi-staging
           path: send-suite-*.xpi
-      
+
       # Production build steps
       - name: Create production .env file from secrets
         shell: bash
