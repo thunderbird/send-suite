@@ -179,6 +179,7 @@ router.get(
         uniqueHash,
         id: user.id,
         email: user.email,
+        tier: user.tier,
       };
 
       const refreshTokenToken = jwt.sign(

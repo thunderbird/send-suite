@@ -53,7 +53,10 @@ describe('Auth Routes', () => {
       vi.spyOn(utils, 'getCookie').mockReturnValue(mockRefreshToken);
       vi.spyOn(authClient, 'getJWTfromToken').mockReturnValue(mockRefreshToken);
       vi.spyOn(jwt, 'verify').mockImplementation(() => true);
-      vi.spyOn(authClient, 'getUserFromJWT').mockReturnValue(mockSignedData);
+      vi.spyOn(authClient, 'getUserFromJWT').mockReturnValue(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        mockSignedData as any
+      );
       vi.spyOn(authClient, 'signJwt').mockResolvedValue({} as never);
 
       const response = await request(app)

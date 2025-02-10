@@ -3,6 +3,8 @@ import { DAYS_TO_EXPIRY, MAX_FILE_SIZE_HUMAN_READABLE } from '@/lib/const';
 import { trpc } from '@/lib/trpc';
 import { useQuery } from '@tanstack/vue-query';
 import prettyBytes from 'pretty-bytes';
+import { computed } from 'vue';
+import LoadingComponent from './LoadingComponent.vue';
 
 const { data: size, error } = useQuery({
   queryKey: ['getTotalSize'],
@@ -16,22 +18,33 @@ const { data: size, error } = useQuery({
   },
 });
 
-const { data: userData } = useQuery({
+const { data: u, isLoading } = useQuery({
   queryKey: ['getUserDataDashboard'],
   queryFn: async () => {
-    return await trpc.getUserData.query({ name: 'Baggins' });
+    return await trpc.getUserData.query();
   },
+});
+
+const hasLimitedStorage = computed(() => {
+  return u?.value?.userData?.tier === 'EPHEMERAL';
 });
 </script>
 <template>
-  <p v-if="error">{{ error.message }}</p>
-  <p>Tier: {{ userData?.userData.tier }}</p>
-  <p>
-    Total storage used: <span class="active">{{ size?.active }} active</span> /
-    <span class="expired">{{ size?.expired }} expired</span>
-  </p>
-  <p>Your files expire after {{ DAYS_TO_EXPIRY }} days</p>
-  <p>Max file size: {{ MAX_FILE_SIZE_HUMAN_READABLE }}</p>
+  <LoadingComponent v-if="isLoading" />
+  <main v-else>
+    <p v-if="error">{{ error.message }}</p>
+    <p>Tier: {{ u?.userData.tier }}</p>
+    <p v-if="hasLimitedStorage">
+      Total storage used:
+      <span class="active">{{ size?.active }} active</span> /
+      <span class="expired">{{ size?.expired }} expired</span>
+    </p>
+    <p v-else>Total storage used: {{ size?.active }}</p>
+    <p v-if="hasLimitedStorage">
+      Your files expire after {{ DAYS_TO_EXPIRY }} days
+    </p>
+    <p>Max file size: {{ MAX_FILE_SIZE_HUMAN_READABLE }}</p>
+  </main>
 </template>
 
 <style lang="css" scoped>

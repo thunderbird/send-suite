@@ -10,7 +10,7 @@ import 'dotenv/config';
 import express from 'express';
 import WebSocket from 'ws';
 
-import { getAllowedOrigins } from './auth/client';
+import { getAllowedOrigins, getStorageLimit } from './auth/client';
 
 import auth from './routes/auth';
 import containers from './routes/containers';
@@ -106,12 +106,19 @@ export const createContext = ({
 
   // Make user data available to all trpc requests unless the user is not authenticated
   try {
-    const { id, email, uniqueHash } = getDataFromAuthenticatedRequest(req);
+    const { id, email, uniqueHash, tier } =
+      getDataFromAuthenticatedRequest(req);
+
+    const { daysToExpiry, hasLimitedStorage } = getStorageLimit(req);
+
     return {
       user: {
         id: id.toString(),
         email,
         uniqueHash,
+        tier,
+        daysToExpiry,
+        hasLimitedStorage,
       },
       cookies: {
         jwtToken,

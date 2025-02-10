@@ -41,7 +41,10 @@ import {
   updateContainerName,
 } from '../models/containers';
 
-import { getDataFromAuthenticatedRequest } from '@/auth/client';
+import {
+  getDataFromAuthenticatedRequest,
+  getStorageLimit,
+} from '@/auth/client';
 import { addExpiryToContainer } from '@/utils';
 
 const router: Router = Router();
@@ -73,6 +76,7 @@ router.get(
   wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const container = await getItemsInContainer(parseInt(containerId));
+    const { hasLimitedStorage } = getStorageLimit(req);
 
     if (!container) {
       throw new Error();
@@ -90,7 +94,7 @@ router.get(
       })),
     };
 
-    res.status(200).json(itemsWithExpiry);
+    res.status(200).json(hasLimitedStorage ? itemsWithExpiry : container);
   })
 );
 

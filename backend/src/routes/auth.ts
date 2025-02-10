@@ -15,6 +15,7 @@ export type AuthResponse = {
   id: User['id'];
   uniqueHash: User['uniqueHash'];
   email: User['email'];
+  tier: User['tier'];
 };
 
 const router: Router = Router();
