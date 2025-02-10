@@ -14,53 +14,48 @@ export const containersRouter = router({
       ContainerType.FOLDER
     );
 
-    if (!ctx?.user?.hasLimitedStorage === true) {
+    // If the user has a limited storage, we need to calculate the total size of the active uploads and the expired uploads
+    if (ctx.user.hasLimitedStorage) {
+      // Get the total size of all the uploads that haven't expired
+      const expired = folders
+        .flatMap((folder) =>
+          folder.items
+            // Add expiry information to each upload
+            .map((item) => addExpiryToContainer(item.upload))
+            // Filter out the expired uploads
+            .filter((item) => item.expired === true)
+            // Get the size of each upload
+            .map((item) => item.size)
+        )
+        // Make a sum of all the sizes that have expired
+        .reduce((sizeA, sizeB) => sizeA + sizeB, 0);
+
       const active = folders
         .flatMap((folder) =>
           folder.items
             // Add expiry information to each upload
-            .map((item) => item.upload)
+            .map((item) => addExpiryToContainer(item.upload))
+            // Filter out the expired uploads
+            .filter((item) => item.expired === false)
+            // Get the size of each upload
+            .map((item) => item.size)
         )
-        // Get the size of each upload
-        .map((item) => item.size)
         // Make a sum of all the sizes that haven't expired
         .reduce((sizeA, sizeB) => sizeA + sizeB, 0);
 
       return {
-        expired: 0,
+        expired,
         active,
       };
     }
-
-    // Get the total size of all the uploads that haven't expired
-    const expired = folders
-      .flatMap((folder) =>
-        folder.items
-          // Add expiry information to each upload
-          .map((item) => addExpiryToContainer(item.upload))
-          // Filter out the expired uploads
-          .filter((item) => item.expired === true)
-          // Get the size of each upload
-          .map((item) => item.size)
-      )
-      // Make a sum of all the sizes that have expired
-      .reduce((sizeA, sizeB) => sizeA + sizeB, 0);
-
     const active = folders
-      .flatMap((folder) =>
-        folder.items
-          // Add expiry information to each upload
-          .map((item) => addExpiryToContainer(item.upload))
-          // Filter out the expired uploads
-          .filter((item) => item.expired === false)
-          // Get the size of each upload
-          .map((item) => item.size)
-      )
       // Make a sum of all the sizes that haven't expired
+      .flatMap((folder) => folder.items.map((item) => item.upload.size))
       .reduce((sizeA, sizeB) => sizeA + sizeB, 0);
 
     return {
-      expired,
+      // The user doesn't have a storage limit, they can't have expired files
+      expired: 0,
       active,
     };
   }),
