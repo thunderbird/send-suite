@@ -13,7 +13,7 @@ VERSION=$(jq -r .version < package.json | sed 's/\./-/g')
 
 # Remove old builds
 rm -rf dist && rm -rf dist-web
-rm -rf send-suite-alpha
+rm -rf send-suite
 
 mkdir -p dist/assets
 
@@ -35,7 +35,7 @@ rm -rf dist/pages
 cd dist
 
 # Create xpi with version number
-zip -r -FS ../../send-suite-alpha-${VERSION}.xpi *
+zip -r -FS ../../send-suite-${VERSION}.xpi *
 
 echo 'Add-on build complete 🎉'
 
