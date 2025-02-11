@@ -170,6 +170,11 @@ jobs:
           version: ${{ github.event.release.id }}
           file: xpi-prod.zip
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
       - name: Deploy to ATN
         if: contains(github.event.release.assets.*.name, 'xpi-prod.zip')
         id: xpi-deploy

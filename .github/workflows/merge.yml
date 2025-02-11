@@ -223,6 +223,11 @@ jobs:
           VITE_POSTHOG_HOST=${{ vars.VITE_POSTHOG_HOST_PROD }}
           EOF
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
       - name: Build the production frontend's static assets
         id: frontend-build-prod
         shell: bash
