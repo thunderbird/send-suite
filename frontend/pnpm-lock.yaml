@@ -25,8 +25,8 @@ importers:
         specifier: ^5.62.7
         version: 5.62.7(vue@3.5.13(typescript@5.7.2))
       '@thunderbirdops/services-ui':
-        specifier: ^0.6.3
-        version: 0.6.3(typescript@5.7.2)
+        specifier: ^0.6.4
+        version: 0.6.4(typescript@5.7.2)
       '@trpc/client':
         specifier: 11.0.0-rc.648
         version: 11.0.0-rc.648(@trpc/server@11.0.0-rc.648(typescript@5.7.2))(typescript@5.7.2)
@@ -909,8 +909,8 @@ packages:
       '@vue/composition-api':
         optional: true
 
-  '@thunderbirdops/services-ui@0.6.3':
-    resolution: {integrity: sha512-Y2XNw3d+v3Xk+6n5IdwBEih6oMDI4vaJ3/aw0DylfjxhFxutk268p8QZWC5aQYWY/OMEyhWd1bYMjO2ILp6UJA==}
+  '@thunderbirdops/services-ui@0.6.4':
+    resolution: {integrity: sha512-YpjCTcK2qVXD4SAYiXWjgk+IkdOKRJLsLVo3MDt5IuoiNOGixmf6w0/zuwFJ1EVrFgwav7xuqwAhZ7dUnVhM2A==}
 
   '@trpc/client@11.0.0-rc.648':
     resolution: {integrity: sha512-k4FfLKvJwbosUH8KYyZkC50RJHYtIyJECi5WhRXsvaf9a6lgrTlcA+osq815zYcAHo7wEgR9E9UdSTrpLdAQFQ==}
@@ -3440,7 +3440,7 @@ snapshots:
       vue: 3.5.13(typescript@5.7.2)
       vue-demi: 0.14.10(vue@3.5.13(typescript@5.7.2))
 
-  '@thunderbirdops/services-ui@0.6.3(typescript@5.7.2)':
+  '@thunderbirdops/services-ui@0.6.4(typescript@5.7.2)':
     dependencies:
       vue: 3.5.13(typescript@5.7.2)
       vue-i18n: 10.0.5(vue@3.5.13(typescript@5.7.2))
