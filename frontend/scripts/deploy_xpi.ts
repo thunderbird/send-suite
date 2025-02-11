@@ -110,7 +110,7 @@ function submitXpi(xpiPath: string, version: string, jwt: string): void {
       console.log('SUCCESS!');
       process.exit(0);
     } else {
-      console.log('FAILURE!');
+      console.log('FAILURE!', `Status code: ${resp.statusCode}`);
       process.exit(1);
     }
   });
