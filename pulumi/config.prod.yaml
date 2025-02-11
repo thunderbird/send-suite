@@ -4,6 +4,7 @@ resources:
     # In CloudFlare, the TLD is implied by the zone, so we must define only the more specific parts of the domains
     backend: send-backend
     frontend: send
+
   tb:network:MultiCidrVpc:
     vpc:
       cidr_block: 10.30.0.0/16 # Very roomy total of 65,536 available IPs
@@ -24,8 +25,9 @@ resources:
         - ssm
       endpoint_gateways:
         - s3
+
   tb:network:SecurityGroupWithRules:
-    backend:
+    backend-lb:
       rules:
         ingress:
           - cidr_blocks: ["0.0.0.0/0"]
@@ -33,17 +35,26 @@ resources:
             protocol: tcp
             from_port: 443
             to_port: 443
-          - cidr_blocks: ["10.100.0.0/16"]
-            description: Backend port
+        egress:
+          - cidr_blocks: ["0.0.0.0/0"]
+            description: Outbound traffic
+            protocol: tcp
+            from_port: 0
+            to_port: 65535
+    backend-container:
+      rules:
+        ingress:
+          - description: Private backend port
             protocol: tcp
             from_port: 8080
             to_port: 8080
         egress:
           - cidr_blocks: ["0.0.0.0/0"]
-            description: Outbound TLS traffic
+            description: Outbound traffic
             protocol: tcp
             from_port: 0
             to_port: 65535
+
   tb:secrets:PulumiSecretsManager:
     pulumi:
       secret_names:
@@ -57,6 +68,7 @@ resources:
         - jwt-refresh-token-secret
         - posthog-api-key
         - sentry-auth-token
+
   tb:fargate:FargateClusterWithLogging:
     backend:
       desired_count: 1
@@ -86,7 +98,7 @@ resources:
           - FARGATE
         container_definitions:
           backend:
-            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:43061258d5d77f69b01303f1d9432f0254c9880b
+            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:d9d212cf94a4135175da1e795c75e2addc66e07f
             portMappings:
               - name: send-suite
                 containerPort: 8080
@@ -102,25 +114,25 @@ resources:
               initProcessEnabled: True
             secrets:
               - name: B2_APPLICATION_KEY
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/b2-application-key-eFMxNP
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/b2-application-key-v9ZNC4
               - name: B2_APPLICATION_KEY_ID
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/b2-application-key-id-CaDhQB
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/b2-application-key-id-dDIEel
               - name: DATABASE_URL
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/database-url-6DVZu0
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/database-url-982JJ2
               - name: FXA_ALLOW_LIST
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/fxa-allow-list-TJp4vu
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/fxa-allow-list-F99h1B
               - name: FXA_CLIENT_ID
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/fxa-client-id-epEw7g
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/fxa-client-id-7fcXj9
               - name: FXA_CLIENT_SECRET
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/fxa-client-secret-19zpdC
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/fxa-client-secret-pTRedr
               - name: POSTHOG_API_KEY
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/posthog-api-key-0ePj3R
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/posthog-api-key-kZnbXG
               - name: SENTRY_AUTH_TOKEN
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/sentry-auth-token-BaVQtE
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/sentry-auth-token-5GrIxf
               - name: ACCESS_TOKEN_SECRET
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/jwt-access-token-secret-G0EwkB
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/jwt-access-token-secret-oeDqPx
               - name: REFRESH_TOKEN_SECRET
-                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/jwt-refresh-token-secret-BcM2Gy
+                valueFrom: arn:aws:secretsmanager:us-east-1:768512802988:secret:send-suite/prod/jwt-refresh-token-secret-c5oqtD
             environment:
               - name: B2_BUCKET_NAME
                 value: tb-send-suite-prod-object-store
@@ -162,6 +174,7 @@ resources:
                 value: send-suite-backend
               - name: STORAGE_BACKEND
                 value: b2
+
   tb:cloudfront:CloudFrontS3Service:
     frontend:
       service_bucket_name: tb-send-suite-prod-frontend
@@ -172,6 +185,7 @@ resources:
         comment: send-suite prod frontend
         logging_config:
           include_cookies: True
+
   tb:cloudwatch:CloudWatchMonitoringGroup:
     alarms: {}
     notify_emails:
