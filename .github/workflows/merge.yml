@@ -257,13 +257,6 @@ jobs:
           cd frontend
           pnpm deploy-xpi $(find .. -name 'send-suite-*.xpi')
 
-      - name: Archive the prod XPI
-        id: xpi-archive-prod
-        uses: actions/upload-artifact@v4
-        with:
-          name: xpi-prod
-          path: send-suite-alpha-*.xpi
-
       - name: Deploy to staging
         id: frontend-deploy
         shell: bash
@@ -273,3 +266,10 @@ jobs:
 
           # Invalidate the CDN
           aws cloudfront create-invalidation --distribution-id ${{ vars.STAGING_CF_DISTRO_ID }} --paths "/*"
+
+      - name: Archive the prod XPI
+        id: xpi-archive-prod
+        uses: actions/upload-artifact@v4
+        with:
+          name: xpi-prod
+          path: send-suite-alpha-*.xpi
