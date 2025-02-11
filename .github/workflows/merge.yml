@@ -118,7 +118,7 @@ jobs:
           export PATH="/home/runner/.pulumi/bin:$PATH"
 
           cd pulumi
-          
+
           # Create a YAML config stump containing only the nested tree leading to the image tag update
           cat << EOF > newimage.yaml
           resources:
@@ -129,7 +129,7 @@ jobs:
                     backend:
                       image: "$ECR_TAG"
           EOF
-          
+
           # Use yq to merge the stump into the main config
           yq -i '. *= load("newimage.yaml")' config.staging.yaml
 
@@ -207,7 +207,7 @@ jobs:
         with:
           name: xpi-staging
           path: send-suite-*.xpi
-      
+
       # Production build steps
       - name: Create production .env file from secrets
         shell: bash
@@ -246,12 +246,16 @@ jobs:
           name: dist-web-prod
           path: dist-web-prod
 
-      - name: Archive the prod XPI
-        id: xpi-archive-prod
-        uses: actions/upload-artifact@v4
-        with:
-          name: xpi-prod
-          path: send-suite-alpha-*.xpi
+      - name: Deploy to ATN
+        id: xpi-deploy
+        shell: bash
+        env:
+          ATN_API_KEY: "${{ secrets.ATN_API_KEY }}"
+          ATN_API_SECRET: "${{ secrets.ATN_API_SECRET }}"
+          BASE_URL: https://send.thunderbird.dev/
+        run: |
+          cd frontend
+          pnpm deploy-xpi $(find .. -name 'send-suite-*.xpi')
 
       - name: Deploy to staging
         id: frontend-deploy
@@ -262,3 +266,10 @@ jobs:
 
           # Invalidate the CDN
           aws cloudfront create-invalidation --distribution-id ${{ vars.STAGING_CF_DISTRO_ID }} --paths "/*"
+
+      - name: Archive the prod XPI
+        id: xpi-archive-prod
+        uses: actions/upload-artifact@v4
+        with:
+          name: xpi-prod
+          path: send-suite-alpha-*.xpi
