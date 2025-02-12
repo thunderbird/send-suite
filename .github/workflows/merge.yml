@@ -256,16 +256,12 @@ jobs:
           name: dist-web-prod
           path: dist-web-prod
 
-      - name: Deploy to ATN
-        id: xpi-deploy
-        shell: bash
-        env:
-          ATN_API_KEY: "${{ secrets.ATN_API_KEY }}"
-          ATN_API_SECRET: "${{ secrets.ATN_API_SECRET }}"
-          BASE_URL: https://send.thunderbird.dev/
-        run: |
-          cd frontend
-          pnpm deploy-xpi $(find .. -name 'send-suite-*.xpi')
+      - name: Archive the prod XPI
+        id: xpi-archive-prod
+        uses: actions/upload-artifact@v4
+        with:
+          name: xpi-prod
+          path: send-suite-prod-*.xpi
 
       - name: Deploy to staging
         id: frontend-deploy
@@ -277,9 +273,13 @@ jobs:
           # Invalidate the CDN
           aws cloudfront create-invalidation --distribution-id ${{ vars.STAGING_CF_DISTRO_ID }} --paths "/*"
 
-      - name: Archive the prod XPI
-        id: xpi-archive-prod
-        uses: actions/upload-artifact@v4
-        with:
-          name: xpi-prod
-          path: send-suite-prod-*.xpi
+      - name: Deploy to ATN
+        id: xpi-deploy
+        shell: bash
+        env:
+          ATN_API_KEY: "${{ secrets.ATN_API_KEY }}"
+          ATN_API_SECRET: "${{ secrets.ATN_API_SECRET }}"
+          BASE_URL: https://send.thunderbird.dev/
+        run: |
+          cd frontend
+          pnpm deploy-xpi $(find .. -name 'send-suite-*.xpi')
