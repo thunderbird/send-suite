@@ -28,21 +28,35 @@ route53_zone_id = (
 
 # Copy select secrets from Pulumi into AWS Secrets Manager
 pulumi_sm_opts = resources['tb:secrets:PulumiSecretsManager']['pulumi']
-pulumi_sm = tb_pulumi.secrets.PulumiSecretsManager(f'{project.name_prefix}-secrets', project, **pulumi_sm_opts)
+pulumi_sm = tb_pulumi.secrets.PulumiSecretsManager(
+    name=f'{project.name_prefix}-secrets', project=project, **pulumi_sm_opts
+)
 
 # Build the networking landscape
 vpc_opts = resources['tb:network:MultiCidrVpc']['vpc']
-vpc = tb_pulumi.network.MultiCidrVpc(f'{project.name_prefix}-vpc', project, **vpc_opts)
+vpc = tb_pulumi.network.MultiCidrVpc(name=f'{project.name_prefix}-vpc', project=project, **vpc_opts)
 
-# Build firewall rules
-backend_sg_opts = resources['tb:network:SecurityGroupWithRules']['backend']
-backend_sg = tb_pulumi.network.SecurityGroupWithRules(
-    f'{project.name_prefix}-backend-sg',
-    project,
+# Build a securiyt group allowing access to the load balancer
+sg_lb_opts = resources['tb:network:SecurityGroupWithRules']['backend-lb']
+sg_lb = tb_pulumi.network.SecurityGroupWithRules(
+    name=f'{project.name_prefix}-backend-lb-sg',
+    project=project,
     vpc_id=vpc.resources['vpc'].id,
-    **backend_sg_opts,
     opts=pulumi.ResourceOptions(depends_on=[vpc]),
+    **sg_lb_opts,
 )
+
+# Build a security group allowing access from the load balancer to the container when we know its ID
+sg_cont_opts = resources['tb:network:SecurityGroupWithRules']['backend-container']
+sg_cont_opts['rules']['ingress'][0]['source_security_group_id'] = sg_lb.resources['sg'].id
+sg_container = tb_pulumi.network.SecurityGroupWithRules(
+    name=f'{project.name_prefix}-container-sg',
+    project=project,
+    vpc_id=vpc.resources['vpc'].id,
+    opts=pulumi.ResourceOptions(depends_on=[sg_lb, vpc]),
+    **sg_cont_opts,
+)
+
 
 # Only build an RDS database cluster with a jumphost in the CI environment, so we can verify this part of our codebase
 if project.stack == 'ci':
@@ -62,12 +76,18 @@ if project.stack == 'ci':
 backend_fargate_opts = resources['tb:fargate:FargateClusterWithLogging']['backend']
 backend_subnets = [subnet for subnet in vpc.resources['subnets']]
 backend_fargate = tb_pulumi.fargate.FargateClusterWithLogging(
-    f'{project.name_prefix}-fargate',
-    project,
-    backend_subnets,
-    security_groups=[backend_sg.resources['sg']],
+    name=f'{project.name_prefix}-fargate',
+    project=project,
+    subnets=backend_subnets,
+    container_security_groups=[sg_container.resources['sg'].id],
+    load_balancer_security_groups=[sg_lb.resources['sg'].id],
     opts=pulumi.ResourceOptions(
-        depends_on=[*vpc.resources['subnets'], backend_sg.resources['sg'], *backend_subnets, pulumi_sm]
+        depends_on=[
+            *vpc.resources['subnets'],
+            sg_container,
+            sg_lb,
+            pulumi_sm,
+        ]
     ),
     **backend_fargate_opts,
 )

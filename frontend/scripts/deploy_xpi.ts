@@ -109,10 +109,15 @@ function submitXpi(xpiPath: string, version: string, jwt: string): void {
     if (resp.statusCode == 202) {
       console.log('SUCCESS!');
       process.exit(0);
-    } else {
-      // Temporary workaround to gracefully exit the script
-      console.warn('FAILURE!', `Status code: ${resp.statusCode}`);
+    }
+    if (resp.statusCode === 409) {
+      console.warn('XPI version already exists');
       process.exit(0);
+    }
+    //  Any other status code is a failure
+    else {
+      console.error('FAILURE!');
+      process.exit(1);
     }
   });
 }
