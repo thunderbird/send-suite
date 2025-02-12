@@ -104,6 +104,8 @@ function submitXpi(xpiPath: string, version: string, jwt: string): void {
   const request = https.request(requestOpts);
   form.pipe(request);
 
+  console.log('Sending request...', requestOpts);
+
   // React to the response
   request.on('response', function (resp) {
     if (resp.statusCode == 202) {
@@ -116,7 +118,10 @@ function submitXpi(xpiPath: string, version: string, jwt: string): void {
     }
     //  Any other status code is a failure
     else {
-      console.error('FAILURE! With status code: ', resp.statusCode);
+      console.error(
+        `FAILURE! With status code: ${resp.statusCode}`,
+        resp.statusMessage
+      );
       process.exit(1);
     }
   });
