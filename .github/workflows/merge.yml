@@ -179,6 +179,8 @@ jobs:
 
       - name: Build the staging frontend's static assets
         id: frontend-build-staging
+        env:
+          BASE_URL: https://send.thunderbird.dev
         shell: bash
         run: |
           # Initial setup of dependencies
@@ -231,6 +233,8 @@ jobs:
       - name: Build the production frontend's static assets
         id: frontend-build-prod
         shell: bash
+        env:
+          BASE_URL: https://send.tb.pro
         run: |
           # Initial setup of dependencies
           pushd frontend
