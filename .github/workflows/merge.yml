@@ -243,6 +243,7 @@ jobs:
           popd
           mv frontend-source frontend-source-prod
           mv frontend-source.zip frontend-source-prod.zip
+          mv "$(find send-suite-*.xpi)" "send-suite-prod-$(basename "$(find send-suite-*.xpi)" | cut -d'-' -f3-)"
 
       - name: Archive the production frontend build
         id: frontend-archive-prod
@@ -277,4 +278,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: xpi-prod
-          path: send-suite-alpha-*.xpi
+          path: send-suite-prod-*.xpi
