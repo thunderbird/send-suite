@@ -7,7 +7,7 @@ config:
   send-suite:database-url:
     secure: v1:JEyZ/HkE+ybWFbF7:UmSS1QPoHTSJODyxQ0F+1y2/At0b8vOwWvSn9Zhwy+JhMBb/d5788pY4ia4mEShHl7EixwgMkWxbDrEMgknUYhyTfj50yH9FZv8Y5lk3OLH31DgIYpRr3Dz70krbpio8QwKPoQG+1+qyKxihsof30JrcfVB1Lai7tgLKntRxKM0=
   send-suite:fxa-allow-list:
-    secure: v1:zh2awlDg3/zntRBc:JUHPT5lNHVceLQxl3ocjTuFT/g==
+    secure: v1:ItTG4y9ojNiCAeyr:32y76d9fVu83Oh3uJZ3c3ssLhVUx1fZv5+JahePFwgKSVS0FGTfp7OonX6GYhAImWr+ZjkqOsEg/jBjZFtg7o3q3t64uH6n7f8BoCFGTaS0q1RsGVcH29hU0zzLD04YA6iDvpr2qg5cEajX5q/XgyYWV97+QZl7CVr5nPV+OZrY4tF20l2uGzMUvEfg1H8A4fYaXkfaQj/FpOe/+BdJnvUXz5YoKApT/09mrZP5xEy1s3rZha7kkPfAqRpgcl9IRTjV2vrAzldwOhCsxTzW/WWnawXq2OW/XY1TVy0PV0DfDp3cx3AZuDv/g+ngdSWz9hnMVdg==
   send-suite:fxa-client-id:
     secure: v1:OZJ9F52rHuUAZSeL:jskOc93zyI8uZJfYn+BBmfsXjiXI4lxzan137X2eKwE=
   send-suite:fxa-client-secret:
