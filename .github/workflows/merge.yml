@@ -248,7 +248,7 @@ jobs:
           popd
           mv frontend-source frontend-source-prod
           mv frontend-source.zip frontend-source-prod.zip
-          mv "$(find send-suite-*.xpi)" "send-suite-prod-$(basename "$(find send-suite-*.xpi)" | cut -d'-' -f3-)"
+          mv "$(find send-suite-*.xpi | grep -v staging)" "send-suite-prod-$(basename "$(find send-suite-*.xpi | grep -v staging)" | cut -d'-' -f3-)"
 
       - name: Archive the production frontend build
         id: frontend-archive-prod
