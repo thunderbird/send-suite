@@ -194,6 +194,7 @@ jobs:
           popd
           mv frontend-source frontend-source-staging
           mv frontend-source.zip frontend-source-staging.zip
+          mv "$(find send-suite-*.xpi)" "send-suite-staging-$(basename "$(find send-suite-*.xpi)" | cut -d'-' -f3-)"
 
       - name: Archive the staging frontend build
         id: frontend-archive-staging
@@ -279,7 +280,7 @@ jobs:
         env:
           ATN_API_KEY: "${{ secrets.ATN_API_KEY }}"
           ATN_API_SECRET: "${{ secrets.ATN_API_SECRET }}"
-          BASE_URL: https://send.thunderbird.dev/
+          BASE_URL: https://send.thunderbird.dev
         run: |
           cd frontend
-          pnpm deploy-xpi $(find .. -name 'send-suite-*.xpi')
+          pnpm deploy-xpi $(find .. -name 'send-suite-staging-*.xpi')
