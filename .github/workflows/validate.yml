@@ -91,7 +91,8 @@ jobs:
           sed -i "s/^TEST_S3_SECRET_KEY=$/TEST_S3_SECRET_KEY=${{ secrets.TEST_S3_SECRET_KEY }}/" .env
           sed -i "s/^TEST_S3_BUCKET_NAME=$/TEST_S3_BUCKET_NAME=${{ secrets.TEST_S3_BUCKET_NAME }}/" .env
 
-          pnpm ci:validate || true
+          pnpm prisma generate
+          pnpm ci:validate
 
   # When Pulumi code or configs change, run these steps
   iac-lint:
@@ -159,10 +160,10 @@ jobs:
 
       # This step is temporarily forced into success because getting linting under control is
       # low priority. When https://github.com/thunderbird/send-suite/issues/253 is resolved,
-      # remove the ` || true` bit below.
+      # remove the ` ` bit below.
       - name: Frontend lint
         id: frontend-lint
         shell: bash
         run: |
           cd frontend
-          pnpm ci:validate ||  true
+          pnpm ci:validate
