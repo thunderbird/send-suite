@@ -1,4 +1,5 @@
-import * as ff from '@/lib/filesync';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import * as filesync from '@/lib/filesync';
 import { describe, expect, it, vi } from 'vitest';
 
 import { Keychain } from '@/lib/keychain';
@@ -16,7 +17,7 @@ import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { mockProgressTracker } from './helpers';
 
-const { getBlob, sendBlob, _saveFile } = ff;
+const { getBlob, sendBlob } = filesync;
 
 const API_URL = `${import.meta.env.VITE_SEND_SERVER_URL}/api`;
 const UPLOAD_ID = `abcdefg1234567`;
@@ -184,7 +185,6 @@ describe(`Filesync`, () => {
         false
       );
       expect(result).toEqual(SUCCESSFUL_UPLOAD_RESPONSE.at(0).id);
-      // expect(progressTracker).toBeCalled();
     });
   });
 });

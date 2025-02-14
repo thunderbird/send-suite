@@ -94,9 +94,11 @@ export async function getBlob(
       plaintext = await downloadedBlob.arrayBuffer();
     }
 
-    const decoder = new TextDecoder();
-    const plaintextString = decoder.decode(plaintext);
-    return plaintextString;
+    return await _saveFile({
+      plaintext,
+      name: decodeURIComponent(filename),
+      type, // mime type of the upload
+    });
   } catch (error) {
     console.error('DOWNLOAD_FAILED', error);
     throw error;
