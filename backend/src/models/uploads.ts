@@ -42,6 +42,7 @@ export async function createUpload(
         type,
       },
     });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     throw new BaseError(UPLOAD_NOT_CREATED);
   }

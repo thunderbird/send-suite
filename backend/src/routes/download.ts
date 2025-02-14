@@ -47,6 +47,7 @@ router.get(
           return;
         }
       });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       return res.status(404).send(TRANSFER_ERROR);
     }
@@ -64,6 +65,7 @@ router.get(
       const bucketUrl = await storage.getDownloadBucketUrl(id);
 
       return res.json({ url: bucketUrl });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       return res.status(404).send(TRANSFER_ERROR);
     }

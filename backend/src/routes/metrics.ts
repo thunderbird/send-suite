@@ -14,6 +14,7 @@ router.post('/api/metrics/page-load', (req, res) => {
     getJWTfromToken(req.headers.authorization);
     const dataFromToken = getDataFromAuthenticatedRequest(req);
     uniqueHash = dataFromToken.uniqueHash;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     // will use anon_id
   }

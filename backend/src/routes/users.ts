@@ -46,6 +46,7 @@ router.get(
       return res.status(200).json({
         user,
       });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       return res.status(404).json({});
     }

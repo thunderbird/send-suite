@@ -32,6 +32,7 @@ export const validateJWT = ({
   try {
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     return 'valid';
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     // catch error and try to refresh token
     return 'shouldRefresh';
