@@ -158,9 +158,6 @@ jobs:
           VITE_POSTHOG_HOST=${{ vars.VITE_POSTHOG_HOST }}
           EOF
 
-      # This step is temporarily forced into success because getting linting under control is
-      # low priority. When https://github.com/thunderbird/send-suite/issues/253 is resolved,
-      # remove the ` ` bit below.
       - name: Frontend lint
         id: frontend-lint
         shell: bash
