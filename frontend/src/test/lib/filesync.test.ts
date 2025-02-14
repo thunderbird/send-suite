@@ -89,12 +89,12 @@ describe(`Filesync`, () => {
       const progress = mockProgressTracker;
 
       expect(async () => {
-        const isMessage = true;
+        const isBucketStorage = true;
         const result = await getBlob(
           UPLOAD_ID,
           metadata.size,
           key,
-          isMessage,
+          isBucketStorage,
           fileName,
           metadata.type,
           api,
@@ -123,12 +123,12 @@ describe(`Filesync`, () => {
       const progress = mockProgressTracker;
 
       expect(async () => {
-        const isMessage = true;
+        const isBucketStorage = true;
         await getBlob(
           UPLOAD_ID,
           metadata.size,
           key,
-          isMessage,
+          isBucketStorage,
           fileName,
           metadata.type,
           api,
@@ -155,12 +155,12 @@ describe(`Filesync`, () => {
       const progress = mockProgressTracker;
 
       expect(async () => {
-        const isMessage = true;
+        const isBucketStorage = true;
         await getBlob(
           UPLOAD_ID,
           metadata.size,
           key,
-          isMessage,
+          isBucketStorage,
           fileName,
           metadata.type,
           api,
@@ -194,12 +194,12 @@ describe(`Filesync`, () => {
       );
 
       expect(async () => {
-        const isMessage = true;
+        const isBucketStorage = true;
         await getBlob(
           UPLOAD_ID,
           metadata.size,
           key,
-          isMessage,
+          isBucketStorage,
           fileName,
           metadata.type,
           api,

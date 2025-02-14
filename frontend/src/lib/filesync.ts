@@ -1,6 +1,12 @@
 import { ProgressTracker } from '@/apps/send/stores/status-store';
 import { decryptStream } from '@/lib/ece';
-import { _download, encrypt, uploadWithTracker } from '@/lib/helpers';
+import {
+  _download,
+  _upload,
+  calculateEncryptedSize,
+  encrypt,
+  uploadWithTracker,
+} from '@/lib/helpers';
 import { blobStream } from '@/lib/streams';
 import { streamToArrayBuffer } from '@/lib/utils';
 import { ApiConnection } from './api';
@@ -38,12 +44,30 @@ export async function getBlob(
   id: string,
   size: number,
   key: CryptoKey,
-  isMessage = true,
+  isBucketStorage = true,
   filename = 'dummy.file',
   type = 'text/plain',
   api: ApiConnection,
   progressTracker: ProgressTracker
 ): Promise<string | void> {
+  if (!isBucketStorage) {
+    const downloadedBlob = await _download({ id, progressTracker });
+
+    let plaintext: ArrayBufferLike | string;
+    if (key) {
+      const plainStream = decryptStream(blobStream(downloadedBlob), key);
+      plaintext = await streamToArrayBuffer(plainStream, size);
+    } else {
+      plaintext = await downloadedBlob.arrayBuffer();
+    }
+
+    return await _saveFile({
+      plaintext,
+      name: decodeURIComponent(filename),
+      type, // mime type of the upload
+    });
+  }
+
   try {
     const bucketResponse = await api.call<{ url: string }>(
       `download/${id}/signed`
@@ -70,17 +94,9 @@ export async function getBlob(
       plaintext = await downloadedBlob.arrayBuffer();
     }
 
-    if (isMessage) {
-      const decoder = new TextDecoder();
-      const plaintextString = decoder.decode(plaintext);
-      return plaintextString;
-    } else {
-      return await _saveFile({
-        plaintext,
-        name: decodeURIComponent(filename),
-        type, // mime type of the upload
-      });
-    }
+    const decoder = new TextDecoder();
+    const plaintextString = decoder.decode(plaintext);
+    return plaintextString;
   } catch (error) {
     console.error('DOWNLOAD_FAILED', error);
     throw error;
@@ -91,9 +107,24 @@ export async function sendBlob(
   blob: Blob,
   aesKey: CryptoKey,
   api: ApiConnection,
-  progressTracker: ProgressTracker
+  progressTracker: ProgressTracker,
+  isBucketStorage = true
 ): Promise<string> {
   const stream = blobStream(blob);
+  if (!isBucketStorage) {
+    const encryptedSize = calculateEncryptedSize(blob.size);
+    const result = await _upload(stream, aesKey, encryptedSize, {
+      progressTracker,
+    });
+
+    // Using a type guard since a JsonResponse can be a single object or an array
+    if (Array.isArray(result)) {
+      return result[0].id;
+    } else {
+      return result.id;
+    }
+  }
+
   try {
     // Get the bucket url
     const { id, url } = await api.call<{ url: string; id: string }>(
