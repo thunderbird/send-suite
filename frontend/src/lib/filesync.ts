@@ -21,7 +21,7 @@ interface SaveFileData {
   type: string;
 }
 
-async function _saveFile(file: SaveFileData): Promise<void> {
+export async function _saveFile(file: SaveFileData): Promise<void> {
   return new Promise(function (resolve) {
     const dataView = new DataView(file.plaintext);
     const blob = new Blob([dataView], { type: file.type });
