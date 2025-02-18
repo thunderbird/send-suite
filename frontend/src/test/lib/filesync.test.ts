@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getBlob, sendBlob } from '@/lib/filesync';
 import { createPinia, setActivePinia } from 'pinia';
 import { describe, expect, it, vi } from 'vitest';
@@ -16,6 +17,7 @@ import { mockProgressTracker } from './helpers';
 
 const API_URL = `${import.meta.env.VITE_SEND_SERVER_URL}/api`;
 const UPLOAD_ID = `abcdefg1234567`;
+const isBucketStorage = true;
 
 // ===================================================
 // Setup steps needed at the top-level for `vi.mock()`
@@ -89,18 +91,45 @@ describe(`Filesync`, () => {
       const progress = mockProgressTracker;
 
       expect(async () => {
-        const isMessage = true;
         const result = await getBlob(
           UPLOAD_ID,
           metadata.size,
           key,
-          isMessage,
+          isBucketStorage,
           fileName,
           metadata.type,
           api,
           progress
         );
-        expect(result).toBe(fileContents);
+        expect(result).toBe(undefined);
+      }).not.toThrow();
+
+      expect(fetchSpy).toBeCalledTimes(1);
+      expect(fetchSpy).toBeCalledWith(
+        `${API_URL}/download/${UPLOAD_ID}/signed`,
+        expect.objectContaining({
+          method: 'GET',
+        })
+      );
+    });
+
+    it(`should download and decrypt the upload when no key is provided`, async () => {
+      const fetchSpy = vi.spyOn(global, 'fetch');
+      const { api } = useApiStore.default();
+      const progress = mockProgressTracker;
+
+      expect(async () => {
+        const result = await getBlob(
+          UPLOAD_ID,
+          metadata.size,
+          undefined,
+          isBucketStorage,
+          fileName,
+          metadata.type,
+          api,
+          progress
+        );
+        expect(result).toBe(undefined);
       }).not.toThrow();
 
       expect(fetchSpy).toBeCalledTimes(1);
@@ -123,12 +152,11 @@ describe(`Filesync`, () => {
       const progress = mockProgressTracker;
 
       expect(async () => {
-        const isMessage = true;
         await getBlob(
           UPLOAD_ID,
           metadata.size,
           key,
-          isMessage,
+          isBucketStorage,
           fileName,
           metadata.type,
           api,
@@ -155,12 +183,11 @@ describe(`Filesync`, () => {
       const progress = mockProgressTracker;
 
       expect(async () => {
-        const isMessage = true;
         await getBlob(
           UPLOAD_ID,
           metadata.size,
           key,
-          isMessage,
+          isBucketStorage,
           fileName,
           metadata.type,
           api,
@@ -194,12 +221,11 @@ describe(`Filesync`, () => {
       );
 
       expect(async () => {
-        const isMessage = true;
         await getBlob(
           UPLOAD_ID,
           metadata.size,
           key,
-          isMessage,
+          isBucketStorage,
           fileName,
           metadata.type,
           api,
@@ -216,7 +242,7 @@ describe(`Filesync`, () => {
     });
   });
 
-  describe(`sendBlob`, () => {
+  describe(`sendBlob`, async () => {
     const SUCCESSFUL_UPLOAD_RESPONSE = {
       id: 1,
     };
@@ -231,7 +257,10 @@ describe(`Filesync`, () => {
     ];
 
     const server = setupServer(...restHandlers);
-    beforeAll(() => {
+
+    beforeAll(async () => {
+      // http
+      const server = setupServer(...restHandlers);
       server.listen();
     });
     afterAll(() => {
@@ -278,25 +307,20 @@ describe(`Filesync`, () => {
         http.put(`${API_URL}/dummybucket`, async () => HttpResponse.error())
       );
 
-      const mockedApi = vi
-        .spyOn(useApiStore, 'default')
-        // @ts-ignore
-        .mockReturnValue({
-          // @ts-ignore
-          api: { ...useApiStore.default().api },
-        })
-        .mockResolvedValueOnce({
-          // @ts-ignore
-          id: 1,
-          url: `${API_URL}/dummybucket`,
-        });
+      const mockedApi = vi.spyOn(useApiStore, 'default');
 
       const keychain = new Keychain();
       const key = await keychain.content.generateKey();
       const blob = new Blob([new Uint8Array(2)]);
 
       await expect(
-        sendBlob(blob, key, mockedApi as any, mockProgressTracker)
+        sendBlob(
+          blob,
+          key,
+          mockedApi as any,
+          mockProgressTracker,
+          isBucketStorage
+        )
       ).rejects.toThrow();
     });
   });

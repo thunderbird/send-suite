@@ -14,14 +14,17 @@ import { Keychain } from './keychain';
 import { asyncInitWebSocket, delay, listenForResponse } from './utils';
 
 type DownloadOptions = {
-  url: string;
+  url?: string;
+  id?: string;
   progressTracker: ProgressTracker;
 };
 
 export async function _download({
   url,
   progressTracker,
+  id,
 }: DownloadOptions): Promise<Blob> {
+  const endpoint = `${import.meta.env.VITE_SEND_SERVER_URL}/api/download`;
   const xhr = new XMLHttpRequest();
   const { setProgress } = progressTracker;
   xhr.onprogress = (event) => {
@@ -39,8 +42,9 @@ export async function _download({
       const blob = new Blob([xhr.response]);
       resolve(blob);
     });
-
-    xhr.open('get', url);
+    // The id is used when the backend is using fs
+    // Url is used when the backend is using s3
+    xhr.open('get', id ? `${endpoint}/${id}` : url);
     xhr.responseType = 'blob';
     xhr.send();
   });

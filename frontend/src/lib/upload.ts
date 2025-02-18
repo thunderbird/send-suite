@@ -8,6 +8,7 @@ import { ApiConnection } from '@/lib/api';
 import { NamedBlob, sendBlob } from '@/lib/filesync';
 import { Keychain } from '@/lib/keychain';
 import { UserType } from '@/types';
+import { trpc } from './trpc';
 
 export default class Uploader {
   user: UserType;
@@ -54,8 +55,10 @@ export default class Uploader {
     const blob = fileBlob as NamedBlob;
     const filename = blob.name;
 
+    const { isBucketStorage } = await trpc.getStorageType.query();
+
     // Blob is encrypted as it is uploaded through a websocket connection
-    const id = await sendBlob(blob, key, api, progressTracker);
+    const id = await sendBlob(blob, key, api, progressTracker, isBucketStorage);
     if (!id) {
       return null;
     }

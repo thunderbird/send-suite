@@ -1,3 +1,4 @@
+import { IS_USING_BUCKET_STORAGE } from '@/config';
 import { getAccessLinksForContainer as getAccessLinks } from '@/models/containers';
 import { getAllUserGroupContainers } from '@/models/users';
 import { addExpiryToContainer } from '@/utils';
@@ -67,4 +68,11 @@ export const containersRouter = router({
       const accessLinks = await getAccessLinks(input.containerId);
       return accessLinks;
     }),
+
+  getStorageType: t.query(async () => {
+    if (typeof IS_USING_BUCKET_STORAGE === 'boolean') {
+      return { isBucketStorage: IS_USING_BUCKET_STORAGE };
+    }
+    return { isBucketStorage: false };
+  }),
 });

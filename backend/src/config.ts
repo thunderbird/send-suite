@@ -16,6 +16,7 @@ const ENVIRONMENT = process.env.NODE_ENV || ('development' as Environment);
 
 export const IS_ENV_DEV = ENVIRONMENT === 'development';
 export const IS_ENV_PROD = ENVIRONMENT === 'production';
+export const IS_USING_BUCKET_STORAGE = process.env.STORAGE_BACKEND !== 'fs';
 
 // Time constants
 const ONE_MINUTE = 60 * 1000;
