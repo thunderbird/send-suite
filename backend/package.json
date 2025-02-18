@@ -41,7 +41,7 @@
     "@aws-sdk/s3-request-presigner": "^3.750.0",
     "@prisma/client": "^5.22.0",
     "@sentry/cli": "^2.42.0",
-    "@sentry/node": "^8.55.0",
+    "@sentry/node": "^9.1.0",
     "@sentry/profiling-node": "^8.55.0",
     "@trpc/server": "11.0.0-rc.648",
     "@tweedegolf/sab-adapter-amazon-s3": "^1.0.17",
@@ -60,7 +60,7 @@
     "passport-openidconnect": "^0.1.2",
     "posthog-node": "^4.6.0",
     "prisma": "^5.22.0",
-    "vite": "^5.4.14",
+    "vite": "^6.1.0",
     "ws": "^8.18.0",
     "zod": "^3.24.2"
   },
