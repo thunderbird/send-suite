@@ -24,6 +24,9 @@
     "browser_style": true,
     "reuse_uploads": false
   },
+  "icons": {
+    "64": "icons/64.png"
+  },
   "permissions": [
     "storage",
     "compose",
