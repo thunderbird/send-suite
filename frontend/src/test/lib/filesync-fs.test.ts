@@ -75,7 +75,6 @@ describe(`Filesync`, () => {
 
     it(`should download and decrypt the upload`, async () => {
       const progress = mockProgressTracker;
-      // const _saveFileMock = vi.spyOn(ff, '_saveFile');
       const result = await getBlob(
         UPLOAD_ID,
         metadata.size,
@@ -86,13 +85,11 @@ describe(`Filesync`, () => {
         vi.fn() as any,
         progress
       );
-      // expect(_saveFileMock).toBeCalled();
       expect(result).toBe(undefined);
     });
 
     it(`should download and decrypt the upload with no key`, async () => {
       const progress = mockProgressTracker;
-      // const _saveFileMock = vi.spyOn(ff, '_saveFile');
       const result = await getBlob(
         UPLOAD_ID,
         metadata.size,
@@ -103,7 +100,6 @@ describe(`Filesync`, () => {
         vi.fn() as any,
         progress
       );
-      // expect(_saveFileMock).toBeCalled();
       expect(result).toBe(undefined);
     });
   });
@@ -152,7 +148,6 @@ describe(`Filesync`, () => {
         false
       );
       expect(result).toEqual(SUCCESSFUL_UPLOAD_RESPONSE.id);
-      // expect(progressTracker).toBeCalled();
     });
 
     it(`should get a sucessful response after uploading when response is array`, async () => {
@@ -175,7 +170,6 @@ describe(`Filesync`, () => {
       const keychain = new Keychain();
       const key = await keychain.content.generateKey();
       const blob = new Blob(['abc123']);
-      // const progressTracker = vi.fn();
 
       const result = await sendBlob(
         blob,
