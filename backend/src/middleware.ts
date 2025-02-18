@@ -30,7 +30,10 @@ function extractContainerId(req) {
   try {
     return parseInt(val, 10);
   } catch (e) {
-    console.error(`Could not find ${prop} for ${extractMethodAndRoute(req)}`);
+    console.error(
+      `Could not find ${prop} for ${extractMethodAndRoute(req)}`,
+      e
+    );
     return null;
   }
 }
@@ -154,6 +157,7 @@ is a user and containerId === 0
     // Attach it to the request
     req[PERMISSION_REQUEST_KEY] = membership.permission;
     next();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (err) {
     reject(res);
     return;

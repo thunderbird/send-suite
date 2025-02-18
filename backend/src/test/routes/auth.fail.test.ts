@@ -29,6 +29,7 @@ describe('Failing auth', () => {
       expect(response.body.message).toContain(
         'Not authorized: Unable to refresh token'
       );
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       console.log('error refreshing token');
     }

@@ -54,7 +54,7 @@ describe('Auth Client', () => {
       const issuer = {
         Client: vi.fn(),
       };
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
       //@ts-expect-error
       const client = getClient(issuer);
       expect(client).toBeDefined();

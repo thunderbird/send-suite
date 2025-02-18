@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const DEFAULT_CHUNK_SIZE = 1024 * 64;
 
 function readableToTransformController(
@@ -22,6 +23,7 @@ export function transformStream(
 ) {
   try {
     return readable.pipeThrough(new TransformStream(transformer));
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     const reader = readable.getReader();
     return new ReadableStream({
@@ -120,7 +122,6 @@ export async function readableStreamToArrayBuffer(
   const reader = stream.getReader();
   const chunks: Uint8Array[] = [];
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const { done, value } = await reader.read();
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type JsonResponse<T = { [key: string]: any }> = T | T[];
 
 export type AsyncJsonResponse<T = { [key: string]: any }> = Promise<

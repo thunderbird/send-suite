@@ -150,6 +150,7 @@ export async function reportUpload(uploadId: string) {
         reportedAt: new Date(),
       },
     });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     throw new Error(UPLOAD_NOT_REPORTED);
   }

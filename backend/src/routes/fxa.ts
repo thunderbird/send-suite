@@ -182,6 +182,8 @@ router.get(
         tier: user.tier,
       };
 
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
       const refreshTokenToken = jwt.sign(
         signedData,
         process.env.REFRESH_TOKEN_SECRET!,
@@ -200,6 +202,7 @@ router.get(
       signJwt(signedData, res);
 
       res.redirect('/login-success.html');
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       res.redirect('/login-failed.html');
     }

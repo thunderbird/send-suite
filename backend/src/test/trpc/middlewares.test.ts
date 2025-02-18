@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import * as jwt from '@/auth/jwt';
 import { TRPCError } from '@trpc/server';
 import { describe, expect, it, vi } from 'vitest';
@@ -25,7 +26,6 @@ describe('Middleware tests', () => {
     it('should call next() when JWT is valid', async () => {
       vi.mocked(jwt.validateJWT).mockReturnValue('valid');
 
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
       await isAuthed({ ctx: mockCtx, next: mockNext });
 
@@ -34,7 +34,7 @@ describe('Middleware tests', () => {
 
     it('should throw UNAUTHORIZED error when token needs refresh', async () => {
       vi.mocked(jwt.validateJWT).mockReturnValue('shouldRefresh');
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
       //@ts-ignore
       await expect(isAuthed({ ctx: mockCtx, next: mockNext })).rejects.toThrow(
         new TRPCError({ code: 'UNAUTHORIZED' })
@@ -43,7 +43,7 @@ describe('Middleware tests', () => {
 
     it('should throw FORBIDDEN error when validation fails', async () => {
       vi.mocked(jwt.validateJWT).mockReturnValue(null);
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
       //@ts-ignore
       await expect(isAuthed({ ctx: mockCtx, next: mockNext })).rejects.toThrow(
         new TRPCError({ code: 'FORBIDDEN' })
@@ -53,7 +53,6 @@ describe('Middleware tests', () => {
 
   describe('getGroupMemberPermission middleware', () => {
     it('should call next()', async () => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
       await getGroupMemberPermission({ ctx: mockCtx, next: mockNext });
       expect(mockNext).toHaveBeenCalled();
