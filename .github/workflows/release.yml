@@ -186,7 +186,7 @@ jobs:
         env:
           ATN_API_KEY: "${{ secrets.ATN_API_KEY }}"
           ATN_API_SECRET: "${{ secrets.ATN_API_SECRET }}"
-          BASE_URL: https://send-backend.tb.pro/
+          BASE_URL: https://send.tb.pro/
         run: |
           # Initial setup of dependencies
           npm install -g pnpm
