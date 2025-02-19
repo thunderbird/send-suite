@@ -162,6 +162,10 @@ jobs:
     env:
       IS_CI_AUTOMATION: "yes"
     steps:
+      - name: Check out the code
+        if: contains(github.event.release.assets.*.name, 'xpi-prod.zip')
+        uses: actions/checkout@v4
+
       - name: Download XPI artifact
         id: xpi-download
         if: contains(github.event.release.assets.*.name, 'xpi-prod.zip')
