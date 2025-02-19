@@ -191,7 +191,6 @@ jobs:
           # Initial setup of dependencies
           npm install -g pnpm
           pnpm install        
-          rm -f send-suite-*.xpi
           unzip xpi-prod.zip
           cd frontend
           pnpm deploy-xpi $(find .. -name 'send-suite-*.xpi')
