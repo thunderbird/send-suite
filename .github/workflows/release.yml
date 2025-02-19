@@ -188,6 +188,9 @@ jobs:
           ATN_API_SECRET: "${{ secrets.ATN_API_SECRET }}"
           BASE_URL: https://send-backend.tb.pro/
         run: |
+          # Initial setup of dependencies
+          npm install -g pnpm
+          pnpm install        
           rm -f send-suite-*.xpi
           unzip xpi-prod.zip
           cd frontend
