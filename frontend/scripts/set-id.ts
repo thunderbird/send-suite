@@ -1,28 +1,38 @@
 import dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
-import { getIsEnvProd, ID_FOR_PROD, ID_FOR_STAGING } from './config';
+import {
+  getIsEnvProd,
+  ID_FOR_PROD,
+  ID_FOR_STAGING,
+  NAME_FOR_PROD,
+  NAME_FOR_STAGING,
+} from './config';
 dotenv.config();
 
-async function updateManifestConfig(): Promise<void> {
+export async function updateManifestConfig(): Promise<void> {
+  const isProd = getIsEnvProd();
+  console.log(`Updating manifest.json for ${isProd ? 'PROD' : 'STAGING'}`);
   try {
     // Define relative paths from current directory
     const manifestPath = path.resolve(__dirname, '../public/manifest.json');
-
     // Read the Manifest file as string
-    const manifestContent = fs.readFileSync(manifestPath, 'utf8');
+    let manifestContent = fs.readFileSync(manifestPath, 'utf8');
 
-    // Replace the id in the image line
-    const updateManifestID = manifestContent.replace(
-      ID_FOR_STAGING,
-      ID_FOR_PROD
-    );
-
-    // When building for prod, replace the manifest ID
-    const isProd = getIsEnvProd();
+    // PROD VALUES
     if (isProd) {
-      fs.writeFileSync(manifestPath, updateManifestID, 'utf8');
+      // Replace the id in the image line
+      manifestContent = manifestContent.replace(ID_FOR_STAGING, ID_FOR_PROD);
+    } else {
+      // Replace name to tag staging
+      manifestContent = manifestContent.replace(
+        NAME_FOR_PROD,
+        NAME_FOR_STAGING
+      );
     }
+
+    // Write the updated content back to the file
+    fs.writeFileSync(manifestPath, manifestContent, 'utf8');
   } catch (error) {
     console.error('Error updating Manifest config:', error);
     throw error;
