@@ -1,0 +1,24 @@
+encryptionsalt: v1:d0r3xcOdlcg=:v1:h32s5jmwpOkoXvOJ:rB2v23zF1oN3BX/C8u2XG6Ig0O+uQw==
+config:
+  send-suite:b2-application-key:
+    secure: v1:B1/ASWAP3ygxpuwH:YXP/CMQ5PZg+bSRpuoEppA6x9OF02POd+tMKA8p4kVOPH5xG4ZeaMQ/a4gVWykA=
+  send-suite:b2-application-key-id:
+    secure: v1:HSkTwCEpG0vySOEQ:v4des+2BMJh7exKWTb0m7aeKGDPmE97jWPpviblFTIkUMFyxpbnjy38=
+  send-suite:fxa-allow-list:
+    secure: v1:1KAEqdoSTad9Q/Ow:Cg9NaRxoSOUCPEZWsNJMRmN5+qbwWkPazDuIc+ycr/93hoS8IUB7YDwhnuK9oaTVfs2ojjWzDQrJF658QM3t1pJ6BR/evtLzhwlb0oPc7UFDL5QobixJ35Q5T5I/DR1+TRsBRgNvzA8MsjVdChw1jOvn3a+jtvMC9O8O3YeoSixUmN/g+oYtMQKeyynCtdyf1/jfZkS4LI6BsupaFqjXKLY1LUqa27Ej65oIMEy6e349NK3YwXaJbvLSjbj4Hx9OhyJ7WSjZHgbwOCiuMBgB17xdfhXRbmKFNpu8O4kp
+  send-suite:fxa-client-id:
+    secure: v1:Xu+V334NTKSvm/Jd:OCO00E3Y6yuQPzRul5RAuQJB+5vhyeoTqol7W5qN66s=
+  send-suite:fxa-client-secret:
+    secure: v1:XnpcH2k95lV3zpZV:lSBHogbw8+stSY4wqoJ9VyE8dSd5zyWdRRW1b5cLhRVerdXYj5OB5wQH2Ge7wH6Slh4FQtjJclFf2Ld/ubENAxsUVdvhvKqN3NaQDpeVEeE=
+  send-suite:posthog-api-key:
+    secure: v1:W8yneB7kseuVECuJ:WE1bI/IIpUtP7nhoR/YWFK4koXKhHytw8mR3oaOO7e7sVDQztEDfdupESRS2JYBkt9toZQUVvqP1PoLgvnfa
+  send-suite:sentry-auth-token:
+    secure: v1:dcPe+Y0zi9nVY7wU:+Uy72pqkZTz81wiM3oX815qhhNBP1JuPO8exD+X1b+b27ofnWJCVqn60nc0hBgMD4SOYrP8luBKxMajhGRF16cJU353fbPYWPV8JBX1I+B5UoJjhbxZzgWyNaZlRhlPZwhOw5UvkfpGsdsGXbGcktP4iaKlD13mK1AZ98vI4j6EQlgKTIqtKtFG+SDYqh8fWOujnAAo55lKKa+nCa1fTFHv8CXmbbHkrjLbGvNqW/c0bEGBj9u4hPZA9NnDMJpRf4epeUkjCbU/gCEAaiQ1uvvVveA==
+  send-suite:jwt-access-token-secret:
+    secure: v1:lLeTJ7TxgvicSg9V:/ldoLD8NcsEg5DHVhmqZ4sF8NFTDHcxEbDg5++hETI0AgaC4oc3QvuOSCqI4ie5S/35tWqTcELoSDzhb7Z0gSqUsjWBzql1L+9s+UmpinjPQseP5RLYCm0ULYG1nkbDt6oY4
+  send-suite:jwt-refresh-token-secret:
+    secure: v1:93Lg1vCPTFiPsH81:mhrg+6JJ+w28NC/qTxA+Uyl5/TOcVF05qCUwkdQsCYrEAdFnZueW+9MFuukCYltxTHbAJw0q4BJl0KAT6AWxBIbmXQ5xGjqUI9h8sdmzgEJPecASDELRVzaYd3dATvBxWyXNnA==
+  send-suite:database-url:
+    secure: v1:1Mqh9iYtVQJjVZhk:KSsr8wJYdDjFc1LqNMsEahFlJGBlPlXBxS/E1khpQfQtkogBI35wTI0uv8GWPOO/IcB4oszbeStpBPhBMieQP/OoiC55g6Q69DvwsXrN7Kfsb+oRAr5eA3qXfecC2hu/VDNHLasDLjrD59t6gGh7u+7o6WoQ/zce
+  send-suite:route53_zone_id:
+    secure: v1:7DgM6+BsjhMbav2f:Jt+3WNYiWq4n60SfBP79SgdYq7ImS3ioGTVwSFRKBJos/18V
