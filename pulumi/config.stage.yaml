@@ -1,8 +1,8 @@
 ---
 resources:
-  # domains:
-  #   backend: lockbox.thunderbird.dev
-  #   frontend: send.thunderbird.dev
+  domains:
+    backend: send-backend-stage.tb.pro
+    frontend: send-stage.tb.pro
 
   tb:network:MultiCidrVpc:
     vpc:
@@ -55,6 +55,7 @@ resources:
 
   tb:secrets:PulumiSecretsManager:
     pulumi:
+      recovery_window_in_days: 0
       secret_names:
         - b2-application-key-id
         - b2-application-key
@@ -79,7 +80,7 @@ resources:
         send-suite:
           listener_port: 443
           listener_proto: HTTPS
-          listener_cert_arn: arn:aws:acm:us-east-1:768512802988:certificate/17ae6d4f-0f30-4e92-b243-74bce7ea5f90
+          listener_cert_arn: arn:aws:acm:us-east-1:768512802988:certificate/10824889-81a4-44d8-b34a-f47d67e5c0c8
           container_port: 8080
           container_name: backend
           # "name" field is arbitrary, but must be unique and no longer than 32 chars
@@ -139,7 +140,7 @@ resources:
               - name: B2_REGION
                 value: auto
               - name: BASE_URL
-                value: https://lockbox.thunderbird.dev/
+                value: https://send-backend-stage.tb.pro/
               - name: COMBINED_LOG
                 value: logs/combined.log
               - name: DEVELOPER_TIMEZONE
@@ -157,13 +158,13 @@ resources:
               - name: FXA_MOZ_ISSUER
                 value: https://accounts.stage.mozaws.net
               - name: FXA_REDIRECT_URI
-                value: https://lockbox.thunderbird.dev/lockbox/fxa
+                value: https://send-backend-stage.tb.pro/lockbox/fxa
               - name: NODE_ENV
                 value: production
               - name: POSTHOG_HOST
                 value: https://us.i.posthog.com
               - name: SEND_BACKEND_CORS_ORIGINS
-                value: https://send.thunderbird.dev
+                value: https://send-stage.tb.pro
               - name: SENTRY_DSN
                 value: https://85b7b08be94b8991ed121578d807f755@o4505428107853824.ingest.us.sentry.io/4507567071232000
               - name: SENTRY_ORG
@@ -176,10 +177,10 @@ resources:
   tb:cloudfront:CloudFrontS3Service:
     frontend:
       service_bucket_name: tb-send-suite-stage-frontend
-      certificate_arn: arn:aws:acm:us-east-1:768512802988:certificate/3a98e226-c4df-4e58-bc0a-aa4ccbf6325e
+      certificate_arn: arn:aws:acm:us-east-1:768512802988:certificate/97666a05-2eb2-47cc-b1c2-22a1f3efbe31
       distribution:
         aliases:
-          - send.thunderbird.dev
+          - send-stage.tb.pro
         comment: send-suite stage frontend
         logging_config:
           include_cookies: True

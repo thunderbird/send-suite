@@ -19,6 +19,10 @@ config:
   send-suite:jwt-refresh-token-secret:
     secure: v1:93Lg1vCPTFiPsH81:mhrg+6JJ+w28NC/qTxA+Uyl5/TOcVF05qCUwkdQsCYrEAdFnZueW+9MFuukCYltxTHbAJw0q4BJl0KAT6AWxBIbmXQ5xGjqUI9h8sdmzgEJPecASDELRVzaYd3dATvBxWyXNnA==
   send-suite:database-url:
-    secure: v1:1Mqh9iYtVQJjVZhk:KSsr8wJYdDjFc1LqNMsEahFlJGBlPlXBxS/E1khpQfQtkogBI35wTI0uv8GWPOO/IcB4oszbeStpBPhBMieQP/OoiC55g6Q69DvwsXrN7Kfsb+oRAr5eA3qXfecC2hu/VDNHLasDLjrD59t6gGh7u+7o6WoQ/zce
+    secure: v1:e0M3NWfdpS7plI1b:9WktOvp+U203GSsD+hQl9fa0+MuwLIk82kghZ6LblmGilRMSfPaZpsZgq8sKO4q9ZD6m4SKf6kGxS0wNiggtSvuisLkZmlzRocIyln00j5+AmmAKvhiFQe+fseTBBXQMt72SND7Thd8mklGMqyUO2guRUswIUf45uA2xIPZiAgK4gvs=
   send-suite:route53_zone_id:
     secure: v1:7DgM6+BsjhMbav2f:Jt+3WNYiWq4n60SfBP79SgdYq7ImS3ioGTVwSFRKBJos/18V
+  send-suite:cloudflare_zone_id:
+    secure: v1:5EqKIZM7MSB+YQ7L:vAT8EWJqVk4LOtWW21Ee847qE3N78MDamlpXb8klltS3waAOa+VmaV6T+M0FCjnC
+  cloudflare:apiToken:
+    secure: v1:oYrv1HeGiu+9r2a0:rIkr8Ng8ouZXFlbxZzLSvp9LPB69ZeDEYRcj5m/9U7HtAJ7oowa+OO8CkzFb7zoSHvMSNDE7xrk=
