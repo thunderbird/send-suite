@@ -106,12 +106,13 @@ router.get(
       Please follow this ticket to clean up all url replacements
       https://github.com/thunderbird/send-suite/issues/450
        */
-    const responseURL = process.env.FXA_MOZ_ISSUER.includes('stage')
+    /* const responseURL = process.env.FXA_MOZ_ISSUER.includes('stage')
       ? url.replace('send', 'lockbox')
       : url;
+    */
 
     res.status(200).json({
-      url: responseURL,
+      url: url,
     });
   })
 );
