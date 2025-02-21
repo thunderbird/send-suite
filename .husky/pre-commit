@@ -15,7 +15,19 @@ pnpm test
 
 # Run lint-staged on frontend
 echo "🧶 Running lint-staged on frontend..."
-cd frontend && pnpx lint-staged
+
+cd frontend
+cd public
+# Check if manifest.json is staged for commit
+if git diff --cached --name-only | grep './manifest\.json'; then
+  # Check if the word "STAGING" is in the staged version
+  if git show :./manifest.json | grep 'STAGING'; then
+    echo "❌ Error: 'STAGING' found in manifest.json. This string is only used for development and not to be committed. Please remove it before committing."
+    exit 1
+  fi
+fi
+cd ..
+pnpx lint-staged
 
 # Back to root
 cd ..

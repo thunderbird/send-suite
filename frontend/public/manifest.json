@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "version": "0.2.1",
   "author": "Thunderbird Team",
-  "name": "Thunderbird Send [STAGING]",
+  "name": "Thunderbird Send [STAGE]",
   "description": "Thunderbird and friends",
   "browser_specific_settings": {
     "gecko": {

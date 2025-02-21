@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue';
 import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import { packageJson, sharedViteConfig } from './sharedViteConfig';
+import { getEnvironmentName } from './src/lib/config';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -16,10 +17,6 @@ export default defineConfig(({ mode }) => {
 
   const SERVER_BASE_URL = SERVER_BASE_URLS[mode];
 
-  console.log('env:', env);
-  console.log('Environment:', mode);
-  console.log('Server Base URL:', SERVER_BASE_URL);
-
   return {
     ...sharedViteConfig,
     plugins: [
@@ -31,6 +28,7 @@ export default defineConfig(({ mode }) => {
         release: packageJson.version,
         moduleMetadata: {
           version: packageJson.version,
+          environment: getEnvironmentName(env),
         },
       }),
     ],

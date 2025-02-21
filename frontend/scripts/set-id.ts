@@ -1,18 +1,18 @@
 import dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
+import { getIsEnvProd } from '../src/lib/config';
 import {
-  getIsEnvProd,
   ID_FOR_PROD,
-  ID_FOR_STAGING,
+  ID_FOR_STAGE,
   NAME_FOR_PROD,
-  NAME_FOR_STAGING,
+  NAME_FOR_STAGE,
 } from './config';
 dotenv.config();
 
 export async function updateManifestConfig(): Promise<void> {
   const isProd = getIsEnvProd();
-  console.log(`Updating manifest.json for ${isProd ? 'PROD' : 'STAGING'}`);
+  console.log(`Updating manifest.json for ${isProd ? 'PROD' : 'STAGE'}`);
   try {
     // Define relative paths from current directory
     const manifestPath = path.resolve(__dirname, '../public/manifest.json');
@@ -22,12 +22,15 @@ export async function updateManifestConfig(): Promise<void> {
     // PROD VALUES
     if (isProd) {
       // Replace the id in the image line
-      manifestContent = manifestContent.replace(ID_FOR_STAGING, ID_FOR_PROD);
+      manifestContent = manifestContent.replace(ID_FOR_STAGE, ID_FOR_PROD);
     } else {
-      // Replace name to tag staging
+      // Replace name to tag stage
+      manifestContent = manifestContent.replace(NAME_FOR_PROD, NAME_FOR_STAGE);
+      manifestContent = manifestContent.replace(ID_FOR_PROD, ID_FOR_STAGING);
+      // Replace icons with dev versions
       manifestContent = manifestContent.replace(
-        NAME_FOR_PROD,
-        NAME_FOR_STAGING
+        /icons\/(\d+)\.png/g,
+        'icons/$1-dev.png'
       );
     }
 
