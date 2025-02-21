@@ -80,7 +80,7 @@ function submitXpi(xpiPath: string, version: string, jwt: string): void {
   const isProd = getIsEnvProd();
   const reqHost = 'addons.thunderbird.net';
   const reqPathBase = '/api/v3/addons';
-  const packageName = isProd ? PACKAGE_NAME.production : PACKAGE_NAME.staging;
+  const packageName = isProd ? PACKAGE_NAME.production : PACKAGE_NAME.stage;
   const org = 'thunderbird.net';
 
   console.log(`Submitting XPI version ${version} in file ${xpiPath}...`);

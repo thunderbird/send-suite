@@ -5,7 +5,7 @@ else
     echo 'Starting development build 🐣'
 fi
 
-# Pre-build makes sure the ID and name are set on the xpi for prod/staging
+# Pre-build makes sure the ID and name are set on the xpi for prod/stage
 bun run scripts/set-id.ts
 
 # Get version from package.json and replace dots with hyphens

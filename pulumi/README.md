@@ -56,7 +56,7 @@ Before building a new environment, make sure you've gone through the setup steps
 - For each one of those special values, create a Pulumi secret. One such command might look like this:
     - `pulumi config set --secret b2-application-key-id 'somethingsomethingblahblahblah'`
 - Copy the configuration file for the environment that most closely resembles the one you wish to build. f/ex:
-    - `cp config.{staging,prod}.yaml`
+    - `cp config.{stage,prod}.yaml`
 - Adjust the values of the new config file appropriately. Double-check everything.
 - Build the infrastructure.
     - `pulumi up`
