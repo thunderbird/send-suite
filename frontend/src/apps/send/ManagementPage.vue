@@ -137,6 +137,7 @@ async function showCurrentServerSession() {
 async function logOut() {
   await userStore.logOut();
   await validators();
+  isLoggedIn.value = false;
 }
 
 async function openPopup() {
@@ -175,7 +176,7 @@ async function finishLogin() {
     try {
       await configureExtension();
     } catch (error) {
-      console.warn('You are running this outside TB');
+      console.warn('You are running this outside TB', error);
     }
   }
 

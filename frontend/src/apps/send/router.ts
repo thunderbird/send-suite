@@ -12,7 +12,7 @@ import { restoreKeysUsingLocalStorage } from '@/lib/keychain';
 import useApiStore from '@/stores/api-store';
 import useKeychainStore from '@/stores/keychain-store';
 
-import { IS_DEV } from '@/lib/config';
+import { IS_DEV } from '@/lib/clientConfig';
 import { getCanRetry } from '@/lib/validations';
 import NotFoundPage from '../common/NotFoundPage.vue';
 import ExtensionPage from './ExtensionPage.vue';
