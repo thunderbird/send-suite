@@ -1,8 +1,8 @@
 ---
-name: deploy-staging-and-create-release
+name: deploy-stage-and-create-release
 
 concurrency:
-  group: deploy-staging
+  group: deploy-stage
   cancel-in-progress: true
 
 on:
@@ -107,8 +107,8 @@ jobs:
           name: ecr_tag
           path: ecr_tag.txt
 
-      # Deploy to staging
-      - name: Deploy new image to staging
+      # Deploy to stage
+      - name: Deploy new image to stage
         shell: bash
         env:
           ECR_TAG: "${{ steps.login-ecr.outputs.registry }}/${{ vars.PROJECT }}:${{ github.sha }}"
@@ -131,15 +131,15 @@ jobs:
           EOF
 
           # Use yq to merge the stump into the main config
-          yq -i '. *= load("newimage.yaml")' config.staging.yaml
+          yq -i '. *= load("newimage.yaml")' config.stage.yaml
 
           # Set up the Pulumi environment and update the service
-          export PULUMI_CONFIG_PASSPHRASE="${{ secrets.PULUMI_PASSPHRASE_STAGING }}"
+          export PULUMI_CONFIG_PASSPHRASE="${{ secrets.PULUMI_PASSPHRASE_STAGE }}"
           source ./venv/bin/activate
           pulumi login s3://tb-send-suite-pulumi
-          pulumi stack select staging
+          pulumi stack select stage
           pulumi up -y --diff --target \
-            'urn:pulumi:staging::send-suite::tb:fargate:FargateClusterWithLogging$aws:ecs/taskDefinition:TaskDefinition::send-suite-staging-fargate-taskdef' \
+            'urn:pulumi:stage::send-suite::tb:fargate:FargateClusterWithLogging$aws:ecs/taskDefinition:TaskDefinition::send-suite-stage-fargate-taskdef' \
             --target-dependents
 
   frontend-merge:
@@ -162,25 +162,25 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      # Staging build steps
-      - name: Create staging .env file from secrets
+      # Stage build steps
+      - name: Create stage .env file from secrets
         shell: bash
         run: |
           cd frontend
           cat << EOF > .env
-          VUE_BASE_URL=https://send.thunderbird.dev
-          VITE_SEND_SERVER_URL=https://lockbox.thunderbird.dev
-          VITE_SEND_CLIENT_URL=https://send.thunderbird.dev
-          VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN_STAGING }}
-          VITE_SENTRY_DSN=${{ vars.VITE_SENTRY_DSN_STAGING }}
-          VITE_POSTHOG_PROJECT_KEY=${{ secrets.VITE_POSTHOG_PROJECT_KEY_STAGING }}
-          VITE_POSTHOG_HOST=${{ vars.VITE_POSTHOG_HOST_STAGING }}
+          VUE_BASE_URL=https://send-stage.tb.pro
+          VITE_SEND_SERVER_URL=https://send-backend-stage.tb.pro
+          VITE_SEND_CLIENT_URL=https://send-stage.tb.pro
+          VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN_STAGE }}
+          VITE_SENTRY_DSN=${{ vars.VITE_SENTRY_DSN_STAGE }}
+          VITE_POSTHOG_PROJECT_KEY=${{ secrets.VITE_POSTHOG_PROJECT_KEY_STAGE }}
+          VITE_POSTHOG_HOST=${{ vars.VITE_POSTHOG_HOST_STAGE }}
           EOF
 
-      - name: Build the staging frontend's static assets
-        id: frontend-build-staging
+      - name: Build the stage frontend's static assets
+        id: frontend-build-stage
         env:
-          BASE_URL: https://send.thunderbird.dev
+          BASE_URL: https://send-stage.tb.pro
         shell: bash
         run: |
           # Initial setup of dependencies
@@ -190,25 +190,25 @@ jobs:
 
           # Build static frontend assets and the .xpi
           IS_CI_AUTOMATION=yes pnpm build-and-submit
-          mv dist-web ../dist-web-staging
+          mv dist-web ../dist-web-stage
           popd
-          mv frontend-source frontend-source-staging
-          mv frontend-source.zip frontend-source-staging.zip
-          mv "$(find send-suite-*.xpi)" "send-suite-staging-$(basename "$(find send-suite-*.xpi)" | cut -d'-' -f3-)"
+          mv frontend-source frontend-source-stage
+          mv frontend-source.zip frontend-source-stage.zip
+          mv "$(find send-suite-*.xpi)" "send-suite-stage-$(basename "$(find send-suite-*.xpi)" | cut -d'-' -f3-)"
 
-      - name: Archive the staging frontend build
-        id: frontend-archive-staging
+      - name: Archive the stage frontend build
+        id: frontend-archive-stage
         uses: actions/upload-artifact@v4
         with:
-          name: dist-web-staging
-          path: dist-web-staging
+          name: dist-web-stage
+          path: dist-web-stage
           compression-level: 0
 
-      - name: Archive the staging XPI
-        id: xpi-archive-staging
+      - name: Archive the stage XPI
+        id: xpi-archive-stage
         uses: actions/upload-artifact@v4
         with:
-          name: xpi-staging
+          name: xpi-stage
           path: send-suite-*.xpi
 
       # Production build steps
@@ -264,15 +264,16 @@ jobs:
           name: xpi-prod
           path: send-suite-prod-*.xpi
 
-      - name: Deploy to staging
+      # Automatically deploy to stage, but not to prod
+      - name: Deploy to stage
         id: frontend-deploy
         shell: bash
         run: |
-          cd dist-web-staging
-          aws s3 cp . s3://tb-send-suite-staging-frontend/ --recursive
+          cd dist-web-stage
+          aws s3 cp . s3://tb-send-suite-stage-frontend/ --recursive
 
           # Invalidate the CDN
-          aws cloudfront create-invalidation --distribution-id ${{ vars.STAGING_CF_DISTRO_ID }} --paths "/*"
+          aws cloudfront create-invalidation --distribution-id ${{ vars.STAGE_CF_DISTRO_ID }} --paths "/*"
 
       - name: Deploy to ATN
         id: xpi-deploy
@@ -280,7 +281,7 @@ jobs:
         env:
           ATN_API_KEY: "${{ secrets.ATN_API_KEY }}"
           ATN_API_SECRET: "${{ secrets.ATN_API_SECRET }}"
-          BASE_URL: https://send.thunderbird.dev
+          BASE_URL: https://send-stage.tb.pro
         run: |
           cd frontend
-          pnpm deploy-xpi $(find .. -name 'send-suite-staging-*.xpi')
+          pnpm deploy-xpi $(find .. -name 'send-suite-stage-*.xpi')
