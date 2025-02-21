@@ -1,4 +1,3 @@
-// stores/counter.js
 import { getEnvName } from '@/lib/clientConfig';
 import { defineStore } from 'pinia';
 
