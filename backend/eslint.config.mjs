@@ -13,7 +13,7 @@ export default [
         process: 'readonly', // Another common Node.js global
         require: 'readonly', // If using CommonJS modules
       },
-    }
+    },
   },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,

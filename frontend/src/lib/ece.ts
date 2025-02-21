@@ -30,6 +30,7 @@ class ECETransformer {
   nonceBase: Buffer;
   constructor(mode: string, ikm: CryptoKey, rs: number, salt?: ArrayBuffer) {
     this.mode = mode;
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     this.prevChunk;
     this.seq = 0;
     this.firstchunk = true;

@@ -7,5 +7,5 @@ const app = createApp(Extension);
 
 initSentry(app);
 
-setupApp(app)
+setupApp(app);
 mountApp(app, '#extension-page');

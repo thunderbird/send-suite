@@ -111,6 +111,7 @@ const useUserStore: () => UserStore = defineStore('user', () => {
       populateUser({ id, email, tier });
 
       return true;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       return false;
     }

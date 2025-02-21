@@ -1,5 +1,5 @@
-import { Util, Keychain } from '@/lib/keychain';
 import { ApiConnection } from '@/lib/api';
+import { Keychain, Util } from '@/lib/keychain';
 
 export async function getContainerKeyFromChallenge(
   hash: string,
@@ -34,6 +34,7 @@ export async function getContainerKeyFromChallenge(
   let challengeSalt: ArrayBufferLike;
   try {
     challengeSalt = Util.base64ToArrayBuffer(challengeSaltStr);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     return null;
   }

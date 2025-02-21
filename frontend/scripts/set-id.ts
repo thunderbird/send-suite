@@ -25,10 +25,7 @@ export async function updateManifestConfig(): Promise<void> {
       manifestContent = manifestContent.replace(ID_FOR_STAGE, ID_FOR_PROD);
     } else {
       // Replace name to tag stage
-      manifestContent = manifestContent.replace(
-        NAME_FOR_PROD,
-        NAME_FOR_STAGE
-      );
+      manifestContent = manifestContent.replace(NAME_FOR_PROD, NAME_FOR_STAGE);
       manifestContent = manifestContent.replace(ID_FOR_PROD, ID_FOR_STAGING);
       // Replace icons with dev versions
       manifestContent = manifestContent.replace(
