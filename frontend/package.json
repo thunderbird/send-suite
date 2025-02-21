@@ -45,7 +45,7 @@
     "install": "^0.13.0",
     "jszip": "^3.10.1",
     "pinia": "^2.3.0",
-    "posthog-js": "^1.201.0",
+    "posthog-js": "^1.222.0",
     "pretty-bytes": "^6.1.1",
     "ua-parser-js": "^1.0.39",
     "vue": "^3.5.13",
