@@ -1,9 +1,12 @@
+import dotenv from 'dotenv';
 import FormData from 'form-data';
 import * as fs from 'fs';
 import * as https from 'https';
 import * as jwt from 'jsonwebtoken';
 import * as path from 'path';
-import { getIsEnvProd, PACKAGE_NAME } from './config';
+import { getIsEnvProd } from '../src/lib/config';
+import { PACKAGE_NAME } from './config';
+dotenv.config();
 
 interface PackageJson {
   version: string;
@@ -77,7 +80,7 @@ function getXpiPath(): string {
 }
 
 function submitXpi(xpiPath: string, version: string, jwt: string): void {
-  const isProd = getIsEnvProd();
+  const isProd = getIsEnvProd(process.env);
   const reqHost = 'addons.thunderbird.net';
   const reqPathBase = '/api/v3/addons';
   const packageName = isProd ? PACKAGE_NAME.production : PACKAGE_NAME.staging;
