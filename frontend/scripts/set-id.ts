@@ -1,8 +1,9 @@
 import dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
-import { getIsEnvProd } from '../src/lib/config';
+
 import {
+  getIsEnvProd,
   ID_FOR_PROD,
   ID_FOR_STAGE,
   NAME_FOR_PROD,
@@ -26,7 +27,7 @@ export async function updateManifestConfig(): Promise<void> {
     } else {
       // Replace name to tag stage
       manifestContent = manifestContent.replace(NAME_FOR_PROD, NAME_FOR_STAGE);
-      manifestContent = manifestContent.replace(ID_FOR_PROD, ID_FOR_STAGING);
+      manifestContent = manifestContent.replace(ID_FOR_PROD, ID_FOR_STAGE);
       // Replace icons with dev versions
       manifestContent = manifestContent.replace(
         /icons\/(\d+)\.png/g,
