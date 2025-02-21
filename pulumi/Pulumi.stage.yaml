@@ -1,0 +1,28 @@
+encryptionsalt: v1:d0r3xcOdlcg=:v1:h32s5jmwpOkoXvOJ:rB2v23zF1oN3BX/C8u2XG6Ig0O+uQw==
+config:
+  send-suite:b2-application-key:
+    secure: v1:INQh1HmnOh6A9dfs:Qmg+UQdDB9QR4cRfTY4tPbf8Wviz0n/moOJqM5C12Y2D4A8lNdIt3I98PgpCch4=
+  send-suite:b2-application-key-id:
+    secure: v1:zZiVkeLYhk8rievS:YIBmoSGYTu8pGk6y4C+ps4UvF3LYZPSE0u0WhM7EqW9dkQ3DxYrGixQ=
+  send-suite:fxa-allow-list:
+    secure: v1:1KAEqdoSTad9Q/Ow:Cg9NaRxoSOUCPEZWsNJMRmN5+qbwWkPazDuIc+ycr/93hoS8IUB7YDwhnuK9oaTVfs2ojjWzDQrJF658QM3t1pJ6BR/evtLzhwlb0oPc7UFDL5QobixJ35Q5T5I/DR1+TRsBRgNvzA8MsjVdChw1jOvn3a+jtvMC9O8O3YeoSixUmN/g+oYtMQKeyynCtdyf1/jfZkS4LI6BsupaFqjXKLY1LUqa27Ej65oIMEy6e349NK3YwXaJbvLSjbj4Hx9OhyJ7WSjZHgbwOCiuMBgB17xdfhXRbmKFNpu8O4kp
+  send-suite:fxa-client-id:
+    secure: v1:Xu+V334NTKSvm/Jd:OCO00E3Y6yuQPzRul5RAuQJB+5vhyeoTqol7W5qN66s=
+  send-suite:fxa-client-secret:
+    secure: v1:XnpcH2k95lV3zpZV:lSBHogbw8+stSY4wqoJ9VyE8dSd5zyWdRRW1b5cLhRVerdXYj5OB5wQH2Ge7wH6Slh4FQtjJclFf2Ld/ubENAxsUVdvhvKqN3NaQDpeVEeE=
+  send-suite:posthog-api-key:
+    secure: v1:W8yneB7kseuVECuJ:WE1bI/IIpUtP7nhoR/YWFK4koXKhHytw8mR3oaOO7e7sVDQztEDfdupESRS2JYBkt9toZQUVvqP1PoLgvnfa
+  send-suite:sentry-auth-token:
+    secure: v1:dcPe+Y0zi9nVY7wU:+Uy72pqkZTz81wiM3oX815qhhNBP1JuPO8exD+X1b+b27ofnWJCVqn60nc0hBgMD4SOYrP8luBKxMajhGRF16cJU353fbPYWPV8JBX1I+B5UoJjhbxZzgWyNaZlRhlPZwhOw5UvkfpGsdsGXbGcktP4iaKlD13mK1AZ98vI4j6EQlgKTIqtKtFG+SDYqh8fWOujnAAo55lKKa+nCa1fTFHv8CXmbbHkrjLbGvNqW/c0bEGBj9u4hPZA9NnDMJpRf4epeUkjCbU/gCEAaiQ1uvvVveA==
+  send-suite:jwt-access-token-secret:
+    secure: v1:lLeTJ7TxgvicSg9V:/ldoLD8NcsEg5DHVhmqZ4sF8NFTDHcxEbDg5++hETI0AgaC4oc3QvuOSCqI4ie5S/35tWqTcELoSDzhb7Z0gSqUsjWBzql1L+9s+UmpinjPQseP5RLYCm0ULYG1nkbDt6oY4
+  send-suite:jwt-refresh-token-secret:
+    secure: v1:93Lg1vCPTFiPsH81:mhrg+6JJ+w28NC/qTxA+Uyl5/TOcVF05qCUwkdQsCYrEAdFnZueW+9MFuukCYltxTHbAJw0q4BJl0KAT6AWxBIbmXQ5xGjqUI9h8sdmzgEJPecASDELRVzaYd3dATvBxWyXNnA==
+  send-suite:database-url:
+    secure: v1:e0M3NWfdpS7plI1b:9WktOvp+U203GSsD+hQl9fa0+MuwLIk82kghZ6LblmGilRMSfPaZpsZgq8sKO4q9ZD6m4SKf6kGxS0wNiggtSvuisLkZmlzRocIyln00j5+AmmAKvhiFQe+fseTBBXQMt72SND7Thd8mklGMqyUO2guRUswIUf45uA2xIPZiAgK4gvs=
+  send-suite:route53_zone_id:
+    secure: v1:7DgM6+BsjhMbav2f:Jt+3WNYiWq4n60SfBP79SgdYq7ImS3ioGTVwSFRKBJos/18V
+  send-suite:cloudflare_zone_id:
+    secure: v1:5EqKIZM7MSB+YQ7L:vAT8EWJqVk4LOtWW21Ee847qE3N78MDamlpXb8klltS3waAOa+VmaV6T+M0FCjnC
+  cloudflare:apiToken:
+    secure: v1:oYrv1HeGiu+9r2a0:rIkr8Ng8ouZXFlbxZzLSvp9LPB69ZeDEYRcj5m/9U7HtAJ7oowa+OO8CkzFb7zoSHvMSNDE7xrk=

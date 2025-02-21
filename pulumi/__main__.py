@@ -14,8 +14,8 @@ import tb_pulumi.secrets
 
 
 CLOUDFRONT_REWRITE_CODE_FILE = 'cloudfront-rewrite.js'
-EXCLUDE_ROUTE53_STACKS = ['prod']  # Do not build R53 records for these environments
-INCLUDE_CLOUDFLARE_STACKS = ['prod']  # Do build CloudFlare records for these environments
+EXCLUDE_ROUTE53_STACKS = ['prod', 'stage']  # Do not build R53 records for these environments
+INCLUDE_CLOUDFLARE_STACKS = ['prod', 'stage']  # Do build CloudFlare records for these environments
 
 project = tb_pulumi.ThunderbirdPulumiProject()
 resources = project.config.get('resources')
