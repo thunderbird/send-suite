@@ -190,7 +190,7 @@ resources:
     notify_emails:
       - rjung+cloudwatch@thunderbird.net
     # alarms:
-    #   send-suite-staging-fargate-service:
+    #   send-suite-stage-fargate-service:
     #     cpu_utilization:
     #       enabled: False
     #       threshold: 80
