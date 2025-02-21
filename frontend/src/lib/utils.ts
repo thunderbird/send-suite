@@ -106,6 +106,7 @@ export function asyncInitWebSocket(serverUrl: string): Promise<WebSocket> {
     try {
       const ws = new WebSocket(serverUrl);
       ws.addEventListener('open', () => resolve(ws), { once: true });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       reject(new ConnectionError(false));
     }
@@ -128,6 +129,7 @@ export async function connectToWebSocketServer(
 
 export async function listenForResponse(
   ws: WebSocket,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   canceler: Record<string, any>
 ): Promise<JsonResponse> {
   return new Promise((resolve, reject) => {

@@ -25,6 +25,7 @@ let crypto: Crypto | typeof nodeCrypto = nodeCrypto;
 
 try {
   crypto = window.crypto;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 } catch (e) {
   // fall back to nodeCrypto
 }
@@ -489,6 +490,7 @@ export class Keychain {
       // load other keys
       this.keys = await this.fallbackToStoredKeys(keys);
       return true;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       console.log(`No keychain in storage`);
       return false;

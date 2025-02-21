@@ -8,4 +8,3 @@ const app = createApp(ManagementPage);
 initSentry(app);
 setupApp(app);
 mountApp(app, '#management-page');
-

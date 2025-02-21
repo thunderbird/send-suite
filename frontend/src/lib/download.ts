@@ -65,6 +65,7 @@ export default class Downloader {
 
       metrics.capture('download.size', { size, type });
       return true;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       return false;
     }

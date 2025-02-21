@@ -157,6 +157,7 @@ export async function sendBlob(
       progressTracker,
     });
     return id;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     throw new Error('UPLOAD_FAILED');
   }
