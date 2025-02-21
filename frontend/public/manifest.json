@@ -19,7 +19,7 @@
     "browser_style": true
   },
   "cloud_file": {
-    "name": "Thunderbird Send [STAGE]",
+    "name": "Thunderbird Send",
     "management_url": "index.management.html",
     "browser_style": true,
     "reuse_uploads": false
