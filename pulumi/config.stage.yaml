@@ -97,7 +97,7 @@ resources:
           - FARGATE
         container_definitions:
           backend:
-            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:jungtest001
+            image: 768512802988.dkr.ecr.us-east-1.amazonaws.com/send:206d4628056c0c8afb5595b657abd1da094aa454
             portMappings:
               - name: send-suite
                 containerPort: 8080
@@ -197,11 +197,9 @@ resources:
 
   tb:ci:AwsAutomationUser:
     ci:
-      active_stack: staging
       additional_policies:
         - arn:aws:iam::768512802988:policy/send-suite-ci-frontend-cache-invalidation
         - arn:aws:iam::768512802988:policy/send-suite-stage-frontend-cache-invalidation
-        - arn:aws:iam::768512802988:policy/send-suite-staging-frontend-cache-invalidation
         - arn:aws:iam::768512802988:policy/send-suite-prod-frontend-cache-invalidation
       enable_ecr_image_push: true
       ecr_repositories:
@@ -210,12 +208,10 @@ resources:
       fargate_clusters:
         - send-suite-ci-fargate
         - send-suite-stage-fargate
-        - send-suite-staging-fargate
         - send-suite-prod-fargate
       fargate_task_role_arns:
         - arn:aws:iam::768512802988:role/send-suite-ci-fargate
         - arn:aws:iam::768512802988:role/send-suite-stage-fargate
-        - arn:aws:iam::768512802988:role/send-suite-staging-fargate
         - arn:aws:iam::768512802988:role/send-suite-prod-fargate
       enable_full_s3_access: true
       s3_full_access_buckets:
@@ -224,5 +220,4 @@ resources:
       s3_upload_buckets:
         - tb-send-suite-ci-frontend
         - tb-send-suite-stage-frontend
-        - tb-send-suite-staging-frontend
         - tb-send-suite-prod-frontend
