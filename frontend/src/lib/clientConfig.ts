@@ -25,11 +25,12 @@ export const getEnvName = () => {
     throw new Error('Environment variables object is required');
   }
 
-  const base_url = import.meta.env.BASE_URL;
-  if (base_url.includes('tb.pro')) {
+  const base_url = import.meta.env.VITE_SEND_CLIENT_URL;
+
+  if (base_url.includes('send.tb.pro')) {
     return 'production';
   }
-  if (base_url.includes('thunderbird.dev')) {
+  if (base_url.includes('send-stage.tb.pro')) {
     return 'staging';
   }
   if (base_url.includes('localhost')) {
