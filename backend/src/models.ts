@@ -562,8 +562,8 @@ export const createLoginSession = async (id: string) =>
   );
 
 export const getLoginSession = async (id: string) =>
-  fromPrismaV3(
-    prisma.login.findFirst,
+  fromPrismaV2(
+    prisma.login.findUniqueOrThrow,
     {
       where: {
         fxasession: id,

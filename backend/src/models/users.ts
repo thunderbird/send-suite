@@ -28,6 +28,21 @@ export async function getUserById(id: number) {
   return await prisma.user.findUnique({ where: { id } });
 }
 
+export async function resetKeys(id: number) {
+  return await prisma.user.update({
+    data: {
+      publicKey: null,
+      backupKeypair: null,
+      backupContainerKeys: null,
+      backupKeystring: null,
+      backupSalt: null,
+    },
+    where: {
+      id,
+    },
+  });
+}
+
 export async function getUserByEmail(email: string) {
   // TODO: revisit this and consider deleting
   const query = {
@@ -47,6 +62,57 @@ export async function getUserByEmail(email: string) {
   }
 
   return users[0];
+}
+
+export async function getUserByEmailV2(email: string) {
+  return prisma.user.findFirst({
+    where: {
+      email,
+    },
+    select: {
+      id: true,
+      email: true,
+      tier: true,
+      createdAt: true,
+      updatedAt: true,
+      activatedAt: true,
+    },
+  });
+}
+
+export async function getUserByEmailAndPassword(
+  email: string,
+  password: string
+) {
+  return prisma.user.findFirst({
+    where: {
+      email,
+      hashedPassword: password,
+    },
+    select: {
+      id: true,
+      email: true,
+      tier: true,
+      createdAt: true,
+      updatedAt: true,
+      activatedAt: true,
+    },
+  });
+}
+
+export async function createUserWithPassword(email: string, password: string) {
+  return prisma.user.create({
+    data: {
+      email,
+      tier: UserTier.FREE,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      hashedPassword: password,
+    },
+    select: {
+      id: true,
+    },
+  });
 }
 
 // Given a Mozilla account id, find or create a Profile and linked User

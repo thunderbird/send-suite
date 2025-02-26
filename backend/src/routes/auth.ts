@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Request, Router } from 'express';
 import jwt from 'jsonwebtoken';
 import {
   addErrorHandling,
@@ -6,10 +6,17 @@ import {
   wrapAsyncHandler,
 } from '../errors/routes';
 
-import { getJWTfromToken, getUserFromJWT, signJwt } from '@/auth/client';
+import {
+  getJWTfromToken,
+  getUserFromJWT,
+  registerAuthToken,
+  registerTokens,
+} from '@/auth/client';
+import { getLoginSession } from '@/models';
+import { getUserByEmail } from '@/models/users';
 import { getCookie } from '@/utils';
-import { User } from '@prisma/client';
-import { requireJWT } from '../middleware';
+import { User, UserTier } from '@prisma/client';
+import { requireJWT, requirePublicLogin } from '../middleware';
 
 export type AuthResponse = {
   id: User['id'];
@@ -40,7 +47,8 @@ router.get(
 
       jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
       const signedData = getUserFromJWT(refreshToken);
-      signJwt(signedData, res);
+
+      registerAuthToken(signedData, res);
 
       console.log('refreshed token successfully');
       return res.status(200).json({
@@ -53,6 +61,74 @@ router.get(
         .status(500)
         .json({ message: `Not authorized: Unable to refresh token` });
     }
+  })
+);
+
+// Route for obtaining an authorization URL for Mozilla account.
+router.get(
+  '/register',
+  addErrorHandling(AUTH_ERRORS.LOG_IN_FAILED),
+  requirePublicLogin,
+  wrapAsyncHandler(async (req: Request, res) => {
+    // We'll attempt to match this in the callback.
+    try {
+      const { fxasession } = await getLoginSession(req.query.state as string);
+      const email = fxasession.split('____')[1];
+
+      const userData = await getUserByEmail(email);
+
+      const signedData: AuthResponse = {
+        id: userData.id,
+        uniqueHash: userData.uniqueHash,
+        email,
+        tier: UserTier.FREE,
+      };
+
+      registerTokens(signedData, res);
+    } catch (err) {
+      console.error('Could not save session in /login.', err);
+      return res.status(500).json(err);
+    }
+
+    // Save session and send the auth url to the front end
+    // so they can do the redirect.
+    res.status(200).json({
+      status: 'success',
+    });
+  })
+);
+
+// Route for obtaining an authorization URL for Mozilla account.
+router.get(
+  '/login',
+  addErrorHandling(AUTH_ERRORS.LOG_IN_FAILED),
+  requirePublicLogin,
+  wrapAsyncHandler(async (req: Request, res) => {
+    // We'll attempt to match this in the callback.
+    try {
+      const { fxasession } = await getLoginSession(req.query.state as string);
+      const email = fxasession.split('____')[1];
+
+      const userData = await getUserByEmail(email);
+
+      const signedData: AuthResponse = {
+        id: userData.id,
+        uniqueHash: userData.uniqueHash,
+        email,
+        tier: UserTier.FREE,
+      };
+
+      registerTokens(signedData, res);
+    } catch (err) {
+      console.error('Could not save session in /login.', err);
+      return res.status(500).json(err);
+    }
+
+    // Save session and send the auth url to the front end
+    // so they can do the redirect.
+    res.status(200).json({
+      status: 'success',
+    });
   })
 );
 

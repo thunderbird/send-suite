@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { validateJWT } from '@/auth/jwt';
 import { Context } from '@/trpc';
 import { TRPCError } from '@trpc/server';
@@ -15,7 +16,6 @@ type ContextPlugin = {
  */
 export async function isAuthed(opts: {
   ctx: Context;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   next: (p: ContextPlugin | void) => Promise<any>;
 }) {
   const { ctx } = opts;
@@ -41,8 +41,21 @@ export async function isAuthed(opts: {
 
 export async function getGroupMemberPermission(opts: {
   ctx: Context;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   next: (p: ContextPlugin | void) => Promise<any>;
 }) {
   return opts.next();
+}
+
+/**
+ * This middleware prevents public login routes to function if the env variable is not enabled
+ * This should not be used in production
+ **/
+export function requirePublicLogin(opts: {
+  ctx: Context;
+  next: (p: ContextPlugin | void) => Promise<any>;
+}) {
+  if (process.env?.ALLOW_PUBLIC_LOGIN === 'true') {
+    return opts.next();
+  }
+  throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
 }

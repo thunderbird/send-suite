@@ -196,3 +196,14 @@ export function requireSharePermission(req, res, next) {
   }
   next();
 }
+
+export function requirePublicLogin(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  if (process.env?.ALLOW_PUBLIC_LOGIN === 'true') {
+    return next();
+  }
+  return reject(res, 500, 'Public login is disabled');
+}
