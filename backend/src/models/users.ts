@@ -80,22 +80,14 @@ export async function getUserByEmailV2(email: string) {
   });
 }
 
-export async function getUserByEmailAndPassword(
-  email: string,
-  password: string
-) {
+export async function getHashedPassword(email: string) {
   return prisma.user.findFirst({
     where: {
       email,
-      hashedPassword: password,
     },
     select: {
+      hashedPassword: true,
       id: true,
-      email: true,
-      tier: true,
-      createdAt: true,
-      updatedAt: true,
-      activatedAt: true,
     },
   });
 }

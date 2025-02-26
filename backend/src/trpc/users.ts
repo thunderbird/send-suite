@@ -1,3 +1,4 @@
+import { hashPassword, verifyHash } from '@/auth/client';
 import { createLoginSession } from '@/models';
 import { uuidv4 } from '@/utils';
 import { TRPCError } from '@trpc/server';
@@ -5,7 +6,7 @@ import { createHash } from 'crypto';
 import { z } from 'zod';
 import {
   createUserWithPassword,
-  getUserByEmailAndPassword,
+  getHashedPassword,
   getUserByEmailV2,
   getUserById,
   updateUniqueHash,
@@ -39,19 +40,26 @@ export const usersRouter = router({
     .mutation(async ({ input }) => {
       // Check if the user already exists
       try {
-        const userData = await getUserByEmailAndPassword(
-          input.email,
-          input.password
-        );
+        const userData = await getHashedPassword(input.email);
         // If the user already exists, throw a conflict error
-        if (!userData?.id) {
+        if (!userData?.hashedPassword) {
           throw Error('User not found');
         }
+
+        const isPasswordMatch = await verifyHash(
+          input.password,
+          userData.hashedPassword
+        );
+
+        if (!isPasswordMatch) {
+          throw Error('Password does not match');
+        }
+
         const { state } = await handleSuccessfulLogin(input.email, userData.id);
         return { state };
       } catch {
         throw new TRPCError({
-          message: 'Could not find user',
+          message: 'Incorrect email or password',
           code: 'BAD_REQUEST',
         });
       }
@@ -76,15 +84,17 @@ export const usersRouter = router({
         }
       } catch {
         throw new TRPCError({
-          message: 'User already exists on catch message',
+          message: 'User already exists',
           code: 'CONFLICT',
         });
       }
 
       try {
+        const hashedPassword = await hashPassword(input.password);
+
         const { id } = await createUserWithPassword(
           input.email,
-          input.password
+          hashedPassword
         );
 
         const { state } = await handleSuccessfulLogin(input.email, id);

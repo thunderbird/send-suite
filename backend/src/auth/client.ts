@@ -1,6 +1,7 @@
 import { DAYS_TO_EXPIRY, JWT_EXPIRY, JWT_REFRESH_TOKEN_EXPIRY } from '@/config';
 import { AuthResponse } from '@/routes/auth';
 import { getCookie, getTokenExpiration } from '@/utils';
+import bcrypt from 'bcryptjs';
 import type { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { Issuer, generators } from 'openid-client';
@@ -142,4 +143,14 @@ export function registerTokens(signedData: AuthResponse, res: Response) {
   });
 
   registerAuthToken(signedData, res);
+}
+
+export async function verifyHash(input: string, hash: string) {
+  return await bcrypt.compare(input, hash);
+}
+
+export async function hashPassword(password: string) {
+  const salt = await bcrypt.genSalt(10);
+  const hash = await bcrypt.hash(password, salt);
+  return hash;
 }
