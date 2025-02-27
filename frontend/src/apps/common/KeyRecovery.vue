@@ -3,9 +3,13 @@ import ButtonComponent from '@/apps/send/elements/BtnComponent.vue';
 import { CopyIcon } from '@thunderbirdops/services-ui';
 import { useClipboard } from '@vueuse/core';
 import { computed, ref } from 'vue';
+import { useModal, useModalSlot } from 'vue-final-modal';
+import ResetConfirmation from '../send/components/ResetConfirmation.vue';
+import ResetModal from './modals/ResetModal.vue';
 
 type Props = {
   makeBackup: () => void;
+  resetKeys: () => void;
   restoreFromBackup: () => void;
   shouldBackup: boolean;
   words: string[];
@@ -16,12 +20,29 @@ type Props = {
 };
 const {
   makeBackup,
+  resetKeys,
   restoreFromBackup,
   shouldBackup,
   words: wordsProp,
   shouldRestore,
   setPassphrase,
 } = defineProps<Props>();
+
+const { open, close: closefn } = useModal({
+  component: ResetModal,
+  attrs: {
+    title: 'Reset keys?',
+  },
+  slots: {
+    default: useModalSlot({
+      component: ResetConfirmation,
+      attrs: {
+        closefn: () => closefn(),
+        confirm: resetKeys,
+      },
+    }),
+  },
+});
 
 const words = computed(() => wordsProp);
 const userSetPassword = ref('');
@@ -81,6 +102,22 @@ const submit = () => {
   <button-component v-if="shouldRestore" primary @click.prevent="submit"
     >Restore keys from backup</button-component
   >
+
+  <div v-if="overrideVisibility" class="mt-4">
+    <p>
+      <strong>Note:</strong> If you lose this key, you will not be able to
+      access your files. We do not store your key on our servers and cannot
+      recover it for you.
+    </p>
+    <p>
+      If you lost your key, you can reset it by clicking the button below. This
+      will generate a new key and you will lose access to any files you created
+      before this.
+    </p>
+    <button-component danger class="mt-4" @click.prevent="open"
+      >Reset keys and lose access to previously created files</button-component
+    >
+  </div>
 </template>
 
 <style scoped>

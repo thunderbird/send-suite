@@ -7,8 +7,10 @@ import useKeychainStore from '@/stores/keychain-store';
 // move the following imports elsewhere
 import { backupKeys, restoreKeys } from '@/lib/keychain';
 import { generatePassphrase } from '@/lib/passphrase';
+import { trpc } from '@/lib/trpc';
 import useApiStore from '@/stores/api-store';
 import useUserStore from '@/stores/user-store';
+import { useMutation } from '@tanstack/vue-query';
 import { useExtensionStore } from '../send/stores/extension-store';
 import { PHRASE_SIZE } from './constants';
 import ExpandIcon from './ExpandIcon.vue';
@@ -32,7 +34,7 @@ const setPassphrase = (newPassphrase: string) => {
 };
 
 const { api } = useApiStore();
-const { getBackup } = useUserStore();
+const { getBackup, logOut } = useUserStore();
 const { keychain } = useKeychainStore();
 const { configureExtension } = useExtensionStore();
 const bigMessageDisplay = ref('');
@@ -40,6 +42,17 @@ const shouldRestore = ref(false);
 const shouldBackup = ref(false);
 const hasBackedUpKeys = ref<string>(null);
 const shouldOverrideVisibility = ref(false);
+
+const { mutate: resetKeys } = useMutation({
+  mutationKey: ['resetKeys'],
+  mutationFn: async () => {
+    await trpc.resetKeys.mutate();
+  },
+  onSuccess: async () => {
+    await logOut();
+    window.location.reload();
+  },
+});
 
 const userSetPassword = keychain.getPassphraseValue();
 
@@ -142,6 +155,7 @@ async function restoreFromBackup() {
             :regenerate-passphrase="regeneratePassphrase"
             :set-passphrase="setPassphrase"
             :override-visibility="shouldOverrideVisibility"
+            :reset-keys="resetKeys"
           />
         </main>
       </div>

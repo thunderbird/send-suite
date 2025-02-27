@@ -1,5 +1,11 @@
 import { hashPassword, verifyHash } from '@/auth/client';
-import { createLoginSession } from '@/models';
+import {
+  createLoginSession,
+  deleteContainer,
+  deleteUpload,
+  getContainersOwnedByUser,
+  getUploadsOwnedByUser,
+} from '@/models';
 import { uuidv4 } from '@/utils';
 import { TRPCError } from '@trpc/server';
 import { createHash } from 'crypto';
@@ -9,10 +15,11 @@ import {
   getHashedPassword,
   getUserByEmailV2,
   getUserById,
+  resetKeys,
   updateUniqueHash,
 } from '../models/users';
 import { router, publicProcedure as t } from '../trpc';
-import { isAuthed, requirePublicLogin } from './middlewares';
+import { isAuthed, requirePublicLogin, useEnvironment } from './middlewares';
 
 export const usersRouter = router({
   getUser: t.query(({ ctx }) => {
@@ -25,8 +32,34 @@ export const usersRouter = router({
   }),
 
   // ==========================
-  // Public routes (DO NOT USE IN PRODUCTION)
+  // DO NOT USE IN PRODUCTION
   // ==========================
+
+  // This mutation allows authed users to reset their passphrase
+  resetKeys: t
+    .use(isAuthed)
+    .use((props) => useEnvironment(props, ['stage', 'development']))
+    .mutation(async ({ ctx }) => {
+      const id = Number(ctx.user.id);
+      try {
+        await resetKeys(id);
+        const containers = await getContainersOwnedByUser(id);
+        const uploads = await getUploadsOwnedByUser(id);
+
+        // Burn containers
+        await Promise.all(containers.map(({ id }) => deleteContainer(id)));
+        // Burn uploads
+        await Promise.all(uploads.map(({ id }) => deleteUpload(id)));
+
+        return { success: true };
+      } catch (e) {
+        console.error(e);
+        throw new TRPCError({
+          message: 'Could not reset keys',
+          code: 'UNPROCESSABLE_CONTENT',
+        });
+      }
+    }),
 
   /* This mutation should not be used in production */
   userLogin: t
