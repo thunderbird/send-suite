@@ -40,6 +40,20 @@ export async function _saveFile(file: SaveFileData): Promise<void> {
   });
 }
 
+export async function downloadTxt(text: string, filename: string) {
+  const blob = new Blob([text], { type: 'text/plain' });
+  const downloadUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = downloadUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(downloadUrl);
+  }, 0);
+}
+
 export async function getBlob(
   id: string,
   size: number,

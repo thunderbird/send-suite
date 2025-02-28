@@ -5,6 +5,7 @@ import StatusBar from '@/apps/common/StatusBar.vue';
 import useKeychainStore from '@/stores/keychain-store';
 
 // move the following imports elsewhere
+import { downloadTxt } from '@/lib/filesync';
 import { backupKeys, restoreKeys } from '@/lib/keychain';
 import { generatePassphrase } from '@/lib/passphrase';
 import useApiStore from '@/stores/api-store';
@@ -31,8 +32,12 @@ const setPassphrase = (newPassphrase: string) => {
   words.value = res.split('-');
 };
 
+const {
+  getBackup,
+  user: { email },
+} = useUserStore();
+
 const { api } = useApiStore();
-const { getBackup } = useUserStore();
 const { keychain } = useKeychainStore();
 const { configureExtension } = useExtensionStore();
 const bigMessageDisplay = ref('');
@@ -79,6 +84,13 @@ const showKeyRecovery = computed(() => {
   );
 });
 
+const downloadPassPhrase = async () => {
+  await downloadTxt(
+    words.value.join(' - '),
+    `tb-send-passphrase-${email}-key.txt`
+  );
+};
+
 async function makeBackup() {
   bigMessageDisplay.value = '';
   const userConfirmed = confirm(
@@ -93,6 +105,7 @@ async function makeBackup() {
 
   try {
     await backupKeys(keychain, api, bigMessageDisplay);
+    await downloadPassPhrase();
     hideBackupRestore();
     configureExtension();
   } catch (e) {
@@ -142,6 +155,7 @@ async function restoreFromBackup() {
             :regenerate-passphrase="regeneratePassphrase"
             :set-passphrase="setPassphrase"
             :override-visibility="shouldOverrideVisibility"
+            :download-passphrase="downloadPassPhrase"
           />
         </main>
       </div>

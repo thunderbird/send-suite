@@ -3,6 +3,7 @@ import ButtonComponent from '@/apps/send/elements/BtnComponent.vue';
 import { CopyIcon } from '@thunderbirdops/services-ui';
 import { useClipboard } from '@vueuse/core';
 import { computed, ref } from 'vue';
+import DownloadIcon from './DownloadIcon.vue';
 
 type Props = {
   makeBackup: () => void;
@@ -13,6 +14,7 @@ type Props = {
   regeneratePassphrase: () => void;
   setPassphrase: (newPassphrase: string) => void;
   overrideVisibility: boolean;
+  downloadPassphrase: () => void;
 };
 const {
   makeBackup,
@@ -66,9 +68,14 @@ const submit = () => {
 
   <div v-if="shouldBackup || overrideVisibility" class="container">
     <input class="w-full" type="text" :value="words.join(' - ')" disabled />
-    <button @click.prevent="onCopy(words.join(' - '))">
-      <CopyIcon />
-    </button>
+    <div class="flex button_box">
+      <button @click.prevent="onCopy(words.join(' - '))">
+        <CopyIcon />
+      </button>
+      <button @click.prevent="downloadPassphrase()">
+        <DownloadIcon />
+      </button>
+    </div>
   </div>
 
   <div v-if="shouldRestore" class="flex">
@@ -88,5 +95,8 @@ const submit = () => {
   display: grid;
   grid-template-columns: 3fr 1fr;
   gap: 0.5rem;
+}
+.button_box button {
+  width: 31px;
 }
 </style>
