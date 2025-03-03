@@ -22,7 +22,7 @@ export default [
     },
   },
   pluginJs.configs.recommended,
-  ...tseslint.configs.recommended,
+  ...(tseslint.configs.recommended as any),
   ...pluginVue.configs['flat/recommended'],
   eslintConfigPrettier,
   {
