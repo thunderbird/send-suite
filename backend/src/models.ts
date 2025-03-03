@@ -264,6 +264,41 @@ export async function getContainerInfo(id: number) {
   );
 }
 
+export async function getUploadsOwnedByUser(id: number) {
+  return await prisma.upload.findMany({
+    where: {
+      ownerId: id,
+    },
+    select: {
+      id: true,
+    },
+  });
+}
+
+export async function deleteUpload(id: string) {
+  return await prisma.upload.delete({
+    where: {
+      id,
+    },
+  });
+}
+
+export async function getContainersOwnedByUser(id: number) {
+  return await prisma.container.findMany({
+    where: {
+      ownerId: id,
+    },
+    select: {
+      id: true,
+      items: true,
+    },
+  });
+}
+
+export async function deleteContainer(id: number) {
+  return prisma.container.delete({ where: { id } });
+}
+
 export async function getContainerWithDescendants(id: number) {
   const query = {
     where: { id },
