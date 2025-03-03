@@ -1,6 +1,7 @@
 import 'dotenv/config';
 
 type Environment = 'development' | 'production';
+export type EnvironmentName = 'stage' | 'prod' | 'development';
 
 const appConfig = {
   // file_dir: `${tmpdir()}${path.sep}send-${randomBytes(4).toString("hex")}`,
@@ -13,6 +14,7 @@ const appConfig = {
 };
 
 const ENVIRONMENT = process.env.NODE_ENV || ('development' as Environment);
+const BASE_URL = process.env.BASE_URL;
 
 export const IS_ENV_DEV = ENVIRONMENT === 'development';
 export const IS_ENV_PROD = ENVIRONMENT === 'production';
@@ -33,6 +35,16 @@ export const JWT_REFRESH_TOKEN_EXPIRY = ONE_WEEK;
 
 // Determines how many times a file can be attempted to be downloaded with the wrong password before it gets locked
 export const MAX_ACCESS_LINK_RETRIES = 5;
+
+export function getEnvironmentName(): EnvironmentName {
+  if (BASE_URL.includes('send-backend.tb.pro')) {
+    return 'prod';
+  }
+  if (BASE_URL.includes('send-backend-stage.tb.pro')) {
+    return 'stage';
+  }
+  return 'development';
+}
 
 export { ENVIRONMENT };
 

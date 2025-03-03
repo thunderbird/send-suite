@@ -1,18 +1,16 @@
 import { createLoginSession, deleteSession, getLoginSession } from '@/models';
-import { getTokenExpiration } from '@/utils';
 import axios from 'axios';
 import { createHash } from 'crypto';
 import { Request, Router } from 'express';
-import jwt from 'jsonwebtoken';
 import {
   checkAllowList,
   clearCookie,
   generateState,
   getClient,
   getIssuer,
-  signJwt,
+  registerTokens,
 } from '../auth/client';
-import { ENVIRONMENT, JWT_REFRESH_TOKEN_EXPIRY } from '../config';
+import { ENVIRONMENT } from '../config';
 import {
   addErrorHandling,
   AUTH_ERRORS,
@@ -25,7 +23,6 @@ import {
 import { AuthResponse } from './auth';
 
 const router: Router = Router();
-const refreshTokenExpiration = getTokenExpiration(JWT_REFRESH_TOKEN_EXPIRY);
 
 // Route for obtaining an authorization URL for Mozilla account.
 router.get(
@@ -170,24 +167,7 @@ router.get(
         tier: user.tier,
       };
 
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      //@ts-ignore
-      const refreshTokenToken = jwt.sign(
-        signedData,
-        process.env.REFRESH_TOKEN_SECRET!,
-        {
-          expiresIn: refreshTokenExpiration.stringified,
-        }
-      );
-
-      res.cookie('refresh_token', `Bearer ${refreshTokenToken}`, {
-        maxAge: refreshTokenExpiration.milliseconds,
-        httpOnly: true,
-        sameSite: 'none',
-        secure: true,
-      });
-
-      signJwt(signedData, res);
+      registerTokens(signedData, res);
 
       res.redirect('/login-success.html');
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

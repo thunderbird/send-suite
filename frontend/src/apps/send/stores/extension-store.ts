@@ -1,12 +1,13 @@
 // stores/counter.js
-import useConfigurationStore from '@/stores/configuration-store';
+
 import { defineStore } from 'pinia';
+import { useConfigStore } from './config-store';
 
 const DEBUG = true;
 const SERVER = `server`;
 
 export const useExtensionStore = defineStore('extension', () => {
-  const { serverUrl, setServerUrl } = useConfigurationStore();
+  const { serverUrl, setServerUrl } = useConfigStore();
 
   // This specifies the id of the provider chosen in the
   // "Composition > Attachments" window.
@@ -20,7 +21,7 @@ export const useExtensionStore = defineStore('extension', () => {
       browser.cloudFile.updateAccount(accountId, {
         configured: true,
       });
-    } catch (e) {
+    } catch {
       console.log(
         `setAccountConfigured: You're probably running this outside of Thundebird`
       );
@@ -54,6 +55,7 @@ export const useExtensionStore = defineStore('extension', () => {
       .then(() => {
         setAccountConfigured(accountId);
         setServerUrl(serverUrl.value);
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         DEBUG &&
           browser.storage.local.get(accountId).then((accountInfo) => {
             if (accountInfo[accountId] && SERVER in accountInfo[accountId]) {

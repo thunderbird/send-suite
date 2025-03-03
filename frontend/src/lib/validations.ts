@@ -76,3 +76,14 @@ export const getCanRetry = async (linkId: string) => {
   }
   return true;
 };
+
+export const validatePassword = (pass: string): boolean => {
+  const hasMinLength = pass.length >= 12;
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(pass);
+  const hasNumber = /\d/.test(pass);
+  return hasMinLength && hasSpecialChar && hasNumber;
+};
+
+export const validateEmail = (email: string): boolean => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};

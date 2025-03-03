@@ -1,9 +1,12 @@
-import { DAYS_TO_EXPIRY, JWT_EXPIRY } from '@/config';
+import { DAYS_TO_EXPIRY, JWT_EXPIRY, JWT_REFRESH_TOKEN_EXPIRY } from '@/config';
 import { AuthResponse } from '@/routes/auth';
-import { getCookie } from '@/utils';
+import { getCookie, getTokenExpiration } from '@/utils';
+import bcrypt from 'bcryptjs';
 import type { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { Issuer, generators } from 'openid-client';
+
+const refreshTokenExpiration = getTokenExpiration(JWT_REFRESH_TOKEN_EXPIRY);
 
 export function generateState() {
   // State is the random value that we pass to the auth server.
@@ -94,7 +97,7 @@ export function getDataFromAuthenticatedRequest(req: Request) {
   return user;
 }
 
-export const signJwt = (signedData: AuthResponse, res: Response) => {
+export const registerAuthToken = (signedData: AuthResponse, res: Response) => {
   // Sign the jwt and pass it as a cookie
   const jwtToken = jwt.sign(signedData, process.env.ACCESS_TOKEN_SECRET!);
 
@@ -120,3 +123,34 @@ export const getStorageLimit = (req: Request) => {
   const hasLimitedStorage = tier === 'EPHEMERAL';
   return { hasLimitedStorage, daysToExpiry: DAYS_TO_EXPIRY };
 };
+
+export function registerTokens(signedData: AuthResponse, res: Response) {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //@ts-ignore
+  const refreshTokenToken = jwt.sign(
+    signedData,
+    process.env.REFRESH_TOKEN_SECRET!,
+    {
+      expiresIn: refreshTokenExpiration.stringified,
+    }
+  );
+
+  res.cookie('refresh_token', `Bearer ${refreshTokenToken}`, {
+    maxAge: refreshTokenExpiration.milliseconds,
+    httpOnly: true,
+    sameSite: 'none',
+    secure: true,
+  });
+
+  registerAuthToken(signedData, res);
+}
+
+export async function verifyHash(input: string, hash: string) {
+  return await bcrypt.compare(input, hash);
+}
+
+export async function hashPassword(password: string) {
+  const salt = await bcrypt.genSalt(10);
+  const hash = await bcrypt.hash(password, salt);
+  return hash;
+}

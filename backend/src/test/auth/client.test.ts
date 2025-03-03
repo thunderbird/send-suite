@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { DAYS_TO_EXPIRY } from '@/config';
+import { DAYS_TO_EXPIRY, JWT_EXPIRY, JWT_REFRESH_TOKEN_EXPIRY } from '@/config';
 import { after, before, beforeEach } from 'node:test';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   checkAllowList,
+  clearCookie,
   generateState,
   getAllowedOrigins,
   getClient,
@@ -13,15 +14,17 @@ import {
   getStorageLimit,
   getUserFromJWT,
   isEmailInAllowList,
-  signJwt,
+  registerAuthToken,
+  registerTokens,
 } from '../../auth/client';
 
-const { mockedDecode } = vi.hoisted(() => ({
+const { mockedDecode, mockedSign } = vi.hoisted(() => ({
   mockedDecode: vi.fn(),
+  mockedSign: vi.fn(),
 }));
 
 vi.mock('jsonwebtoken', () => ({
-  default: { decode: mockedDecode, sign: vi.fn() },
+  default: { decode: mockedDecode, sign: mockedSign },
 }));
 
 describe('Auth Client', () => {
@@ -285,7 +288,7 @@ describe('getUserFromJWT', () => {
   });
 });
 
-describe('signJwt', () => {
+describe('registerAuthToken', () => {
   beforeAll(() => {
     vi.unstubAllEnvs();
     vi.stubEnv('ACCESS_TOKEN_SECRET', 'test_secret');
@@ -301,7 +304,7 @@ describe('signJwt', () => {
     };
 
     //@ts-ignore
-    signJwt(mockSignedData as any, mockRes);
+    registerAuthToken(mockSignedData as any, mockRes);
 
     expect(mockRes.cookie).toHaveBeenCalledWith(
       'authorization',
@@ -312,6 +315,88 @@ describe('signJwt', () => {
         secure: true,
         maxAge: expect.any(Number),
       })
+    );
+  });
+});
+
+describe('clearCookie', async () => {
+  it('should clear the cookie', async () => {
+    const mockRes = {
+      cookie: vi.fn(),
+    };
+    clearCookie('cookie_name', mockRes as any);
+    expect(mockRes.cookie).toHaveBeenCalledWith(
+      'cookie_name',
+      'null',
+      expect.objectContaining({
+        maxAge: 0,
+        httpOnly: true,
+        sameSite: 'none',
+        secure: true,
+      })
+    );
+  });
+});
+
+describe('registerTokens', () => {
+  beforeAll(() => {
+    vi.unstubAllEnvs();
+    vi.stubEnv('ACCESS_TOKEN_SECRET', 'test_secret');
+    vi.stubEnv('REFRESH_TOKEN_SECRET', 'refresh_secret');
+    vi.resetAllMocks();
+  });
+
+  it('should set both auth and refresh cookies with correct parameters', () => {
+    const mockRes = {
+      cookie: vi.fn(),
+    };
+    const mockSignedData = {
+      tier: 'PRO',
+      email: 'test@example.com',
+    };
+
+    mockedSign.mockReturnValueOnce('mocked_refresh_token');
+    mockedSign.mockReturnValueOnce('mocked_auth_token');
+
+    //@ts-ignore
+    registerTokens(mockSignedData as any, mockRes);
+
+    expect(mockRes.cookie).toHaveBeenCalledTimes(2);
+    expect(mockRes.cookie).toHaveBeenNthCalledWith(
+      1,
+      'refresh_token',
+      'Bearer mocked_refresh_token',
+      expect.objectContaining({
+        httpOnly: true,
+        sameSite: 'none',
+        secure: true,
+        maxAge: JWT_REFRESH_TOKEN_EXPIRY * 24 * 60 * 60 * 1000,
+      })
+    );
+    expect(mockRes.cookie).toHaveBeenNthCalledWith(
+      2,
+      'authorization',
+      'Bearer mocked_auth_token',
+      expect.objectContaining({
+        httpOnly: true,
+        sameSite: 'none',
+        secure: true,
+        maxAge: JWT_EXPIRY,
+      })
+    );
+    expect(mockedSign).toHaveBeenCalledTimes(2);
+    expect(mockedSign).toHaveBeenNthCalledWith(
+      1,
+      mockSignedData,
+      'refresh_secret',
+      expect.objectContaining({
+        expiresIn: `${JWT_REFRESH_TOKEN_EXPIRY}d`,
+      })
+    );
+    expect(mockedSign).toHaveBeenNthCalledWith(
+      2,
+      mockSignedData,
+      'test_secret'
     );
   });
 });
