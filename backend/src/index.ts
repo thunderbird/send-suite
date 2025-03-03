@@ -125,8 +125,7 @@ export const createContext = ({
         jwtRefreshToken,
       },
     };
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error) {
+  } catch {
     // If the user is not authenticated, we return only the cookies
     return {
       user: null,

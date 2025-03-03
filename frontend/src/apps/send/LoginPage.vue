@@ -9,9 +9,12 @@ import useUserStore from '@/stores/user-store';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import FeedbackBox from '../common/FeedbackBox.vue';
+import FxaLogin from '../common/FxaLogin.vue';
+import PublicLogin from '../common/PublicLogin.vue';
 import SecureSendIcon from '../common/SecureSendIcon.vue';
 import StatusBar from '../common/StatusBar.vue';
 import TBBanner from '../common/TBBanner.vue';
+import { useConfigStore } from './stores/config-store';
 import useFolderStore from './stores/folder-store';
 
 const { api } = useApiStore();
@@ -19,6 +22,7 @@ const { user } = useUserStore();
 const userStore = useUserStore();
 const { keychain } = useKeychainStore();
 const folderStore = useFolderStore();
+const { isPublicLogin } = useConfigStore();
 
 const router = useRouter();
 
@@ -42,15 +46,15 @@ async function onSuccess() {
 <template>
   <main class="container">
     <TBBanner />
-    <h2>Account</h2>
-    <p>You’ll need to login to your Mozilla account to use Thunderbird Send</p>
-    <p v-if="user?.id">Your session has expired, please log back in</p>
-    <Btn
-      primary
-      data-testid="login-button"
-      @click.prevent="mozAcctLogin(onSuccess)"
-      >Login to Mozilla Account</Btn
-    >
+    <FxaLogin v-if="!isPublicLogin" :id="user.id">
+      <Btn
+        primary
+        data-testid="login-button"
+        @click.prevent="mozAcctLogin(onSuccess)"
+        >Login to Mozilla Account</Btn
+      >
+    </FxaLogin>
+    <PublicLogin v-if="isPublicLogin" :on-success="onSuccess" />
     <FeedbackBox />
     <SecureSendIcon />
     <StatusBar />
