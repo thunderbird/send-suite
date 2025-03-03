@@ -3,6 +3,16 @@
 @tailwind utilities;
 
 @layer base {
+  @font-face {
+    font-family: 'Inter';
+    src:
+      url('../../../public/fonts/Inter/Inter-VariableFont_opsz,wght.woff2')
+        format('ttf'),
+      url('../../../public/fonts/Inter/Inter-VariableFont_opsz,wght.ttf')
+        format('ttf');
+    font-weight: 400;
+    font-style: normal;
+  }
   th {
     @apply py-1 px-4 text-gray-600 font-semibold text-sm text-left;
   }
@@ -83,4 +93,10 @@
   color: white;
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.8);
+}
+
+html,
+body,
+#app {
+  font-family: 'Inter', sans-serif;
 }
