@@ -14,6 +14,8 @@ import useKeychainStore from '@/stores/keychain-store';
 
 import { IS_DEV } from '@/lib/clientConfig';
 import { getCanRetry } from '@/lib/validations';
+
+import useMetricsStore from '@/stores/metrics';
 import NotFoundPage from '../common/NotFoundPage.vue';
 import ExtensionPage from './ExtensionPage.vue';
 import LoginPage from './LoginPage.vue';
@@ -122,6 +124,7 @@ router.beforeEach(async (to, from, next) => {
   const { keychain } = useKeychainStore();
   const { api } = useApiStore();
   const { validators } = useStatusStore();
+  const { metrics } = useMetricsStore();
 
   //  redirectOnValidSession - means that if the user has a session in local storage, they will be redirected to the Send page
 
@@ -141,6 +144,7 @@ router.beforeEach(async (to, from, next) => {
     await validators();
 
   if (requiresValidToken && !isTokenValid) {
+    metrics.capture('send.invalid.token');
     return next('/login');
   }
 

@@ -20,6 +20,7 @@ import {
 } from '../errors/routes';
 
 import { getDataFromAuthenticatedRequest } from '@/auth/client';
+import { useMetrics } from '@/metrics';
 import { addExpiryToContainer } from '@/utils';
 import {
   getGroupMemberPermissions,
@@ -28,6 +29,7 @@ import {
 } from '../middleware';
 
 const router: Router = Router();
+const Metrics = useMetrics();
 
 // Request a new hash for a shared container
 router.post(
@@ -37,6 +39,7 @@ router.post(
   requireSharePermission,
   addErrorHandling(SHARING_ERRORS.ACCESS_LINK_NOT_CREATED),
   wrapAsyncHandler(async (req, res) => {
+    const { uniqueHash } = getDataFromAuthenticatedRequest(req);
     const {
       containerId,
       senderId,
@@ -75,7 +78,18 @@ router.post(
       expiration
     );
 
-    res.status(200).json({
+    Metrics.capture({
+      event: 'accessLink.created',
+      distinctId: uniqueHash,
+      properties: {
+        id: accessLink.id,
+        expiration,
+      },
+    });
+
+    await Metrics.shutdown();
+
+    return res.status(200).json({
       id: accessLink.id,
       expiryDate: accessLink.expiryDate,
     });
