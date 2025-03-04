@@ -11,6 +11,11 @@ bun run scripts/set-id.ts
 # Get version from package.json and replace dots with hyphens
 VERSION=$(jq -r .version < package.json | sed 's/\./-/g')
 
+# Copy css to backend
+cp src/apps/send/style.css ../backend/public/style.css
+# Copy public folder to backend
+cp -R public/icons ../backend/public
+
 # Remove old builds
 rm -rf dist && rm -rf dist-web
 rm -rf send-suite

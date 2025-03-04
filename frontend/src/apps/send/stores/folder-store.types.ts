@@ -51,6 +51,8 @@ export type UploadResponse = {
   };
   daysToExpiry?: number;
   expired?: boolean;
+  reportedAt?: Date;
+  reported?: boolean;
 };
 
 export type Upload = UploadResponse;
