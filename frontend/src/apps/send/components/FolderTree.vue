@@ -83,7 +83,7 @@ defineProps<ReportProps>();
         uploadId,
         name,
         wrappedKey,
-        upload: { daysToExpiry, expired, size, type },
+        upload: { size, type },
       } of folder.items"
       :key="uploadId"
     >
@@ -93,10 +93,6 @@ defineProps<ReportProps>();
           file name: {{ name }}<br />
           size: {{ size }} bytes<br />
           mime type: {{ type }}<br />
-          <div>
-            <span v-if="expired" class="text-red-500">Expired</span>
-            <span v-else>expires in: {{ daysToExpiry }} days</span>
-          </div>
         </div>
         <button
           type="submit"
@@ -116,7 +112,7 @@ defineProps<ReportProps>();
           <span class="font-bold">Download</span>
         </button>
       </div>
-      <div v-if="!expired">
+      <div>
         <ReportContent :upload-id="uploadId" :container-id="containerId" />
       </div>
     </li>

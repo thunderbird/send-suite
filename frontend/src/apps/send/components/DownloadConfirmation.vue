@@ -6,7 +6,7 @@ import ProgressBar from './ProgressBar.vue';
 
 const { closefn, confirm, text } = defineProps<{
   closefn: () => Promise<string>;
-  confirm: () => Promise<boolean>;
+  confirm: () => Promise<boolean | void>;
   text?: string;
 }>();
 

@@ -1,21 +1,13 @@
 <script setup lang="ts">
 import BackupAndRestore from '@/apps/common/BackupAndRestore.vue';
+import SecureSendIcon from '@/apps/common/SecureSendIcon.vue';
 import UserDashboard from '@/apps/common/UserDashboard.vue';
-import LogOutButton from '@/apps/send/elements/LogOutButton.vue';
-import useUserStore from '@/stores/user-store';
-
-const userStore = useUserStore();
-
-async function logOut() {
-  await userStore.logOut();
-  location.reload();
-}
 </script>
 <template>
   <div class="container">
     <UserDashboard />
     <BackupAndRestore />
-    <log-out-button :log-out="logOut" />
+    <SecureSendIcon />
   </div>
 </template>
 

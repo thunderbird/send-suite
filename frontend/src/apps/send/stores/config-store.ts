@@ -8,6 +8,10 @@ export const useConfigStore = defineStore('config', () => {
   const isStaging = environmentName === 'staging';
   const isDev = environmentName === 'development';
 
+  const isExtension = computed(() => {
+    return location.href.includes('moz-extension:');
+  });
+
   const _serverUrl = ref(import.meta.env.VITE_SEND_SERVER_URL);
   const _isPublicLogin = ref(
     import.meta.env.VITE_ALLOW_PUBLIC_LOGIN === 'true'
@@ -29,6 +33,9 @@ export const useConfigStore = defineStore('config', () => {
     serverUrl,
     setServerUrl,
     isPublicLogin,
+
+    // Extension
+    isExtension,
   };
 });
 

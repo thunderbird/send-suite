@@ -6,16 +6,16 @@ import { inject, onMounted, ref, watch } from 'vue';
 import useFolderStore from '@/apps/send/stores/folder-store';
 import '@thunderbirdops/services-ui/style.css';
 
+import DownloadModal from '@/apps/common/modals/DownloadModal.vue';
 import BreadCrumb from '@/apps/send/components/BreadCrumb.vue';
 import Btn from '@/apps/send/elements/BtnComponent.vue';
 import FolderTableRowCell from '@/apps/send/elements/FolderTableRowCell.vue';
 import { IconDotsVertical, IconDownload, IconTrash } from '@tabler/icons-vue';
-import { ExpiryUnitTypes, ExpiryBadge } from '@thunderbirdops/services-ui';
+import { ExpiryBadge, ExpiryUnitTypes } from '@thunderbirdops/services-ui';
 import { useDebounceFn } from '@vueuse/core';
+import { useModal, useModalSlot } from 'vue-final-modal';
 import { useRoute, useRouter } from 'vue-router';
 import { ItemResponse } from '../stores/folder-store.types';
-import { useModal, useModalSlot } from 'vue-final-modal';
-import DownloadModal from '@/apps/common/modals/DownloadModal.vue';
 import DownloadConfirmation from './DownloadConfirmation.vue';
 
 const folderStore = useFolderStore();
