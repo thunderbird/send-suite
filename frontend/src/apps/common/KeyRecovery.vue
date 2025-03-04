@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ButtonComponent from '@/apps/send/elements/BtnComponent.vue';
+import useMetricsStore from '@/stores/metrics';
 import { CopyIcon } from '@thunderbirdops/services-ui';
 import { useClipboard } from '@vueuse/core';
 import { computed, ref } from 'vue';
@@ -47,6 +48,8 @@ const { open, close: closefn } = useModal({
   },
 });
 
+const { metrics } = useMetricsStore();
+
 const userSetPassword = ref('');
 const words = computed(() => wordsProp);
 
@@ -58,6 +61,7 @@ const onCopy = (text: string) => {
 };
 
 const submit = () => {
+  metrics.capture('send.restore_keys_attempt', { type: 'attempt' });
   setPassphrase(userSetPassword.value);
   restoreFromBackup();
 };

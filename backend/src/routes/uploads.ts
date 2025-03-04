@@ -44,17 +44,15 @@ router.post(
 
     const distinctId = uniqueHash;
 
-    Metrics.capture({
-      event: 'upload.size',
-      properties: { size, type },
-      distinctId,
-    });
-
-    await Metrics.shutdown();
-
     try {
       const upload = await createUpload(id, size, ownerId, type);
-      res.status(201).json({
+      Metrics.capture({
+        event: 'upload.size',
+        properties: { size, type },
+        distinctId,
+      });
+      await Metrics.shutdown();
+      return res.status(201).json({
         message: 'Upload created',
         upload,
       });
