@@ -10,6 +10,7 @@ import { backupKeys, restoreKeys } from '@/lib/keychain';
 import { generatePassphrase } from '@/lib/passphrase';
 import { trpc } from '@/lib/trpc';
 import useApiStore from '@/stores/api-store';
+import useMetricsStore from '@/stores/metrics';
 import useUserStore from '@/stores/user-store';
 import { useMutation } from '@tanstack/vue-query';
 import { useExtensionStore } from '../send/stores/extension-store';
@@ -41,6 +42,7 @@ const {
   user: { email },
 } = useUserStore();
 const { keychain } = useKeychainStore();
+const { metrics } = useMetricsStore();
 const { configureExtension } = useExtensionStore();
 const bigMessageDisplay = ref('');
 const shouldRestore = ref(false);
@@ -139,6 +141,9 @@ async function restoreFromBackup() {
     hideBackupRestore();
     configureExtension();
   } catch (e) {
+    metrics.capture('send.restoreKeys.error', {
+      message: bigMessageDisplay.value,
+    });
     bigMessageDisplay.value = e;
   }
 }
