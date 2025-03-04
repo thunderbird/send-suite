@@ -80,8 +80,8 @@ importers:
         specifier: ^0.1.2
         version: 0.1.2
       posthog-node:
-        specifier: ^4.6.0
-        version: 4.6.0
+        specifier: ^4.8.1
+        version: 4.8.1
       prisma:
         specifier: ^5.22.0
         version: 5.22.0
@@ -2568,8 +2568,8 @@ packages:
     resolution: {integrity: sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ==}
     engines: {node: '>=0.10.0'}
 
-  posthog-node@4.6.0:
-    resolution: {integrity: sha512-Dq6sBTeBXfK0Ez9OWAl+lhUcSInGUshxtoe0b26gFZtnV4byWTEZtwitKB6Xel9wYx3pNHixKOTSIHC/6a6CIA==}
+  posthog-node@4.8.1:
+    resolution: {integrity: sha512-ApMEC1+DbctP/88+VhaCl8SRKpIoReibMf7Mb3rxw3yMthr1rKaM4opbHdZJ0buLhwS5zX8B2ckqLjpwpSjRPg==}
     engines: {node: '>=15.0.0'}
 
   prelude-ls@1.2.1:
@@ -6012,7 +6012,7 @@ snapshots:
     dependencies:
       xtend: 4.0.2
 
-  posthog-node@4.6.0:
+  posthog-node@4.8.1:
     dependencies:
       axios: 1.7.9
     transitivePeerDependencies:
