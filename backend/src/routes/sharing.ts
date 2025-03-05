@@ -20,7 +20,7 @@ import {
 } from '../errors/routes';
 
 import { getDataFromAuthenticatedRequest } from '@/auth/client';
-import { useMetrics } from '@/metrics';
+import { posthog_service, useMetrics } from '@/metrics';
 import { addExpiryToContainer } from '@/utils';
 import {
   getGroupMemberPermissions,
@@ -83,6 +83,7 @@ router.post(
       distinctId: uniqueHash,
       properties: {
         id: accessLink.id,
+        service: posthog_service,
         expiration,
       },
     });

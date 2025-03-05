@@ -16,7 +16,7 @@ import {
 
 import { getDataFromAuthenticatedRequest } from '@/auth/client';
 import storage from '@/storage';
-import { useMetrics } from '../metrics';
+import { posthog_service, useMetrics } from '../metrics';
 import {
   getGroupMemberPermissions,
   requireJWT,
@@ -48,7 +48,7 @@ router.post(
       const upload = await createUpload(id, size, ownerId, type);
       Metrics.capture({
         event: 'upload.size',
-        properties: { size, type },
+        properties: { size, type, service: posthog_service },
         distinctId,
       });
       await Metrics.shutdown();

@@ -5,6 +5,8 @@ const client = new PostHog(process.env.POSTHOG_API_KEY || 'test', {
   host: process.env.POSTHOG_HOST || 'test',
 });
 
+export const posthog_service = 'send';
+
 export const useMetrics = () => {
   const isProd = getEnvironmentName() === 'prod';
 
