@@ -1,12 +1,29 @@
 import { getEnvironmentName } from '@/config';
 import { PostHog } from 'posthog-node';
 
-const client = new PostHog(process.env.POSTHOG_API_KEY || 'test', {
-  host: process.env.POSTHOG_HOST || 'test',
+const client = new PostHog(
+  // API KEY
+  process.env.POSTHOG_API_KEY || 'test',
+  {
+    // Options
+    host: process.env.POSTHOG_HOST || 'test',
+    persistence: 'memory',
+  }
+);
+
+client.debug();
+
+client.on('error', (error) => {
+  console.error('Error in PostHog', error);
 });
 
 export const useMetrics = () => {
   const isProd = getEnvironmentName() === 'prod';
+  console.log(
+    'Posthog POSTHOG_API_KEY running with: ',
+    process.env.POSTHOG_API_KEY
+  );
+  console.log('Posthog POSTHOG_HOST running with: ', process.env.POSTHOG_HOST);
 
   if (
     !process.env.POSTHOG_API_KEY ||
