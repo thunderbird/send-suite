@@ -1,6 +1,5 @@
 import express from 'express';
 import request from 'supertest';
-import { posthog_service } from '@/metrics';
 import { describe, expect, it, vi } from 'vitest';
 import router from '../../routes/metrics';
 
@@ -55,7 +54,7 @@ describe('POST /api/metrics/page-load', () => {
       event: 'page-load',
       properties: {
         ...mockPayload,
-        service: posthog_service,
+        service: 'send',
       },
     };
 
