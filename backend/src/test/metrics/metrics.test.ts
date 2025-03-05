@@ -10,12 +10,16 @@ vi.mock('posthog-node', () => {
     apiKey: string;
     options: string;
     capture: typeof captureMock;
+    debug: () => void;
+    on: () => void;
 
     constructor(apiKey, options) {
       this.apiKey = apiKey;
       this.options = options;
 
       this.capture = captureMock;
+      this.debug = vi.fn();
+      this.on = vi.fn();
     }
   }
   return {
