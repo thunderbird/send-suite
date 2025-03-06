@@ -21,7 +21,7 @@ export const IS_DEV = isClientExecution()
 export const getEnvName = () => {
   isClientExecution();
 
-  if (!import.meta.env.BASE_URL) {
+  if (!import.meta.env.BASE_URL && !IS_DEV) {
     throw new Error('Environment variables object is required');
   }
 

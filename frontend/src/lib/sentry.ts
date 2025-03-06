@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/vue';
+import { getEnvironmentName } from './config';
 
 type App = ReturnType<typeof import('vue').createApp>;
 
@@ -28,3 +29,5 @@ export const initSentry = (app: App) => {
     environment: import.meta.env.MODE,
   });
 };
+
+Sentry.setTag('environmentName', getEnvironmentName(import.meta.env));

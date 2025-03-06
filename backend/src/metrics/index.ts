@@ -1,17 +1,10 @@
 import { getEnvironmentName } from '@/config';
-import { PostHog } from 'posthog-node';
+import { extended_client } from './posthog';
 
-const client = new PostHog(
-  // API KEY
-  process.env.POSTHOG_API_KEY || 'test',
-  {
-    // Options
-    host: process.env.POSTHOG_HOST || 'test',
-    persistence: 'memory',
-  }
-);
-
-client.debug();
+const client = new extended_client(process.env.POSTHOG_API_KEY!, {
+  host: process.env.POSTHOG_HOST!,
+  persistence: 'memory',
+});
 
 client.on('error', (error) => {
   console.error('Error in PostHog', error);
@@ -19,24 +12,17 @@ client.on('error', (error) => {
 
 export const useMetrics = () => {
   const isProd = getEnvironmentName() === 'prod';
-  console.log(
-    'Posthog POSTHOG_API_KEY running with: ',
-    process.env.POSTHOG_API_KEY
-  );
-  console.log('Posthog POSTHOG_HOST running with: ', process.env.POSTHOG_HOST);
+  const isMissingKeys =
+    !process.env.POSTHOG_API_KEY || !process.env.POSTHOG_HOST;
 
-  if (
-    !process.env.POSTHOG_API_KEY ||
-    !process.env.POSTHOG_HOST ||
-    process.env.POSTHOG_API_KEY === 'test' ||
-    process.env.POSTHOG_HOST === 'test'
-  ) {
-    if (isProd) {
-      console.error(
-        `POSTHOG keys not correctly set, we got POSTHOG_API_KEY: ${process.env.POSTHOG_API_KEY} and POSTHOG_HOST: ${process.env.POSTHOG_HOST}`
-      );
-    }
+  if (isMissingKeys) {
     console.warn('POSTHOG keys not set');
+  }
+
+  if (isProd && isMissingKeys) {
+    console.error(
+      `POSTHOG keys not correctly set, we got POSTHOG_API_KEY: ${process.env.POSTHOG_API_KEY} and POSTHOG_HOST: ${process.env.POSTHOG_HOST}`
+    );
   }
   return client;
 };
