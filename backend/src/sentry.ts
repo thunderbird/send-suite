@@ -4,7 +4,7 @@ import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
-import { ENVIRONMENT } from './config';
+import { ENVIRONMENT, getEnvironmentName } from './config';
 
 const packageJson = JSON.parse(
   fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8')
@@ -58,6 +58,8 @@ Sentry.init({
   profilesSampleRate: 1.0,
   release: packageJson.version,
 });
+
+Sentry.setTag('environmentName', getEnvironmentName());
 
 console.log('Sentry initialized with env: ' + ENVIRONMENT);
 console.log('Sentry is using release version: ' + packageJson.version);
