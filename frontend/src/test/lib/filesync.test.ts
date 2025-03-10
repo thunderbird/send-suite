@@ -256,21 +256,18 @@ describe(`Filesync`, () => {
       ),
     ];
 
+    // http
     const server = setupServer(...restHandlers);
+    server.listen();
 
-    beforeAll(async () => {
-      // http
-      const server = setupServer(...restHandlers);
-      server.listen();
-    });
     afterAll(() => {
       server.close();
     });
+    beforeEach(() => {
+      setActivePinia(createPinia());
+    });
     afterEach(() => {
       server.resetHandlers();
-    });
-
-    afterEach(() => {
       server.close();
     });
 
