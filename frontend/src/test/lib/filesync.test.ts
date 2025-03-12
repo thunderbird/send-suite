@@ -268,7 +268,6 @@ describe(`Filesync`, () => {
     });
     afterEach(() => {
       server.resetHandlers();
-      server.close();
     });
 
     it(`should get a successful response after uploading`, async () => {
