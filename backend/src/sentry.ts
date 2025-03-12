@@ -2,13 +2,7 @@
 import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import 'dotenv/config';
-import fs from 'fs';
-import path from 'path';
-import { ENVIRONMENT, getEnvironmentName } from './config';
-
-const packageJson = JSON.parse(
-  fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8')
-);
+import { ENVIRONMENT, getEnvironmentName, VERSION } from './config';
 
 const TRACING_LEVELS_PROD = ['error', 'warn'];
 const TRACING_LEVELS_DEV = ['error', 'warn', 'debug'];
@@ -56,10 +50,10 @@ Sentry.init({
 
   // Set sampling rate for profiling - this is relative to tracesSampleRate
   profilesSampleRate: 1.0,
-  release: packageJson.version,
+  release: VERSION,
 });
 
 Sentry.setTag('environmentName', getEnvironmentName());
 
 console.log('Sentry initialized with env: ' + ENVIRONMENT);
-console.log('Sentry is using release version: ' + packageJson.version);
+console.log('Sentry is using release version: ' + VERSION);
