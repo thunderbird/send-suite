@@ -60,31 +60,35 @@ downloadMock.mockImplementation(() => {
 });
 
 describe(`Filesync`, () => {
+  const restHandlers = [
+    http.get(`${API_URL}/uploads/${UPLOAD_ID}/metadata`, async () =>
+      HttpResponse.json(metadata)
+    ),
+    http.get(`${API_URL}/download/${UPLOAD_ID}/signed`, async () =>
+      HttpResponse.json({ url: bucketUrl })
+    ),
+    http.put(`${API_URL}/dummybucket`, async () => HttpResponse.json(metadata)),
+    http.post(`${API_URL}/uploads/signed`, async () =>
+      HttpResponse.json(metadata)
+    ),
+  ];
+
+  beforeAll(() => {
+    server.listen();
+  });
+  afterEach(() => {
+    server.resetHandlers();
+  });
+  beforeEach(() => {
+    setActivePinia(createPinia());
+  });
+  afterAll(() => {
+    server.close();
+  });
+
+  const server = setupServer(...restHandlers);
+
   describe(`getBlob`, async () => {
-    const restHandlers = [
-      http.get(`${API_URL}/uploads/${UPLOAD_ID}/metadata`, async () =>
-        HttpResponse.json(metadata)
-      ),
-      http.get(`${API_URL}/download/${UPLOAD_ID}/signed`, async () =>
-        HttpResponse.json({ url: bucketUrl })
-      ),
-    ];
-
-    const server = setupServer(...restHandlers);
-    beforeAll(() => {
-      server.listen();
-    });
-    afterAll(() => {
-      server.close();
-    });
-    afterEach(() => {
-      server.resetHandlers();
-    });
-
-    beforeEach(() => {
-      setActivePinia(createPinia());
-    });
-
     it(`should download and decrypt the upload`, async () => {
       const fetchSpy = vi.spyOn(global, 'fetch');
       const { api } = useApiStore.default();
@@ -246,29 +250,6 @@ describe(`Filesync`, () => {
     const SUCCESSFUL_UPLOAD_RESPONSE = {
       id: 1,
     };
-
-    const restHandlers = [
-      http.put(`${API_URL}/dummybucket`, async () =>
-        HttpResponse.json(metadata)
-      ),
-      http.post(`${API_URL}/uploads/signed`, async () =>
-        HttpResponse.json(metadata)
-      ),
-    ];
-
-    // http
-    const server = setupServer(...restHandlers);
-    server.listen();
-
-    afterAll(() => {
-      server.close();
-    });
-    beforeEach(() => {
-      setActivePinia(createPinia());
-    });
-    afterEach(() => {
-      server.resetHandlers();
-    });
 
     it(`should get a successful response after uploading`, async () => {
       const mockedApi = vi
