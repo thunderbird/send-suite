@@ -16,3 +16,11 @@ cp .env.sample .env
 cd ../backend
 cp .env.sample .env
 
+# Check if the first argument is "local"
+if [ "$1" = "local" ]; then
+    echo "Adding local flags to backend .env file..."
+    echo "" >> .env
+    echo "ALLOW_PUBLIC_LOGIN=true" >> .env
+    echo "VITE_ALLOW_PUBLIC_LOGIN=true" >> .env
+fi
+

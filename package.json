@@ -23,7 +23,7 @@
     "dev": "docker compose up --build --force-recreate -d && docker compose logs -f",
     "install:frontend": "cd frontend && pnpm install",
     "install:backend": "cd backend && pnpm install",
-    "setup": "./scripts/setup.sh"
+    "setup": "./scripts/setup.sh $1"
   },
   "engines": {
     "bun": "1.1.13",

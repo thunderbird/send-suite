@@ -2,12 +2,11 @@
 
 ## Prerequisites
 
-You'll need the following to run the server and use the client:
+Make sure you install [docker](https://www.docker.com/get-started/) for local development.
 
+If you're developing changes to the our account workflow, you'll need the following to run the server and use the client:
 - An account on the FXA staging server
 - The client id and secret for the FXA staging server (in 1Password, in the Services vault)
-
-Make sure you install [docker](https://www.docker.com/get-started/) for local development.
 
 ## Setting up the apps
 
@@ -43,34 +42,16 @@ pnpm install
 You can run the setup automatically with
 
 ```sh
+pnpm run setup local
+```
+
+Or, if you wish to run this against staging FXA (requires client id and secret) do the following:
+
+```sh
 pnpm run setup
 ```
 
-Or follow this process:
-
-Create/edit `backend/.env`:
-
-```sh
-cd backend
-
-cp .env.sample .env
-# edit .env, supplying values for the FXA_CLIENT_ID and FXA_CLIENT_SECRET vars
-
-cd ..
-# back out to the main directory before proceeding
-```
-
-Next, create the `frontend/.env`:
-
-```sh
-cd frontend
-
-cp .env.sample .env
-# for now, you shouldn't need to edit the .env
-
-cd ..
-# back out to the main directory before proceeding
-```
+Then edit the `backend/.env` file to supply values for the FXA\_CLIENT\_ID and FXA\_CLIENT\_SECRET vars
 
 Finally, run the full stack:
 
