@@ -15,12 +15,23 @@ trap cleanup INT TERM
 
 # Wait for servers to be ready
 echo "Waiting for dev servers..."
-while ! curl -s -k https://localhost:8088/ > /dev/null; do
+while true; do
+  STATUS=$(curl -s -k -w "%{http_code}" https://localhost:8088/ -o /dev/null)
+  if [ "$STATUS" = "200" ]; then
+    break
+  fi
+  echo "Waiting for HTTPS server..."
   sleep 1
 done
 echo "HTTPS server is ready"
 
-while ! curl -s http://localhost:5173/send > /dev/null; do
+while true; do
+  RESPONSE=$(curl -s http://localhost:5173/send)
+  if [ -n "$RESPONSE" ] && [[ "$RESPONSE" == *"<html"* ]]; then
+    break
+  fi
+  # log the response for debugging
+  echo "Waiting for Vite dev server..."
   sleep 1
 done
 echo "Vite dev server is ready"
