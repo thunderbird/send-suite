@@ -1,11 +1,10 @@
 import { BrowserContext, expect, firefox, Page, test } from "@playwright/test";
 import { readFileSync } from "fs";
-import path from "path";
 
-const storageStatePath = path.resolve(__dirname, "../data/lockboxstate.json");
+// const storageStatePath = path.resolve(__dirname, "../data/lockboxstate.json");
 const TIMEOUT = 3_000;
 
-console.log(storageStatePath);
+// console.log(storageStatePath);
 
 const password = `qghp392784rq3rgqp329r@$`;
 const email = `myemail${Date.now()}@tb.pro`;
@@ -15,7 +14,7 @@ async function setup() {
 
   const context = await browser.newContext({
     ignoreHTTPSErrors: true,
-    storageState: storageStatePath,
+    // storageState: storageStatePath,
   });
 
   const page = await context.newPage();
