@@ -81,9 +81,20 @@ Congrats! Now you should be able to see the app on `http://localhost:5173/` and 
 
 ### Troubleshooting
 
+Sometimes npm packages get screwed you come back to the project after a while. You can have a clean run by running. From the root
+
+```sh
+pnpm clean
+docker compose down
+docker system prune -a --volumes
+pnpm i
+pnpm dev
+```
+
 If you're having any issues with docker (ex: no memory left, or volumes do not contain expected files), prune docker and rebuild containers from scratch:
 
 ```sh
+docker compose down
 docker system prune -a --volumes
 docker-compose build --no-cache
 ```
