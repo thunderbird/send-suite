@@ -8,7 +8,7 @@ pnpm dev_lite
 # Function to cleanup dev server on script exit
 cleanup() {
   kill $DOCKER_LOGS_PID 2>/dev/null
-  kill $PLAYWRIGHT_PID 2>/dev/null
+  # kill $PLAYWRIGHT_PID 2>/dev/null
   exit 
 }
 trap cleanup INT TERM
