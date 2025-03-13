@@ -1,5 +1,7 @@
 #!/bin/bash
 
+pnpm exec playwright install 
+
 # Start dev server in background
 pnpm dev_lite &
 # DEV_PID=$!
