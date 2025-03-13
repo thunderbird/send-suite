@@ -1,8 +1,8 @@
 import { getEnvironmentName } from '@/config';
 import { extended_client } from './posthog';
 
-const client = new extended_client(process.env.POSTHOG_API_KEY!, {
-  host: process.env.POSTHOG_HOST!,
+const client = new extended_client(process.env.POSTHOG_API_KEY || 'test', {
+  host: process.env.POSTHOG_HOST || 'test',
   persistence: 'memory',
 });
 
