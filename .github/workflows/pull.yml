@@ -80,8 +80,8 @@ jobs:
           VITE_SEND_CLIENT_URL=http://localhost:5173
           VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }}
           VITE_SENTRY_DSN=${{ vars.VITE_SENTRY_DSN }}
-          VITE_POSTHOG_PROJECT_KEY=${{ secrets.VITE_POSTHOG_PROJECT_KEY }}
-          VITE_POSTHOG_HOST=${{ vars.VITE_POSTHOG_HOST }}
+          VITE_POSTHOG_PROJECT_KEY=${{ secrets.VITE_POSTHOG_PROJECT_KEY_STAGE }}
+          VITE_POSTHOG_HOST=${{ vars.VITE_POSTHOG_HOST_STAGE }}
           VITE_ALLOW_PUBLIC_LOGIN=true
           EOF
 
