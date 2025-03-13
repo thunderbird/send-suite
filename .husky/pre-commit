@@ -38,4 +38,4 @@ cd backend && pnpx lint-staged && pnpm typecheck
 
 # Run typecheck
 echo "🔍 Running typecheck..."
-pnpm run build
+pnpm run typecheck

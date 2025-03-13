@@ -4,10 +4,9 @@
 
 You'll need the following to run the server and use the client:
 
-- An account on the FXA staging server
-- The client id and secret for the FXA staging server (in 1Password, in the Services vault)
+- An account on the FXA staging server. A client id and secret for the FXA staging server. If you're part of the TB team, see 1Password, in the Services vault. See [Public login](#public-login) for an alternative to this.
 
-Make sure you install [docker](https://www.docker.com/get-started/) for local development.
+- Make sure you install [docker](https://www.docker.com/get-started/) for local development.
 
 ## Setting up the apps
 
@@ -85,7 +84,7 @@ Congrats! Now you should be able to see the app on `http://localhost:5173/` and 
 If you're having any issues with docker (ex: no memory left, or volumes do not contain expected files), prune docker and rebuild containers from scratch:
 
 ```sh
-docker system prune
+docker system prune -a --volumes
 docker-compose build --no-cache
 ```
 
@@ -159,6 +158,16 @@ Note: the link will only work on your local machine, as the URL is a `localhost`
 ### Authentication
 
 We're using jwt tokens to authenticate users. Once they go through the login flow, they get a jwt token that is stored as a secure cookie. This is passed on every request to the backend automatically. We use this token to know who is making the request and by decoding it we get user data such as userId and email. We can set how many days the token is valid for and once it expires, the user has to log in again.
+
+### Public login
+
+(without FXA)
+
+If you want to use the application without an FXA account, you can set these environment variables.
+
+`backend/.env` to `ALLOW_PUBLIC_LOGIN=true`
+
+`frontend/.env` to `VITE_ALLOW_PUBLIC_LOGIN=true`
 
 ## Pre-commit hooks
 
