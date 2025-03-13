@@ -1,4 +1,4 @@
-import { expect, firefox, Page, test } from "@playwright/test";
+import { BrowserContext, expect, firefox, Page, test } from "@playwright/test";
 import { readFileSync } from "fs";
 import path from "path";
 
@@ -91,22 +91,14 @@ const dragAndDropFile = async (
 
 test("Register and log in", async () => {
   const { context, page } = await setup();
-  // Expect a title "to contain" a substring.
+
   await expect(page).toHaveTitle(/Thunderbird Send/);
-
-  const successMessage = "✅ Backup complete";
-  const keyRecoveryMessage = page.getByTestId("key-recovery");
-
-  //   await keyRecoveryMessage.waitFor({ state: "visible" });
-  //   await expect(keyRecoveryMessage).toHaveText(successMessage);
 
   const profileButton = page.getByRole("link", { name: "My Files" });
 
   await new Promise((resolve) => setTimeout(resolve, TIMEOUT));
 
   await profileButton.click();
-
-  // await profileButton.click();
 
   // Select folder
   let folder = page.getByTestId("folder-row");
@@ -166,14 +158,13 @@ test("Register and log in", async () => {
 
   expect(await page.getByText("Tier: FREE").textContent()).toBe("Tier: FREE");
 
-  // await page.getByText("test.txt.zip").click();
-
-  // ===================================================
-  // expect(page.getByText("test.txt.zip")).toBeFalsy();
-
-  // console.log("saving context");
-
-  // await context.storageState({
-  //   path: `./data/lockbox${new Date().toISOString().toString()}.json`,
-  // });
+  await saveStorage(context);
 });
+
+async function saveStorage(context: BrowserContext) {
+  if (!!process.env.CI) return;
+  console.log("saving context");
+  await context.storageState({
+    path: `./data/lockbox${new Date().toISOString().toString()}.json`,
+  });
+}
