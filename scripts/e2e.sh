@@ -9,7 +9,7 @@ pnpm dev_lite
 cleanup() {
   kill $DOCKER_LOGS_PID 2>/dev/null
   # kill $PLAYWRIGHT_PID 2>/dev/null
-  exit 
+  # exit 
 }
 trap cleanup INT TERM
 
