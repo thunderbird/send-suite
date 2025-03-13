@@ -16,7 +16,7 @@
     "test": "pnpm run test:frontend && pnpm run test:backend",
     "test:e2e": "pnpm exec playwright test --headed",
     "test:e2e:ui": "pnpm exec playwright test --ui",
-    "test:e2e:ci": "pnpm exec playwright test",
+    "test:e2e:ci": "./scripts/e2e.sh",
     "postinstall": "pnpm run install:frontend && pnpm run install:backend",
     "clean": "./scripts/clean.sh",
     "predev": "./scripts/pre-flight.sh",

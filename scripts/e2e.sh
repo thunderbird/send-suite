@@ -2,11 +2,11 @@
 
 # Start dev server in background
 pnpm dev_lite &
-DEV_PID=$!
+# DEV_PID=$!
 
 # Function to cleanup dev server on script exit
 cleanup() {
-  kill $DEV_PID
+#   kill $DEV_PID
   exit
 }
 trap cleanup INT TERM
@@ -24,7 +24,7 @@ done
 echo "Vite dev server is ready"
 
 # Run tests
-pnpm test:e2e:ci
+pnpm exec playwright test
 
 # Cleanup
 cleanup
