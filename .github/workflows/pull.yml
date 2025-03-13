@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   # When the backend code changes, run these steps
-  backend-tests:
+  end-to-end-tests:
     runs-on: ubuntu-latest
     env:
       IS_CI_AUTOMATION: "yes"
@@ -37,8 +37,18 @@ jobs:
           npm install -g bun
           pnpm install
 
-      - name: Backend tests
-        id: backend-tests
+      - name: Install Playwright Browsers
+        run: pnpx playwright install --with-deps
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: E2E tests
+        id: set-up-e2e
         shell: bash
         run: |
           cd backend
@@ -59,6 +69,7 @@ jobs:
           sed -i "s/^TEST_S3_ACCESS_KEY=$/TEST_S3_ACCESS_KEY=${{ secrets.TEST_S3_ACCESS_KEY }}/" .env
           sed -i "s/^TEST_S3_SECRET_KEY=$/TEST_S3_SECRET_KEY=${{ secrets.TEST_S3_SECRET_KEY }}/" .env
           sed -i "s/^TEST_S3_BUCKET_NAME=$/TEST_S3_BUCKET_NAME=${{ secrets.TEST_S3_BUCKET_NAME }}/" .env
+          sed -i "s/^ALLOW_PUBLIC_LOGIN=$/ALLOW_PUBLIC_LOGIN=true/" .env
 
           cd ..
 
@@ -71,6 +82,7 @@ jobs:
           VITE_SENTRY_DSN=${{ vars.VITE_SENTRY_DSN }}
           VITE_POSTHOG_PROJECT_KEY=${{ secrets.VITE_POSTHOG_PROJECT_KEY }}
           VITE_POSTHOG_HOST=${{ vars.VITE_POSTHOG_HOST }}
+          VITE_ALLOW_PUBLIC_LOGIN=true
           EOF
 
           cd ..
