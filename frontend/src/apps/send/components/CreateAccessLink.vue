@@ -113,7 +113,11 @@ watch(
       </button>
     </label>
   </section>
-  <Btn class="create-button" @click="newAccessLink">
+  <Btn
+    class="create-button"
+    @click="newAccessLink"
+    data-testid="create-share-link"
+  >
     Create Share Link <IconLink class="icon" />
   </Btn>
 </template>

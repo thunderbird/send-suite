@@ -47,7 +47,7 @@ TODO: implement "regeneration" of links
     >Existing Links</span
   >
   <section
-    v-for="link in sharingStore.links"
+    v-for="(link, index) in sharingStore.links"
     :key="link.id"
     class="flex flex-col gap-3"
   >
@@ -55,6 +55,7 @@ TODO: implement "regeneration" of links
       v-tooltip="tooltipText"
       type="text"
       :value="`${BASE_URL}/share/${link.id}`"
+      :data-testid="`link-${index}`"
       @click="copyToClipboard(link.id)"
     />
     <div class="flex gap-2">

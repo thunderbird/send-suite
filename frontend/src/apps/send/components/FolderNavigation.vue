@@ -23,10 +23,10 @@ const folderStore = useFolderStore();
     </section>
     <section class="flex flex-col gap-2 p-2.5">
       <ul>
-        <li>
+        <li data-tesid="my-files-link">
           <router-link to="/send">My Files</router-link>
         </li>
-        <li>
+        <li data-tesid="profile-link">
           <router-link to="/send/profile">Profile</router-link>
         </li>
       </ul>

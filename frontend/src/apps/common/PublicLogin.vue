@@ -20,7 +20,10 @@ function toggleForm() {
     <div v-if="isLoggingIn">
       <LoginForm :on-success="onSuccess" />
       <p class="mt-2 text-blue-500">
-        Or <button @click.prevent="toggleForm">register</button>
+        Or
+        <button @click.prevent="toggleForm" data-testid="register-button">
+          register
+        </button>
       </p>
     </div>
     <div v-else>
