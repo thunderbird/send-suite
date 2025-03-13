@@ -3,13 +3,12 @@
 pnpm exec playwright install 
 
 # Start dev server in background
-pnpm dev_lite &
-# DEV_PID=$!
+pnpm dev_lite 
 
 # Function to cleanup dev server on script exit
 cleanup() {
-#   kill $DEV_PID
-  exit
+  # kill $DEV_PID
+  exit 
 }
 trap cleanup INT TERM
 
@@ -40,6 +39,8 @@ echo "Vite dev server is ready"
 
 # Run tests
 pnpm exec playwright test
+
+echo "Tests finished running!"
 
 # Cleanup
 cleanup
