@@ -21,7 +21,7 @@
     "clean": "./scripts/clean.sh",
     "predev": "./scripts/pre-flight.sh",
     "dev": "docker compose up --build --force-recreate -d && docker compose logs -f",
-    "dev_lite": "docker compose up -d",
+    "dev_lite": "docker compose up",
     "install:frontend": "cd frontend && pnpm install",
     "install:backend": "cd backend && pnpm install",
     "setup": "./scripts/setup.sh"
