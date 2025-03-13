@@ -161,9 +161,10 @@ test("Register and log in", async () => {
 });
 
 async function saveStorage(context: BrowserContext) {
-  if (!!process.env.CI) return;
-  console.log("saving context");
-  await context.storageState({
-    path: `./data/lockbox${new Date().toISOString().toString()}.json`,
-  });
+  return;
+  // temporary disabled
+  // console.log("saving context");
+  // await context.storageState({
+  //   path: `./data/lockbox${new Date().toISOString().toString()}.json`,
+  // });
 }

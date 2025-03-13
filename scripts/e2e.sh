@@ -27,10 +27,12 @@ echo "HTTPS server is ready"
 
 while true; do
   RESPONSE=$(curl -s http://localhost:5173/send)
-  if [ -n "$RESPONSE" ] && [[ "$RESPONSE" == *"<html"* ]]; then
+  if [ -n "$RESPONSE" ] && [[ "$RESPONSE" == *"<title>Thunderbird Send</title>"* ]]; then
+    echo $RESPONSE
     break
   fi
   # log the response for debugging
+  echo $RESPONSE
   echo "Waiting for Vite dev server..."
   sleep 1
 done
