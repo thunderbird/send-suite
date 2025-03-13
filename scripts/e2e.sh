@@ -7,7 +7,8 @@ pnpm dev_lite
 
 # Function to cleanup dev server on script exit
 cleanup() {
-  # kill $DEV_PID
+  kill $DOCKER_LOGS_PID 2>/dev/null
+  kill $PLAYWRIGHT_PID 2>/dev/null
   exit 
 }
 trap cleanup INT TERM
@@ -24,6 +25,10 @@ while true; do
 done
 echo "HTTPS server is ready"
 
+# Start docker logs in background
+docker compose logs -f &
+DOCKER_LOGS_PID=$!
+
 while true; do
   RESPONSE=$(curl -s http://localhost:5173/send)
   if [ -n "$RESPONSE" ] && [[ "$RESPONSE" == *"<title>Thunderbird Send</title>"* ]]; then
@@ -37,10 +42,17 @@ while true; do
 done
 echo "Vite dev server is ready"
 
-# Run tests
-pnpm exec playwright test
+# Run tests in parallel with docker logs
+pnpm exec playwright test &
+PLAYWRIGHT_PID=$!
+
+# Wait for tests to complete
+wait $PLAYWRIGHT_PID
 
 echo "Tests finished running!"
+
+# Kill docker logs process
+kill $DOCKER_LOGS_PID
 
 # Cleanup
 cleanup
