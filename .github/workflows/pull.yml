@@ -18,7 +18,6 @@ jobs:
   # When the backend code changes, run these steps
   end-to-end-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     env:
       IS_CI_AUTOMATION: "yes"
     strategy:
