@@ -1,5 +1,5 @@
 ---
-name: validate
+name: e2e-tests
 
 concurrency:
   group: validate
@@ -15,7 +15,6 @@ permissions:
   contents: read
 
 jobs:
-  # When the backend code changes, run these steps
   end-to-end-tests:
     runs-on: ubuntu-latest
     env:
@@ -36,9 +35,6 @@ jobs:
           npm install -g pnpm
           npm install -g bun
           pnpm install
-
-      # - name: Install Playwright Browsers
-      #   run: pnpx playwright install --with-deps
 
       - name: E2E tests
         id: set-up-e2e
