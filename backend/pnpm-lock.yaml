@@ -7,8 +7,8 @@ settings:
 overrides:
   cookie@<0.7.0: '>=0.7.0'
   cross-spawn@>=7.0.0 <7.0.5: '>=7.0.5'
-  send@<0.19.0: '>=0.19.0'
   esbuild@<=0.24.2: '>=0.25.0'
+  send@<0.19.0: '>=0.19.0'
 
 importers:
 
