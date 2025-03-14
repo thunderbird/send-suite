@@ -17,18 +17,21 @@ const folderStore = useFolderStore();
     <aside class="w-64 border-r border-gray-300 bg-gray-50">
       <FolderNavigation />
     </aside>
-    <div class="flex flex-col gap-4 grow">
+
+    <main class="flex flex-col gap-4 grow">
       <header
         class="w-full sticky top-0 flex items-center justify-between px-4 py-2 bg-white/90 border-b border-gray-300"
       >
         <h1>{{ user.email }}</h1>
         <NewFolder />
       </header>
-      <main class="flex flex-col gap-4 px-4">
+
+      <div class="flex flex-col gap-4 px-4">
         <router-view></router-view>
-      </main>
+      </div>
       <FeedbackBox />
-    </div>
+    </main>
+
     <aside class="w-64 border border-gray-300 bg-gray-50 p-2.5">
       <FileInfo v-if="folderStore.selectedFile" />
       <FolderInfo v-if="folderStore.selectedFolder" />

@@ -150,20 +150,19 @@ async function restoreFromBackup() {
 </script>
 
 <template>
-  <div class="container">
-    <div class="content">
-      <div v-if="!shouldBackup && !shouldRestore">
-        <h3>You're all set. Happy sending!</h3>
-      </div>
+  <section class="container">
+    <div class="content max-w-xl">
       <div :onclick="toggleVisible" class="toggle">
-        <h3>Key Recovery</h3>
+        <h3 class="font-bold">Recovery Key</h3>
         <ExpandIcon :is-open="showKeyRecovery" />
       </div>
-      <p v-if="bigMessageDisplay" style="font-size: larger">
-        {{ bigMessageDisplay }}
-      </p>
+
       <div v-if="showKeyRecovery">
-        <main class="recovery-main">
+        <div class="recovery-main">
+          <p v-if="bigMessageDisplay" style="font-size: larger">
+            {{ bigMessageDisplay }}
+          </p>
+
           <key-recovery
             :make-backup="makeBackup"
             :restore-from-backup="restoreFromBackup"
@@ -176,10 +175,10 @@ async function restoreFromBackup() {
             :download-passphrase="downloadPassPhrase"
             :reset-keys="resetKeys"
           />
-        </main>
+        </div>
       </div>
     </div>
-  </div>
+  </section>
 
   <StatusBar />
 </template>
@@ -189,30 +188,31 @@ h2 {
   font-size: 22px;
 }
 .toggle {
-  display: inline-flex;
-  height: 34px;
-  padding: 1px 0px;
-  justify-content: center;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  flex-shrink: 0;
-  border-radius: 6px;
-  border: 1px solid var(--surface-border, #e4e4e7);
+  padding: 1px 0px;
+  border-radius: 6px 6px 0 0;
   cursor: pointer;
   gap: 1rem;
   padding: 1rem;
+  background-color: var(--colour-neutral-border);
 }
 
 .content {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+
+  border: solid 1px #e4e4e7;
+  border-radius: 6px;
 }
 
 .recovery-main {
-  width: 100%;
   display: flex;
+  width: 100%;
   flex-direction: column;
   gap: 0.75rem;
-  padding: 0 1rem;
+  padding: 0 1rem 1rem;
 }
 </style>

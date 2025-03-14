@@ -783,7 +783,7 @@ export async function restoreKeys(
 
     msg.value = '✅ Restore complete';
   } catch (e) {
-    const KEY_RESTORE_ERROR = `Could not restore keys. Please make sure your backup phrase is correct.`;
+    const KEY_RESTORE_ERROR = `⛔️ Could not restore keys. Please make sure your backup phrase is correct.`;
 
     console.error(KEY_RESTORE_ERROR, e);
 

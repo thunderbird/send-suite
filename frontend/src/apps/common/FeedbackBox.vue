@@ -3,7 +3,7 @@ import OpenerIcon from './OpenerIcon.vue';
 </script>
 
 <template>
-  <div style="margin-top: 1rem" data-testid="feedback-box">
+  <section class="mx-4 mb-4" data-testid="feedback-box">
     <p class="text">
       Please take a moment to give us feedback or raise issues on:
     </p>
@@ -19,16 +19,13 @@ import OpenerIcon from './OpenerIcon.vue';
         <OpenerIcon />
       </a>
     </div>
-  </div>
+  </section>
 </template>
 
-<style>
+<style scoped>
 .text {
-  color: #000;
   font-size: 9px;
-  font-style: normal;
   font-weight: 700;
-  line-height: normal;
 }
 .link-container {
   display: flex;

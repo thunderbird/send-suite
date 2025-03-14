@@ -36,8 +36,8 @@ useMetricsUpdate();
   <div class="container">
     <TBBanner />
     <PopupView />
-    <FeedbackBox />
     <SecureSendIcon />
+    <FeedbackBox />
     <StatusBar />
     <ModalsContainer />
   </div>
