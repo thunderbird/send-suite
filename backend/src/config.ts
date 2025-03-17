@@ -1,4 +1,6 @@
 import 'dotenv/config';
+import fs from 'fs';
+import path from 'path';
 
 type Environment = 'development' | 'production';
 export type EnvironmentName = 'stage' | 'prod' | 'development';
@@ -7,6 +9,12 @@ const appConfig = {
   file_dir: `/tmp/send-suite-dev-dir`,
   max_file_size: 1024 * 1024 * 1024 * 2.5,
 };
+
+const packageJson = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8')
+);
+
+export const VERSION = packageJson.version;
 
 const ENVIRONMENT = process.env.NODE_ENV || ('development' as Environment);
 const BASE_URL = process.env.BASE_URL;
