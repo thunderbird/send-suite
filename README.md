@@ -5,6 +5,7 @@
 Make sure you install [docker](https://www.docker.com/get-started/) for local development.
 
 If you're developing changes to the our account workflow, you'll need the following to run the server and use the client:
+
 - An account on the FXA staging server
 - The client id and secret for the FXA staging server (in 1Password, in the Services vault)
 
@@ -51,7 +52,7 @@ Or, if you wish to run this against staging FXA (requires client id and secret) 
 pnpm run setup
 ```
 
-Then edit the `backend/.env` file to supply values for the FXA\_CLIENT\_ID and FXA\_CLIENT\_SECRET vars
+Then edit the `backend/.env` file to supply values for the FXA_CLIENT_ID and FXA_CLIENT_SECRET vars
 
 Finally, run the full stack:
 
@@ -63,10 +64,21 @@ Congrats! Now you should be able to see the app on `http://localhost:5173/` and 
 
 ### Troubleshooting
 
+Sometimes npm packages get screwed you come back to the project after a while. You can have a clean run by running. From the root
+
+```sh
+pnpm clean
+docker compose down
+docker system prune -a --volumes
+pnpm i
+pnpm dev
+```
+
 If you're having any issues with docker (ex: no memory left, or volumes do not contain expected files), prune docker and rebuild containers from scratch:
 
 ```sh
-docker system prune
+docker compose down
+docker system prune -a --volumes
 docker-compose build --no-cache
 ```
 
@@ -140,6 +152,16 @@ Note: the link will only work on your local machine, as the URL is a `localhost`
 ### Authentication
 
 We're using jwt tokens to authenticate users. Once they go through the login flow, they get a jwt token that is stored as a secure cookie. This is passed on every request to the backend automatically. We use this token to know who is making the request and by decoding it we get user data such as userId and email. We can set how many days the token is valid for and once it expires, the user has to log in again.
+
+### Public login
+
+(without FXA)
+
+If you want to use the application without an FXA account, you can set these environment variables.
+
+`backend/.env` to `ALLOW_PUBLIC_LOGIN=true`
+
+`frontend/.env` to `VITE_ALLOW_PUBLIC_LOGIN=true`
 
 ## Pre-commit hooks
 

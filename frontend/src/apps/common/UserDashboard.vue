@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import LogOutButton from '@/apps/send/elements/LogOutButton.vue';
-import { DAYS_TO_EXPIRY, MAX_FILE_SIZE_HUMAN_READABLE } from '@/lib/const';
+import { DAYS_TO_EXPIRY } from '@/lib/const';
 import { trpc } from '@/lib/trpc';
 import useUserStore from '@/stores/user-store';
 import { useQuery } from '@tanstack/vue-query';
 import prettyBytes from 'pretty-bytes';
 import { computed } from 'vue';
+import ProgressBarDashboard from '../send/components/ProgressBarDashboard.vue';
 import { useConfigStore } from '../send/stores/config-store';
 import { useStatusStore } from '../send/stores/status-store';
 import LoadingComponent from './LoadingComponent.vue';
 
-const { user, logOut } = useUserStore();
+const { logOut } = defineProps<{ logOut: () => void }>();
+
+const { user } = useUserStore();
 const { isExtension } = useConfigStore();
 const { validators } = useStatusStore();
 
@@ -22,15 +25,14 @@ const handleLogout = async () => {
   }
 };
 
-const { data: size, error } = useQuery({
+const {
+  data: size,
+  error,
+  isLoading: loadingSize,
+} = useQuery({
   queryKey: ['getTotalSize'],
   queryFn: async () => {
-    const { active, expired } = await trpc.getTotalUsedStorage.query();
-
-    return {
-      active: prettyBytes(active),
-      expired: prettyBytes(expired),
-    };
+    return trpc.getTotalUsedStorage.query();
   },
 });
 
@@ -44,25 +46,40 @@ const { data: u, isLoading } = useQuery({
 const hasLimitedStorage = computed(() => {
   return u?.value?.userData?.tier === 'EPHEMERAL';
 });
+
+const activeText = computed(() => {
+  return `${prettyBytes(size.value.active)} of ${prettyBytes(size.value.limit)}`;
+});
+
+const percentageUsed = computed(() => {
+  return (size.value.active * 100) / size.value.limit;
+});
 </script>
 <template>
-  <LoadingComponent v-if="isLoading" />
-  <main v-else>
+  <section class="min-w-72">
     <p v-if="error">{{ error.message }}</p>
     <h2 class="email">{{ user.email }}</h2>
-    <p>Tier: {{ u?.userData.tier }}</p>
-    <p v-if="hasLimitedStorage">
-      Total storage used:
-      <span class="active">{{ size?.active }} active</span> /
-      <span class="expired">{{ size?.expired }} expired</span>
-    </p>
-    <p v-else>Total storage used: {{ size?.active }}</p>
-    <p v-if="hasLimitedStorage">
-      Your files expire after {{ DAYS_TO_EXPIRY }} days
-    </p>
-    <p>Max file size: {{ MAX_FILE_SIZE_HUMAN_READABLE }}</p>
-    <log-out-button :log-out="handleLogout" />
-  </main>
+
+    <LoadingComponent v-if="isLoading" />
+
+    <div v-else>
+      <p v-if="hasLimitedStorage">
+        Total storage used:
+        <span class="active">{{ size?.active }} active</span> /
+        <span class="expired">{{ size?.expired }} expired</span>
+      </p>
+
+      <div v-if="!error && !loadingSize">
+        <p class="font-bold">{{ activeText }}</p>
+        <ProgressBarDashboard :percentage="percentageUsed" />
+      </div>
+
+      <p v-if="hasLimitedStorage">
+        Your files expire after {{ DAYS_TO_EXPIRY }} days
+      </p>
+      <log-out-button :log-out="handleLogout" />
+    </div>
+  </section>
 </template>
 
 <style lang="css" scoped>

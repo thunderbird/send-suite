@@ -29,13 +29,12 @@ const sharingStore = useSharingStore();
 
 const isUploading = ref(false);
 const isError = ref(false);
-
 const password = ref('');
 const fileBlob = ref<Blob>(null);
 const isAllowed = ref(true);
 const message = ref('');
 const passwordFieldType = ref<'password' | 'text'>('password');
-
+const isPasswordProtected = ref(false);
 const isPasswordVisible = computed(() => {
   return passwordFieldType.value === 'text';
 });
@@ -69,7 +68,7 @@ async function uploadAndShare() {
     }
     shareComplete(url);
     isUploading.value = false;
-  } catch (error) {
+  } catch {
     isError.value = true;
     isUploading.value = false;
     return;
@@ -82,7 +81,7 @@ function uploadAborted() {
 
 function shareComplete(url) {
   console.log(`you should tell the user that it's done`);
-  // eslint-disable-next-line no-undef
+
   browser.runtime.sendMessage({
     type: SHARE_COMPLETE,
     url,
@@ -93,7 +92,7 @@ function shareComplete(url) {
 
 function shareAborted() {
   console.log(`Could not finish creating share for tb send`);
-  // eslint-disable-next-line no-undef
+
   browser.runtime.sendMessage({
     type: SHARE_ABORTED,
     url: '',
@@ -107,19 +106,16 @@ function togglePasswordVisibility() {
     passwordFieldType.value === 'password' ? 'text' : 'password';
 }
 
+function togglePasswordField() {
+  isPasswordProtected.value = !isPasswordProtected.value;
+}
+
 onMounted(async () => {
   try {
     await restoreKeysUsingLocalStorage(keychain, api);
     await init(userStore, keychain, folderStore);
-    console.log(`
-
-Just initialized and now we have:
-userStore.user.id ${userStore.user.id}
-
-
-`);
     console.log(`adding listener in Popup for runtime messages`);
-    // eslint-disable-next-line no-undef
+
     browser.runtime.onMessage.addListener(async (message) => {
       console.log(message);
       const { data } = message;
@@ -127,11 +123,10 @@ userStore.user.id ${userStore.user.id}
       console.log(`We set the fileBlob to:`);
       console.log(data);
     });
-    // eslint-disable-next-line no-undef
     browser.runtime.sendMessage({
       type: EXTENSION_READY,
     });
-  } catch (e) {
+  } catch {
     console.log(
       `Cannot access browser.runtime, probably not running as an extension`
     );
@@ -163,27 +158,42 @@ userStore.user.id ${userStore.user.id}
     </div>
 
     <form @submit.prevent="uploadAndShare">
-      <h2>Password</h2>
-      <div class="password">
+      <div class="flex items-center gap-x-2">
+        <input
+          type="checkbox"
+          :disabled="isUploading"
+          @click="togglePasswordField"
+        />
+        <h3 class="font-semibold">Require password</h3>
+      </div>
+
+      <div v-if="isPasswordProtected" class="password">
         <input
           v-model="password"
           :type="passwordFieldType"
           :disabled="isUploading"
+          class="w-full"
         />
         <button @click.prevent="togglePasswordVisibility">
           <IconEye v-if="!isPasswordVisible" />
           <IconEyeClosed v-if="isPasswordVisible" />
         </button>
       </div>
-      <p>(Optional) Password to access the file</p>
-      <Btn primary>
-        <ShieldIcon />
-        <input
-          type="submit"
-          value="Encrypt and Upload"
-          :disabled="isUploading"
-        />
-      </Btn>
+
+      <p class="mb-6">
+        The recipient will need this password to access this file.
+      </p>
+
+      <div class="flex justify-center">
+        <Btn primary class="max-w-md">
+          <ShieldIcon />
+          <input
+            type="submit"
+            value="Encrypt and Upload"
+            :disabled="isUploading"
+          />
+        </Btn>
+      </div>
     </form>
   </div>
   <div v-else>
@@ -203,7 +213,9 @@ p {
 form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.5rem;
+  min-width: 320px;
+  margin-bottom: 2rem;
 }
 
 .password {

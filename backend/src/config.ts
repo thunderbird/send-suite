@@ -1,17 +1,20 @@
 import 'dotenv/config';
+import fs from 'fs';
+import path from 'path';
 
 type Environment = 'development' | 'production';
 export type EnvironmentName = 'stage' | 'prod' | 'development';
 
 const appConfig = {
-  // file_dir: `${tmpdir()}${path.sep}send-${randomBytes(4).toString("hex")}`,
   file_dir: `/tmp/send-suite-dev-dir`,
-  // default_expire_seconds: 86400,
-  // default_downloads: 1,
-  // base_url: process.env.BASE_URL,
-  // detect_base_url: false,
   max_file_size: 1024 * 1024 * 1024 * 2.5,
 };
+
+const packageJson = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8')
+);
+
+export const VERSION = packageJson.version;
 
 const ENVIRONMENT = process.env.NODE_ENV || ('development' as Environment);
 const BASE_URL = process.env.BASE_URL;
@@ -28,6 +31,10 @@ const ONE_WEEK = ONE_DAY * 7;
 
 // File expiry time in days
 export const DAYS_TO_EXPIRY = 15;
+
+// We're not enforcing the limit right now, we only use it to display a value on the frontend
+const ONE_TB_IN_BYTES = 1 * 1_000 * 1_000 * 1_000 * 1_000; // 1 TB (roughly)
+export const TOTAL_STORAGE_LIMIT = ONE_TB_IN_BYTES;
 
 // JWT expiry
 export const JWT_EXPIRY = FIFTEEN_MINUTES;

@@ -25,7 +25,7 @@ const reload = () => {
       <FeedbackBox />
     </Modal>
     <div v-else>
-      <slot />
+      <slot></slot>
     </div>
   </div>
 </template>

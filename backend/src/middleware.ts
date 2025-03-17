@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import { getDataFromAuthenticatedRequest } from './auth/client';
 import { validateJWT } from './auth/jwt';
+import { VERSION } from './config';
 import { fromPrismaV2 } from './models/prisma-helper';
 import {
   allPermissions,
@@ -206,4 +207,14 @@ export function requirePublicLogin(
     return next();
   }
   return reject(res, 500, 'Public login is disabled');
+}
+
+// We add the package.json version to the response headers
+export function addVersionHeader(
+  _: Request,
+  res: Response,
+  next: NextFunction
+) {
+  res.setHeader('x-tbsend', VERSION);
+  next();
 }

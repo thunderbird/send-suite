@@ -28,6 +28,7 @@ import * as Sentry from '@sentry/node';
 
 import { getDataFromAuthenticatedRequest } from './auth/client';
 import { errorHandler } from './errors/routes';
+import { addVersionHeader } from './middleware';
 import metricsRoute from './routes/metrics';
 import { containersRouter } from './trpc/containers';
 import { sharingRouter } from './trpc/sharing';
@@ -71,6 +72,7 @@ app.use((req, res, next) => {
 
 app.set('trust proxy', 1); // trust first proxy
 app.use(cookieParser());
+app.use(addVersionHeader);
 
 app.get('/', (_, res) => {
   res.status(200).send('echo');
