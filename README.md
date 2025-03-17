@@ -43,7 +43,7 @@ pnpm install
 You can run the setup automatically with
 
 ```sh
-pnpm run setup local
+pnpm run setup:local
 ```
 
 Or, if you wish to run this against staging FXA (requires client id and secret) do the following:

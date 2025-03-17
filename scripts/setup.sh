@@ -17,9 +17,5 @@ cd ../backend
 cp .env.sample .env
 cd ..
 
-# Check if the first argument is "local"
-if [ "$1" = "local" ]; then
-    echo "Adding local flags to .env files..."
-    bun run ./scripts/local.ts
-fi
+pnpm i
 
