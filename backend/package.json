@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "",
   "keywords": [],
   "license": "ISC",
@@ -104,6 +104,7 @@
   },
   "pnpm": {
     "overrides": {
+      "@babel/runtime@<7.26.10": ">=7.26.10",
       "cookie@<0.7.0": ">=0.7.0",
       "cross-spawn@>=7.0.0 <7.0.5": ">=7.0.5",
       "esbuild@<=0.24.2": ">=0.25.0",
