@@ -16,3 +16,7 @@ cp .env.sample .env
 cd ../backend
 cp .env.sample .env
 
+cd ..
+
+pnpm i
+
