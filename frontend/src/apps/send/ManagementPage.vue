@@ -11,7 +11,6 @@ import FeedbackBox from '@/apps/common/FeedbackBox.vue';
 import { useMetricsUpdate } from '@/apps/common/mixins/metrics';
 import UserDashboard from '@/apps/common/UserDashboard.vue';
 import Btn from '@/apps/send/elements/BtnComponent.vue';
-import LogOutButton from '@/apps/send/elements/LogOutButton.vue';
 import useFolderStore from '@/apps/send/stores/folder-store';
 import { formatLoginURL } from '@/lib/helpers';
 import { CLIENT_MESSAGES } from '@/lib/messages';
@@ -24,7 +23,7 @@ import { useExtensionStore } from './stores/extension-store';
 import { useStatusStore } from './stores/status-store';
 
 const userStore = useUserStore();
-const { keychain, resetKeychain } = useKeychainStore();
+const { keychain } = useKeychainStore();
 const { api } = useApiStore();
 const folderStore = useFolderStore();
 const { validators } = useStatusStore();
@@ -34,16 +33,12 @@ const { updateMetricsIdentity } = useMetricsUpdate();
 
 const authUrl = ref('');
 const sessionInfo = ref(null);
-
-const salutation = ref('');
 const isLoggedIn = ref(false);
-
 const email = ref(null);
 const userId = ref(null);
 
 // Initialize the settings
 onMounted(async () => {
-  salutation.value = 'Please log in.';
   // check local storage first
   await userStore.loadFromLocalStorage();
 
@@ -72,17 +67,6 @@ onMounted(async () => {
 });
 
 updateMetricsIdentity();
-
-// Unused for now, but will need when implementing logout.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function clean() {
-  // TODO: make sure we clear the stored user and stored keychain.
-  // Might need to add functions to keychainStore.
-
-  resetKeychain();
-  folderStore.init();
-  folderStore.print();
-}
 
 async function dbUserSetup() {
   // Populate the user from the session.
@@ -164,7 +148,6 @@ async function openPopup() {
 async function finishLogin() {
   const isSessionValid = await validateToken(api);
   if (!isSessionValid) {
-    salutation.value = `Please log in again, your session is invalid`;
     return;
   }
 
@@ -181,8 +164,6 @@ async function finishLogin() {
   }
 
   isLoggedIn.value = isTokenValid;
-  // TODO: confirm that I am saving the user and keys when I init() (which is in dbUserSetup)
-  salutation.value = 'You are logged into your Mozilla Account';
   isLoggedIn.value = true;
 }
 </script>
@@ -190,11 +171,9 @@ async function finishLogin() {
 <template>
   <div class="container">
     <TBBanner />
-    <h1>{{ salutation }}</h1>
     <div v-if="isLoggedIn">
-      <UserDashboard />
+      <UserDashboard :log-out="logOut" />
       <BackupAndRestore />
-      <log-out-button :log-out="logOut" />
     </div>
     <div v-else>
       <Btn @click.prevent="loginToMozAccount">Log into Mozilla Account</Btn>

@@ -74,7 +74,6 @@
     "form-data": "^4.0.2",
     "globals": "^15.15.0",
     "happy-dom": "^15.11.7",
-    "jiti": "^2.4.2",
     "jsonwebtoken": "9.0.2",
     "lint-staged": "^15.4.3",
     "mock-socket": "^9.3.1",

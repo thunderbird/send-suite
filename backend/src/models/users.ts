@@ -314,7 +314,8 @@ export async function getRecentActivity(
     },
   };
 
-  return await fromPrisma(prisma.container.findMany, query);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return await fromPrisma(prisma.container.findMany as any, query);
 }
 
 export async function getBackup(id: number) {
