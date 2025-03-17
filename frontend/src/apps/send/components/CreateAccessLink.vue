@@ -103,7 +103,11 @@ watch(
     </label>
     <label class="form-label password-field">
       <span class="label-text">Password</span>
-      <input v-model="password" :type="showPassword ? 'text' : 'password'" />
+      <input
+        v-model="password"
+        data-testid="password-input"
+        :type="showPassword ? 'text' : 'password'"
+      />
       <button
         class="toggle-password"
         @click.prevent="showPassword = !showPassword"
@@ -115,8 +119,8 @@ watch(
   </section>
   <Btn
     class="create-button"
-    @click="newAccessLink"
     data-testid="create-share-link"
+    @click="newAccessLink"
   >
     Create Share Link <IconLink class="icon" />
   </Btn>

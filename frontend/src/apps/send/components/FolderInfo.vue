@@ -42,15 +42,21 @@ const showForm = ref(false);
         <span v-if="!showForm" class="cursor-pointer" @click="showForm = true">
           {{ folderStore.selectedFolder.name }}
         </span>
-        <FolderNameForm v-if="showForm" @renameComplete="showForm = false" />
+        <FolderNameForm v-if="showForm" @rename-complete="showForm = false" />
       </div>
       <div class="text-xs">
         {{ formatBytes(folderStore.selectedFolder.size) }}
       </div>
     </header>
     <!-- sharing config -->
-    <CreateAccessLink :folderId="folderStore.selectedFolder.id" />
-    <AccessLinksList :folderId="folderStore.selectedFolder.id" />
+    <CreateAccessLink
+      v-if="folderStore?.selectedFolder?.id"
+      :folder-id="folderStore.selectedFolder.id"
+    />
+    <AccessLinksList
+      v-if="folderStore?.selectedFolder?.id"
+      :folder-id="folderStore.selectedFolder.id"
+    />
     <!-- people -->
     <!-- <section class="flex flex-col gap-2">
       <div class="font-semibold text-gray-600">Shared With</div>
@@ -70,15 +76,15 @@ const showForm = ref(false);
     <!-- meta -->
     <footer class="mt-auto flex flex-col gap-3">
       <label
-        class="flex flex-col gap-1"
         v-if="folderStore.selectedFolder.createdAt"
+        class="flex flex-col gap-1"
       >
         <span class="text-xs font-semibold text-gray-600">Created</span>
         <div class="text-xs">{{ folderStore.selectedFolder.createdAt }}</div>
       </label>
       <label
-        class="flex flex-col gap-1"
         v-if="folderStore.selectedFolder.updatedAt"
+        class="flex flex-col gap-1"
       >
         <span class="text-xs font-semibold text-gray-600">Modified</span>
         <div class="text-xs">{{ folderStore.selectedFolder.updatedAt }}</div>

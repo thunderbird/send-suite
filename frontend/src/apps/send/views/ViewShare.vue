@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import useSharingStore from '@/apps/send/stores/sharing-store';
 import FolderTree from '@/apps/send/components/FolderTree.vue';
+import useSharingStore from '@/apps/send/stores/sharing-store';
+import { onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 const route = useRoute();
 const sharingStore = useSharingStore();

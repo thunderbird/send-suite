@@ -6,7 +6,26 @@ const TIMEOUT = 3_000;
 const password = `qghp392784rq3rgqp329r@$`;
 const email = `myemail${Date.now()}@tb.pro`;
 
-export async function upload_workflow({ page }: PlaywrightProps) {
+const shareLinks: string[] = [];
+
+async function downloadFirstFile(page: Page) {
+  await page.getByTestId("download-button-0").click();
+  await page.getByTestId("confirm-download").click();
+  await page.waitForEvent("download");
+  page.on("download", async (download) => {
+    expect(download.suggestedFilename()).toBe("test.txt");
+  });
+}
+
+async function saveClipboardItem(page: Page) {
+  const handle = await page.evaluateHandle(() =>
+    navigator.clipboard.readText()
+  );
+  const clipboardContent = await handle.jsonValue();
+  shareLinks.push(clipboardContent);
+}
+
+export async function upload_workflow({ page, context }: PlaywrightProps) {
   const profileButton = page.getByRole("link", { name: "My Files" });
 
   await new Promise((resolve) => setTimeout(resolve, TIMEOUT));
@@ -17,15 +36,35 @@ export async function upload_workflow({ page }: PlaywrightProps) {
   let folder = page.getByTestId("folder-row");
   await folder.click();
 
+  // Create share link without password
   const sharelinkButton = page.getByTestId("create-share-link");
-  sharelinkButton.click();
+  await sharelinkButton.click();
 
-  const createdShareLink = page.getByTestId("link-0");
-  expect(await createdShareLink.inputValue()).toContain("/share/");
+  // Check if share link with password is created
+  const createdShareLink = page.getByTestId("access-link-item-0");
+  expect(await createdShareLink.getByTestId("link-0").inputValue()).toContain(
+    "/share/"
+  );
 
-  // Open folder
+  await saveClipboardItem(page);
+
+  // Create share link with password
+  await page.getByTestId("password-input").fill(password);
+  await sharelinkButton.click();
+
+  // Wait for the share link to populate the clipboard
+  await new Promise((resolve) => setTimeout(resolve, TIMEOUT));
+  await saveClipboardItem(page);
+
+  const createdShareLinkWithPassword = page.getByTestId("access-link-item-1");
+  expect(
+    await createdShareLinkWithPassword
+      .getByTestId("link-with-password")
+      .textContent()
+  ).toContain("Password");
+
+  // Open folder page
   folder = page.getByTestId("folder-row");
-
   await folder.click();
 
   // Find upload box
@@ -36,25 +75,35 @@ export async function upload_workflow({ page }: PlaywrightProps) {
   );
 
   await dragAndDropFile(page, "#drop-zone", "/test.txt", "test.txt");
-
   await page.getByTestId("upload-button").click();
-
   await page.waitForSelector(`[data-testid="folder-table-row-cell"]`);
 
   expect(await page.getByTestId("file-count").textContent()).toBe("1");
 
+  // Download file without password
+  let otherPage = await context.newPage();
+  await otherPage.goto(shareLinks.shift()!);
+  await downloadFirstFile(otherPage);
+  await otherPage.close();
+
+  // Download file with password
+  otherPage = await context.newPage();
+  await otherPage.goto(shareLinks.shift()!);
+  await otherPage.getByTestId("password-input").fill(password);
+  await otherPage.getByTestId("submit-button").click();
+  await downloadFirstFile(otherPage);
+  await otherPage.close();
+
+  // Delete file
   const responsePromise = page.waitForResponse(
     (response) => response.request().method() === "DELETE"
   );
-
-  // Delete file
   await page.getByTestId("delete-file").click({ force: true });
 
   // Wait for DELETE request to complete
   await responsePromise;
 
   expect((await responsePromise).status()).toBe(200);
-
   expect(await page.getByTestId("file-count").isVisible()).toBeFalsy();
 
   // Go to the root
@@ -69,7 +118,9 @@ export async function upload_workflow({ page }: PlaywrightProps) {
 
   await page.waitForURL("**/send/profile");
 
-  expect(await page.getByText("Tier: FREE").textContent()).toBe("Tier: FREE");
+  expect(await page.getByText("Recovery Key").textContent()).toBe(
+    "Recovery Key"
+  );
 }
 
 export async function register_and_login({ page, context }: PlaywrightProps) {
@@ -151,6 +202,6 @@ const dragAndDropFile = async (
 
 export async function saveStorage(context: BrowserContext) {
   await context.storageState({
-    path: `./data/state.json`,
+    path: `./data/lockboxstate.json`,
   });
 }

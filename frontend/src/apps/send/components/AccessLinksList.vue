@@ -50,6 +50,7 @@ TODO: implement "regeneration" of links
     v-for="(link, index) in sharingStore.links"
     :key="link.id"
     class="flex flex-col gap-3"
+    :data-testid="`access-link-item-${index}`"
   >
     <input
       v-tooltip="tooltipText"
@@ -71,6 +72,7 @@ TODO: implement "regeneration" of links
       <div
         v-if="!link.passwordHash"
         class="flex text-xs justify-center self-center"
+        data-testid="link-with-password"
       >
         <div>🔐</div>
         <div>Password</div>

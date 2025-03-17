@@ -7,7 +7,10 @@ import {
   upload_workflow,
 } from "./testUtils";
 
-export const storageStatePath = path.resolve(__dirname, "../data/state.json");
+export const storageStatePath = path.resolve(
+  __dirname,
+  "../data/lockboxstate.json"
+);
 const emptyState = {
   cookies: [],
   origins: [],
