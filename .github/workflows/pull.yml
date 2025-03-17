@@ -28,26 +28,14 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Install dependencies
-        id: install-dependencies
+      - name: Set up environments and install dependencies
+        id: setup-and-install-dependencies
         shell: bash
         run: |
           npm install -g pnpm
           npm install -g bun
-          pnpm install
-
-      - name: E2E tests
-        id: set-up-e2e
-        shell: bash
-        run: |
-          cd backend
-          cp .env.sample .env
-
-          cd ..
-
-          cd frontend
-          cp .env.sample .env
-          cd ..
+          # Setup local environment (use public login)
+          echo Y | pnpm setup:local
 
       - name: Run stack and test
         id: run-stack-and-test
