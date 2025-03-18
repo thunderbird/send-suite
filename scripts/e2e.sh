@@ -3,7 +3,7 @@
 pnpm exec playwright install 
 
 # Start dev server in background
-pnpm dev_lite 
+pnpm dev:detach 
 
 # Function to cleanup dev server on script exit
 cleanup() {
