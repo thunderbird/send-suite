@@ -3,7 +3,6 @@
 # Create zip for submission
 if [ "$IS_CI_AUTOMATION" == "yes" ]; then
     echo "Installing browser dependencies..."
-    pnpm exec playwright install 
     pnpm exec playwright install-deps
 else
     echo "Skipping browser dependencies installation..."
