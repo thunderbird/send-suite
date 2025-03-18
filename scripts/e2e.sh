@@ -1,6 +1,14 @@
 #!/bin/bash
 
-pnpm exec playwright install 
+# Create zip for submission
+if [ "$IS_CI_AUTOMATION" == "yes" ]; then
+    echo "Installing browser dependencies..."
+    pnpm exec playwright install 
+    pnpm exec playwright install-deps
+else
+    echo "Skipping browser dependencies installation..."
+fi
+
 
 # Start dev server in background
 pnpm dev:detach 
@@ -8,8 +16,6 @@ pnpm dev:detach
 # Function to cleanup dev server on script exit
 cleanup() {
   kill $DOCKER_LOGS_PID 2>/dev/null
-  # kill $PLAYWRIGHT_PID 2>/dev/null
-  # exit 
 }
 trap cleanup INT TERM
 
@@ -49,7 +55,7 @@ PLAYWRIGHT_PID=$!
 # Wait for tests to complete
 wait $PLAYWRIGHT_PID
 
-echo "Tests finished running!"
+echo "Tests finished running. This doesn't mean it all went well, just that it's done."
 
 # Kill docker logs process
 kill $DOCKER_LOGS_PID
