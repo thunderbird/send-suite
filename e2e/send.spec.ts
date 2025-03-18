@@ -1,11 +1,9 @@
 import { BrowserContext, expect, Page, test } from "@playwright/test";
 import fs from "fs";
 import path from "path";
-import {
-  register_and_login,
-  setup_browser,
-  upload_workflow,
-} from "./testUtils";
+import { register_and_login } from "./pages/dashboard";
+import { upload_workflow } from "./pages/myFiles";
+import { setup_browser } from "./testUtils";
 
 export const storageStatePath = path.resolve(
   __dirname,
