@@ -53,8 +53,16 @@ PLAYWRIGHT_PID=$!
 
 # Wait for tests to complete
 wait $PLAYWRIGHT_PID
+PLAYWRIGHT_EXIT_CODE=$?
 
-echo "Tests finished running. This doesn't mean it all went well, just that it's done."
+if [ $PLAYWRIGHT_EXIT_CODE -ne 0 ]; then
+    echo "Playwright tests failed with exit code $PLAYWRIGHT_EXIT_CODE"
+    kill $DOCKER_LOGS_PID
+    cleanup
+    exit $PLAYWRIGHT_EXIT_CODE
+fi
+
+echo "Finished running tests"
 
 # Kill docker logs process
 kill $DOCKER_LOGS_PID
