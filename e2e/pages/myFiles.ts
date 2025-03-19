@@ -11,10 +11,9 @@ const { email, password, timeout, shareLinks } = playwrightConfig;
 
 export async function upload_workflow({ page, context }: PlaywrightProps) {
   const profileButton = page.getByRole("link", { name: "My Files" });
+  await page.waitForSelector(`[data-testid="folder-row"]`);
 
-  await new Promise((resolve) => setTimeout(resolve, timeout));
-
-  await profileButton.click();
+  await profileButton.click({ delay: 1000 });
 
   // Select folder
   let folder = page.getByTestId("folder-row");
@@ -35,6 +34,13 @@ export async function upload_workflow({ page, context }: PlaywrightProps) {
   // Create share link with password
   await page.getByTestId("password-input").fill(password);
   await sharelinkButton.click();
+
+  const linkPromise = page.waitForResponse((response) =>
+    response.request().url().includes("/links")
+  );
+
+  await linkPromise;
+  await linkPromise;
 
   // Wait for the share link to populate the clipboard
   await new Promise((resolve) => setTimeout(resolve, timeout));
