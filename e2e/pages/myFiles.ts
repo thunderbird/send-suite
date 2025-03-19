@@ -32,36 +32,34 @@ export async function upload_workflow({ page, context }: PlaywrightProps) {
 
   const profileButton = page.getByRole("link", { name: "My Files" });
   await page.waitForSelector(folderRowSelector);
-
-  await profileButton.click({ delay: 1000 });
+  await profileButton.click();
 
   // Select folder
   let folder = page.getByTestId(folderRowTestID);
   await folder.click();
 
+  let linksResponse = page.waitForResponse((response) =>
+    response.request().url().includes("/links")
+  );
+
   // Create share link without password
   await sharelinkButton.click();
+  await linksResponse;
 
-  // Check if share link with password is created
   expect(await firstLink.inputValue()).toContain("/share/");
-
   await saveClipboardItem(page);
+
+  linksResponse = page.waitForResponse((response) =>
+    response.request().url().includes("/links")
+  );
 
   // Create share link with password
   await passwordInput.fill(password);
   await sharelinkButton.click();
-
-  const linkPromise = page.waitForResponse((response) =>
-    response.request().url().includes("/links")
-  );
-
-  await linkPromise;
-  await linkPromise;
-
-  // Wait for the share link to populate the clipboard
-  await new Promise((resolve) => setTimeout(resolve, timeout));
+  await linksResponse;
   await saveClipboardItem(page);
 
+  // Check that the password badge renders properly
   expect(
     await createdShareLinkWithPassword
       .getByTestId(linkWithPasswordID)
