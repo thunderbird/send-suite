@@ -22,6 +22,8 @@ export async function downloadFirstFile(page: Page) {
 }
 
 export async function saveClipboardItem(page: Page) {
+  // wait a second to avoid a copy clipboard read operation err
+  await page.waitForTimeout(1000);
   const handle = await page.evaluateHandle(() =>
     navigator.clipboard.readText()
   );
