@@ -32,10 +32,6 @@ export type PlaywrightProps = {
     fs.writeFileSync(storageStatePath, JSON.stringify(emptyState));
   });
 
-  test.beforeEach(async () => {
-    await setup_browser();
-  });
-
   test("Renders files page", async () => {
     const { page } = await setup_browser();
 
