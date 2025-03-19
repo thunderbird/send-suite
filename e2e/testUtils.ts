@@ -1,5 +1,7 @@
 import { BrowserContext, expect, firefox, Page } from "@playwright/test";
 import { readFileSync } from "fs";
+
+import { fileLocators } from "./locators";
 import { storageStatePath } from "./send.spec";
 
 export const playwrightConfig = {
@@ -10,8 +12,9 @@ export const playwrightConfig = {
 };
 
 export async function downloadFirstFile(page: Page) {
-  await page.getByTestId("download-button-0").click();
-  await page.getByTestId("confirm-download").click();
+  const { downloadButton, confirmDownload } = fileLocators(page);
+  await downloadButton.click();
+  await confirmDownload.click();
   await page.waitForEvent("download");
   page.on("download", async (download) => {
     expect(download.suggestedFilename()).toBe("test.txt");

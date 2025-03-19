@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test";
+import { fileLocators } from "../locators";
 import { PlaywrightProps } from "../send.spec";
 import {
   downloadFirstFile,
@@ -10,29 +11,37 @@ import {
 const { email, password, timeout, shareLinks } = playwrightConfig;
 
 export async function upload_workflow({ page, context }: PlaywrightProps) {
+  const {
+    folderRowSelector,
+    folderRowTestID,
+    createdShareLinkWithPassword,
+    sharelinkButton,
+    createdShareLink,
+    linkWithPasswordID,
+    passwordInput,
+    firstLink,
+    uploadButton,
+  } = fileLocators(page);
+
   const profileButton = page.getByRole("link", { name: "My Files" });
-  await page.waitForSelector(`[data-testid="folder-row"]`);
+  await page.waitForSelector(folderRowSelector);
 
   await profileButton.click({ delay: 1000 });
 
   // Select folder
-  let folder = page.getByTestId("folder-row");
+  let folder = page.getByTestId(folderRowTestID);
   await folder.click();
 
   // Create share link without password
-  const sharelinkButton = page.getByTestId("create-share-link");
   await sharelinkButton.click();
 
   // Check if share link with password is created
-  const createdShareLink = page.getByTestId("access-link-item-0");
-  expect(await createdShareLink.getByTestId("link-0").inputValue()).toContain(
-    "/share/"
-  );
+  expect(await firstLink.inputValue()).toContain("/share/");
 
   await saveClipboardItem(page);
 
   // Create share link with password
-  await page.getByTestId("password-input").fill(password);
+  await passwordInput.fill(password);
   await sharelinkButton.click();
 
   const linkPromise = page.waitForResponse((response) =>
@@ -46,15 +55,14 @@ export async function upload_workflow({ page, context }: PlaywrightProps) {
   await new Promise((resolve) => setTimeout(resolve, timeout));
   await saveClipboardItem(page);
 
-  const createdShareLinkWithPassword = page.getByTestId("access-link-item-1");
   expect(
     await createdShareLinkWithPassword
-      .getByTestId("link-with-password")
+      .getByTestId(linkWithPasswordID)
       .textContent()
   ).toContain("Password");
 
   // Open folder page
-  folder = page.getByTestId("folder-row");
+  folder = page.getByTestId(folderRowTestID);
   await folder.click();
 
   // Find upload box
@@ -65,7 +73,7 @@ export async function upload_workflow({ page, context }: PlaywrightProps) {
   );
 
   await dragAndDropFile(page, "#drop-zone", "/test.txt", "test.txt");
-  await page.getByTestId("upload-button").click();
+  await uploadButton.click();
   await page.waitForSelector(`[data-testid="folder-table-row-cell"]`);
 
   expect(await page.getByTestId("file-count").textContent()).toBe("1");
