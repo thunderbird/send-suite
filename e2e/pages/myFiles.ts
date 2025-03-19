@@ -17,10 +17,17 @@ export async function upload_workflow({ page, context }: PlaywrightProps) {
     createdShareLinkWithPassword,
     sharelinkButton,
     createdShareLink,
+    fileCountID,
     linkWithPasswordID,
     passwordInput,
     firstLink,
     uploadButton,
+    submitButtonID,
+    passwordInputID,
+    deleteFileButton,
+    homeButton,
+    dropZone,
+    tableCellID,
   } = fileLocators(page);
 
   const profileButton = page.getByRole("link", { name: "My Files" });
@@ -65,18 +72,16 @@ export async function upload_workflow({ page, context }: PlaywrightProps) {
   folder = page.getByTestId(folderRowTestID);
   await folder.click();
 
-  // Find upload box
-  const dropzoneBox = page.getByTestId("drop-zone");
-
-  expect(await dropzoneBox.textContent({ timeout })).toContain(
+  // Find upload box and upload the file
+  expect(await dropZone.textContent({ timeout })).toContain(
     "files here to upload"
   );
-
   await dragAndDropFile(page, "#drop-zone", "/test.txt", "test.txt");
   await uploadButton.click();
-  await page.waitForSelector(`[data-testid="folder-table-row-cell"]`);
+  await page.waitForSelector(tableCellID);
 
-  expect(await page.getByTestId("file-count").textContent()).toBe("1");
+  // Check if the file count has updated
+  expect(await page.getByTestId(fileCountID).textContent()).toBe("1");
 
   // Download file without password
   let otherPage = await context.newPage();
@@ -87,8 +92,8 @@ export async function upload_workflow({ page, context }: PlaywrightProps) {
   // Download file with password
   otherPage = await context.newPage();
   await otherPage.goto(shareLinks.shift()!);
-  await otherPage.getByTestId("password-input").fill(password);
-  await otherPage.getByTestId("submit-button").click();
+  await otherPage.getByTestId(passwordInputID).fill(password);
+  await otherPage.getByTestId(submitButtonID).click();
   await downloadFirstFile(otherPage);
   await otherPage.close();
 
@@ -96,21 +101,21 @@ export async function upload_workflow({ page, context }: PlaywrightProps) {
   const responsePromise = page.waitForResponse(
     (response) => response.request().method() === "DELETE"
   );
-  await page.getByTestId("delete-file").click({ force: true });
+  await deleteFileButton.click({ force: true });
 
   // Wait for DELETE request to complete
   await responsePromise;
 
   expect((await responsePromise).status()).toBe(200);
-  expect(await page.getByTestId("file-count").isVisible()).toBeFalsy();
+  expect(await page.getByTestId(fileCountID).isVisible()).toBeFalsy();
 
   // Go to the root
-  await page.getByTestId("home-button").click();
+  await homeButton.click();
 
   await folder.click();
   await folder.click();
 
-  expect(await page.getByTestId("file-count").isVisible()).toBeFalsy();
+  expect(await page.getByTestId(fileCountID).isVisible()).toBeFalsy();
 
   page.getByRole("link", { name: "Profile" }).click();
 

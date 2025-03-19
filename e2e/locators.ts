@@ -4,15 +4,23 @@ export const fileLocators = (page: Page) => {
   const folderRowSelector = `[data-testid="folder-row"]`;
   const folderRowTestID = "folder-row";
   const linkWithPasswordID = "link-with-password";
+  const fileCountID = "file-count";
+  const passwordInputID = "password-input";
+  const submitButtonID = "submit-button";
+  const tableCellID = `[data-testid="folder-table-row-cell"]`;
 
   const createdShareLinkWithPassword = page.getByTestId("access-link-item-1");
   const sharelinkButton = page.getByTestId("create-share-link");
+  const submitButton = page.getByTestId(submitButtonID);
   const createdShareLink = page.getByTestId("access-link-item-0");
-  const passwordInput = page.getByTestId("password-input");
+  const passwordInput = page.getByTestId(passwordInputID);
   const firstLink = createdShareLink.getByTestId("link-0");
   const uploadButton = page.getByTestId("upload-button");
   const downloadButton = page.getByTestId("download-button-0");
   const confirmDownload = page.getByTestId("confirm-download");
+  const deleteFileButton = page.getByTestId("delete-file");
+  const homeButton = page.getByTestId("home-button");
+  const dropZone = page.getByTestId("drop-zone");
   return {
     folderRowSelector,
     folderRowTestID,
@@ -20,11 +28,19 @@ export const fileLocators = (page: Page) => {
     sharelinkButton,
     createdShareLink,
     passwordInput,
+    passwordInputID,
     firstLink,
+    deleteFileButton,
+    submitButton,
+    submitButtonID,
     linkWithPasswordID,
     uploadButton,
     downloadButton,
+    tableCellID,
     confirmDownload,
+    fileCountID,
+    homeButton,
+    dropZone,
   };
 };
 
