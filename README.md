@@ -266,20 +266,32 @@ You can use VSCode's debugger for the backend.
 
 ### Setting up
 
-1. Run `pnpm dev`
-2. Run `pnpm test:e2e`
+1. In order for the tests to run locally, you have to set up your `.env` files to match the default set by `setup:local`. This will overwrite your `.env` files. You can back up your keys by running from the root
 
-This will open the test suite in headed mode so you can log into your moz account.
+```sh
+cd frontend
+cp .env .env.backup
+cd ../backend
+cp .env .env.backup
+```
 
-After you successfully logged in. Make sure you click `My Files` on the sidebar to finish saving your state. This should close the test window.
+2. Set your environment variables by running
+   `pnpm run setup:local`
 
-Afterwards you'll see a new file inside the `data` folder. It should be called `lockbox` + `timestamp`.json`
+#### UI mode
 
-3. Copy the contents of this new file into `data/lockboxstate.json`. Don't worry, this file or the other data files are git ignored.
+You can run the test suite on UI Mode. UI Mode lets you explore, run, and debug tests with a time travel experience complete with a watch mode. All test files are displayed in the testing sidebar, allowing you to expand each file and describe block to individually run, view, watch, and debug each test.
 
-4) Run the tests again and see it fly!
+1. Run `pnpm dev:detach`
+2. Run `pnpm test:e2e:ui`
 
-**Important note**: You probably have to log back in after a day or so. That's just how the app works. Make sure you copy the new data to the `data/lockboxstate.json` file so you don't have to manually log in again on every run.
+### Headed mode
+
+If you want to see the tests running, you can use headed mode by running. `pnpm dev:detach && pnpm test:e2e`
+
+#### CI mode
+
+Our CI/CD pipeline runs the test suite on headless mode. To reproduce this locally run `pnpm test:e2e:ci`
 
 ## Releasing
 

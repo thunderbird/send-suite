@@ -79,12 +79,9 @@ defineProps<ReportProps>();
       <p>This folder is empty or the files uploaded to it have expired</p>
     </div>
     <li
-      v-for="{
-        uploadId,
-        name,
-        wrappedKey,
-        upload: { size, type },
-      } of folder.items"
+      v-for="(
+        { uploadId, name, wrappedKey, upload: { size, type } }, i
+      ) of folder.items"
       :key="uploadId"
     >
       <div class="flex justify-between">
@@ -109,7 +106,9 @@ defineProps<ReportProps>();
             }
           "
         >
-          <span class="font-bold">Download</span>
+          <span :data-testid="`download-button-${i}`" class="font-bold"
+            >Download</span
+          >
         </button>
       </div>
       <div>

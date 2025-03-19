@@ -1,0 +1,52 @@
+---
+name: e2e-tests
+
+concurrency:
+  group: e2e-tests
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - "**"
+      - "!main"
+
+permissions:
+  contents: read
+
+jobs:
+  end-to-end-tests:
+    runs-on: ubuntu-latest
+    env:
+      IS_CI_AUTOMATION: "yes"
+    strategy:
+      matrix:
+        node-version: ["22"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Set up environments and install dependencies
+        id: setup-and-install-dependencies
+        shell: bash
+        run: |
+          npm install -g pnpm
+          npm install -g bun
+          # Setup local environment (use public login)
+          echo Y | pnpm setup:local
+
+      - name: Run stack and test
+        id: run-stack-and-test
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          pnpm test:e2e:ci
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30

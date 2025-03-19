@@ -39,7 +39,9 @@ const onConfirm = async () => {
       {{ text }}
     </p>
     <div class="flex justify-center space-x-4 mt-8">
-      <BtnComponent primary @click="onConfirm">Yes</BtnComponent>
+      <BtnComponent data-testid="confirm-download" primary @click="onConfirm"
+        >Yes</BtnComponent
+      >
       <BtnComponent @click="closefn">No</BtnComponent>
     </div>
   </div>

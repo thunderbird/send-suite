@@ -21,7 +21,9 @@ watchEffect(() => {
 <template>
   <ul>
     <li class="inline-block pl-1">
-      <button @click="router.push('/send')">🏠</button>
+      <button data-testid="home-button" @click="router.push('/send')">
+        🏠
+      </button>
     </li>
     <li
       v-for="node of path"

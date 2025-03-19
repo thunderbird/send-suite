@@ -156,13 +156,15 @@ async function restoreFromBackup() {
         <h3 class="font-bold">Recovery Key</h3>
         <ExpandIcon :is-open="showKeyRecovery" />
       </div>
-
+      <p
+        v-if="bigMessageDisplay"
+        data-testid="big-message-display"
+        style="font-size: larger"
+      >
+        {{ bigMessageDisplay }}
+      </p>
       <div v-if="showKeyRecovery">
-        <div class="recovery-main">
-          <p v-if="bigMessageDisplay" style="font-size: larger">
-            {{ bigMessageDisplay }}
-          </p>
-
+        <main class="recovery-main" data-testid="key-recovery">
           <key-recovery
             :make-backup="makeBackup"
             :restore-from-backup="restoreFromBackup"
@@ -175,7 +177,7 @@ async function restoreFromBackup() {
             :download-passphrase="downloadPassPhrase"
             :reset-keys="resetKeys"
           />
-        </div>
+        </main>
       </div>
     </div>
   </section>

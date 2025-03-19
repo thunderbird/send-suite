@@ -110,7 +110,11 @@ const submit = () => {
     <input v-model="userSetPassword" class="w-full" type="text" />
   </div>
 
-  <button-component v-if="shouldBackup" primary @click.prevent="makeBackup"
+  <button-component
+    data-testid="encrypt-keys-button"
+    v-if="shouldBackup"
+    primary
+    @click.prevent="makeBackup"
     >Encrypt and backup keys</button-component
   >
   <button-component v-if="shouldRestore" primary @click.prevent="submit"
