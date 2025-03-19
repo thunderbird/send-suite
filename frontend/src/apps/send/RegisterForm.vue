@@ -3,7 +3,7 @@ import { trpc } from '@/lib/trpc';
 import { validateEmail, validatePassword } from '@/lib/validations';
 import useApiStore from '@/stores/api-store';
 import { useMutation } from '@tanstack/vue-query';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const email = ref('');
@@ -32,19 +32,6 @@ const {
   onSuccess: () => {
     router.push('/send/profile');
   },
-});
-
-const validatePasswords = (): boolean => {
-  return (
-    validatePassword(password.value) && password.value === passwordConfirm.value
-  );
-};
-
-const isValid = computed(() => {
-  const isValidEmail = validateEmail(email.value);
-  const isValidPassword = validatePasswords();
-
-  return isValidEmail && isValidPassword;
 });
 
 const handleSubmit = async () => {
@@ -79,6 +66,7 @@ const handleSubmit = async () => {
       <input
         id="email"
         v-model="email"
+        data-testid="email"
         type="email"
         required
         class="form-control"
@@ -91,6 +79,7 @@ const handleSubmit = async () => {
       <input
         id="password"
         v-model="password"
+        data-testid="password"
         type="password"
         required
         class="form-control"
@@ -103,6 +92,7 @@ const handleSubmit = async () => {
       <input
         id="passwordConfirm"
         v-model="passwordConfirm"
+        data-testid="confirm-password"
         type="password"
         required
         class="form-control"
@@ -118,7 +108,7 @@ const handleSubmit = async () => {
       <div>{{ registerData }}</div>
     </div>
 
-    <button type="submit" :disabled="!isValid">Register</button>
+    <button type="submit" data-testid="submit-button">Register</button>
   </form>
 </template>
 
