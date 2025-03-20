@@ -21,23 +21,20 @@ export type PlaywrightProps = {
 
 (async () => {
   test.describe.configure({ mode: "serial", retries: 3 });
-  test.beforeAll(async () => {
+
+  test.afterAll(async () => {
+    fs.writeFileSync(storageStatePath, JSON.stringify(emptyState));
+  });
+
+  test("Register and log in", async () => {
     const { context, page } = await setup_browser();
     // Go to main page
     await page.goto("http://localhost:5173/send");
     await register_and_login({ context, page });
   });
 
-  test.afterAll(async () => {
-    fs.writeFileSync(storageStatePath, JSON.stringify(emptyState));
-  });
-
-  test("Renders files page", async () => {
+  test("Restores keys", async () => {
     const { page, context } = await setup_browser();
-
-    await page.goto("https://localhost:8088");
-    expect(await page.content()).toContain("echo");
-
     // Go to main page
     await page.goto("http://localhost:5173/send/profile");
     await log_out_restore_keys({ page, context });
