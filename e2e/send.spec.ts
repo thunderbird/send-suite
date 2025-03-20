@@ -1,7 +1,7 @@
 import { BrowserContext, expect, Page, test } from "@playwright/test";
 import fs from "fs";
 import path from "path";
-import { register_and_login } from "./pages/dashboard";
+import { log_out_restore_keys, register_and_login } from "./pages/dashboard";
 import { upload_workflow } from "./pages/myFiles";
 import { setup_browser } from "./testUtils";
 
@@ -33,17 +33,14 @@ export type PlaywrightProps = {
   });
 
   test("Renders files page", async () => {
-    const { page } = await setup_browser();
+    const { page, context } = await setup_browser();
 
     await page.goto("https://localhost:8088");
     expect(await page.content()).toContain("echo");
 
     // Go to main page
-    await page.goto("http://localhost:5173/send");
-
-    expect(
-      await page.getByRole("heading", { name: "Your Files" }).textContent()
-    ).toBe("Your Files");
+    await page.goto("http://localhost:5173/send/profile");
+    await log_out_restore_keys({ page, context });
   });
 
   test("Upload workflow", async () => {

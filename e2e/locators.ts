@@ -53,6 +53,9 @@ export const dashboardLocators = (page: Page) => {
   const logOutButton = page.getByTestId("log-out-button");
   const submitLogin = page.getByTestId("login-submit-button");
   const backupKeysButton = page.getByTestId("encrypt-keys-button");
+  const restoreKeysButton = page.getByTestId("restore-keys-button");
+  const passphraseInput = page.getByTestId("passphrase-input");
+  const restorekeyInput = page.getByTestId("restore-key-input");
   return {
     registerButton,
     emailField,
@@ -62,5 +65,8 @@ export const dashboardLocators = (page: Page) => {
     logOutButton,
     submitLogin,
     backupKeysButton,
+    restoreKeysButton,
+    passphraseInput,
+    restorekeyInput,
   };
 };

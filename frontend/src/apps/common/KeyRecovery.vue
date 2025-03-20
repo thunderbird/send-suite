@@ -95,7 +95,13 @@ const submit = () => {
   </div>
 
   <div v-if="shouldBackup || overrideVisibility" class="container">
-    <input class="w-full" type="text" :value="words.join(' - ')" disabled />
+    <input
+      data-testid="passphrase-input"
+      class="w-full"
+      type="text"
+      :value="words.join(' - ')"
+      disabled
+    />
     <div class="flex button_box">
       <button @click.prevent="onCopy(words.join(' - '))">
         <CopyIcon />
@@ -107,7 +113,12 @@ const submit = () => {
   </div>
 
   <div v-if="shouldRestore" class="flex">
-    <input v-model="userSetPassword" class="w-full" type="text" />
+    <input
+      v-model="userSetPassword"
+      class="w-full"
+      type="text"
+      data-testid="restore-key-input"
+    />
   </div>
 
   <button-component
@@ -117,7 +128,11 @@ const submit = () => {
     @click.prevent="makeBackup"
     >Encrypt and backup keys</button-component
   >
-  <button-component v-if="shouldRestore" primary @click.prevent="submit"
+  <button-component
+    v-if="shouldRestore"
+    primary
+    data-testid="restore-keys-button"
+    @click.prevent="submit"
     >Restore keys from backup</button-component
   >
 
