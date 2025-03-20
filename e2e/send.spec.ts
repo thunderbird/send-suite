@@ -2,7 +2,12 @@ import { BrowserContext, expect, Page, test } from "@playwright/test";
 import fs from "fs";
 import path from "path";
 import { log_out_restore_keys, register_and_login } from "./pages/dashboard";
-import { upload_workflow } from "./pages/myFiles";
+import {
+  delete_file,
+  download_workflow,
+  share_links,
+  upload_workflow,
+} from "./pages/myFiles";
 import { setup_browser } from "./testUtils";
 
 export const storageStatePath = path.resolve(
@@ -40,6 +45,17 @@ export type PlaywrightProps = {
     await log_out_restore_keys({ page, context });
   });
 
+  test("Share links", async () => {
+    const { page, context } = await setup_browser();
+
+    // Go to main page
+    await page.goto("http://localhost:5173/send");
+
+    await expect(page).toHaveTitle(/Thunderbird Send/);
+
+    await share_links({ page, context });
+  });
+
   test("Upload workflow", async () => {
     const { page, context } = await setup_browser();
 
@@ -49,5 +65,27 @@ export type PlaywrightProps = {
     await expect(page).toHaveTitle(/Thunderbird Send/);
 
     await upload_workflow({ page, context });
+  });
+
+  test("Download workflow", async () => {
+    const { page, context } = await setup_browser();
+
+    // Go to main page
+    await page.goto("http://localhost:5173/send");
+
+    await expect(page).toHaveTitle(/Thunderbird Send/);
+
+    await download_workflow({ page, context });
+  });
+
+  test("Delete files", async () => {
+    const { page, context } = await setup_browser();
+
+    // Go to main page
+    await page.goto("http://localhost:5173/send");
+
+    await expect(page).toHaveTitle(/Thunderbird Send/);
+
+    await delete_file({ page, context });
   });
 })();
