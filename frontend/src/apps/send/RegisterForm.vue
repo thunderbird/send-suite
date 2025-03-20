@@ -52,18 +52,16 @@ const showErrors = () => {
   passwordError.value = '';
   passwordConfirmError.value = '';
 
-  if (!validateEmail(email.value)) {
-    emailError.value = 'Please enter a valid email address';
-  }
+  emailError.value = !validateEmail(email.value)
+    ? 'Please enter a valid email address'
+    : '';
 
-  if (!validatePassword(password.value)) {
-    passwordError.value =
-      'Password must be at least 12 characters long and contain at least one number and one special character';
-  }
+  passwordError.value = !validatePassword(password.value)
+    ? 'Password must be at least 12 characters long and contain at least one number and one special character'
+    : '';
 
-  if (password.value !== passwordConfirm.value) {
-    passwordConfirmError.value = 'Passwords do not match';
-  }
+  passwordConfirmError.value =
+    password.value !== passwordConfirm.value ? 'Passwords do not match' : '';
 };
 
 const handleSubmit = async () => {
@@ -73,7 +71,8 @@ const handleSubmit = async () => {
 };
 
 showErrors();
-watch(isValid, showErrors);
+watch(email, showErrors);
+watch(password, showErrors);
 </script>
 
 <template>
