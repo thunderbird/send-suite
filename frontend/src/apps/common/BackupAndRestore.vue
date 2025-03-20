@@ -6,6 +6,7 @@ import useKeychainStore from '@/stores/keychain-store';
 
 // move the following imports elsewhere
 import { downloadTxt } from '@/lib/filesync';
+import { dbUserSetup } from '@/lib/helpers';
 import { backupKeys, restoreKeys } from '@/lib/keychain';
 import { generatePassphrase } from '@/lib/passphrase';
 import { trpc } from '@/lib/trpc';
@@ -14,9 +15,12 @@ import useMetricsStore from '@/stores/metrics';
 import useUserStore from '@/stores/user-store';
 import { useMutation } from '@tanstack/vue-query';
 import { useExtensionStore } from '../send/stores/extension-store';
+import useFolderStore from '../send/stores/folder-store';
 import { PHRASE_SIZE } from './constants';
 import ExpandIcon from './ExpandIcon.vue';
 import KeyRecovery from './KeyRecovery.vue';
+const userStore = useUserStore();
+const folderStore = useFolderStore();
 
 const words = ref(generatePassphrase(PHRASE_SIZE));
 
@@ -115,13 +119,13 @@ async function makeBackup() {
   if (!userConfirmed) {
     return;
   }
-
   keychain.storePassPhrase(passphraseString.value);
 
   try {
     await backupKeys(keychain, api, bigMessageDisplay);
     await downloadPassPhrase();
     hideBackupRestore();
+    await dbUserSetup(userStore, keychain, folderStore);
     configureExtension();
   } catch (e) {
     console.error('Error backing up keys', e);

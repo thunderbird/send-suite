@@ -1,14 +1,10 @@
 <script setup lang="ts">
-import { dbUserSetup } from '@/lib/helpers';
 import { trpc } from '@/lib/trpc';
 import { validateEmail, validatePassword } from '@/lib/validations';
 import useApiStore from '@/stores/api-store';
-import useKeychainStore from '@/stores/keychain-store';
-import useUserStore from '@/stores/user-store';
 import { useMutation } from '@tanstack/vue-query';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import useFolderStore from './stores/folder-store';
 
 const email = ref('');
 const password = ref('');
@@ -19,9 +15,6 @@ const passwordConfirmError = ref('');
 
 const { api } = useApiStore();
 const router = useRouter();
-const userStore = useUserStore();
-const folderStore = useFolderStore();
-const { keychain } = useKeychainStore();
 
 const {
   mutate: registerMutation,
@@ -37,7 +30,6 @@ const {
     await api.call(`auth/register?state=${state}`);
   },
   onSuccess: async () => {
-    await dbUserSetup(userStore, keychain, folderStore);
     router.push('/send/profile');
   },
 });

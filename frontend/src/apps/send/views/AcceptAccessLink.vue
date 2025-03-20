@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import useSharingStore from '@/apps/send/stores/sharing-store';
-import useUserStore from '@/stores/user-store';
 import { onMounted, ref } from 'vue';
 
 import { getCanRetry } from '@/lib/validations';
@@ -17,7 +16,6 @@ const isLocked = ref(false);
 
 const route = useRoute();
 
-const { user } = useUserStore();
 const sharingStore = useSharingStore();
 
 async function accept() {
@@ -73,12 +71,6 @@ onMounted(() => {
 
 <template>
   <h1>Share</h1>
-  <template v-if="user.email">
-    <p>
-      Hello,
-      {{ user.email }}
-    </p>
-  </template>
   <p>
     The hash:
     {{ route.params.linkId }}
