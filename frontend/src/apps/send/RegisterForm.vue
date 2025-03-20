@@ -3,7 +3,7 @@ import { trpc } from '@/lib/trpc';
 import { validateEmail, validatePassword } from '@/lib/validations';
 import useApiStore from '@/stores/api-store';
 import { useMutation } from '@tanstack/vue-query';
-import { ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const email = ref('');
@@ -34,29 +34,46 @@ const {
   },
 });
 
-const handleSubmit = async () => {
+const validatePasswords = (): boolean => {
+  return (
+    validatePassword(password.value) && password.value === passwordConfirm.value
+  );
+};
+
+const isValid = computed(() => {
+  const isValidEmail = validateEmail(email.value);
+  const isValidPassword = validatePasswords();
+
+  return isValidEmail && isValidPassword;
+});
+
+const showErrors = () => {
   emailError.value = '';
   passwordError.value = '';
   passwordConfirmError.value = '';
 
   if (!validateEmail(email.value)) {
     emailError.value = 'Please enter a valid email address';
-    return;
   }
 
   if (!validatePassword(password.value)) {
     passwordError.value =
       'Password must be at least 12 characters long and contain at least one number and one special character';
-    return;
   }
 
   if (password.value !== passwordConfirm.value) {
     passwordConfirmError.value = 'Passwords do not match';
-    return;
   }
-
-  registerMutation();
 };
+
+const handleSubmit = async () => {
+  if (isValid.value) {
+    registerMutation();
+  }
+};
+
+showErrors();
+watch(isValid, showErrors);
 </script>
 
 <template>
