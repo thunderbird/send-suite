@@ -16,11 +16,12 @@
     "test": "pnpm run test:frontend && pnpm run test:backend",
     "test:e2e": "pnpm exec playwright test --headed",
     "test:e2e:ui": "pnpm exec playwright test --ui",
-    "test:e2e:ci": "pnpm exec playwright test",
+    "test:e2e:ci": "./scripts/e2e.sh",
     "postinstall": "pnpm run install:frontend && pnpm run install:backend",
     "clean": "./scripts/clean.sh",
     "predev": "./scripts/pre-flight.sh",
     "dev": "docker compose up --build --force-recreate -d && docker compose logs -f",
+    "dev:detach": "docker compose up -d",
     "install:frontend": "cd frontend && pnpm install",
     "install:backend": "cd backend && pnpm install",
     "setup": "./scripts/setup.sh",
@@ -28,7 +29,8 @@
   },
   "engines": {
     "bun": "1.1.13",
-    "node": ">=22.11.0"
+    "node": ">=22.11.0",
+    "pnpm": ">=10.6.4"
   },
   "volta": {
     "node": "22.11.0"
@@ -36,6 +38,7 @@
   "devDependencies": {
     "@playwright/test": "^1.46.0",
     "@types/node": "^22.1.0",
+    "dotenv": "^16.4.7",
     "husky": "^9.0.11",
     "sort-package-json": "^2.10.0"
   }

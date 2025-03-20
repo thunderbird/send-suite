@@ -21,6 +21,7 @@ import DownloadConfirmation from './DownloadConfirmation.vue';
 const folderStore = useFolderStore();
 
 const dayjs = inject(DayJsKey);
+const selectedFolder = ref<number | null>(null);
 
 const route = useRoute();
 const router = useRouter();
@@ -76,6 +77,16 @@ watch(
     }
   }
 );
+
+function handleClick(id: number) {
+  if (selectedFolder.value === id) {
+    router.push({ name: 'folder', params: { id } });
+    selectedFolder.value = null;
+    return;
+  }
+  folderStore.setSelectedFolder(id);
+  selectedFolder.value = id;
+}
 </script>
 <script lang="ts">
 export default { props: { id: { type: String, default: 'null' } } };
@@ -83,6 +94,13 @@ export default { props: { id: { type: String, default: 'null' } } };
 <template>
   <div class="w-full flex flex-col gap-3">
     <h2 class="font-bold">Your Files</h2>
+    <span
+      v-if="folderStore.rootFolder?.items.length"
+      data-testid="file-count"
+      style="display: none"
+    >
+      {{ `${folderStore.rootFolder.items.length}` }}
+    </span>
     <BreadCrumb />
     <table class="w-full border-separate border-spacing-x-0 border-spacing-y-1">
       <thead>
@@ -97,7 +115,8 @@ export default { props: { id: { type: String, default: 'null' } } };
           v-for="folder in folderStore.visibleFolders"
           :key="folder.id"
           class="group cursor-pointer"
-          @click="folderStore.setSelectedFolder(folder.id)"
+          data-testid="folder-row"
+          @click="handleClick(folder.id)"
           @dblclick="router.push({ name: 'folder', params: { id: folder.id } })"
         >
           <FolderTableRowCell
@@ -172,6 +191,7 @@ export default { props: { id: { type: String, default: 'null' } } };
                 </Btn>
                 <Btn
                   v-if="!item.upload.expired"
+                  data-testid="delete-file"
                   danger
                   @click="
                     folderStore.deleteItem(item.id, folderStore.rootFolder.id)

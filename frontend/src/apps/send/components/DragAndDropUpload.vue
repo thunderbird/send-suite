@@ -57,7 +57,7 @@ async function doUpload() {
         isUploading.value = false;
         console.log(uploadResult);
         return uploadResult;
-      } catch (e) {
+      } catch {
         isError.value = true;
         isUploading.value = false;
         return;
@@ -82,12 +82,18 @@ async function doUpload() {
   </div>
 
   <div v-else>
-    <div ref="dropZoneRef" class="h-full">
+    <div
+      id="drop-zone"
+      ref="dropZoneRef"
+      class="h-full"
+      data-testid="drop-zone"
+    >
       <slot></slot>
     </div>
 
     <button
       v-if="folderStore.rootFolder && filesMetadata"
+      data-testid="upload-button"
       type="submit"
       class="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none"
       @click="doUpload"

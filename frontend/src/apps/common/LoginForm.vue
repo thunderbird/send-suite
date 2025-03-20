@@ -84,6 +84,7 @@ const handleSubmit = async () => {
       <input
         id="email"
         v-model="email"
+        data-testid="email"
         type="email"
         required
         class="form-control"
@@ -96,6 +97,7 @@ const handleSubmit = async () => {
       <input
         id="password"
         v-model="password"
+        data-testid="password"
         type="password"
         required
         class="form-control"
@@ -106,7 +108,13 @@ const handleSubmit = async () => {
       <div>{{ loginData }}</div>
     </div>
 
-    <button type="submit" :disabled="!isValid">Login</button>
+    <button
+      data-testid="login-submit-button"
+      type="submit"
+      :disabled="!isValid"
+    >
+      Login
+    </button>
   </form>
 </template>
 

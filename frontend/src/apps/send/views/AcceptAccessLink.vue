@@ -89,6 +89,7 @@ onMounted(() => {
       <input
         ref="passwordInput"
         v-model="password"
+        data-testid="password-input"
         autocomplete="section-main password"
         type="password"
         required
@@ -97,7 +98,13 @@ onMounted(() => {
     <div v-if="message">{{ message }}</div>
     <div v-if="error" class="error-message" style="color: red">{{ error }}</div>
     <div v-if="!isLocked">
-      <BtnComponent primary class="btn-primary" type="submit">Go</BtnComponent>
+      <BtnComponent
+        data-testid="submit-button"
+        primary
+        class="btn-primary"
+        type="submit"
+        >Go</BtnComponent
+      >
     </div>
   </form>
 </template>

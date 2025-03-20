@@ -10,7 +10,7 @@ defineProps<LogOutProps>();
 
 <template>
   <div class="container">
-    <button size="small" @click.prevent="logOut">
+    <button size="small" data-testid="log-out-button" @click.prevent="logOut">
       <span>Log out</span>
       <OpenerIcon />
     </button>
