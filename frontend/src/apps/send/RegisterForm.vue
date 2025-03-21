@@ -3,7 +3,7 @@ import { trpc } from '@/lib/trpc';
 import { validateEmail, validatePassword } from '@/lib/validations';
 import useApiStore from '@/stores/api-store';
 import { useMutation } from '@tanstack/vue-query';
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const email = ref('');
@@ -67,11 +67,10 @@ const showErrors = () => {
 const handleSubmit = async () => {
   if (isValid.value) {
     registerMutation();
+  } else {
+    showErrors();
   }
 };
-
-watch(email, showErrors);
-watch(password, showErrors);
 </script>
 
 <template>
