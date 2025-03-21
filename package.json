@@ -17,7 +17,7 @@
     "test:e2e": "pnpm exec playwright test --headed",
     "test:e2e:ui": "pnpm exec playwright test --ui",
     "test:e2e:ci": "./scripts/e2e.sh",
-    "postinstall": "pnpm run install:frontend && pnpm run install:backend",
+    "xpostinstall": "pnpm run install:frontend && pnpm run install:backend",
     "clean": "./scripts/clean.sh",
     "predev": "./scripts/pre-flight.sh",
     "dev": "docker compose up --build --force-recreate -d && docker compose logs -f",
@@ -40,6 +40,8 @@
     "@types/node": "^22.1.0",
     "dotenv": "^16.4.7",
     "husky": "^9.0.11",
+    "lerna": "^8.2.1",
     "sort-package-json": "^2.10.0"
-  }
+  },
+  "dependencies": {}
 }
