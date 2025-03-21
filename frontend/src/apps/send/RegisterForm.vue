@@ -70,7 +70,6 @@ const handleSubmit = async () => {
   }
 };
 
-showErrors();
 watch(email, showErrors);
 watch(password, showErrors);
 </script>
