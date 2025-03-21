@@ -57,7 +57,7 @@ async function doUpload() {
         isUploading.value = false;
         console.log(uploadResult);
         return uploadResult;
-      } catch (e) {
+      } catch {
         isError.value = true;
         isUploading.value = false;
         return;
@@ -83,10 +83,10 @@ async function doUpload() {
 
   <div v-else>
     <div
+      id="drop-zone"
       ref="dropZoneRef"
       class="h-full"
       data-testid="drop-zone"
-      id="drop-zone"
     >
       <slot></slot>
     </div>

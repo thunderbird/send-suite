@@ -83,8 +83,8 @@ const handleSubmit = async () => {
       <label for="email">Email</label>
       <input
         id="email"
-        data-testid="email"
         v-model="email"
+        data-testid="email"
         type="email"
         required
         class="form-control"
@@ -95,9 +95,9 @@ const handleSubmit = async () => {
     <div class="form-group">
       <label for="password">Password</label>
       <input
-        data-testid="password"
         id="password"
         v-model="password"
+        data-testid="password"
         type="password"
         required
         class="form-control"

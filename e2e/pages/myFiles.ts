@@ -10,24 +10,49 @@ import {
 
 const { email, password, timeout, shareLinks } = playwrightConfig;
 
-export async function upload_workflow({ page, context }: PlaywrightProps) {
+export async function upload_workflow({ page }: PlaywrightProps) {
+  const {
+    folderRowSelector,
+    folderRowTestID,
+    fileCountID,
+    uploadButton,
+    dropZone,
+    tableCellID,
+  } = fileLocators(page);
+
+  const profileButton = page.getByRole("link", { name: "My Files" });
+  await page.waitForSelector(folderRowSelector);
+  await profileButton.click();
+
+  // Select folder
+  let folder = page.getByTestId(folderRowTestID);
+  await folder.click();
+
+  // Open folder page
+  folder = page.getByTestId(folderRowTestID);
+  await folder.click();
+
+  // Find upload box and upload the file
+  expect(await dropZone.textContent({ timeout })).toContain(
+    "files here to upload"
+  );
+  await dragAndDropFile(page, "#drop-zone", "/test.txt", "test.txt");
+  await uploadButton.click();
+  await page.waitForSelector(tableCellID);
+
+  // Check if the file count has updated
+  expect(await page.getByTestId(fileCountID).textContent()).toBe("1");
+}
+
+export async function share_links({ page }: PlaywrightProps) {
   const {
     folderRowSelector,
     folderRowTestID,
     createdShareLinkWithPassword,
     sharelinkButton,
-    createdShareLink,
-    fileCountID,
     linkWithPasswordID,
     passwordInput,
     firstLink,
-    uploadButton,
-    submitButtonID,
-    passwordInputID,
-    deleteFileButton,
-    homeButton,
-    dropZone,
-    tableCellID,
   } = fileLocators(page);
 
   const profileButton = page.getByRole("link", { name: "My Files" });
@@ -65,21 +90,10 @@ export async function upload_workflow({ page, context }: PlaywrightProps) {
       .getByTestId(linkWithPasswordID)
       .textContent()
   ).toContain("Password");
+}
 
-  // Open folder page
-  folder = page.getByTestId(folderRowTestID);
-  await folder.click();
-
-  // Find upload box and upload the file
-  expect(await dropZone.textContent({ timeout })).toContain(
-    "files here to upload"
-  );
-  await dragAndDropFile(page, "#drop-zone", "/test.txt", "test.txt");
-  await uploadButton.click();
-  await page.waitForSelector(tableCellID);
-
-  // Check if the file count has updated
-  expect(await page.getByTestId(fileCountID).textContent()).toBe("1");
+export async function download_workflow({ page, context }: PlaywrightProps) {
+  const { submitButtonID, passwordInputID } = fileLocators(page);
 
   // Download file without password
   let otherPage = await context.newPage();
@@ -94,6 +108,18 @@ export async function upload_workflow({ page, context }: PlaywrightProps) {
   await otherPage.getByTestId(submitButtonID).click();
   await downloadFirstFile(otherPage);
   await otherPage.close();
+}
+
+export async function delete_file({ page }: PlaywrightProps) {
+  const { folderRowTestID, fileCountID, deleteFileButton, homeButton } =
+    fileLocators(page);
+
+  let folder = page.getByTestId(folderRowTestID);
+
+  // Select folder
+  await folder.click();
+  // Open folder
+  await folder.click();
 
   // Delete file
   const responsePromise = page.waitForResponse(

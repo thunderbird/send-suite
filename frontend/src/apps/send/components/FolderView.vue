@@ -115,9 +115,9 @@ export default { props: { id: { type: String, default: 'null' } } };
           v-for="folder in folderStore.visibleFolders"
           :key="folder.id"
           class="group cursor-pointer"
+          data-testid="folder-row"
           @click="handleClick(folder.id)"
           @dblclick="router.push({ name: 'folder', params: { id: folder.id } })"
-          data-testid="folder-row"
         >
           <FolderTableRowCell
             :selected="folder.id === folderStore.selectedFolder?.id"
@@ -190,8 +190,8 @@ export default { props: { id: { type: String, default: 'null' } } };
                   <IconDownload class="w-4 h-4" />
                 </Btn>
                 <Btn
-                  data-testid="delete-file"
                   v-if="!item.upload.expired"
+                  data-testid="delete-file"
                   danger
                   @click="
                     folderStore.deleteItem(item.id, folderStore.rootFolder.id)

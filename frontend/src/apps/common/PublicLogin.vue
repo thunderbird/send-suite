@@ -21,7 +21,7 @@ function toggleForm() {
       <LoginForm :on-success="onSuccess" />
       <p class="mt-2 text-blue-500">
         Or
-        <button @click.prevent="toggleForm" data-testid="register-button">
+        <button data-testid="register-button" @click.prevent="toggleForm">
           register
         </button>
       </p>
