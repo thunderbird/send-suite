@@ -62,6 +62,8 @@ pnpm dev
 
 Congrats! Now you should be able to see the app on `http://localhost:5173/` and the backend running on `https://localhost:8088/`
 
+In order to login, you must create a new account. Click the "Or register" link and follow the prompts to create an account, which will then log you in to your local instance of Send.
+
 ### Troubleshooting
 
 Sometimes npm packages get screwed you come back to the project after a while. You can have a clean run by running. From the root
