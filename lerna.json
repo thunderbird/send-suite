@@ -1,0 +1,10 @@
+{
+  "$schema": "node_modules/lerna/schemas/lerna-schema.json",
+  "version": "independent",
+  "packages": [
+    "packages/send",
+    "packages/send/backend",
+    "packages/send/frontend"
+  ],
+  "npmClient": "pnpm"
+}

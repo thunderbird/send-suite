@@ -1,0 +1,40 @@
+{
+  "name": "send-suite",
+  "version": "0.3.4",
+  "description": "",
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
+  "main": "index.js",
+  "scripts": {
+    "build:frontend": "cd frontend && pnpm build-and-submit",
+    "build-image:backend": "./backend/scripts/build.sh",
+    "sort-package-json": "sort-package-json {frontend,backend}/package.json",
+    "compare_envs": "bun run scripts/envs.ts",
+    "test:frontend": "cd frontend && pnpm test",
+    "test:backend": "cd backend && pnpm test",
+    "test": "pnpm run test:frontend && pnpm run test:backend",
+    "test:e2e": "pnpm exec playwright test --headed",
+    "test:e2e:ui": "pnpm exec playwright test --ui",
+    "test:e2e:ci": "./scripts/e2e.sh",
+    "clean": "./scripts/clean.sh",
+    "predev": "./scripts/pre-flight.sh",
+    "dev": "docker compose up --build --force-recreate -d && docker compose logs -f",
+    "dev:detach": "docker compose up -d",
+    "setup": "./scripts/setup.sh",
+    "setup:local": "./scripts/setup.sh && bun run scripts/local.ts"
+  },
+  "engines": {
+    "bun": "1.1.13",
+    "node": ">=22.11.0",
+    "pnpm": ">=10.6.4"
+  },
+  "volta": {
+    "node": "22.11.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.46.0",
+    "dotenv": "^16.4.7",
+    "sort-package-json": "^2.10.0"
+  }
+}
