@@ -1,5 +1,5 @@
 {
-  "name": "thunderbird-send",
+  "name": "send-frontend",
   "version": "0.4.0",
   "private": true,
   "type": "module",
