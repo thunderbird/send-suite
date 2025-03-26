@@ -30,11 +30,3 @@ and `pnpm preview`
 This will create a server on `http://localhost:4173/`, you can test your app there.
 
 You might be wondering why not just run the dev environment. Here is a useful [answer that might help](https://stackoverflow.com/questions/71703933/what-is-the-difference-between-vite-and-vite-preview)
-
-### Submitting .xpi to ATN
-
-Make sure you have a file named `.env.production` inside the frontend directory that contains the environment variables for production. Otherwise this will fail.
-
-Run `pnpm build-and-submit`
-This will create `frontend-source.zip` use it to upload to ATN when asked for source code.
-It will also move your `.xpi` to the root.

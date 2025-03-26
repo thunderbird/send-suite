@@ -17,7 +17,8 @@ services:
 
   backend:
     build:
-      context: ./backend/build
+      context: ./backend
+      dockerfile: Dockerfile-dev
     ports:
       - "8080:8080"
       - "5555:5555" # for browsing db with prisma studio
