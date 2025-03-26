@@ -9,6 +9,7 @@ import { NamedBlob, sendBlob } from '@/lib/filesync';
 import { Keychain } from '@/lib/keychain';
 import { UserType } from '@/types';
 import { trpc } from './trpc';
+import { retryUntilSuccessOrTimeout } from './utils';
 
 export default class Uploader {
   user: UserType;
@@ -61,6 +62,17 @@ export default class Uploader {
     const id = await sendBlob(blob, key, api, progressTracker, isBucketStorage);
     if (!id) {
       return null;
+    }
+
+    if (!isBucketStorage) {
+      // Poll the api to check if the file is in storage
+      await retryUntilSuccessOrTimeout(async () => {
+        const { size } = await this.api.call<{ size: null | number }>(
+          `uploads/${id}/stat`
+        );
+        // Return a boolean, telling us if the size is null or not
+        return !!size;
+      });
     }
 
     // Create a Content entry in the database
