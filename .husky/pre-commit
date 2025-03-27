@@ -1,5 +1,7 @@
 . "$(dirname "$0")/_/husky.sh"
 
+cd packages/send
+
 echo "🐺 Running pre commit hooks..."
 
 # Formatting package.json files

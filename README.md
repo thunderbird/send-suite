@@ -43,58 +43,26 @@ pnpm install
 You can run the setup automatically with
 
 ```sh
-pnpm run setup:local
+lerna run setup:local --scope=send-suite
 ```
 
 Or, if you wish to run this against staging FXA (requires client id and secret) do the following:
 
 ```sh
-pnpm run setup
+lerna run setup --scope=send-suite
 ```
 
-Then edit the `backend/.env` file to supply values for the FXA_CLIENT_ID and FXA_CLIENT_SECRET vars
+Then edit the `packages/send/backend/.env` file to supply values for the FXA_CLIENT_ID and FXA_CLIENT_SECRET vars
 
-Finally, run the full stack:
+Finally, run the full stack (you can use this command anytime you want to run the application back again):
 
 ```sh
-pnpm dev
+lerna run dev --scope=send-suite
 ```
 
 Congrats! Now you should be able to see the app on `http://localhost:5173/` and the backend running on `https://localhost:8088/`
 
 In order to login, you must create a new account. Click the "Or register" link and follow the prompts to create an account, which will then log you in to your local instance of Send.
-
-### Troubleshooting
-
-Sometimes npm packages get screwed you come back to the project after a while. You can have a clean run by running. From the root
-
-```sh
-pnpm clean
-docker compose down
-docker system prune -a --volumes
-pnpm i
-pnpm dev
-```
-
-If you're having any issues with docker (ex: no memory left, or volumes do not contain expected files), prune docker and rebuild containers from scratch:
-
-```sh
-docker compose down
-docker system prune -a --volumes
-docker-compose build --no-cache
-```
-
-Then `docker compose up -d` should work
-
-When you're done with the project, you can run:
-
-```sh
-docker compose down
-```
-
-This stops containers and removes containers, networks, volumes, and images created by `dev`.
-
-Note: All named volumes are persisted. You can see these expressed as `volumes` on the `compose.yml` file.
 
 ### Using the webapp
 
@@ -113,17 +81,17 @@ From here, you can do things like create folders, upload files to folders, and c
 If this is the first time you're building the extension, you'll need to install the tooling on the host:
 
 ```sh
-cd frontend
-pnpm/yarn/npm install
+# Install frontend dependencies
+pnpm i --filter send-frontend
 ```
 
 Build the extension:
 
 ```sh
-pnpm/yarn/npm run build:dev
+lerna run build:dev --scope=send-frontend
 ```
 
-This outputs an xpi file at the root, you should see something like `send-suite-0.1.22.xpi`.
+This outputs an xpi file at `packages/send`, you should see something like `send-suite-0.1.22.xpi`.
 
 ### Loading the TB Extension
 
@@ -151,19 +119,18 @@ Successful conversion results in a "beautiful" link being added to your message 
 
 Note: the link will only work on your local machine, as the URL is a `localhost` one. (But you should be able to open it in a browser and see that the file downloads and can be viewed).
 
-### Authentication
+### Submitting .xpi to ATN
 
-We're using jwt tokens to authenticate users. Once they go through the login flow, they get a jwt token that is stored as a secure cookie. This is passed on every request to the backend automatically. We use this token to know who is making the request and by decoding it we get user data such as userId and email. We can set how many days the token is valid for and once it expires, the user has to log in again.
+Make sure you have a file named `.env.production` inside the frontend directory that contains the environment variables for production. Otherwise this will fail.
 
-### Public login
+Run
 
-(without FXA)
+```sh
+lerna run build-and-submit --scope=send-frontend
+```
 
-If you want to use the application without an FXA account, you can set these environment variables.
-
-`backend/.env` to `ALLOW_PUBLIC_LOGIN=true`
-
-`frontend/.env` to `VITE_ALLOW_PUBLIC_LOGIN=true`
+This will create `frontend-source.zip` use it to upload to ATN when asked for source code.
+It will also move your `.xpi` to the `packages/send` directory.
 
 ## Pre-commit hooks
 
@@ -198,13 +165,27 @@ See the `docs/` folder for a draft of the detailed documentation.
 
 [Here](https://typicode.github.io/husky/how-to.html#testing-hooks-without-committing) you can read more.
 
+### Authentication
+
+We're using jwt tokens to authenticate users. Once they go through the login flow, they get a jwt token that is stored as a secure cookie. This is passed on every request to the backend automatically. We use this token to know who is making the request and by decoding it we get user data such as userId and email. We can set how many days the token is valid for and once it expires, the user has to log in again.
+
+### Public login
+
+(without FXA)
+
+If you want to use the application without an FXA account, you can set these environment variables.
+
+`packages/send/backend/.env` to `ALLOW_PUBLIC_LOGIN=true`
+
+`packages/send/frontend/.env` to `VITE_ALLOW_PUBLIC_LOGIN=true`
+
 ## Sentry
 
 Make sure you ask the team for `VITE_SENTRY_AUTH_TOKEN`
 
 ## Debugging
 
-### Backend
+### VSCode debugger for the backend
 
 You can use VSCode's debugger for the backend.
 
@@ -232,7 +213,7 @@ You can use VSCode's debugger for the backend.
 
 4. Run your debug session. If you have multiple configs, make sure you run the one called `Docker: Attach to Node`
 
-### Frontend
+### VSCode debugger for the frontend
 
 1. Run this command `code frontend` to open a session on the frontend package.
 
@@ -268,28 +249,33 @@ You can use VSCode's debugger for the backend.
 
 ### Setting up
 
-1. In order for the tests to run locally, you have to set up your `.env` files to match the default set by `setup:local`. This will overwrite your `.env` files. You can back up your keys by running from the root
+1. In order for the tests to run locally, you have to set up your `.env` files to match the default. This will overwrite your `.env` files. If you need to back up your keys before that you can run.
 
 ```sh
+cd packages/send
 cd frontend
 cp .env .env.backup
 cd ../backend
 cp .env .env.backup
 ```
 
-2. Set your environment variables by running
-   `pnpm run setup:local`
+2. Set your environment variables by running `lerna run setup:local`
 
 #### UI mode
 
 You can run the test suite on UI Mode. UI Mode lets you explore, run, and debug tests with a time travel experience complete with a watch mode. All test files are displayed in the testing sidebar, allowing you to expand each file and describe block to individually run, view, watch, and debug each test.
 
-1. Run `pnpm dev:detach`
-2. Run `pnpm test:e2e:ui`
+1. Run `lerna run dev:detach --scope=send-suite`
+2. Run `lerna run test:e2e:ui --scope=send-suite`
 
 ### Headed mode
 
-If you want to see the tests running, you can use headed mode by running. `pnpm dev:detach && pnpm test:e2e`
+If you want to see the tests running, you can use headed mode by running.
+
+```sh
+lerna run dev:detach --scope=send-suite
+lerna run test:e2e:ci --scope=send-suite
+```
 
 #### CI mode
 
@@ -315,10 +301,82 @@ To confirm that it worked, list the buckets from the account.
 `b2 ls`
 
 Move to the b2 rules directory
-`cd backend/b2`
+`cd packages/send/backend/b2`
 
 Update the rules
 `b2 bucket update {YOUR_BUCKET_NAME} --cors-rules "$(<./rules.json)"`
 
 Updating retention rules
 `b2 bucket update {YOUR_BUCKET_NAME} --lifecycle-rule "$(<./retention.json)"`
+
+### Troubleshooting Send
+
+Sometimes npm packages get screwed you come back to the project after a while. You can have a clean run by running.
+
+```sh
+lerna clean
+cd packages/send
+docker compose down
+docker system prune -a --volumes
+pnpm i
+pnpm dev
+```
+
+If you're having any issues with docker (ex: no memory left, or volumes do not contain expected files), prune docker and rebuild containers from scratch:
+
+```sh
+cd packages/send
+docker compose down
+docker system prune -a --volumes
+docker-compose build --no-cache
+```
+
+Then run
+
+```sh
+# from packages/send
+docker compose up -d
+```
+
+Everything should run well now
+
+When you're done with the project, you can run:
+
+```sh
+# from packages/send
+docker compose down
+```
+
+This stops containers and removes containers, networks, volumes, and images created by `dev`.
+
+Note: All named volumes are persisted. You can see these expressed as `volumes` on the `compose.yml` file.
+
+## Monorepo
+
+## Project management
+
+Each project inside the `packages` folder, contains a `package.json` where the `name` is used as the reference for command execution (we'll call this the package name). Each package is declared inside the `pnpm-workspace.yaml` and `lerna.json` files.
+
+## Install all dependencies
+
+If you run `pnpm install` from the root. This command will install **all the dependencies** for all the packages inside the workspace.
+
+## Install partial dependencies
+
+If you want to install only the dependencies for the projects you need, you can run the filter command and pass a glob pattern matching the ones you want. For example. If you want to install all dependencies for `send`, you can run
+
+`pnpm install --filter "send-*"`
+
+This will only install the dependencies where the package name starts with `send-`.
+
+## Running commands
+
+_Note: Make sure you install the dependencies you need before running your commands._
+
+You can run any package's commands by calling.
+
+`lerna run <your-command> --scope=<package-name>`
+
+For example, If I want to run e2e tests on send, I can run
+
+`lerna run test:e2e:ci --scope=send-suite`

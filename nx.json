@@ -1,0 +1,139 @@
+{
+  "targetDefaults": {
+    "prepare": {
+      "dependsOn": []
+    },
+    "build:frontend": {
+      "dependsOn": [],
+      "cache": true,
+      "outputs": [
+        "{projectRoot}/packages/send/frontend/dist,packages/send/frontend/dist-web"
+      ]
+    },
+    "build-image:backend": {
+      "dependsOn": [
+        "^build-image:backend"
+      ],
+      "outputs": [
+        "{projectRoot}/packages/send/backend/build"
+      ]
+    },
+    "sort-package-json": {
+      "dependsOn": []
+    },
+    "compare_envs": {
+      "dependsOn": []
+    },
+    "test:e2e": {
+      "dependsOn": []
+    },
+    "test:e2e:ui": {
+      "dependsOn": []
+    },
+    "test:e2e:ci": {
+      "dependsOn": []
+    },
+    "clean": {
+      "dependsOn": []
+    },
+    "predev": {
+      "dependsOn": []
+    },
+    "dev": {
+      "dependsOn": [
+        "^dev"
+      ]
+    },
+    "dev:detach": {
+      "dependsOn": []
+    },
+    "setup": {
+      "dependsOn": []
+    },
+    "setup:local": {
+      "dependsOn": []
+    },
+    "build": {
+      "dependsOn": [],
+      "cache": true
+    },
+    "ci:validate": {
+      "dependsOn": []
+    },
+    "db:browse": {
+      "dependsOn": []
+    },
+    "db:generate": {
+      "dependsOn": []
+    },
+    "db:migrate": {
+      "dependsOn": []
+    },
+    "db:reset": {
+      "dependsOn": []
+    },
+    "db:update": {
+      "dependsOn": []
+    },
+    "debug": {
+      "dependsOn": []
+    },
+    "debug:attach": {
+      "dependsOn": []
+    },
+    "lint:all": {
+      "dependsOn": [],
+      "cache": true
+    },
+    "prettier:all": {
+      "dependsOn": [],
+      "cache": true
+    },
+    "release": {
+      "dependsOn": []
+    },
+    "sentry:sourcemaps": {
+      "dependsOn": []
+    },
+    "prestart": {
+      "dependsOn": []
+    },
+    "start": {
+      "dependsOn": []
+    },
+    "test:watch": {
+      "dependsOn": []
+    },
+    "typecheck": {
+      "dependsOn": [],
+      "cache": true
+    },
+    "build-and-submit": {
+      "dependsOn": [],
+      "cache": true,
+      "outputs": [
+        "{projectRoot}/packages/send/frontend/dist,packages/send/frontend/dist-web"
+      ]
+    },
+    "build:dev": {
+      "dependsOn": [],
+      "cache": true
+    },
+    "build:watch": {
+      "dependsOn": []
+    },
+    "deploy-xpi": {
+      "dependsOn": [],
+      "cache": true
+    },
+    "preview": {
+      "dependsOn": []
+    },
+    "test-debug": {
+      "dependsOn": []
+    },
+    "postversion": {
+      "dependsOn": []
+    }
+  }
+}

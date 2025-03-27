@@ -33,12 +33,12 @@ jobs:
         with:
           filters: |
             backend-changed:
-              - 'backend/**'
+              - 'packages/send/backend/**'
             iac-changed:
-              - 'pulumi/**'
+              - 'packages/send/pulumi/**'
               - '.github/workflows/validate.yml'
             frontend-changed:
-              - 'frontend/**'
+              - 'packages/send/frontend/**'
 
   # When backend changes are merged in, build and push a new Docker image
   backend-merge:
@@ -76,17 +76,24 @@ jobs:
         shell: bash
         run: |
           python -m pip install virtualenv
-          cd pulumi
+          cd packages/send/pulumi
           virtualenv ./venv
 
       - name: Set up Pulumi environment
         id: pulumi-env
         shell: bash
         run: |
-          cd pulumi
+          cd packages/send/pulumi
           source ./venv/bin/activate
           curl -fsSL https://get.pulumi.com | sh
           pip install -Ur requirements.txt
+
+      - name: Install pnpm and build package
+        id: install-pnpm-build
+        run: |
+          npm install -g pnpm
+          pnpm install --filter send-backend
+          lerna run build-image:backend --scope=send-suite
 
       # Produce a container image
       - name: Build, tag, and push backend image to Amazon ECR
@@ -95,7 +102,7 @@ jobs:
           ECR_TAG: "${{ steps.login-ecr.outputs.registry }}/${{ vars.PROJECT }}:${{ github.sha }}"
         run: |
           # Build a docker container and push it to ECR so that it can be deployed to ECS.
-          docker build -t $ECR_TAG ./backend
+          docker build -t $ECR_TAG ./packages/send/backend/build
           docker push $ECR_TAG
           echo "backend-image=$ECR_TAG" >> $GITHUB_OUTPUT
           echo -n "$ECR_TAG" > ecr_tag.txt
@@ -117,7 +124,7 @@ jobs:
           # to do with the GHA workflow "env" settings above.
           export PATH="/home/runner/.pulumi/bin:$PATH"
 
-          cd pulumi
+          cd packages/send/pulumi
 
           # Create a YAML config stump containing only the nested tree leading to the image tag update
           cat << EOF > newimage.yaml
@@ -166,7 +173,7 @@ jobs:
       - name: Create stage .env file from secrets
         shell: bash
         run: |
-          cd frontend
+          cd packages/send/frontend
           cat << EOF > .env
           VUE_BASE_URL=https://send-stage.tb.pro
           VITE_SEND_SERVER_URL=https://send-backend-stage.tb.pro
@@ -184,14 +191,14 @@ jobs:
         shell: bash
         run: |
           # Initial setup of dependencies
-          pushd frontend
+          cd packages/send/frontend
           npm install -g pnpm
-          pnpm install
+          pnpm install --filter send-frontend
 
           # Build static frontend assets and the .xpi
           IS_CI_AUTOMATION=yes pnpm build-and-submit
           mv dist-web ../dist-web-stage
-          popd
+          cd ..
           mv frontend-source frontend-source-stage
           mv frontend-source.zip frontend-source-stage.zip
           mv "$(find send-suite-*.xpi)" "send-suite-stage-$(basename "$(find send-suite-*.xpi)" | cut -d'-' -f3-)"
@@ -201,7 +208,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist-web-stage
-          path: dist-web-stage
+          path: packages/send/dist-web-stage
           compression-level: 0
 
       - name: Archive the stage XPI
@@ -209,13 +216,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: xpi-stage
-          path: send-suite-*.xpi
+          path: packages/send/send-suite-*.xpi
 
       # Production build steps
       - name: Create production .env file from secrets
         shell: bash
         run: |
-          cd frontend
+          cd packages/send/frontend
           cat << EOF > .env
           VUE_BASE_URL=https://send.tb.pro
           VITE_SEND_SERVER_URL=https://send-backend.tb.pro
@@ -238,18 +245,18 @@ jobs:
           BASE_URL: https://send.tb.pro
         run: |
           # Initial setup of dependencies
-          pushd frontend
+          cd packages/send/frontend
           npm install -g pnpm
-          pnpm install
+          pnpm install --filter send-frontend
 
           # Build static frontend assets and the .xpi
           IS_CI_AUTOMATION=yes pnpm build-and-submit
           mv dist-web ../dist-web-prod
-          popd
+          cd ..
           mv frontend-source frontend-source-prod
           mv frontend-source.zip frontend-source-prod.zip
           # There should be an XPI marked "stage" already here, so we exclude it to get the prod XPI instead
-          XPI=$(find send-suite-*.xpi | grep -v stage)
+          XPI=$(find send-suite-*.xpi | grep -v stage | grep -v prod)
           # The filename is something like "send-suite-0-2-1.xpi"; use cut to pull just the version string
           VERSION_STRING=$(echo $XPI | cut -d- -f3- | cut -d. -f1)
           mv $XPI send-suite-prod-$VERSION_STRING.xpi
@@ -259,7 +266,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist-web-prod
-          path: dist-web-prod
+          path: packages/send/dist-web-prod
 
       - name: Archive the prod XPI
         id: xpi-archive-prod
@@ -287,5 +294,5 @@ jobs:
           ATN_API_SECRET: "${{ secrets.ATN_API_SECRET }}"
           BASE_URL: https://send-stage.tb.pro
         run: |
-          cd frontend
+          cd packages/send/frontend
           pnpm deploy-xpi $(find .. -name 'send-suite-stage-*.xpi')

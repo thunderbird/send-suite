@@ -35,12 +35,12 @@ jobs:
         with:
           filters: |
             backend-changed:
-              - 'backend/**'
+              - 'packages/send/backend/**'
             iac-changed:
-              - 'pulumi/**'
+              - 'packages/send/pulumi/**'
               - '.github/workflows/validate.yml'
             frontend-changed:
-              - 'frontend/**'
+              - 'packages/send/frontend/**'
 
   # When the backend code changes, run these steps
   backend-tests:
@@ -63,13 +63,14 @@ jobs:
         shell: bash
         run: |
           npm install -g pnpm
-          pnpm install
+          cd packages/send
+          pnpm install --filter send-backend
 
       - name: Backend tests
         id: backend-tests
         shell: bash
         run: |
-          cd backend
+          cd packages/send/backend
           cp .env.sample .env
 
           # Certain values here contain "/" characters, which need to be escaped so sed doesn't break
@@ -110,13 +111,13 @@ jobs:
       - name: Ruff formatting checks
         uses: chartboost/ruff-action@v1
         with:
-          src: "./pulumi"
+          src: "./packages/send/pulumi"
           args: "format --check"
 
       - name: Other linting with Ruff
         uses: chartboost/ruff-action@v1
         with:
-          src: "./pulumi"
+          src: "./packages/send/pulumi"
 
   # When the frontend code changes, run these steps
   frontend-tests-and-lint:
@@ -139,12 +140,13 @@ jobs:
         shell: bash
         run: |
           npm install -g pnpm
-          pnpm install
+          cd packages/send
+          pnpm install --filter send-frontend
 
       - name: Create .env file so tests will work
         shell: bash
         run: |
-          cd frontend
+          cd packages/send/frontend
           cat << EOF > .env
           VUE_BASE_URL=https://send-stage.tb.pro
           VITE_SEND_SERVER_URL=https://send-backend-stage.tb.pro
@@ -159,5 +161,5 @@ jobs:
         id: frontend-tests-and-lint
         shell: bash
         run: |
-          cd frontend
+          cd packages/send/frontend
           pnpm ci:validate

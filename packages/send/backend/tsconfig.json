@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
-    "module": "es2022",
-    "moduleResolution": "Node",
+    "module": "commonjs",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -19,18 +18,16 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
-    "allowJs": true,
+
     "paths": {
-      "@/*": ["./src/*"],
-      "server/*": ["../backend/src/*"],
-      "prisma/*": ["../backend/node_modules/@prisma/*"]
+      "@/*": ["./src/*"]
     },
-    "types": [
-      "vite/client",
-      "vitest/globals",
-      "@types/firefox-webext-browser",
-      "@trpc/server"
-    ]
+    "inlineSources": true,
+
+    // Set `sourceRoot` to  "/" to strip the build path prefix
+    // from generated source code references.
+    // This improves issue grouping in Sentry.
+    "sourceRoot": "/"
   },
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist", "build"]
 }

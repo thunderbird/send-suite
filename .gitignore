@@ -40,19 +40,8 @@ lerna-debug.log*
 *.sln
 *.sw?
 
-# Pulumi-related things to ignore
-./tb_pulumi/
-pulumi/tb_pulumi/
-pulumi/*.pyc
-pulumi/venv/
-pulumi/__pycache__/
-.venv
-venv
-
-# E2E
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
-/data
-/frontend-source*
+# Monorepo
+/builds
+.nx/cache
+# This helps the cache to build faster, we'll disable it until we can test it properly on CI
+.nx/workspace-data
