@@ -21,7 +21,7 @@ export function delay(delayMs = 100): Promise<void> {
 export async function retryUntilSuccessOrTimeout(
   fn: () => Promise<boolean>,
   waitTimeMs: number = 1_000,
-  maxWaitTimeMs: number = 5_000
+  maxWaitTimeMs: number = 60_000
 ): Promise<void> {
   for (
     let waitTotalMs = 0;
