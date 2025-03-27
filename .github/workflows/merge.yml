@@ -280,7 +280,7 @@ jobs:
         id: frontend-deploy
         shell: bash
         run: |
-          cd dist-web-stage
+          cd packages/send/dist-web-stage
           aws s3 cp . s3://tb-send-suite-stage-frontend/ --recursive
 
           # Invalidate the CDN
