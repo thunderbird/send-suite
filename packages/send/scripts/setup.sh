@@ -17,5 +17,5 @@ cd ../backend
 cp .env.sample .env
 cd ..
 
-pnpm i
+
 

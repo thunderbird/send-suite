@@ -1,31 +1,13 @@
 {
-  "name": "send-suite",
-  "version": "0.4.0",
+  "name": "monorepo",
+  "version": "0.0.0",
   "description": "",
   "keywords": [],
   "license": "ISC",
   "author": "",
   "main": "index.js",
   "scripts": {
-    "prepare": "husky",
-    "build:frontend": "cd frontend && pnpm build-and-submit",
-    "sort-package-json": "sort-package-json {frontend,backend}/package.json",
-    "compare_envs": "bun run scripts/envs.ts",
-    "test:frontend": "cd frontend && pnpm test",
-    "test:backend": "cd backend && pnpm test",
-    "test": "pnpm run test:frontend && pnpm run test:backend",
-    "test:e2e": "pnpm exec playwright test --headed",
-    "test:e2e:ui": "pnpm exec playwright test --ui",
-    "test:e2e:ci": "./scripts/e2e.sh",
-    "postinstall": "pnpm run install:frontend && pnpm run install:backend",
-    "clean": "./scripts/clean.sh",
-    "predev": "./scripts/pre-flight.sh",
-    "dev": "docker compose up --build --force-recreate -d && docker compose logs -f",
-    "dev:detach": "docker compose up -d",
-    "install:frontend": "cd frontend && pnpm install",
-    "install:backend": "cd backend && pnpm install",
-    "setup": "./scripts/setup.sh",
-    "setup:local": "./scripts/setup.sh && bun run scripts/local.ts"
+    "prepare": "husky"
   },
   "engines": {
     "bun": "1.1.13",
@@ -36,10 +18,9 @@
     "node": "22.11.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.46.0",
-    "@types/node": "^22.1.0",
-    "dotenv": "^16.4.7",
+    "@types/node": "^22.13.11",
     "husky": "^9.0.11",
-    "sort-package-json": "^2.10.0"
+    "lerna": "^8.2.1",
+    "typescript": "^5.8.2"
   }
 }
