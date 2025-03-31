@@ -3,6 +3,7 @@ import Btn from '@/apps/send/elements/BtnComponent.vue';
 import { mozAcctLogin } from '@/lib/fxa';
 import { dbUserSetup } from '@/lib/helpers';
 import { CLIENT_MESSAGES } from '@/lib/messages';
+import { trpc } from '@/lib/trpc';
 import useApiStore from '@/stores/api-store';
 import useKeychainStore from '@/stores/keychain-store';
 import useUserStore from '@/stores/user-store';
@@ -37,6 +38,15 @@ async function pingSession() {
     router.push('/send/profile');
   }
 }
+
+trpc.onLoginFinished.subscribe(
+  { name: 'login' },
+  {
+    onData: () => {
+      onSuccess();
+    },
+  }
+);
 
 async function onSuccess() {
   await dbUserSetup(userStore, keychain, folderStore);

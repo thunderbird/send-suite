@@ -36,7 +36,7 @@ const {
   },
 });
 
-const { data: u, isLoading } = useQuery({
+const { data: u, isLoading: loadingDashboard } = useQuery({
   queryKey: ['getUserDataDashboard'],
   queryFn: async () => {
     return await trpc.getUserData.query();
@@ -60,7 +60,7 @@ const percentageUsed = computed(() => {
     <p v-if="error">{{ error.message }}</p>
     <h2 class="email">{{ user.email }}</h2>
 
-    <LoadingComponent v-if="isLoading" />
+    <LoadingComponent v-if="loadingDashboard || loadingSize" />
 
     <div v-else>
       <p v-if="hasLimitedStorage">

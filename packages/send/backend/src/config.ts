@@ -5,6 +5,8 @@ import path from 'path';
 type Environment = 'development' | 'production';
 export type EnvironmentName = 'stage' | 'prod' | 'development';
 
+export const WS_PORT = 3030;
+
 const appConfig = {
   file_dir: `/tmp/send-suite-dev-dir`,
   max_file_size: 1024 * 1024 * 1024 * 2.5,

@@ -1,4 +1,5 @@
 import { createLoginSession, deleteSession, getLoginSession } from '@/models';
+import { loginEmitter } from '@/ws/login';
 import axios from 'axios';
 import { createHash } from 'crypto';
 import { Request, Router } from 'express';
@@ -29,6 +30,7 @@ router.get(
   '/login',
   addErrorHandling(AUTH_ERRORS.LOG_IN_FAILED),
   wrapAsyncHandler(async (req: Request, res) => {
+    loginEmitter.emit('login_url_requested');
     // Params to include when we request an authorization url
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let additionalParams: Record<string, any> = {
@@ -106,6 +108,8 @@ router.get(
   '/',
   addErrorHandling(AUTH_ERRORS.LOG_IN_FAILED),
   wrapAsyncHandler(async (req, res) => {
+    loginEmitter.emit('login_attempt');
+
     // If provider sends an error, immediately redirect
     // to error page.
     if (req.query.error) {
@@ -168,6 +172,10 @@ router.get(
       };
 
       registerTokens(signedData, res);
+
+      loginEmitter.emit('login_complete', {
+        userId: user.id,
+      });
 
       res.redirect('/login-success.html');
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -105,6 +105,11 @@ resources:
                 hostPort: 8080
                 protocol: tcp
                 appProtocol: http
+              - name: web-socket
+                containerPort: 3030
+                hostPort: 3030
+                protocol: tcp
+                appProtocol: http
               - name: prisma
                 containerPort: 5555
                 hostPort: 5555

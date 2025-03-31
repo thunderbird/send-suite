@@ -27,8 +27,8 @@ importers:
         specifier: ^0.6.5
         version: 0.6.5(typescript@5.8.2)
       '@trpc/client':
-        specifier: 11.0.0-rc.648
-        version: 11.0.0-rc.648(@trpc/server@11.0.0-rc.648(typescript@5.8.2))(typescript@5.8.2)
+        specifier: 11.0.1
+        version: 11.0.1(@trpc/server@11.0.0-rc.648(typescript@5.8.2))(typescript@5.8.2)
       '@types/ua-parser-js':
         specifier: ^0.7.39
         version: 0.7.39
@@ -958,11 +958,11 @@ packages:
   '@thunderbirdops/services-ui@0.6.5':
     resolution: {integrity: sha512-dcHZtlj8VcWcAL+GGz48bTW9H91p1iacY33uSH0ntxInbZ7uwbXR/a/mUnsk9D3z2ukREHlPDWUS5QUuMGY3kA==}
 
-  '@trpc/client@11.0.0-rc.648':
-    resolution: {integrity: sha512-k4FfLKvJwbosUH8KYyZkC50RJHYtIyJECi5WhRXsvaf9a6lgrTlcA+osq815zYcAHo7wEgR9E9UdSTrpLdAQFQ==}
+  '@trpc/client@11.0.1':
+    resolution: {integrity: sha512-HvOrvWAXbGBwt4om+NfuxrK4f+ik2aaNIXq7WLrJbEp7U+YXfh5++1a5p4JDaikrvSaObJ389DhYAGWz90xSGw==}
     peerDependencies:
-      '@trpc/server': 11.0.0-rc.648+77b4d8920
-      typescript: '>=5.6.2'
+      '@trpc/server': 11.0.1
+      typescript: '>=5.7.2'
 
   '@trpc/server@11.0.0-rc.648':
     resolution: {integrity: sha512-nKW7FNM+QZrY/CVGlX3hFNIdUvbw6pwSJ+HzEF8GIeSJDKLHK7Ke1QJGI2mRW6oF9dCKMBXfuLaYY2dXfjfn7Q==}
@@ -3523,7 +3523,7 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@trpc/client@11.0.0-rc.648(@trpc/server@11.0.0-rc.648(typescript@5.8.2))(typescript@5.8.2)':
+  '@trpc/client@11.0.1(@trpc/server@11.0.0-rc.648(typescript@5.8.2))(typescript@5.8.2)':
     dependencies:
       '@trpc/server': 11.0.0-rc.648(typescript@5.8.2)
       typescript: 5.8.2
