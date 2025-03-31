@@ -15,9 +15,9 @@
     "prettier:all": "prettier --write .",
     "preview": "vite preview",
     "release": "./scripts/release.sh",
-    "test": "vitest run --silent",
-    "test-debug": "vitest --inspect-brk --single-thread",
-    "test:watch": "vitest --watch",
+    "test": "VITE_TESTING=true vitest run --silent",
+    "test-debug": "VITE_TESTING=true vitest --inspect-brk --single-thread",
+    "test:watch": "VITE_TESTING=true vitest --watch",
     "typecheck": "tsc --noEmit",
     "postversion": "bun run ./scripts/bump.ts"
   },

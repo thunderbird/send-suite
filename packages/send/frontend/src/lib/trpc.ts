@@ -4,6 +4,7 @@
 import logger from '@/logger';
 import {
   createTRPCClient,
+  createWSClient,
   httpBatchLink,
   retryLink,
   splitLink,
@@ -11,12 +12,19 @@ import {
 } from '@trpc/client';
 
 import { AppRouter } from 'server/index';
-import { wsClient } from './config';
+import { WS_PORT } from './config';
 
 // create persistent WebSocket connection
 
 const refreshUrl = `${import.meta.env.VITE_SEND_SERVER_URL}/api/auth/refresh`;
 const trpcUrl = `${import.meta.env.VITE_SEND_SERVER_URL}/trpc`;
+const isTesting = import.meta.env.VITE_TESTING === 'true';
+// We create a WebSocket client only if we are not in testing mode
+const wsClient = !isTesting
+  ? createWSClient({
+      url: `ws://localhost:${WS_PORT}`,
+    })
+  : null;
 
 /**
  * We only import the `AppRouter` type from the server - this is not available at runtime

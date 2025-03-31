@@ -1,6 +1,3 @@
-import { createWSClient } from '@trpc/client';
-import { config } from 'dotenv';
-config();
 export type Environment = 'development' | 'staging' | 'production';
 
 export const getIsEnvProd = (envVarObject: Record<string, string>) => {
@@ -30,11 +27,4 @@ export const getEnvironmentName = (
   return 'staging';
 };
 
-const isTesting = process.env.NODE_ENV === 'test';
-
 export const WS_PORT = 3030;
-export const wsClient = !isTesting
-  ? createWSClient({
-      url: `ws://localhost:${WS_PORT}`,
-    })
-  : null;
