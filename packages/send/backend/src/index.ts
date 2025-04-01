@@ -2,6 +2,8 @@
 import * as trpcExpress from '@trpc/server/adapters/express';
 import * as t from './trpc';
 
+import { applyWSSHandler } from '@trpc/server/adapters/ws';
+
 import './sentry';
 
 import cookieParser from 'cookie-parser';
@@ -27,6 +29,7 @@ import wsUploadHandler from './wsUploadHandler';
 import * as Sentry from '@sentry/node';
 
 import { getDataFromAuthenticatedRequest } from './auth/client';
+import { WS_PORT } from './config';
 import { errorHandler } from './errors/routes';
 import { addVersionHeader } from './middleware';
 import metricsRoute from './routes/metrics';
@@ -34,14 +37,20 @@ import { containersRouter } from './trpc/containers';
 import { sharingRouter } from './trpc/sharing';
 import { usersRouter } from './trpc/users';
 import { getCookie } from './utils';
+import { logger } from './utils/logger';
 
 const PORT = 8080;
+
 const HOST = '0.0.0.0';
 const WS_UPLOAD_PATH = `/api/ws`;
 const WS_MESSAGE_PATH = `/api/messagebus`;
 
 const wsUploadServer = new WebSocket.Server({ noServer: true });
 const wsMessageServer = new WebSocket.Server({ noServer: true });
+
+// We use this websocket for general purposes. Not related to uploads/chat.
+// We want to keep them separate in case we need to deprecate any of them
+const wss = new WebSocket.Server({ port: WS_PORT });
 
 const app = express();
 app.use(express.static('public'));
@@ -145,6 +154,36 @@ const appRouter = mergeRouters(
   sharingRouter
   /* Add more routers here */
 );
+
+const handler = applyWSSHandler({
+  wss,
+  router: appRouter,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  createContext: createContext as any,
+  // Enable heartbeat messages to keep connection open (disabled by default)
+  keepAlive: {
+    enabled: true,
+    // server ping message interval in milliseconds
+    pingMs: 30000,
+    // connection is terminated if pong message is not received in this many milliseconds
+    pongWaitMs: 5000,
+  },
+});
+
+wss.on('connection', (ws) => {
+  logger.log(`➕➕ Connection (${wss.clients.size})`);
+  ws.once('close', () => {
+    logger.log(`➖➖ Connection (${wss.clients.size})`);
+  });
+});
+
+console.log(`✅ WebSocket Server listening on ws://localhost:${WS_PORT}`);
+
+process.on('SIGTERM', () => {
+  console.log('SIGTERM');
+  handler.broadcastReconnectNotification();
+  wss.close();
+});
 
 app.use(
   '/trpc',

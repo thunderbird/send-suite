@@ -1,10 +1,11 @@
 <!-- eslint-disable no-undef -->
 <script setup lang="ts">
+import { dbUserSetup } from '@/lib/helpers';
 import init from '@/lib/init';
 import useApiStore from '@/stores/api-store';
 import useKeychainStore from '@/stores/keychain-store';
 import useUserStore from '@/stores/user-store';
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 
 import BackupAndRestore from '@/apps/common/BackupAndRestore.vue';
 import FeedbackBox from '@/apps/common/FeedbackBox.vue';
@@ -16,7 +17,9 @@ import { formatLoginURL } from '@/lib/helpers';
 import { CLIENT_MESSAGES } from '@/lib/messages';
 import { validateToken } from '@/lib/validations';
 import useMetricsStore from '@/stores/metrics';
+import { useQuery } from '@tanstack/vue-query';
 import { ModalsContainer } from 'vue-final-modal';
+import LoadingComponent from '../common/LoadingComponent.vue';
 import SecureSendIcon from '../common/SecureSendIcon.vue';
 import TBBanner from '../common/TBBanner.vue';
 import { useExtensionStore } from './stores/extension-store';
@@ -31,14 +34,17 @@ const { configureExtension } = useExtensionStore();
 const { initializeClientMetrics, sendMetricsToBackend } = useMetricsStore();
 const { updateMetricsIdentity } = useMetricsUpdate();
 
-const authUrl = ref('');
 const sessionInfo = ref(null);
 const isLoggedIn = ref(false);
 const email = ref(null);
 const userId = ref(null);
 
-// Initialize the settings
-onMounted(async () => {
+const { isLoading } = useQuery({
+  queryKey: ['getLoginStatus'],
+  queryFn: async () => await loadLogin(),
+});
+
+const loadLogin = async () => {
   // check local storage first
   await userStore.loadFromLocalStorage();
 
@@ -64,53 +70,14 @@ onMounted(async () => {
   const uid = userStore?.user?.uniqueHash;
   initializeClientMetrics(uid);
   await sendMetricsToBackend(api);
-});
+};
 
 updateMetricsIdentity();
-
-async function dbUserSetup() {
-  // Populate the user from the session.
-  const didPopulate = await userStore.populateFromBackend();
-  if (!didPopulate) {
-    return;
-  }
-  // Store the user we got by populating from session.
-  userStore.store();
-
-  await sendMetricsToBackend(api);
-
-  // Check if we got our public key from the session.
-  // If not, this is almost certainly a new user.
-  const publicKey = await userStore.getPublicKey();
-  if (!publicKey) {
-    // New user needs a keypair.
-    await keychain.rsa.generateKeyPair();
-    await keychain.store();
-
-    const jwkPublicKey = await keychain.rsa.getPublicKeyJwk();
-    const didUpdate = await userStore.updatePublicKey(jwkPublicKey);
-    if (!didUpdate) {
-      console.warn(`DEBUG: could not update user's public key`);
-    }
-  }
-
-  // When we call `init()`, it takes care of:
-  // - loading user from storage
-  // - loading keychain from storage
-  // - creating the default folder
-  await init(userStore, keychain, folderStore);
-
-  // Save values to the ref variables.
-  // Really only for debugging purposes.
-  userId.value = userStore.user.id;
-  email.value = userStore.user.email;
-}
 
 async function loginToMozAccount() {
   const resp = await api.call(`lockbox/fxa/login`);
   if (resp.url) {
-    authUrl.value = resp.url;
-    openPopup();
+    openPopup(resp.url);
   }
 }
 async function showCurrentServerSession() {
@@ -124,10 +91,10 @@ async function logOut() {
   isLoggedIn.value = false;
 }
 
-async function openPopup() {
+async function openPopup(authUrl: string) {
   try {
     const popup = await browser.windows.create({
-      url: formatLoginURL(authUrl.value),
+      url: formatLoginURL(authUrl),
       type: 'popup',
       allowScriptsToClose: true,
     });
@@ -152,7 +119,11 @@ async function finishLogin() {
   }
 
   await showCurrentServerSession();
-  await dbUserSetup();
+  await dbUserSetup(userStore, keychain, folderStore);
+  // Save values to the ref variables.
+  // Really only for debugging purposes.
+  userId.value = userStore.user.id;
+  email.value = userStore.user.email;
   const { isTokenValid, hasBackedUpKeys } = await validators();
 
   if (isTokenValid && hasBackedUpKeys) {
@@ -171,13 +142,25 @@ async function finishLogin() {
 <template>
   <div class="container">
     <TBBanner />
-    <div v-if="isLoggedIn">
-      <UserDashboard :log-out="logOut" />
-      <BackupAndRestore />
+    <div v-if="isLoading">
+      <LoadingComponent />
     </div>
+
     <div v-else>
-      <Btn @click.prevent="loginToMozAccount">Log into Mozilla Account</Btn>
+      <div v-if="isLoggedIn">
+        <UserDashboard :log-out="logOut" />
+        <BackupAndRestore />
+      </div>
+      <div v-else>
+        <Btn
+          primary
+          data-testid="login-button"
+          @click.prevent="loginToMozAccount"
+          >Log into Mozilla Account</Btn
+        >
+      </div>
     </div>
+
     <FeedbackBox />
     <SecureSendIcon />
     <ModalsContainer />

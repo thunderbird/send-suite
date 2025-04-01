@@ -37,3 +37,13 @@ export const getEnvName = () => {
     return 'development';
   }
 };
+
+export const getDomainName = (serverUlr: string) => {
+  isClientExecution();
+
+  // remove protocol and ports
+  const serverUrl = serverUlr.replace(/^(https?:\/\/)?(www\.)?/, '');
+  // split at the port if it exists
+  const serverUri = serverUrl.split(':')[0];
+  return serverUri;
+};

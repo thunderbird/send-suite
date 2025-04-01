@@ -7,8 +7,10 @@ import {
   getUploadsOwnedByUser,
 } from '@/models';
 import { uuidv4 } from '@/utils';
+import { loginEmitter } from '@/ws/login';
 import { TRPCError } from '@trpc/server';
 import { createHash } from 'crypto';
+import { on } from 'ws';
 import { z } from 'zod';
 import {
   createUserWithPassword,
@@ -18,7 +20,7 @@ import {
   resetKeys,
   updateUniqueHash,
 } from '../models/users';
-import { router, publicProcedure as t } from '../trpc';
+import { publicProcedure, router, publicProcedure as t } from '../trpc';
 import { isAuthed, requirePublicLogin, useEnvironment } from './middlewares';
 
 export const usersRouter = router({
@@ -30,6 +32,27 @@ export const usersRouter = router({
     const userData = await getUserById(Number(ctx.user.id));
     return { userData: userData };
   }),
+
+  onLoginFinished: publicProcedure
+    .input(
+      z.object({
+        name: z.string(),
+      })
+    )
+    .subscription(async function* (opts) {
+      if (opts.ctx?.user?.id) {
+        console.log('logged in already');
+        return;
+      }
+      // listen for new events
+      for await (const [data] of on(loginEmitter, 'login_complete', {
+        // Passing the AbortSignal from the request automatically cancels the event emitter when the request is aborted
+        signal: opts.signal,
+      })) {
+        const post = data;
+        yield post;
+      }
+    }),
 
   // ==========================
   // DO NOT USE IN PRODUCTION

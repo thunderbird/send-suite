@@ -1,6 +1,6 @@
 {
   "name": "send-frontend",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,9 +15,9 @@
     "prettier:all": "prettier --write .",
     "preview": "vite preview",
     "release": "./scripts/release.sh",
-    "test": "vitest run --silent",
-    "test-debug": "vitest --inspect-brk --single-thread",
-    "test:watch": "vitest --watch",
+    "test": "VITE_TESTING=true vitest run --silent",
+    "test-debug": "VITE_TESTING=true vitest --inspect-brk --single-thread",
+    "test:watch": "VITE_TESTING=true vitest --watch",
     "typecheck": "tsc --noEmit",
     "postversion": "bun run ./scripts/bump.ts"
   },
@@ -37,7 +37,7 @@
     "@tabler/icons-vue": "^2.47.0",
     "@tanstack/vue-query": "^5.67.2",
     "@thunderbirdops/services-ui": "^0.6.5",
-    "@trpc/client": "11.0.0-rc.648",
+    "@trpc/client": "11.0.1",
     "@types/ua-parser-js": "^0.7.39",
     "dayjs": "^1.11.13",
     "floating-vue": "^5.2.2",
