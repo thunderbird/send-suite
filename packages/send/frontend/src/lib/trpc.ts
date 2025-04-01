@@ -12,8 +12,7 @@ import {
 } from '@trpc/client';
 
 import { AppRouter } from 'server/index';
-import { getDomainName } from './clientConfig';
-import { WS_PORT } from './config';
+import { TRPC_WS_PATH } from './config';
 
 // create persistent WebSocket connection
 
@@ -23,7 +22,7 @@ const isTesting = import.meta.env.VITE_TESTING === 'true';
 // We create a WebSocket client only if we are not in testing mode
 const wsClient = !isTesting
   ? createWSClient({
-      url: `wss://${getDomainName(import.meta.env.VITE_SEND_SERVER_URL)}:${WS_PORT}`,
+      url: `${import.meta.env.VITE_SEND_SERVER_URL}${TRPC_WS_PATH}`,
     })
   : null;
 
