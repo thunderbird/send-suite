@@ -26,3 +26,5 @@ export const getEnvironmentName = (
   // Staging is when BASE_URL is set to 'thunderbird.dev'
   return 'staging';
 };
+
+export const WS_PORT = 3030;

@@ -7,8 +7,10 @@ import {
   getUploadsOwnedByUser,
 } from '@/models';
 import { uuidv4 } from '@/utils';
+import { loginEmitter } from '@/ws/login';
 import { TRPCError } from '@trpc/server';
 import { createHash } from 'crypto';
+import { on } from 'ws';
 import { z } from 'zod';
 import {
   createUserWithPassword,
@@ -18,25 +20,46 @@ import {
   resetKeys,
   updateUniqueHash,
 } from '../models/users';
-import { router, publicProcedure as t } from '../trpc';
+import { router, publicProcedure as trpc } from '../trpc';
 import { isAuthed, requirePublicLogin, useEnvironment } from './middlewares';
 
 export const usersRouter = router({
-  getUser: t.query(({ ctx }) => {
+  getUser: trpc.query(({ ctx }) => {
     return { user: Number(ctx.user.id) };
   }),
 
-  getUserData: t.use(isAuthed).query(async ({ ctx }) => {
+  getUserData: trpc.use(isAuthed).query(async ({ ctx }) => {
     const userData = await getUserById(Number(ctx.user.id));
     return { userData: userData };
   }),
+
+  onLoginFinished: trpc
+    .input(
+      z.object({
+        name: z.string(),
+      })
+    )
+    .subscription(async function* (opts) {
+      if (opts.ctx?.user?.id) {
+        console.log('logged in already');
+        return;
+      }
+      // listen for new events
+      for await (const [data] of on(loginEmitter, 'login_complete', {
+        // Passing the AbortSignal from the request automatically cancels the event emitter when the request is aborted
+        signal: opts.signal,
+      })) {
+        const post = data;
+        yield post;
+      }
+    }),
 
   // ==========================
   // DO NOT USE IN PRODUCTION
   // ==========================
 
   // This mutation allows authed users to reset their passphrase
-  resetKeys: t
+  resetKeys: trpc
     .use(isAuthed)
     .use((props) => useEnvironment(props, ['stage', 'development']))
     .mutation(async ({ ctx }) => {
@@ -62,7 +85,7 @@ export const usersRouter = router({
     }),
 
   /* This mutation should not be used in production */
-  userLogin: t
+  userLogin: trpc
     .use(requirePublicLogin)
     .input(
       z.object({
@@ -99,7 +122,7 @@ export const usersRouter = router({
     }),
 
   /* This mutation should not be used in production */
-  registerUser: t
+  registerUser: trpc
     .use(requirePublicLogin)
     .input(
       z.object({

@@ -36,11 +36,15 @@ const {
   },
 });
 
-const { data: u, isLoading } = useQuery({
+const { data: u, isLoading: loadingDashboard } = useQuery({
   queryKey: ['getUserDataDashboard'],
   queryFn: async () => {
     return await trpc.getUserData.query();
   },
+});
+
+const isLoading = computed(() => {
+  return loadingSize.value || loadingDashboard.value;
 });
 
 const hasLimitedStorage = computed(() => {

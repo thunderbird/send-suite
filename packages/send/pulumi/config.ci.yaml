@@ -71,7 +71,7 @@ resources:
         - posthog-api-key
         - sentry-auth-token
       recovery_window_in_days: 0
-  
+
   tb:rds:RdsDatabaseGroup:
     citest:
       skip_final_snapshot: True
@@ -116,6 +116,11 @@ resources:
               - name: send-suite
                 containerPort: 8080
                 hostPort: 8080
+                protocol: tcp
+                appProtocol: http
+              - name: web-socket
+                containerPort: 3030
+                hostPort: 3030
                 protocol: tcp
                 appProtocol: http
               - name: prisma

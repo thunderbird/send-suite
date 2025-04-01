@@ -231,6 +231,7 @@ export async function dbUserSetup(
   if (!didPopulate) {
     return;
   }
+  // Store the user we got by populating from session.
   userStore.store();
 
   // Check if the user has a public key.
@@ -247,7 +248,10 @@ export async function dbUserSetup(
     }
   }
 
-  // Existing init() handles
+  // When we call `init()`, it takes care of:
+  // - loading user from storage
+  // - loading keychain from storage
+  // - creating the default folder
   await init(userStore, keychain, folderStore);
 }
 

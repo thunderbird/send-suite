@@ -7,3 +7,11 @@ import SpinnerAnimated from '../send/components/SpinnerAnimated.vue';
     <SpinnerAnimated />
   </div>
 </template>
+
+<style scoped>
+.loading {
+  min-height: 80px;
+  display: flex;
+  align-content: flex-start;
+}
+</style>
