@@ -23,7 +23,6 @@ services:
       - "8080:8080"
       - "5555:5555" # for browsing db with prisma studio
       - "9229:9229" # Debugger port
-      - "3030:3030" # ws
     volumes:
       - ./backend:/app
       - backend-node-modules:/app/node_modules

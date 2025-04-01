@@ -27,4 +27,4 @@ export const getEnvironmentName = (
   return 'staging';
 };
 
-export const WS_PORT = 3030;
+export const TRPC_WS_PATH = `/trpc/ws`;
