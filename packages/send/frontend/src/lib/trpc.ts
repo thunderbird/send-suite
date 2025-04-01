@@ -23,7 +23,7 @@ const isTesting = import.meta.env.VITE_TESTING === 'true';
 // We create a WebSocket client only if we are not in testing mode
 const wsClient = !isTesting
   ? createWSClient({
-      url: `ws://${getDomainName(import.meta.env.VITE_SEND_SERVER_URL)}:${WS_PORT}`,
+      url: `wss://${getDomainName(import.meta.env.VITE_SEND_SERVER_URL)}:${WS_PORT}`,
     })
   : null;
 
