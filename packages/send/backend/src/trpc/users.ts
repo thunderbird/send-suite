@@ -20,20 +20,20 @@ import {
   resetKeys,
   updateUniqueHash,
 } from '../models/users';
-import { publicProcedure, router, publicProcedure as t } from '../trpc';
+import { router, publicProcedure as trpc } from '../trpc';
 import { isAuthed, requirePublicLogin, useEnvironment } from './middlewares';
 
 export const usersRouter = router({
-  getUser: t.query(({ ctx }) => {
+  getUser: trpc.query(({ ctx }) => {
     return { user: Number(ctx.user.id) };
   }),
 
-  getUserData: t.use(isAuthed).query(async ({ ctx }) => {
+  getUserData: trpc.use(isAuthed).query(async ({ ctx }) => {
     const userData = await getUserById(Number(ctx.user.id));
     return { userData: userData };
   }),
 
-  onLoginFinished: publicProcedure
+  onLoginFinished: trpc
     .input(
       z.object({
         name: z.string(),
@@ -59,7 +59,7 @@ export const usersRouter = router({
   // ==========================
 
   // This mutation allows authed users to reset their passphrase
-  resetKeys: t
+  resetKeys: trpc
     .use(isAuthed)
     .use((props) => useEnvironment(props, ['stage', 'development']))
     .mutation(async ({ ctx }) => {
@@ -85,7 +85,7 @@ export const usersRouter = router({
     }),
 
   /* This mutation should not be used in production */
-  userLogin: t
+  userLogin: trpc
     .use(requirePublicLogin)
     .input(
       z.object({
@@ -122,7 +122,7 @@ export const usersRouter = router({
     }),
 
   /* This mutation should not be used in production */
-  registerUser: t
+  registerUser: trpc
     .use(requirePublicLogin)
     .input(
       z.object({

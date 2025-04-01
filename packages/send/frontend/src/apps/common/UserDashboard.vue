@@ -43,6 +43,10 @@ const { data: u, isLoading: loadingDashboard } = useQuery({
   },
 });
 
+const isLoading = computed(() => {
+  return loadingSize.value || loadingDashboard.value;
+});
+
 const hasLimitedStorage = computed(() => {
   return u?.value?.userData?.tier === 'EPHEMERAL';
 });
@@ -60,7 +64,7 @@ const percentageUsed = computed(() => {
     <p v-if="error">{{ error.message }}</p>
     <h2 class="email">{{ user.email }}</h2>
 
-    <LoadingComponent v-if="loadingDashboard || loadingSize" />
+    <LoadingComponent v-if="isLoading" />
 
     <div v-else>
       <p v-if="hasLimitedStorage">

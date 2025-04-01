@@ -1,5 +1,3 @@
-import { IS_ENV_DEV } from '@/config';
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 class Logger {
   private getTimestamp(): string {
@@ -7,7 +5,7 @@ class Logger {
   }
 
   private skipLogging(): boolean {
-    return !IS_ENV_DEV;
+    return process.env.NODE_ENV === 'production';
   }
 
   private formatMessage(message: string): string {

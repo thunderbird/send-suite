@@ -46,6 +46,12 @@ export const trpc = createTRPCClient<AppRouter>({
           retry(opts) {
             // Retry unauthorized requests (401) to refresh token
             if (opts.error.data.code === 'UNAUTHORIZED') {
+              // Only retry queries
+              if (opts.op.type !== 'query') {
+                return false;
+              }
+
+              // Retry up to 3 times
               fetch(refreshUrl, {
                 credentials: 'include',
               })
@@ -57,12 +63,6 @@ export const trpc = createTRPCClient<AppRouter>({
                 });
               return opts.attempts <= 3;
             }
-            if (opts.op.type !== 'query') {
-              // Only retry queries
-              return false;
-            }
-            // Retry up to 3 times
-            return opts.attempts <= 3;
           },
         }),
         httpBatchLink({

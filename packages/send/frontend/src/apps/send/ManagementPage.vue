@@ -74,23 +74,6 @@ const loadLogin = async () => {
 
 updateMetricsIdentity();
 
-async function loginToMozAccount() {
-  const resp = await api.call(`lockbox/fxa/login`);
-  if (resp.url) {
-    openPopup(resp.url);
-  }
-}
-async function showCurrentServerSession() {
-  sessionInfo.value =
-    (await api.call(`users/me`)) ?? CLIENT_MESSAGES.SHOULD_LOG_IN;
-}
-
-async function logOut() {
-  await userStore.logOut();
-  await validators();
-  isLoggedIn.value = false;
-}
-
 async function openPopup(authUrl: string) {
   try {
     const popup = await browser.windows.create({
@@ -110,6 +93,23 @@ async function openPopup(authUrl: string) {
     console.log(`popup failed`);
     console.log(e);
   }
+}
+
+async function loginToMozAccount() {
+  const resp = await api.call(`lockbox/fxa/login`);
+  if (resp.url) {
+    await openPopup(resp.url);
+  }
+}
+async function showCurrentServerSession() {
+  sessionInfo.value =
+    (await api.call(`users/me`)) ?? CLIENT_MESSAGES.SHOULD_LOG_IN;
+}
+
+async function logOut() {
+  await userStore.logOut();
+  await validators();
+  isLoggedIn.value = false;
 }
 
 async function finishLogin() {

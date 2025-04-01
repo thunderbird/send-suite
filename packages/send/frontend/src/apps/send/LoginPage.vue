@@ -39,19 +39,17 @@ async function pingSession() {
   }
 }
 
-trpc.onLoginFinished.subscribe(
-  { name: 'login' },
-  {
-    onData: () => {
-      onSuccess();
-    },
-  }
-);
-
 async function onSuccess() {
   await dbUserSetup(userStore, keychain, folderStore);
   await pingSession();
 }
+
+trpc.onLoginFinished.subscribe(
+  { name: 'login' },
+  {
+    onData: onSuccess,
+  }
+);
 </script>
 <template>
   <main class="container">

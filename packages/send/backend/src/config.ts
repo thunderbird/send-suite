@@ -23,6 +23,7 @@ const BASE_URL = process.env.BASE_URL;
 
 export const IS_ENV_DEV = ENVIRONMENT === 'development';
 export const IS_ENV_PROD = ENVIRONMENT === 'production';
+export const IS_ENV_TEST = process.env.NODE_ENV === 'test';
 export const IS_USING_BUCKET_STORAGE = process.env.STORAGE_BACKEND !== 'fs';
 
 // Time constants
