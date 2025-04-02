@@ -53,7 +53,7 @@ jobs:
           # Gather info
           unzip ecr_tag.zip  # Produces ecr_tag.txt
           source_tag=$(cat ecr_tag.txt)
-          cd backend
+          cd packages/send/backend
           semver=$(jq -r .version < package.json)
           target_tag="${{ steps.login-ecr.outputs.registry }}/${{ vars.PROJECT }}:$semver"
 
@@ -191,7 +191,7 @@ jobs:
           # Initial setup of dependencies
           npm install -g pnpm
           cd packages/send
-          pnpm install        
+          pnpm i --filter send-frontend
           unzip ../xpi-prod.zip
           rm -f ../xpi-prod.zip
           cd frontend
