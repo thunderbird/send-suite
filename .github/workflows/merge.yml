@@ -273,7 +273,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: xpi-prod
-          path: send-suite-prod-*.xpi
+          path: packages/send/send-suite-prod-*.xpi
 
       # Automatically deploy to stage, but not to prod
       - name: Deploy to stage
