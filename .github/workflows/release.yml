@@ -189,6 +189,7 @@ jobs:
           BASE_URL: https://send.tb.pro/
         run: |
           # Initial setup of dependencies
+          mv xpi-prod.zip packages/send
           npm install -g pnpm
           cd packages/send
           pnpm i --filter send-frontend
