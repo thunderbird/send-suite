@@ -192,7 +192,7 @@ jobs:
           npm install -g pnpm
           cd packages/send
           pnpm i --filter send-frontend
-          unzip ../xpi-prod.zip
-          rm -f ../xpi-prod.zip
+          unzip xpi-prod.zip
+          rm -f xpi-prod.zip
           cd frontend
           pnpm deploy-xpi $(find .. -name 'send-suite-*.xpi')
