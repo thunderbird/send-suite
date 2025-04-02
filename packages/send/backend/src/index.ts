@@ -10,7 +10,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import 'dotenv/config';
 import express from 'express';
-import WebSocket from 'ws';
+import WebSocket from 'websocket';
 
 import { getAllowedOrigins, getStorageLimit } from './auth/client';
 

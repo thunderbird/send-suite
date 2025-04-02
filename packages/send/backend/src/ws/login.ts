@@ -1,5 +1,5 @@
 import { logger } from '@/utils/logger';
-import { EventEmitter } from 'ws';
+import { EventEmitter } from 'websocket';
 
 export const loginEmitter = new EventEmitter();
 
