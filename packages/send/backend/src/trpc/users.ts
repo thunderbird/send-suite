@@ -10,7 +10,7 @@ import { uuidv4 } from '@/utils';
 import { loginEmitter } from '@/ws/login';
 import { TRPCError } from '@trpc/server';
 import { createHash } from 'crypto';
-import { on } from 'ws';
+import { on } from 'websocket';
 import { z } from 'zod';
 import {
   createUserWithPassword,

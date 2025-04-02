@@ -111,9 +111,9 @@ importers:
       vite:
         specifier: ^5.4.14
         version: 5.4.14(@types/node@22.13.11)
-      ws:
-        specifier: ^8.18.1
-        version: 8.18.1
+      websocket:
+        specifier: npm:ws@^8.18.1
+        version: ws@8.18.1
       zod:
         specifier: ^3.24.2
         version: 3.24.2
@@ -154,9 +154,9 @@ importers:
       '@types/supertest':
         specifier: ^6.0.2
         version: 6.0.2
-      '@types/ws':
-        specifier: ^8.18.0
-        version: 8.18.0
+      '@types/websocket':
+        specifier: npm:@types/ws@^8.18.1
+        version: '@types/ws@8.18.1'
       '@typescript-eslint/parser':
         specifier: ^8.26.1
         version: 8.27.0(eslint@9.22.0(jiti@1.21.7))(typescript@5.8.2)
@@ -2288,6 +2288,9 @@ packages:
 
   '@types/ws@8.18.0':
     resolution: {integrity: sha512-8svvI3hMyvN0kKCJMvTJP/x6Y/EoQbepff882wL+Sn5QsXb3etnamgrJq4isrBxSJj5L2AuXcI0+bgkoAXGUJw==}
+
+  '@types/ws@8.18.1':
+    resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
 
   '@typescript-eslint/eslint-plugin@8.27.0':
     resolution: {integrity: sha512-4henw4zkePi5p252c8ncBLzLce52SEUz2Ebj8faDnuUXz2UuHEONYcJ+G0oaCF+bYCWVZtrGzq3FD7YXetmnSA==}
@@ -8475,6 +8478,10 @@ snapshots:
   '@types/web-bluetooth@0.0.21': {}
 
   '@types/ws@8.18.0':
+    dependencies:
+      '@types/node': 22.13.11
+
+  '@types/ws@8.18.1':
     dependencies:
       '@types/node': 22.13.11
 
