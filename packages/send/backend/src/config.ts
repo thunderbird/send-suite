@@ -5,7 +5,7 @@ import path from 'path';
 type Environment = 'development' | 'production';
 export type EnvironmentName = 'stage' | 'prod' | 'development';
 
-export const WS_PORT = 3030;
+export const TRPC_WS_PATH = `/trpc/ws`;
 
 const appConfig = {
   file_dir: `/tmp/send-suite-dev-dir`,

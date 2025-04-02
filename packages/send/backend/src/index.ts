@@ -29,7 +29,7 @@ import wsUploadHandler from './wsUploadHandler';
 import * as Sentry from '@sentry/node';
 
 import { getDataFromAuthenticatedRequest } from './auth/client';
-import { WS_PORT } from './config';
+import { TRPC_WS_PATH } from './config';
 import { errorHandler } from './errors/routes';
 import { addVersionHeader } from './middleware';
 import metricsRoute from './routes/metrics';
@@ -50,7 +50,7 @@ const wsMessageServer = new WebSocket.Server({ noServer: true });
 
 // We use this websocket for general purposes. Not related to uploads/chat.
 // We want to keep them separate in case we need to deprecate any of them
-const wss = new WebSocket.Server({ port: WS_PORT });
+const wss = new WebSocket.Server({ path: TRPC_WS_PATH, noServer: true });
 
 const app = express();
 app.use(express.static('public'));
@@ -170,15 +170,6 @@ const handler = applyWSSHandler({
   },
 });
 
-wss.on('connection', (ws) => {
-  logger.log(`➕➕ Connection (${wss.clients.size})`);
-  ws.once('close', () => {
-    logger.log(`➖➖ Connection (${wss.clients.size})`);
-  });
-});
-
-console.log(`✅ WebSocket Server listening on ws://localhost:${WS_PORT}`);
-
 process.on('SIGTERM', () => {
   console.log('SIGTERM');
   handler.broadcastReconnectNotification();
@@ -236,6 +227,17 @@ server.on('upgrade', (req, socket, head) => {
       console.info(id);
       messageClients.set(id, ws);
       wsMsgHandler(ws, messageClients);
+    });
+  } else if (req.url === TRPC_WS_PATH) {
+    logger.log(`✅ WebSocket Server listening on ${TRPC_WS_PATH}`);
+    wss.handleUpgrade(req, socket, head, (ws) => {
+      wss.emit('connection', ws, req);
+      wss.on('connection', (ws) => {
+        logger.log(`➕➕ Connection (${wss.clients.size})`);
+        ws.once('close', () => {
+          logger.log(`➖➖ Connection (${wss.clients.size})`);
+        });
+      });
     });
   }
 });
