@@ -28,7 +28,7 @@ importers:
         version: 0.6.5(typescript@5.8.2)
       '@trpc/client':
         specifier: 11.0.1
-        version: 11.0.1(@trpc/server@11.0.0-rc.648(typescript@5.8.2))(typescript@5.8.2)
+        version: 11.0.1(@trpc/server@11.0.1(typescript@5.8.2))(typescript@5.8.2)
       '@types/ua-parser-js':
         specifier: ^0.7.39
         version: 0.7.39
@@ -76,8 +76,8 @@ importers:
         specifier: ^0.5.10
         version: 0.5.10(tailwindcss@3.4.17)
       '@trpc/server':
-        specifier: 11.0.0-rc.648
-        version: 11.0.0-rc.648(typescript@5.8.2)
+        specifier: '*'
+        version: 11.0.1(typescript@5.8.2)
       '@types/eslint-config-prettier':
         specifier: ^6.11.3
         version: 6.11.3
@@ -172,7 +172,7 @@ importers:
         specifier: ^3.3.2
         version: 3.3.2
       vite:
-        specifier: ^5.4.14
+        specifier: '*'
         version: 5.4.14(@types/node@22.13.11)
       vitest:
         specifier: ^3.0.8
@@ -964,10 +964,10 @@ packages:
       '@trpc/server': 11.0.1
       typescript: '>=5.7.2'
 
-  '@trpc/server@11.0.0-rc.648':
-    resolution: {integrity: sha512-nKW7FNM+QZrY/CVGlX3hFNIdUvbw6pwSJ+HzEF8GIeSJDKLHK7Ke1QJGI2mRW6oF9dCKMBXfuLaYY2dXfjfn7Q==}
+  '@trpc/server@11.0.1':
+    resolution: {integrity: sha512-DZS3+bONLno4oJjHBMrS3xRPtoZsnmBImDH/Mmo1QhaFt3Xp/S0Riu7WU/oofsLTVj2m1UO5LlgLJFumvlSNoQ==}
     peerDependencies:
-      typescript: '>=5.6.2'
+      typescript: '>=5.7.2'
 
   '@types/cookie@0.6.0':
     resolution: {integrity: sha512-4Kh9a6B2bQciAhf7FSuMRRkUWecJgJu9nPnx3yzpsfXX/c50REIqpHY4C82bXP90qrLtXtkDxTZosYO3UpOwlA==}
@@ -3523,12 +3523,12 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@trpc/client@11.0.1(@trpc/server@11.0.0-rc.648(typescript@5.8.2))(typescript@5.8.2)':
+  '@trpc/client@11.0.1(@trpc/server@11.0.1(typescript@5.8.2))(typescript@5.8.2)':
     dependencies:
-      '@trpc/server': 11.0.0-rc.648(typescript@5.8.2)
+      '@trpc/server': 11.0.1(typescript@5.8.2)
       typescript: 5.8.2
 
-  '@trpc/server@11.0.0-rc.648(typescript@5.8.2)':
+  '@trpc/server@11.0.1(typescript@5.8.2)':
     dependencies:
       typescript: 5.8.2
 

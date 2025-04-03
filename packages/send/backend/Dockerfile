@@ -4,7 +4,9 @@ RUN apt update -y && apt upgrade -y
 
 WORKDIR /app
 ADD package.json \
-    pnpm-lock.yaml \
+# We don't copy the lockfile during development 
+# because we resolve our dependencies at the root
+    # pnpm-lock.yaml \
     tsconfig.json \
     ./
 ADD prisma ./prisma

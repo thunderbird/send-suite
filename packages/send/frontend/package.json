@@ -55,7 +55,7 @@
   "devDependencies": {
     "@eslint/js": "^9.22.0",
     "@tailwindcss/forms": "^0.5.10",
-    "@trpc/server": "11.0.0-rc.648",
+    "@trpc/server": "*",
     "@types/eslint-config-prettier": "^6.11.3",
     "@types/firefox-webext-browser": "^120.0.4",
     "@types/thunderbird-webext-browser": "^127.0.0",
