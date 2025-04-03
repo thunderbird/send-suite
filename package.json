@@ -22,5 +22,8 @@
     "husky": "^9.0.11",
     "lerna": "^8.2.1",
     "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "vite": "^5.4.16"
   }
 }
