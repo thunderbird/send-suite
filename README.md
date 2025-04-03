@@ -1,5 +1,11 @@
 # Thunderbird Send
 
+Thunderbird send is a suite of tools that allow you to send and receive end to end encrypted files.
+
+You can use send on any or both our versions:
+The Thunderbird Add-on is [available here](https://addons.thunderbird.net/en-US/thunderbird/addon/tb_send/?src=search)
+The Web client is available [send.tb.pro](https://send.tb.pro/)
+
 ## Prerequisites
 
 Make sure you install [docker](https://www.docker.com/get-started/) for local development.
