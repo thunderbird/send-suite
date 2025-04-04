@@ -28,6 +28,7 @@ import wsUploadHandler from './wsUploadHandler';
 
 import * as Sentry from '@sentry/node';
 
+import events from 'events';
 import { getDataFromAuthenticatedRequest } from './auth/client';
 import { TRPC_WS_PATH } from './config';
 import { errorHandler } from './errors/routes';
@@ -47,6 +48,8 @@ const WS_MESSAGE_PATH = `/api/messagebus`;
 
 const wsUploadServer = new WebSocket.Server({ noServer: true });
 const wsMessageServer = new WebSocket.Server({ noServer: true });
+
+events.EventEmitter.defaultMaxListeners = 0;
 
 // We use this websocket for general purposes. Not related to uploads/chat.
 // We want to keep them separate in case we need to deprecate any of them
