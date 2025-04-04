@@ -2,9 +2,17 @@
 
 Thunderbird send is a suite of tools that allow you to send and receive end to end encrypted files.
 
+Note: We're currently testing the applications internally, you currently need an FXA login to use Send. Meanwhile you can [join the waitlist](https://tb.pro/).
+
 You can use send on any or both our versions:
+
 The Thunderbird Add-on is [available here](https://addons.thunderbird.net/en-US/thunderbird/addon/tb_send/?src=search)
+
 The Web client is available [send.tb.pro](https://send.tb.pro/)
+
+## Getting started
+
+We have a detailed getting started guide in [our wiki](https://github.com/thunderbird/send-suite/wiki)
 
 ## Prerequisites
 
