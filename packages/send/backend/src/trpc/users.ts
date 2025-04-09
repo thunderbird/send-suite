@@ -1,4 +1,5 @@
 import { hashPassword, verifyHash } from '@/auth/client';
+import { VERSION } from '@/config';
 import {
   createLoginSession,
   deleteContainer,
@@ -7,6 +8,8 @@ import {
   getUploadsOwnedByUser,
 } from '@/models';
 import { uuidv4 } from '@/utils';
+import { checkCompatibility } from '@/utils/compatibility';
+import { logger } from '@/utils/logger';
 import { loginEmitter } from '@/ws/login';
 import { TRPCError } from '@trpc/server';
 import { createHash } from 'crypto';
@@ -32,6 +35,39 @@ export const usersRouter = router({
     const userData = await getUserById(Number(ctx.user.id));
     return { userData: userData };
   }),
+
+  settings: trpc
+    .input(
+      z.object({
+        version: z.string(),
+      })
+    )
+    .query(async ({ input: { version: clientVersion } }) => {
+      const compatibility = {
+        resolvedCompatibility: false,
+        result: 'UNRESOLVED',
+      };
+
+      const compatibilityResult = checkCompatibility(clientVersion, VERSION!);
+
+      compatibility.result = compatibilityResult;
+      compatibility.resolvedCompatibility = true;
+
+      logger.log(
+        `
+        Frontend version: ${clientVersion}, 
+        Backend version: ${VERSION}, 
+        isCompatible: ${compatibility.result}`
+      );
+
+      let apiVersion: string;
+      try {
+        apiVersion = VERSION;
+      } catch {
+        apiVersion = '0.0.0';
+      }
+      return { apiVersion, compatibility, clientVersion };
+    }),
 
   onLoginFinished: trpc
     .input(

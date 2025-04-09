@@ -13,7 +13,7 @@ const folderStore = useFolderStore();
 </script>
 
 <template>
-  <div class="flex min-h-screen">
+  <div id="send-page" class="flex min-h-screen">
     <aside class="w-64 border-r border-gray-300 bg-gray-50">
       <FolderNavigation />
     </aside>

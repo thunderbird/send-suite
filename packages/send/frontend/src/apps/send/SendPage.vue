@@ -8,6 +8,7 @@ import useMetricsStore from '@/stores/metrics';
 import useUserStore from '@/stores/user-store';
 import { onMounted } from 'vue';
 import { ModalsContainer } from 'vue-final-modal';
+import CompatibilityBanner from '../common/CompatibilityBanner.vue';
 import ErrorBoundary from '../common/ErrorBoundary.vue';
 import { INIT_ERRORS } from './const';
 
@@ -45,6 +46,7 @@ updateMetricsIdentity();
 
 <template>
   <ErrorBoundary>
+    <CompatibilityBanner />
     <router-view></router-view>
     <ModalsContainer />
   </ErrorBoundary>
