@@ -1,6 +1,6 @@
 {
   "name": "send-suite",
-  "version": "0.5.3",
+  "version": "0.6.0",
   "description": "",
   "keywords": [],
   "license": "ISC",
@@ -33,8 +33,9 @@
     "node": "22.11.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.46.0",
+    "@playwright/test": "^1.51.1",
+    "@types/node": "*",
     "dotenv": "^16.4.7",
-    "sort-package-json": "^2.10.0"
+    "sort-package-json": "^2.15.1"
   }
 }
