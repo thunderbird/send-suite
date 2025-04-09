@@ -18,6 +18,9 @@ importers:
       lerna:
         specifier: ^8.2.1
         version: 8.2.1(encoding@0.1.13)
+      sort-package-json:
+        specifier: ^2.15.1
+        version: 2.15.1
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -34,7 +37,7 @@ importers:
         specifier: ^16.4.7
         version: 16.4.7
       sort-package-json:
-        specifier: ^2.15.1
+        specifier: '*'
         version: 2.15.1
 
   packages/send/backend:
@@ -187,6 +190,9 @@ importers:
       prettier:
         specifier: ^3.5.3
         version: 3.5.3
+      sort-package-json:
+        specifier: '*'
+        version: 2.15.1
       supertest:
         specifier: ^7.1.0
         version: 7.1.0
@@ -362,6 +368,9 @@ importers:
       prettier:
         specifier: ^3.5.3
         version: 3.5.3
+      sort-package-json:
+        specifier: '*'
+        version: 2.15.1
       tailwindcss:
         specifier: ^3.4.17
         version: 3.4.17(ts-node@10.9.2(@types/node@22.14.0)(typescript@5.8.3))
