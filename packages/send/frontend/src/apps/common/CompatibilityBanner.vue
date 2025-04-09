@@ -3,7 +3,7 @@ import { trpc } from '@/lib/trpc';
 import { useQuery } from '@tanstack/vue-query';
 import { computed, ref } from 'vue';
 import { useConfigStore } from '../send/stores/config-store';
-import CloseIcon from './CloseIcon.vue';
+import CloseButton from './CloseButton.vue';
 
 const { isProd } = useConfigStore();
 const isClosedByUser = ref(false);
@@ -24,35 +24,42 @@ const compatibility = computed(() => {
   if (data?.value?.compatibility.result === 'PROMPT_UPDATE') {
     return 'PROMPT_UPDATE';
   }
-  if (data?.value?.compatibility.result === 'COMPATIBLE') {
-    return 'COMPATIBLE';
-  }
   return null;
 });
 </script>
 
 <template>
-  <header v-if="!isClosedByUser">
-    <button class="closebutton" :onclick="close">
-      <CloseIcon />
-    </button>
-    <!-- If the user is on a testing environment, that should be the only banner shown -->
-    <p v-if="!isProd" class="testing text-center">
-      You are using a testing version of Thunderbird Send. It may be unstable.
-    </p>
+  <header v-if="!isClosedByUser" data-testid="compatibility-banner">
+    <div v-if="!isProd" data-testid="testing-banner">
+      <p class="testing text-center">
+        You are using a testing version of Thunderbird Send. It may be unstable.
+      </p>
+      <CloseButton :close="close" />
+    </div>
 
     <div v-else>
-      <div v-if="isLoading" data-testid="loading-compatibility"></div>
+      <div v-if="isLoading" data-testid="loading-compatibility-banner"></div>
       <div v-else>
-        <p v-if="compatibility === 'FORCE_UPDATE'" class="critical">
-          You are using an outdated version of Thunderbird Send. Please update
-          to make sure the application works correctly.
-        </p>
-
-        <p v-if="compatibility === 'PROMPT_UPDATE'" class="warning">
-          There is a new version of Thunderbird Send available. Please update to
-          the latest version.
-        </p>
+        <div
+          v-if="compatibility === 'FORCE_UPDATE'"
+          data-testid="force-update-banner"
+        >
+          <p class="critical">
+            You are using an outdated version of Thunderbird Send. Please update
+            to make sure the application works correctly.
+          </p>
+          <CloseButton :close="close" />
+        </div>
+        <div
+          v-if="compatibility === 'PROMPT_UPDATE'"
+          data-testid="prompt-update-banner"
+        >
+          <p class="warning">
+            There is a new version of Thunderbird Send available. Please update
+            to the latest version.
+          </p>
+          <CloseButton :close="close" />
+        </div>
       </div>
     </div>
   </header>
