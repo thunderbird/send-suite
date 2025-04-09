@@ -15,6 +15,7 @@
     "prettier:all": "prettier --write .",
     "preview": "vite preview",
     "release": "./scripts/release.sh",
+    "sort-package-json": "sort-package-json",
     "test": "VITE_TESTING=true vitest run --silent",
     "test-debug": "VITE_TESTING=true vitest --inspect-brk --single-thread",
     "test:watch": "VITE_TESTING=true vitest --watch",
@@ -83,6 +84,7 @@
     "postcss": "^8.5.3",
     "postcss-import": "^15.1.0",
     "prettier": "^3.5.3",
+    "sort-package-json": "*",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.19.3",
     "typescript": "^5.8.3",
@@ -96,8 +98,5 @@
   },
   "engines": {
     "node": ">=22.11.0"
-  },
-  "volta": {
-    "node": "22.11.0"
   }
 }

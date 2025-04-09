@@ -16,7 +16,7 @@ This command will generate a `send-suite-alpha.xpi`, that is the extension file.
 
 Prerequisite: If you have different values you want to use for a production build, it would be a good time to set them on your `frontend/.env`. If you're running a backend locally, that should be running.
 
-To build the frontend run from the root `pnpm build:frontend`
+To build the frontend run from the root `lerna run build-and-submit --scope=send-frontend`
 This will produce the static assets for deployment. It will generate the following directories:
 
 Web app: `frontend/dist-web`

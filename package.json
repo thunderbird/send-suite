@@ -7,7 +7,15 @@
   "author": "",
   "main": "index.js",
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "sort-package-json": "sort-package-json"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "husky": "^9.1.7",
+    "lerna": "^8.2.1",
+    "sort-package-json": "^2.15.1",
+    "typescript": "^5.8.3"
   },
   "engines": {
     "bun": "1.1.13",
@@ -15,12 +23,6 @@
     "pnpm": ">=10.6.4"
   },
   "volta": {
-    "node": "22.11.0"
-  },
-  "devDependencies": {
-    "@types/node": "^22.14.0",
-    "husky": "^9.1.7",
-    "lerna": "^8.2.1",
-    "typescript": "^5.8.3"
+    "node": "22.14.0"
   }
 }
