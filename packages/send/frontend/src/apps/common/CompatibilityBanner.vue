@@ -11,6 +11,7 @@ const isClosedByUser = ref(false);
 const { data, isLoading } = useQuery({
   queryKey: ['settingsQuery'],
   queryFn: async () => await trpc.settings.query({ version: __APP_VERSION__ }),
+  enabled: isProd,
 });
 
 function close() {
