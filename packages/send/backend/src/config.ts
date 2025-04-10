@@ -16,7 +16,7 @@ const packageJson = JSON.parse(
   fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8')
 );
 
-export const VERSION = packageJson.version;
+export const VERSION = packageJson.version as string;
 
 const ENVIRONMENT = process.env.NODE_ENV || ('development' as Environment);
 const BASE_URL = process.env.BASE_URL;

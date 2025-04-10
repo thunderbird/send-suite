@@ -19,6 +19,7 @@ import { validateToken } from '@/lib/validations';
 import useMetricsStore from '@/stores/metrics';
 import { useQuery } from '@tanstack/vue-query';
 import { ModalsContainer } from 'vue-final-modal';
+import CompatibilityBanner from '../common/CompatibilityBanner.vue';
 import LoadingComponent from '../common/LoadingComponent.vue';
 import SecureSendIcon from '../common/SecureSendIcon.vue';
 import TBBanner from '../common/TBBanner.vue';
@@ -140,7 +141,8 @@ async function finishLogin() {
 </script>
 
 <template>
-  <div class="container">
+  <div id="send-page" class="container">
+    <CompatibilityBanner />
     <TBBanner />
     <div v-if="isLoading">
       <LoadingComponent />
