@@ -26,6 +26,33 @@ import {
 const router: Router = Router();
 
 /**
+ * @openapi
+ * /api/uploads:
+ *   post:
+ *     summary: Create a new upload
+ *     tags: [Uploads]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               hash:
+ *                 type: string
+ *               size:
+ *                 type: integer
+ *               type:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Upload created successfully
+ *       400:
+ *         description: Failed to create upload
+ */
+/**
  * This is actually the second step when uploading an encrypted file.
  * The first part is the actual upload via WebSockets.
  * This step creates the database entity for that uploaded file.
@@ -65,6 +92,73 @@ router.post(
   })
 );
 
+/**
+ * @openapi
+ * /api/uploads/{uploadId}/done:
+ *   post:
+ *     summary: Mark an upload as complete
+ *     tags: [Uploads]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uploadId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Upload marked as complete
+ *       400:
+ *         description: Failed to mark upload as complete
+ */
+
+/**
+ * @openapi
+ * /api/uploads/{uploadId}:
+ *   delete:
+ *     summary: Delete an upload
+ *     tags: [Uploads]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uploadId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Upload deleted successfully
+ *       404:
+ *         description: Upload not found
+ */
+
+/**
+ * @openapi
+ * /api/uploads/{uploadId}/download:
+ *   get:
+ *     summary: Download an upload
+ *     tags: [Uploads]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uploadId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Upload downloaded successfully
+ *         content:
+ *           application/octet-stream:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404:
+ *         description: Upload not found
+ */
 router.post(
   '/signed',
   requireJWT,
