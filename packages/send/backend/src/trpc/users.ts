@@ -33,6 +33,8 @@ export const usersRouter = router({
    *     tags:
    *       - Users
    *     summary: Get current user ID
+   *     security:
+   *       - bearerAuth: []
    *     description: Returns the ID of the currently authenticated user
    *     responses:
    *       200:
@@ -46,7 +48,7 @@ export const usersRouter = router({
    *                   type: number
    *                   description: ID of the current user
    */
-  getUser: trpc.query(({ ctx }) => {
+  getUser: trpc.use(isAuthed).query(({ ctx }) => {
     return { user: Number(ctx.user.id) };
   }),
 
@@ -138,28 +140,7 @@ export const usersRouter = router({
       const apiVersion = VERSION;
       return { apiVersion, compatibility, clientVersion };
     }),
-
-  /**
-   * @openapi
-   * /trpc/onLoginFinished:
-   *   get:
-   *     tags:
-   *       - Users
-   *     summary: Subscribe to login completion events
-   *     description: Returns a stream of login completion events
-   *     parameters:
-   *       - in: query
-   *         name: input
-   *         schema:
-   *           type: object
-   *           properties:
-   *             name:
-   *               type: string
-   *               description: Name of the login event
-   *     responses:
-   *       200:
-   *         description: Stream of login completion events
-   */
+  // This listener is not exposed to the API, but is used internally to listen for login events
   onLoginFinished: trpc
     .input(
       z.object({
@@ -263,6 +244,7 @@ export const usersRouter = router({
    */
   userLogin: trpc
     .use(requirePublicLogin)
+    .use((props) => useEnvironment(props, ['stage', 'development']))
     .input(
       z.object({
         email: z.string(),
@@ -335,6 +317,7 @@ export const usersRouter = router({
    */
   registerUser: trpc
     .use(requirePublicLogin)
+    .use((props) => useEnvironment(props, ['stage', 'development']))
     .input(
       z.object({
         email: z.string(),

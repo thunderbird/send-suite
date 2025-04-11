@@ -70,7 +70,7 @@ const appRouter = mergeRouters(
   /* Add more routers here */
 );
 
-const handler = applyWSSHandler({
+const trpcWebsocket = applyWSSHandler({
   wss,
   router: appRouter,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -86,8 +86,7 @@ const handler = applyWSSHandler({
 });
 
 process.on('SIGTERM', () => {
-  console.log('SIGTERM');
-  handler.broadcastReconnectNotification();
+  trpcWebsocket.broadcastReconnectNotification();
   wss.close();
 });
 

@@ -138,6 +138,8 @@ export const containersRouter = router({
    *       - Storage
    *     summary: Get storage type configuration
    *     description: Returns whether the system is using bucket storage or not
+   *     security:
+   *       - bearerAuth: []
    *     responses:
    *       200:
    *         description: Storage type configuration
@@ -150,7 +152,7 @@ export const containersRouter = router({
    *                   type: boolean
    *                   description: Whether the system is using bucket storage
    */
-  getStorageType: t.query(async () => {
+  getStorageType: t.use(isAuthed).query(async () => {
     if (typeof IS_USING_BUCKET_STORAGE === 'boolean') {
       return { isBucketStorage: IS_USING_BUCKET_STORAGE };
     }
