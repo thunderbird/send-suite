@@ -9,6 +9,34 @@ import { router, publicProcedure as t } from '../trpc';
 import { isAuthed } from './middlewares';
 
 export const containersRouter = router({
+  /**
+   * @openapi
+   * /trpc/getTotalUsedStorage:
+   *   get:
+   *     tags:
+   *       - Storage
+   *     summary: Get total storage usage statistics
+   *     description: Returns the total storage used by the user, including active and expired storage
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: Storage usage statistics
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 expired:
+   *                   type: number
+   *                   description: Total size of expired uploads in bytes
+   *                 active:
+   *                   type: number
+   *                   description: Total size of active uploads in bytes
+   *                 limit:
+   *                   type: number
+   *                   description: Total storage limit in bytes
+   */
   getTotalUsedStorage: t.use(isAuthed).query(async ({ ctx }) => {
     const response = {
       expired: 0,
@@ -71,6 +99,29 @@ export const containersRouter = router({
     return response;
   }),
 
+  /**
+   * @openapi
+   * /trpc/getAccessLinksForContainer:
+   *   get:
+   *     tags:
+   *       - Containers
+   *     summary: Get access links for a container
+   *     description: Returns all access links associated with a specific container
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: query
+   *         name: input
+   *         schema:
+   *           type: object
+   *           properties:
+   *             containerId:
+   *               type: number
+   *               description: ID of the container
+   *     responses:
+   *       200:
+   *         description: List of access links for the container
+   */
   getAccessLinksForContainer: t
     .use(isAuthed)
     .input(z.object({ containerId: z.number() }))
@@ -79,7 +130,29 @@ export const containersRouter = router({
       return accessLinks;
     }),
 
-  getStorageType: t.query(async () => {
+  /**
+   * @openapi
+   * /trpc/getStorageType:
+   *   get:
+   *     tags:
+   *       - Storage
+   *     summary: Get storage type configuration
+   *     description: Returns whether the system is using bucket storage or not
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: Storage type configuration
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 isBucketStorage:
+   *                   type: boolean
+   *                   description: Whether the system is using bucket storage
+   */
+  getStorageType: t.use(isAuthed).query(async () => {
     if (typeof IS_USING_BUCKET_STORAGE === 'boolean') {
       return { isBucketStorage: IS_USING_BUCKET_STORAGE };
     }

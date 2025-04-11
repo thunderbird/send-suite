@@ -1,6 +1,6 @@
 // @filename: trpc.ts
 import { initTRPC } from '@trpc/server';
-import { createContext } from '.';
+import { createContext } from './trpc/context';
 
 export type Context = Awaited<ReturnType<typeof createContext>>;
 

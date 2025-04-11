@@ -56,6 +56,10 @@ export function requirePublicLogin(opts: { ctx: Context; next: NextFunction }) {
   throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
 }
 
+/**
+ * This middleware is used to run only on explicitly declared environments
+ * It is used to prevent certain routes from being run in production or stage environments
+ **/
 export async function useEnvironment(
   opts: {
     ctx: Context;
@@ -67,5 +71,5 @@ export async function useEnvironment(
   if (environmentName.includes(runtimeEnvironment)) {
     return opts.next();
   }
-  throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+  throw new TRPCError({ code: 'BAD_GATEWAY' });
 }

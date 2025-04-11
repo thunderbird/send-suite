@@ -1,4 +1,4 @@
-import { ContainerType, UserTier } from '@prisma/client';
+import { ContainerType } from '@prisma/client';
 
 import 'dotenv/config';
 import { Request, Router } from 'express';
@@ -16,7 +16,6 @@ import {
 } from '../models/sharing';
 
 import {
-  createUser,
   getAllUserGroupContainers,
   getBackup,
   getRecentActivity,
@@ -32,6 +31,27 @@ import { requireJWT } from '../middleware';
 
 const router: Router = Router();
 
+/**
+ * @swagger
+ * /api/users/me:
+ *   get:
+ *     summary: Get current user information
+ *     description: Retrieves the logged-in user from the current session
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User information retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   type: object
+ *       404:
+ *         description: User not found
+ */
 router.get(
   '/me',
   requireJWT,
@@ -53,8 +73,30 @@ router.get(
   })
 );
 
+/**
+ * @swagger
+ * /api/users/publickey/{id}:
+ *   get:
+ *     summary: Get user's public key
+ *     description: Retrieves the public key for a specific user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: Public key retrieved successfully
+ *       404:
+ *         description: Public key not found
+ */
 router.get(
   '/publickey/:id',
+  requireJWT,
   addErrorHandling(USER_ERRORS.PUBLIC_KEY_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -66,6 +108,29 @@ router.get(
 // Update user's public key
 // TODO: decide whether this should just be a "profile update" function
 // that can take any of the following: email, publicKey, avatar...
+/**
+ * @swagger
+ * /api/users/publickey:
+ *   post:
+ *     summary: Update user's public key
+ *     description: Updates the public key for the authenticated user
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               publicKey:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Public key updated successfully
+ *       400:
+ *         description: Profile update failed
+ */
 router.post(
   '/publickey',
   requireJWT,
@@ -89,6 +154,20 @@ router.post(
   })
 );
 
+/**
+ * @swagger
+ * /api/users/folders:
+ *   get:
+ *     summary: Get user's folders
+ *     description: Retrieves all folders for the authenticated user
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Folders retrieved successfully
+ *       404:
+ *         description: Folders not found
+ */
 router.get(
   '/folders',
   requireJWT,
@@ -104,6 +183,27 @@ router.get(
   })
 );
 
+/**
+ * @swagger
+ * /api/users/lookup/{email}:
+ *   get:
+ *     summary: Lookup user by email
+ *     description: Retrieves user information by email address
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: email
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User's email address
+ *     responses:
+ *       200:
+ *         description: User found
+ *       404:
+ *         description: User not found
+ */
 router.get(
   '/lookup/:email',
   requireJWT,
@@ -119,6 +219,20 @@ router.get(
 
 // TODO: shift userId to session and out of req.params
 
+/**
+ * @swagger
+ * /api/users/login:
+ *   post:
+ *     summary: User login
+ *     description: Authenticates and logs in a user
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *       404:
+ *         description: Login failed
+ */
 router.post(
   '/login',
   requireJWT,
@@ -135,38 +249,30 @@ router.post(
   })
 );
 
-router.post(
-  '/',
-  addErrorHandling(USER_ERRORS.USER_NOT_CREATED),
-  wrapAsyncHandler(async (req, res) => {
-    const {
-      publicKey,
-      email,
-      tier,
-    }: {
-      publicKey: string;
-      email: string;
-      tier: UserTier | null;
-    } = req.body;
-    let userEmail = email;
-    if (email) {
-      userEmail = email.trim().toLowerCase();
-    }
-    const user = await createUser(
-      JSON.stringify(publicKey).trim(),
-      userEmail,
-      tier || undefined
-    );
-    res.status(201).json({
-      message: 'User created',
-      user,
-    });
-  })
-);
-
-// All containers, regardless of type
+/**
+ * @swagger
+ * /api/users/{userId}/containers:
+ *   get:
+ *     summary: Get all user containers
+ *     description: Retrieves all containers for a specific user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: Containers retrieved successfully
+ *       404:
+ *         description: Containers not found
+ */
 router.get(
   '/:userId/containers',
+  requireJWT,
   addErrorHandling(USER_ERRORS.FOLDERS_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
@@ -175,8 +281,30 @@ router.get(
   })
 );
 
+/**
+ * @swagger
+ * /api/users/{userId}/conversations:
+ *   get:
+ *     summary: Get user conversations
+ *     description: Retrieves all conversations for a specific user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: Conversations retrieved successfully
+ *       404:
+ *         description: Conversations not found
+ */
 router.get(
   '/:userId/conversations',
+  requireJWT,
   addErrorHandling(USER_ERRORS.FOLDERS_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
@@ -188,8 +316,30 @@ router.get(
   })
 );
 
+/**
+ * @swagger
+ * /api/users/{userId}/activity:
+ *   get:
+ *     summary: Get user activity
+ *     description: Retrieves recent activity for a specific user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: Activity retrieved successfully
+ *       404:
+ *         description: Activity not found
+ */
 router.get(
   '/:userId/activity',
+  requireJWT,
   addErrorHandling(USER_ERRORS.HISTORY_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
@@ -201,8 +351,30 @@ router.get(
   })
 );
 
+/**
+ * @swagger
+ * /api/users/{userId}/folders/sharedByUser:
+ *   get:
+ *     summary: Get folders shared by user
+ *     description: Retrieves all folders that a user has shared with others
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: Shared folders retrieved successfully
+ *       404:
+ *         description: Shared folders not found
+ */
 router.get(
   '/:userId/folders/sharedByUser',
+  requireJWT,
   addErrorHandling(USER_ERRORS.SHARED_FOLDERS_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
@@ -219,8 +391,30 @@ router.get(
   })
 );
 
+/**
+ * @swagger
+ * /api/users/{userId}/folders/sharedWithUser:
+ *   get:
+ *     summary: Get folders shared with user
+ *     description: Retrieves all folders that have been shared with a user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: Received folders retrieved successfully
+ *       404:
+ *         description: Received folders not found
+ */
 router.get(
   '/:userId/folders/sharedWithUser',
+  requireJWT,
   addErrorHandling(USER_ERRORS.RECEIVED_FOLDERS_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
@@ -233,9 +427,30 @@ router.get(
   })
 );
 
-// Get invitations for user
+/**
+ * @swagger
+ * /api/users/{userId}/invitations:
+ *   get:
+ *     summary: Get user invitations
+ *     security:
+ *       - bearerAuth: []
+ *     description: Retrieves all invitations for a specific user
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: Invitations retrieved successfully
+ *       404:
+ *         description: Invitations not found
+ */
 router.get(
   '/:userId/invitations',
+  requireJWT,
   addErrorHandling(USER_ERRORS.INVITATIONS_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
@@ -244,8 +459,45 @@ router.get(
   })
 );
 
+/**
+ * @swagger
+ * /api/users/{id}/backup:
+ *   post:
+ *     summary: Create user backup
+ *     description: Creates a backup for a specific user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               keys:
+ *                 type: string
+ *               keypair:
+ *                 type: string
+ *               keystring:
+ *                 type: string
+ *               salt:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Backup created successfully
+ *       400:
+ *         description: Backup failed
+ */
 router.post(
   '/:id/backup',
+  requireJWT,
   addErrorHandling(USER_ERRORS.BACKUP_FAILED),
   wrapAsyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -258,6 +510,36 @@ router.post(
   })
 );
 
+/**
+ * @swagger
+ * /api/users/backup:
+ *   post:
+ *     summary: Create authenticated user backup
+ *     description: Creates a backup for the authenticated user
+ *
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               keys:
+ *                 type: string
+ *               keypair:
+ *                 type: string
+ *               keystring:
+ *                 type: string
+ *               salt:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Backup created successfully
+ *       400:
+ *         description: Backup failed
+ */
 router.post(
   '/backup',
   requireJWT,
@@ -273,6 +555,20 @@ router.post(
   })
 );
 
+/**
+ * @swagger
+ * /api/users/backup:
+ *   get:
+ *     summary: Get authenticated user backup
+ *     description: Retrieves the backup for the authenticated user
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Backup retrieved successfully
+ *       404:
+ *         description: Backup not found
+ */
 router.get(
   '/backup',
   requireJWT,
@@ -284,6 +580,27 @@ router.get(
   })
 );
 
+/**
+ * @swagger
+ * /api/users/{id}/backup:
+ *   get:
+ *     summary: Get user backup
+ *     description: Retrieves the backup for a specific user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: Backup retrieved successfully
+ *       404:
+ *         description: Backup not found
+ */
 router.get(
   '/:id/backup',
   requireJWT,

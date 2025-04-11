@@ -65,6 +65,26 @@ export function flattenDescendants(tree: TreeNode): number[] {
   ];
 }
 
+/**
+ * @openapi
+ * /api/containers/{containerId}:
+ *   get:
+ *     summary: Get a container and its items
+ *     tags: [Containers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: containerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Container retrieved successfully
+ *       404:
+ *         description: Container not found
+ */
 // Get a container and its items
 // Add the ancestor folder path as a property.
 router.get(
@@ -98,6 +118,26 @@ router.get(
   })
 );
 
+/**
+ * @openapi
+ * /api/containers/{containerId}/links:
+ *   get:
+ *     summary: Get all Access Links for a container
+ *     tags: [Containers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: containerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Access Links retrieved successfully
+ *       404:
+ *         description: Access Links not found
+ */
 // Get all Access Links for a container
 router.get(
   '/:containerId/links',
@@ -112,6 +152,32 @@ router.get(
   })
 );
 
+/**
+ * @openapi
+ * /api/containers:
+ *   post:
+ *     summary: Create a new container
+ *     tags: [Containers]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               type:
+ *                 type: string
+ *                 enum: [FOLDER, CONVERSATION]
+ *     responses:
+ *       201:
+ *         description: Container created successfully
+ *       400:
+ *         description: Failed to create container
+ */
 // Create a container
 // When creating a subfolder in Lockbox, the front-end will pass in the parent folder id
 // as `req.body.parentId`. But, to use `getPermissions`, we need to rename that property
@@ -161,6 +227,35 @@ router.post(
   })
 );
 
+/**
+ * @openapi
+ * /api/containers/{containerId}/rename:
+ *   post:
+ *     summary: Rename a container
+ *     tags: [Containers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: containerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Container renamed successfully
+ *       400:
+ *         description: Failed to rename container
+ */
 // Rename a container
 router.post(
   '/:containerId/rename',
@@ -176,6 +271,26 @@ router.post(
   })
 );
 
+/**
+ * @openapi
+ * /api/containers/{containerId}:
+ *   delete:
+ *     summary: Delete a container
+ *     tags: [Containers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: containerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Container deleted successfully
+ *       404:
+ *         description: Container not found
+ */
 // TODO: think about whether we can be admin of a folder that contains folders we don't own.
 router.delete(
   '/:containerId',
@@ -202,6 +317,41 @@ router.delete(
 // everything above this line is confirmed for q1-dogfood use
 // ==================================================================================
 
+/**
+ * @openapi
+ * /api/containers/{containerId}/item:
+ *   post:
+ *     summary: Add an item to a container
+ *     tags: [Containers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: containerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               uploadId:
+ *                 type: integer
+ *               type:
+ *                 type: string
+ *               wrappedKey:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Item added successfully
+ *       400:
+ *         description: Failed to add item
+ */
 // Add an Item
 router.post(
   '/:containerId/item',
@@ -221,6 +371,31 @@ router.post(
   })
 );
 
+/**
+ * @openapi
+ * /api/containers/{containerId}/item/{itemId}:
+ *   delete:
+ *     summary: Remove an item from a container
+ *     tags: [Containers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: containerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: itemId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Item removed successfully
+ *       404:
+ *         description: Item or container not found
+ */
 router.delete(
   '/:containerId/item/:itemId',
   getGroupMemberPermissions,
@@ -234,6 +409,41 @@ router.delete(
   })
 );
 
+/**
+ * @openapi
+ * /api/containers/{containerId}/item/{itemId}/rename:
+ *   post:
+ *     summary: Rename an item in a container
+ *     tags: [Containers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: containerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: itemId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Item renamed successfully
+ *       400:
+ *         description: Failed to rename item
+ */
+// Rename an item in a container
 router.post(
   '/:containerId/item/:itemId/rename',
   getGroupMemberPermissions,
@@ -246,6 +456,30 @@ router.post(
   })
 );
 
+/**
+ * @openapi
+ * /api/containers/{containerId}/report:
+ *   post:
+ *     summary: Report an upload in a container
+ *     tags: [Containers]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               uploadId:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Upload reported successfully
+ *       400:
+ *         description: Failed to report upload
+ */
+// Report an upload in a container
 router.post(
   '/:containerId/report',
   addErrorHandling(CONTAINER_ERRORS.ITEM_NOT_REPORTED),
@@ -256,6 +490,42 @@ router.post(
   })
 );
 
+/**
+ * @openapi
+ * /api/containers/{containerId}/member/invite:
+ *   post:
+ *     summary: Invite a member to a container
+ *     tags: [Containers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: containerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               senderId:
+ *                 type: integer
+ *               recipientId:
+ *                 type: integer
+ *               wrappedKey:
+ *                 type: string
+ *               permission:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Member invited successfully
+ *       400:
+ *         description: Failed to invite member
+ */
+// Invite a member to a container
 router.post(
   '/:containerId/member/invite',
   getGroupMemberPermissions,
@@ -278,6 +548,31 @@ router.post(
   })
 );
 
+/**
+ * @openapi
+ * /api/containers/{containerId}/member/remove/{invitationId}:
+ *   delete:
+ *     summary: Remove invitation and group membership
+ *     tags: [Containers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: containerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: invitationId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Invitation and group membership removed successfully
+ *       400:
+ *         description: Failed to remove invitation and group membership
+ */
 // Remove invitation and group membership
 router.delete(
   '/:containerId/member/remove/:invitationId',
@@ -289,6 +584,35 @@ router.delete(
   })
 );
 
+/**
+ * @openapi
+ * /api/containers/{containerId}/member:
+ *   post:
+ *     summary: Add a member to access group for container
+ *     tags: [Containers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: containerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Member added successfully
+ *       400:
+ *         description: Failed to add member
+ */
 // Add member to access group for container
 router.post(
   '/:containerId/member',
@@ -305,6 +629,31 @@ router.post(
   })
 );
 
+/**
+ * @openapi
+ * /api/containers/{containerId}/member/{userId}:
+ *   delete:
+ *     summary: Remove a member from access group for container
+ *     tags: [Containers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: containerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Member removed successfully
+ *       404:
+ *         description: Member or container not found
+ */
 // Remove member from access group for container
 router.delete(
   '/:containerId/member/:userId',
@@ -320,6 +669,26 @@ router.delete(
   })
 );
 
+/**
+ * @openapi
+ * /api/containers/{containerId}/members:
+ *   get:
+ *     summary: Get all members for a container
+ *     tags: [Containers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: containerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Members retrieved successfully
+ *       404:
+ *         description: Members not found
+ */
 // Get all members for a container
 router.get(
   '/:containerId/members',
@@ -333,6 +702,26 @@ router.get(
   })
 );
 
+/**
+ * @openapi
+ * /api/containers/{containerId}/info:
+ *   get:
+ *     summary: Get container info
+ *     tags: [Containers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: containerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Container info retrieved successfully
+ *       404:
+ *         description: Container info not found
+ */
 // Get container info
 router.get(
   '/:containerId/info',
@@ -345,6 +734,27 @@ router.get(
   })
 );
 
+/**
+ * @openapi
+ * /api/containers/{containerId}/shares:
+ *   get:
+ *     summary: Get all shares for a container
+ *     tags: [Containers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: containerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Shares retrieved successfully
+ *       404:
+ *         description: Shares not found
+ */
+// Get all shares for a container
 router.get(
   '/:containerId/shares',
   getGroupMemberPermissions,
@@ -358,6 +768,40 @@ router.get(
   })
 );
 
+/**
+ * @openapi
+ * /api/containers/{containerId}/shares/invitation/update:
+ *   post:
+ *     summary: Update invitation permissions for a container
+ *     tags: [Containers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: containerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *               invitationId:
+ *                 type: integer
+ *               permission:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Invitation permissions updated successfully
+ *       400:
+ *         description: Failed to update invitation permissions
+ */
+// Update invitation permissions for a container
 router.post(
   '/:containerId/shares/invitation/update',
   getGroupMemberPermissions,
@@ -377,6 +821,41 @@ router.post(
     });
   })
 );
+
+/**
+ * @openapi
+ * /api/containers/{containerId}/shares/accessLink/update:
+ *   post:
+ *     summary: Update access link permissions for a container
+ *     tags: [Containers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: containerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *               accessLinkId:
+ *                 type: integer
+ *               permission:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Access link permissions updated successfully
+ *       400:
+ *         description: Failed to update access link permissions
+ */
+// Update access link permissions for a container
 router.post(
   '/:containerId/shares/accessLink/update',
   getGroupMemberPermissions,

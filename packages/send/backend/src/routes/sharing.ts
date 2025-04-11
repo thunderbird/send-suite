@@ -31,6 +31,33 @@ import {
 const router: Router = Router();
 const Metrics = useMetrics();
 
+/**
+ * @openapi
+ * /api/sharing/invite:
+ *   post:
+ *     summary: Invite users to share a container
+ *     tags: [Sharing]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               containerName:
+ *                 type: string
+ *               invitedUsers:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Invitations sent successfully
+ *       400:
+ *         description: Failed to send invitations
+ */
 // Request a new hash for a shared container
 router.post(
   '/',
@@ -96,6 +123,24 @@ router.post(
   })
 );
 
+/**
+ * @openapi
+ * /api/sharing/accept/{invitationId}:
+ *   post:
+ *     summary: Accept a sharing invitation
+ *     tags: [Sharing]
+ *     parameters:
+ *       - in: path
+ *         name: invitationId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Invitation accepted successfully
+ *       404:
+ *         description: Invitation not found
+ */
 // Get the challenge for this hash
 router.get(
   '/:linkId/challenge',
@@ -117,6 +162,24 @@ router.get(
   })
 );
 
+/**
+ * @openapi
+ * /api/sharing/reject/{invitationId}:
+ *   post:
+ *     summary: Reject a sharing invitation
+ *     tags: [Sharing]
+ *     parameters:
+ *       - in: path
+ *         name: invitationId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Invitation rejected successfully
+ *       404:
+ *         description: Invitation not found
+ */
 // Respond to the challenge.
 // If plaintext matches, we respond with wrapped key
 // associated salt
@@ -138,6 +201,24 @@ router.post(
   })
 );
 
+/**
+ * @openapi
+ * /api/sharing/leave/{containerId}:
+ *   post:
+ *     summary: Leave a shared container
+ *     tags: [Sharing]
+ *     parameters:
+ *       - in: path
+ *         name: containerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Successfully left the container
+ *       404:
+ *         description: Container not found
+ */
 // Get an AccessLink's container and items
 router.get(
   '/exists/:linkId',
