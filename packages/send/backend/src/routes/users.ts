@@ -1,4 +1,4 @@
-import { ContainerType, UserTier } from '@prisma/client';
+import { ContainerType } from '@prisma/client';
 
 import 'dotenv/config';
 import { Request, Router } from 'express';
@@ -16,7 +16,6 @@ import {
 } from '../models/sharing';
 
 import {
-  createUser,
   getAllUserGroupContainers,
   getBackup,
   getRecentActivity,
@@ -34,7 +33,7 @@ const router: Router = Router();
 
 /**
  * @swagger
- * /users/me:
+ * /api/users/me:
  *   get:
  *     summary: Get current user information
  *     description: Retrieves the logged-in user from the current session
@@ -76,10 +75,12 @@ router.get(
 
 /**
  * @swagger
- * /users/publickey/{id}:
+ * /api/users/publickey/{id}:
  *   get:
  *     summary: Get user's public key
  *     description: Retrieves the public key for a specific user
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -95,6 +96,7 @@ router.get(
  */
 router.get(
   '/publickey/:id',
+  requireJWT,
   addErrorHandling(USER_ERRORS.PUBLIC_KEY_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -108,7 +110,7 @@ router.get(
 // that can take any of the following: email, publicKey, avatar...
 /**
  * @swagger
- * /users/publickey:
+ * /api/users/publickey:
  *   post:
  *     summary: Update user's public key
  *     description: Updates the public key for the authenticated user
@@ -154,7 +156,7 @@ router.post(
 
 /**
  * @swagger
- * /users/folders:
+ * /api/users/folders:
  *   get:
  *     summary: Get user's folders
  *     description: Retrieves all folders for the authenticated user
@@ -183,7 +185,7 @@ router.get(
 
 /**
  * @swagger
- * /users/lookup/{email}:
+ * /api/users/lookup/{email}:
  *   get:
  *     summary: Lookup user by email
  *     description: Retrieves user information by email address
@@ -219,7 +221,7 @@ router.get(
 
 /**
  * @swagger
- * /users/login:
+ * /api/users/login:
  *   post:
  *     summary: User login
  *     description: Authenticates and logs in a user
@@ -249,65 +251,12 @@ router.post(
 
 /**
  * @swagger
- * /users:
- *   post:
- *     summary: Create new user
- *     description: Creates a new user with the provided information
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               publicKey:
- *                 type: string
- *               email:
- *                 type: string
- *               tier:
- *                 type: string
- *                 enum: [FREE, PRO, ENTERPRISE]
- *     responses:
- *       201:
- *         description: User created successfully
- *       400:
- *         description: User creation failed
- */
-router.post(
-  '/',
-  addErrorHandling(USER_ERRORS.USER_NOT_CREATED),
-  wrapAsyncHandler(async (req, res) => {
-    const {
-      publicKey,
-      email,
-      tier,
-    }: {
-      publicKey: string;
-      email: string;
-      tier: UserTier | null;
-    } = req.body;
-    let userEmail = email;
-    if (email) {
-      userEmail = email.trim().toLowerCase();
-    }
-    const user = await createUser(
-      JSON.stringify(publicKey).trim(),
-      userEmail,
-      tier || undefined
-    );
-    res.status(201).json({
-      message: 'User created',
-      user,
-    });
-  })
-);
-
-/**
- * @swagger
- * /users/{userId}/containers:
+ * /api/users/{userId}/containers:
  *   get:
  *     summary: Get all user containers
  *     description: Retrieves all containers for a specific user
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
@@ -323,6 +272,7 @@ router.post(
  */
 router.get(
   '/:userId/containers',
+  requireJWT,
   addErrorHandling(USER_ERRORS.FOLDERS_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
@@ -333,10 +283,12 @@ router.get(
 
 /**
  * @swagger
- * /users/{userId}/conversations:
+ * /api/users/{userId}/conversations:
  *   get:
  *     summary: Get user conversations
  *     description: Retrieves all conversations for a specific user
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
@@ -352,6 +304,7 @@ router.get(
  */
 router.get(
   '/:userId/conversations',
+  requireJWT,
   addErrorHandling(USER_ERRORS.FOLDERS_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
@@ -365,10 +318,12 @@ router.get(
 
 /**
  * @swagger
- * /users/{userId}/activity:
+ * /api/users/{userId}/activity:
  *   get:
  *     summary: Get user activity
  *     description: Retrieves recent activity for a specific user
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
@@ -384,6 +339,7 @@ router.get(
  */
 router.get(
   '/:userId/activity',
+  requireJWT,
   addErrorHandling(USER_ERRORS.HISTORY_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
@@ -397,10 +353,12 @@ router.get(
 
 /**
  * @swagger
- * /users/{userId}/folders/sharedByUser:
+ * /api/users/{userId}/folders/sharedByUser:
  *   get:
  *     summary: Get folders shared by user
  *     description: Retrieves all folders that a user has shared with others
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
@@ -416,6 +374,7 @@ router.get(
  */
 router.get(
   '/:userId/folders/sharedByUser',
+  requireJWT,
   addErrorHandling(USER_ERRORS.SHARED_FOLDERS_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
@@ -434,10 +393,12 @@ router.get(
 
 /**
  * @swagger
- * /users/{userId}/folders/sharedWithUser:
+ * /api/users/{userId}/folders/sharedWithUser:
  *   get:
  *     summary: Get folders shared with user
  *     description: Retrieves all folders that have been shared with a user
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
@@ -453,6 +414,7 @@ router.get(
  */
 router.get(
   '/:userId/folders/sharedWithUser',
+  requireJWT,
   addErrorHandling(USER_ERRORS.RECEIVED_FOLDERS_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
@@ -467,9 +429,11 @@ router.get(
 
 /**
  * @swagger
- * /users/{userId}/invitations:
+ * /api/users/{userId}/invitations:
  *   get:
  *     summary: Get user invitations
+ *     security:
+ *       - bearerAuth: []
  *     description: Retrieves all invitations for a specific user
  *     parameters:
  *       - in: path
@@ -486,6 +450,7 @@ router.get(
  */
 router.get(
   '/:userId/invitations',
+  requireJWT,
   addErrorHandling(USER_ERRORS.INVITATIONS_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
@@ -496,10 +461,12 @@ router.get(
 
 /**
  * @swagger
- * /users/{id}/backup:
+ * /api/users/{id}/backup:
  *   post:
  *     summary: Create user backup
  *     description: Creates a backup for a specific user
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -530,6 +497,7 @@ router.get(
  */
 router.post(
   '/:id/backup',
+  requireJWT,
   addErrorHandling(USER_ERRORS.BACKUP_FAILED),
   wrapAsyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -544,10 +512,11 @@ router.post(
 
 /**
  * @swagger
- * /users/backup:
+ * /api/users/backup:
  *   post:
  *     summary: Create authenticated user backup
  *     description: Creates a backup for the authenticated user
+ *
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -588,7 +557,7 @@ router.post(
 
 /**
  * @swagger
- * /users/backup:
+ * /api/users/backup:
  *   get:
  *     summary: Get authenticated user backup
  *     description: Retrieves the backup for the authenticated user
@@ -613,7 +582,7 @@ router.get(
 
 /**
  * @swagger
- * /users/{id}/backup:
+ * /api/users/{id}/backup:
  *   get:
  *     summary: Get user backup
  *     description: Retrieves the backup for a specific user
