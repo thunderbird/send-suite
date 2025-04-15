@@ -12,7 +12,7 @@
     "compare_envs": "bun run scripts/envs.ts",
     "predev": "./scripts/pre-flight.sh",
     "dev": "docker compose up --build --force-recreate -d && docker compose logs -f",
-    "dev:detach": "docker compose up -d",
+    "dev:detach": "docker compose up -d --build",
     "setup": "./scripts/setup.sh",
     "setup:local": "./scripts/setup.sh && bun run scripts/local.ts",
     "sort-package-json": "sort-package-json",
