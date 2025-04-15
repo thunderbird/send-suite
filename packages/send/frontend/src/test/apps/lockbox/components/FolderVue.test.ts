@@ -57,12 +57,12 @@ describe('FolderView', () => {
     vi.runAllTimers();
 
     // Check if goToRootFolder was called with new id
-    expect(goToRootFolderSpy).toBeCalledWith(null);
+    expect(goToRootFolderSpy).toBeCalledWith('0');
 
     await router.push({ name: 'folder', params: { id: '123' } });
     await wrapper.vm.$nextTick();
     vi.runAllTimers();
 
-    expect(goToRootFolderSpy).toBeCalledWith(123);
+    expect(goToRootFolderSpy).toBeCalledWith('123');
   });
 });

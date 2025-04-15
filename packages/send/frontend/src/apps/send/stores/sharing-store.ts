@@ -31,7 +31,7 @@ const useSharingStore = defineStore('sharingManager', () => {
   });
 
   async function createAccessLink(
-    folderId: number,
+    folderId: string,
     password: string,
     expiration: string
   ): Promise<string | null> {
@@ -105,7 +105,7 @@ const useSharingStore = defineStore('sharingManager', () => {
     return await api.call<{ id: string }>(`sharing/exists/${linkId}`);
   }
 
-  async function fetchAccessLinks(folderId: number): Promise<void> {
+  async function fetchAccessLinks(folderId: string): Promise<void> {
     _links.value = await api.call(`containers/${folderId}/links`);
   }
 

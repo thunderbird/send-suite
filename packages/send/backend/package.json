@@ -26,7 +26,8 @@
     "start": "NODE_ENV=production node dist/index.js",
     "test": "vitest run --silent",
     "test:watch": "vitest --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "typecheck:watch": "tsc --noEmit --watch"
   },
   "lint-staged": {
     "*.{js,ts}": [
@@ -62,6 +63,7 @@
     "passport-openidconnect": "^0.1.2",
     "posthog-node": "^4.11.3",
     "prisma": "^5.22.0",
+    "uuid": "^11.1.0",
     "vite": ">=5.4.17",
     "websocket": "npm:ws@^8.18.1",
     "zod": "^3.24.2"

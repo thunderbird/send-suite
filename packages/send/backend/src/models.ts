@@ -27,10 +27,7 @@ import { fromPrismaV2, fromPrismaV3 } from './models/prisma-helper';
 import { PermissionType } from './types/custom';
 const prisma = new PrismaClient();
 
-export async function getSharesForContainer(
-  containerId: number
-  // userId: number
-) {
+export async function getSharesForContainer(containerId: string) {
   const query = {
     where: {
       containerId,
@@ -70,9 +67,9 @@ export async function updateItemName(itemId: number, name: string) {
 }
 
 export async function updateInvitationPermissions(
-  containerId: number,
+  containerId: string,
   invitationId: number,
-  userId: number,
+  userId: string,
   permission: PermissionType
 ) {
   const query = {
@@ -92,9 +89,9 @@ export async function updateInvitationPermissions(
 }
 
 export async function updateAccessLinkPermissions(
-  containerId: number,
+  containerId: string,
   accessLinkId: string,
-  userId: number,
+  userId: string,
   permission: PermissionType
 ) {
   const query = {
@@ -113,7 +110,7 @@ export async function updateAccessLinkPermissions(
   );
 }
 
-export async function getContainerWithMembers(containerId: number) {
+export async function getContainerWithMembers(containerId: string) {
   const query = {
     where: {
       id: containerId,
@@ -158,7 +155,7 @@ export async function reportUpload(uploadId: string) {
 
 export async function createItem(
   name: string,
-  containerId: number,
+  containerId: string,
   uploadId: string,
   type: ItemType,
   wrappedKey: string
@@ -251,7 +248,7 @@ export async function deleteItem(id: number, shouldDeleteUpload = false) {
   return result;
 }
 
-export async function getContainerInfo(id: number) {
+export async function getContainerInfo(id: string) {
   const query = {
     where: {
       id,
@@ -264,7 +261,7 @@ export async function getContainerInfo(id: number) {
   );
 }
 
-export async function getUploadsOwnedByUser(id: number) {
+export async function getUploadsOwnedByUser(id: string) {
   return await prisma.upload.findMany({
     where: {
       ownerId: id,
@@ -283,7 +280,7 @@ export async function deleteUpload(id: string) {
   });
 }
 
-export async function getContainersOwnedByUser(id: number) {
+export async function getContainersOwnedByUser(id: string) {
   return await prisma.container.findMany({
     where: {
       ownerId: id,
@@ -295,11 +292,11 @@ export async function getContainersOwnedByUser(id: number) {
   });
 }
 
-export async function deleteContainer(id: number) {
+export async function deleteContainer(id: string) {
   return prisma.container.delete({ where: { id } });
 }
 
-export async function getContainerWithDescendants(id: number) {
+export async function getContainerWithDescendants(id: string) {
   const query = {
     where: { id },
     include: {
@@ -325,7 +322,7 @@ export async function getContainerWithDescendants(id: number) {
   return container;
 }
 
-export async function addGroupMember(containerId: number, userId: number) {
+export async function addGroupMember(containerId: string, userId: string) {
   const findContainerQuery = {
     where: {
       id: containerId,
@@ -417,7 +414,7 @@ export async function removeInvitationAndGroup(invitationId: number) {
   );
 }
 
-export async function removeGroupMember(containerId: number, userId: number) {
+export async function removeGroupMember(containerId: string, userId: string) {
   const findGroupQuery = {
     where: {
       container: {
@@ -479,7 +476,7 @@ export async function createTagForItem(
 export async function createTagForContainer(
   tagName: string,
   color: string,
-  containerId: number
+  containerId: string
 ) {
   // trim, but don't normalize the case
   const name = tagName.trim();
@@ -534,7 +531,7 @@ export async function updateTagName(tagId: number, name: string) {
 // Get all items and containers (that I have access to) with a specific tag or tags
 
 export async function getContainersAndItemsWithTags(
-  userId: number,
+  userId: string,
   tagNames: string[]
 ) {
   // First, find the group memberships for the user.

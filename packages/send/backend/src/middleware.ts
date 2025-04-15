@@ -25,11 +25,11 @@ function extractParamOrBody(req, prop: string) {
   return req.params[prop] ?? req.body[prop];
 }
 
-function extractContainerId(req) {
+function extractContainerId(req): string {
   const prop = `containerId`;
   const val = extractParamOrBody(req, prop);
   try {
-    return parseInt(val, 10);
+    return val;
   } catch (e) {
     console.error(
       `Could not find ${prop} for ${extractMethodAndRoute(req)}`,
@@ -113,7 +113,7 @@ export const getGroupMemberPermissions: RequestHandler = async (
   const { id: userId } = getDataFromAuthenticatedRequest(req);
   const containerId = extractContainerId(req);
 
-  if (userId && containerId === 0) {
+  if (userId) {
     // Users have full permissions to their own top-level
     console.log(`
 *************************************************************************************

@@ -37,7 +37,7 @@ export const validateBackedUpKeys = async (
  * Checks local storage for a user object
  */
 export const validateLocalStorageSession = ({ user }: UserStore) => {
-  if (user?.id != 0) return true;
+  if (user?.id != undefined) return true;
   else return false;
 };
 

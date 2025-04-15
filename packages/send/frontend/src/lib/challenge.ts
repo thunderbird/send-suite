@@ -8,7 +8,7 @@ export async function getContainerKeyFromChallenge(
   keychain: Keychain
 ): Promise<{
   unwrappedKey: CryptoKey;
-  containerId: number;
+  containerId: string;
 } | null> {
   const resp = await api.call<{
     challengeKey: string;

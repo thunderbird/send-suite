@@ -14,9 +14,13 @@ pros: (more) reactivity?
 type KeychainStore = {
   keychain: Keychain;
   resetKeychain: () => void;
+  addKey: (id: string, key: CryptoKey) => Promise<void>;
+  getKey: (id: string) => Promise<CryptoKey>;
+  removeKey: (id: string) => void;
+  newKeyForContainer: (id: string) => Promise<void>;
 };
 
-const useKeychainStore: () => KeychainStore = defineStore('keychain', () => {
+const useKeychainStore = defineStore('keychain', () => {
   const storage = new Storage();
   const keychain = new Keychain(storage);
 
@@ -24,10 +28,32 @@ const useKeychainStore: () => KeychainStore = defineStore('keychain', () => {
     keychain._init();
   }
 
-  return {
+  async function addKey(id: string, key: CryptoKey) {
+    await keychain.add(id, key);
+  }
+
+  async function getKey(id: string) {
+    return await keychain.get(id);
+  }
+
+  function removeKey(id: string) {
+    keychain.remove(id);
+  }
+
+  async function newKeyForContainer(id: string) {
+    await keychain.newKeyForContainer(id);
+  }
+
+  const store: KeychainStore = {
     keychain,
     resetKeychain,
+    addKey,
+    getKey,
+    removeKey,
+    newKeyForContainer,
   };
+
+  return store;
 });
 
 export default useKeychainStore;

@@ -53,7 +53,7 @@ describe('User Store', () => {
         .spyOn(useApiStore().api, 'call')
         .mockResolvedValueOnce({
           user: {
-            id: 1,
+            id: '1',
             tier: 3,
           },
         });
@@ -75,7 +75,7 @@ describe('User Store', () => {
       );
 
       expect(result).toEqual({
-        id: 1,
+        id: '1',
         tier: 3,
         email,
       });
@@ -88,7 +88,7 @@ describe('User Store', () => {
         .spyOn(useApiStore().api, 'call')
         .mockResolvedValueOnce({
           user: {
-            id: 1,
+            id: '1',
             tier: UserTier.EPHEMERAL,
           },
         });
@@ -110,7 +110,7 @@ describe('User Store', () => {
       );
 
       expect(result).toEqual({
-        id: 1,
+        id: '1',
         tier: UserTier.EPHEMERAL,
         email,
       });
@@ -119,7 +119,7 @@ describe('User Store', () => {
     it('should use the stored email if no email is provided', async () => {
       userStore.user.email = 'stored@example.com'; // Assume this is set from a previous action
       const loginResponse = {
-        id: 4,
+        id: '4',
         tier: UserTier.FREE,
         email: userStore.user.email,
       };
@@ -162,7 +162,7 @@ describe('User Store', () => {
       const apiCallMock = vi
         .spyOn(useApiStore().api, 'call')
         .mockResolvedValueOnce({
-          id: 1,
+          id: '1',
           tier: 3,
           email,
         });
@@ -175,7 +175,7 @@ describe('User Store', () => {
         'POST'
       );
       expect(result).toEqual({
-        id: 1,
+        id: '1',
         tier: 3,
         email,
       });
@@ -185,7 +185,7 @@ describe('User Store', () => {
   describe('load', () => {
     it('should load user data from storage and populate the store', async () => {
       const storedUserData = {
-        id: 2,
+        id: '2',
         tier: UserTier.FREE,
         email,
       };
@@ -220,9 +220,9 @@ describe('User Store', () => {
       const newTier = UserTier.PRO;
       const newEmail = 'new@example.com';
       const storageMock = vi.spyOn(Storage.prototype, 'storeUser');
-      await userStore.store(newId, newTier, newEmail);
+      await userStore.store(newId.toString(), newTier, newEmail);
       expect(storageMock).toHaveBeenCalledWith({
-        id: newId,
+        id: newId.toString(),
         tier: newTier,
         email: newEmail,
       });
@@ -248,7 +248,7 @@ describe('User Store', () => {
     it('should populate user store with user data from session', async () => {
       const userData = {
         user: {
-          id: 1,
+          id: '1',
           email,
           tier: UserTier.PRO,
         },
@@ -291,12 +291,13 @@ describe('User Store', () => {
 
   describe('getPublicKey', () => {
     it('should retrieve a public key for a given user', async () => {
-      const userId = 0; // Assuming the user ID is known for the test
+      const userId = 'user-uuid'; // Assuming the user ID is known for the test
+      userStore.user.id = userId; // Simulate loading from local storage
       const apiCallMock = vi
         .spyOn(useApiStore().api, 'call')
         .mockResolvedValueOnce({ publicKey });
 
-      const result = await userStore.getPublicKey(userId);
+      const result = await userStore.getPublicKey();
 
       expect(apiCallMock).toHaveBeenCalledWith(`users/publickey/${userId}`);
       expect(result).toBe(publicKey);
@@ -336,7 +337,7 @@ describe('User Store', () => {
 
   describe('createBackup', () => {
     it('should create a backup for the user and handle the data correctly', async () => {
-      const userId = 1;
+      const userId = '1';
       const backupData = {
         keys: 'someKeys',
         keypair: 'someKeypair',

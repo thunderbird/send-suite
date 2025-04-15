@@ -52,7 +52,7 @@ export interface Api {
 
 // interfaces used for API responses
 export interface UserType {
-  id: number;
+  id: string;
   email: string;
   tier?: UserTier;
   createdAt?: Date;
@@ -64,37 +64,45 @@ export interface Profile {
   mozid: string;
   avatar: string;
   user?: UserType;
-  userId?: number;
+  userId?: string;
 }
 
 export interface Share {
   id?: number;
-  containerId?: number;
+  containerId?: string;
   container?: Container;
-  senderId: number;
+  senderId: string;
   sender?: UserType;
 }
 
+export enum ContainerType {
+  CONVERSATION = 'CONVERSATION',
+  FOLDER = 'FOLDER',
+}
+
+export enum ItemType {
+  MESSAGE = 'MESSAGE',
+  FILE = 'FILE',
+}
+
 export interface Container {
-  id: number;
+  id: string;
   name: string;
   createdAt?: Date;
   updatedAt?: Date;
-  type: string;
+  type: ContainerType;
 
   shareOnly?: boolean;
   shares?: Share[];
-  ownerId?: number;
+  ownerId?: string;
   owner?: UserType;
   wrappedKey?: string;
-  parentId?: number;
+  parentId?: string;
   parent?: Container;
   children?: Container[];
   items?: Item[];
   size?: number;
 }
-
-export interface Folder extends Container {}
 
 export interface Item {
   id: number;
@@ -102,9 +110,9 @@ export interface Item {
   uploadId: string;
 
   wrappedKey?: string;
-  containerId?: number;
+  containerId?: string;
   container?: Container;
-  type?: string;
+  type?: ItemType;
 
   createdAt?: Date;
   updatedAt?: Date;
@@ -114,12 +122,15 @@ export interface Item {
 export interface Upload {
   id?: string;
   size?: number;
-  ownerId?: number;
+  ownerId?: string;
   type?: string;
   createdAt?: Date;
   owner?: {
     email: string;
   };
+  // deprecated
+  expired?: boolean;
+  daysToExpiry?: number;
 }
 
 export interface Backup {

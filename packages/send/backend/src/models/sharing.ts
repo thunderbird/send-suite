@@ -48,8 +48,8 @@ const onCreateError = () => {
  * Function will throw an error if unable to create the new share or the access link.
  */
 export async function createAccessLink(
-  containerId: number,
-  senderId: number,
+  containerId: string,
+  senderId: string,
   wrappedKey: string,
   salt: string,
   challengeKey: string,
@@ -280,10 +280,10 @@ export async function getContainerForAccessLink(linkId: string) {
  * TODO: Need to specify which share, in case there are multiple?
  */
 export async function createInvitation(
-  containerId: number,
+  containerId: string,
   wrappedKey: string,
-  senderId: number,
-  recipientId: number,
+  senderId: string,
+  recipientId: string,
   permission: number
 ) {
   let share: Share;
@@ -352,7 +352,7 @@ export async function createInvitation(
 
 export async function createInvitationFromAccessLink(
   linkId: string,
-  recipientId: number
+  recipientId: string
 ) {
   const findAccessLinkQuery = {
     where: {
@@ -436,7 +436,7 @@ export async function removeAccessLink(linkId: string) {
   );
 }
 
-export async function getAllInvitations(userId: number) {
+export async function getAllInvitations(userId: string) {
   const query = {
     where: {
       recipientId: userId,
@@ -511,7 +511,7 @@ export async function acceptInvitation(invitationId: number) {
 }
 
 export async function getContainersSharedByUser(
-  userId: number
+  userId: string
   // _type: ContainerType
 ) {
   const query = {
@@ -565,7 +565,7 @@ export async function getContainersSharedByUser(
 }
 
 export async function getContainersSharedWithUser(
-  recipientId: number,
+  recipientId: string,
   type: ContainerType
 ) {
   const query = {
@@ -592,7 +592,7 @@ export async function getContainersSharedWithUser(
 }
 
 export async function burnFolder(
-  containerId: number,
+  containerId: string,
   shouldDeleteUpload?: boolean
 ) {
   // delete the ephemeral link
@@ -768,6 +768,6 @@ export async function burnFolder(
   };
 }
 
-export async function burnEphemeralConversation(containerId: number) {
+export async function burnEphemeralConversation(containerId: string) {
   return await burnFolder(containerId);
 }

@@ -24,11 +24,11 @@ export async function createUser(
   });
 }
 
-export async function getUserById(id: number) {
+export async function getUserById(id: string) {
   return await prisma.user.findUnique({ where: { id } });
 }
 
-export async function resetKeys(id: number) {
+export async function resetKeys(id: string) {
   return await prisma.user.update({
     data: {
       publicKey: null,
@@ -181,7 +181,7 @@ export async function findOrCreateUserProfileByMozillaId(
   return user;
 }
 
-export async function getUserPublicKey(id: number) {
+export async function getUserPublicKey(id: string) {
   const query = {
     where: {
       id,
@@ -198,7 +198,7 @@ export async function getUserPublicKey(id: number) {
   );
 }
 
-export async function updateUserPublicKey(id: number, publicKey: string) {
+export async function updateUserPublicKey(id: string, publicKey: string) {
   const query = {
     where: {
       id,
@@ -211,12 +211,12 @@ export async function updateUserPublicKey(id: number, publicKey: string) {
   return await fromPrismaV2(prisma.user.update, query, USER_NOT_UPDATED);
 }
 
-export async function updateUniqueHash(id: number, uniqueHash: string) {
+export async function updateUniqueHash(id: string, uniqueHash: string) {
   await prisma.user.update({ where: { id }, data: { uniqueHash } });
 }
 
 async function _whereContainer(
-  userId: number,
+  userId: string,
   type: ContainerType | null,
   shareOnly?: boolean,
   topLevelOnly?: boolean
@@ -266,7 +266,7 @@ async function _whereContainer(
 
 // Does not include shareOnly containers.
 export async function getAllUserGroupContainers(
-  userId: number,
+  userId: string,
   type: ContainerType | null
 ) {
   const containerWhere = await _whereContainer(userId, type, false, true);
@@ -280,7 +280,7 @@ export async function getAllUserGroupContainers(
 }
 
 export async function getRecentActivity(
-  userId: number,
+  userId: string,
   type: ContainerType | null
 ) {
   // Get all containers
@@ -318,7 +318,7 @@ export async function getRecentActivity(
   return await fromPrisma(prisma.container.findMany as any, query);
 }
 
-export async function getBackup(id: number) {
+export async function getBackup(id: string) {
   const query = {
     where: {
       id,
@@ -339,7 +339,7 @@ export async function getBackup(id: number) {
 }
 
 export async function setBackup(
-  id: number,
+  id: string,
   keys: string,
   keypair: string,
   keystring: string,

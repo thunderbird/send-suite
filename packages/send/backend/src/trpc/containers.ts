@@ -45,7 +45,7 @@ export const containersRouter = router({
     };
 
     try {
-      const userId = Number(ctx.user.id);
+      const userId = ctx.user.id;
       const folders = await getAllUserGroupContainers(
         userId,
         ContainerType.FOLDER
@@ -124,7 +124,7 @@ export const containersRouter = router({
    */
   getAccessLinksForContainer: t
     .use(isAuthed)
-    .input(z.object({ containerId: z.number() }))
+    .input(z.object({ containerId: z.string() }))
     .query(async ({ input }) => {
       const accessLinks = await getAccessLinks(input.containerId);
       return accessLinks;

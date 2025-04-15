@@ -20,7 +20,7 @@ enum UserTier {
 }
 
 model User {
-  id                  Int                  @id @default(autoincrement())
+  id                  String               @id @default(uuid()) @unique
   email               String?
   publicKey           String?
   tier                UserTier
@@ -58,7 +58,7 @@ model Profile {
 
   // 1-1 relationship with User
   user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId        Int     @unique
+  userId        String     @unique
 
   accessToken   String?
   refreshToken  String?
@@ -74,7 +74,7 @@ model Group {
 model Membership {
   groupId     Int
   group       Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  userId      Int
+  userId      String
   user        User  @relation(fields: [userId], references: [id])
   permission  Int   @default(0)
                     // Modeled as a bitfield, i.e., 0b00000110
@@ -91,10 +91,10 @@ model Membership {
 // See the PermissionType enum in src/types/custom.ts
 model Share {
   id              Int     @id @default(autoincrement())
-  containerId     Int
+  containerId     String
   container       Container @relation("SharedFolder", fields: [containerId], references: [id], onDelete: Cascade)
 
-  senderId        Int   // Not necessarily the owner of the container
+  senderId        String   // Not necessarily the owner of the container
   sender          User    @relation("Sender", fields: [senderId], references: [id])
 
   // There are two ways to access a Share.
@@ -118,7 +118,7 @@ model Invitation {
   share         Share   @relation(fields: [shareId], references: [id], onDelete: Cascade)
   wrappedKey    String  // Container key wrapped with recipient publicKey
 
-  recipientId   Int
+  recipientId   String
   recipient     User    @relation("Recipient", fields: [recipientId], references: [id])
   status        InvitationStatus @default(PENDING)
 
@@ -170,7 +170,7 @@ enum ContainerType {
 }
 
 model Container {
-  id        Int             @id @default(autoincrement())
+  id        String            @id @default(uuid()) @unique
   name      String
   createdAt DateTime?
   updatedAt DateTime?
@@ -179,13 +179,13 @@ model Container {
   shareOnly Boolean         @default(false)
   shares    Share[]         @relation("SharedFolder")
 
-  ownerId   Int
+  ownerId   String
   owner     User            @relation(fields: [ownerId], references: [id])
   groupId   Int             @unique
   group     Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
   items     Item[]
   wrappedKey  String? // this container's key, wrapped using the parent's key
-  parentId  Int?
+  parentId  String?
   parent    Container?      @relation("Nesting", fields: [parentId], references: [id])
   children  Container[]     @relation("Nesting")
 
@@ -201,7 +201,7 @@ model Item {
   id            Int           @id @default(autoincrement())
   name          String
   wrappedKey    String
-  containerId   Int
+  containerId   String
   container     Container     @relation(fields: [containerId], references: [id], onDelete: Cascade)
   uploadId      String
   // Do not cascade, since uploads can exist in different Containers as
@@ -222,9 +222,9 @@ model Item {
 }
 
 model Upload {
-  id        String        @unique
+  id        String        @id @default(uuid())
   size      Int
-  ownerId   Int
+  ownerId   String
   owner     User          @relation(fields: [ownerId], references: [id])
   items     Item[]        // A single Upload may back multiple Items
   type      String        // mime type

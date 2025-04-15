@@ -2,15 +2,15 @@ import { flattenDescendants, TreeNode } from '@/routes/containers';
 import { describe, expect, it } from 'vitest';
 
 const containerNoChild: TreeNode = {
-  id: 1,
+  id: '1',
   children: [],
 };
 const containerWithChild: TreeNode = {
-  id: 2,
+  id: '2',
   children: [containerNoChild],
 };
 const containerWithGrandChild: TreeNode = {
-  id: 3,
+  id: '3',
   children: [containerWithChild],
 };
 
@@ -26,38 +26,42 @@ describe('flattenDescendants', () => {
   });
 
   it('should return grandchildren, children and root', () => {
-    expect(flattenDescendants(containerWithGrandChild)).toEqual([1, 2, 3]);
+    expect(flattenDescendants(containerWithGrandChild)).toEqual([
+      '1',
+      '2',
+      '3',
+    ]);
   });
 
   it('should handle a tree with no children', () => {
-    expect(flattenDescendants(containerNoChild)).toEqual([1]);
+    expect(flattenDescendants(containerNoChild)).toEqual(['1']);
   });
 
   it('should flatten a tree with multiple children', () => {
     const tree: TreeNode = {
-      id: 1,
+      id: '1',
       children: [
-        { id: 2, children: [] },
-        { id: 3, children: [] },
+        { id: '2', children: [] },
+        { id: '3', children: [] },
       ],
     };
-    expect(flattenDescendants(tree)).toEqual([2, 3, 1]);
+    expect(flattenDescendants(tree)).toEqual(['2', '3', '1']);
   });
 
   it('should flatten a deeply nested tree', () => {
     const tree: TreeNode = {
-      id: 1,
+      id: '1',
       children: [
         {
-          id: 2,
+          id: '2',
           children: [
-            { id: 4, children: [] },
-            { id: 5, children: [] },
+            { id: '4', children: [] },
+            { id: '5', children: [] },
           ],
         },
-        { id: 3, children: [] },
+        { id: '3', children: [] },
       ],
     };
-    expect(flattenDescendants(tree)).toEqual([4, 5, 2, 3, 1]);
+    expect(flattenDescendants(tree)).toEqual(['4', '5', '2', '3', '1']);
   });
 });

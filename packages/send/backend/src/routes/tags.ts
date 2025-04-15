@@ -33,7 +33,7 @@ router.post(
   wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const { name, color } = req.body;
-    const tag = await createTagForContainer(name, color, parseInt(containerId));
+    const tag = await createTagForContainer(name, color, containerId);
     res.status(200).json(tag);
   })
 );

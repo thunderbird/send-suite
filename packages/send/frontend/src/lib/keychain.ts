@@ -6,7 +6,7 @@ export type JwkKeyPair = Record<'publicKey' | 'privateKey', string>;
 // Stored keys are always strings.
 // They are parsed as needed for encrypting/decrypting.
 export type StoredKey = {
-  [key: number]: string;
+  [key: string]: string;
 };
 
 // Bring in node crypto for use with automated tests.
@@ -396,7 +396,7 @@ export class Keychain {
     return Object.keys(this._keys).length;
   }
 
-  async add(id: number, key: CryptoKey) {
+  async add(id: string, key: CryptoKey) {
     if (!this.rsa.publicKey) {
       throw Error('Missing public key, required for wrapping AES key');
     }
@@ -408,7 +408,7 @@ export class Keychain {
     this._keys[id] = wrappedKeyStr;
   }
 
-  async get(id: number): Promise<CryptoKey> {
+  async get(id: string): Promise<CryptoKey> {
     const wrappedKeyStr = this._keys[id];
     if (!wrappedKeyStr) {
       throw Error(`You don't have the key to decrypt this container`);
@@ -420,13 +420,11 @@ export class Keychain {
     return unwrappedKey;
   }
 
-  remove(id: number): void {
+  remove(id: string): void {
     delete this._keys[id];
-    // const index = `${prefix}${id}`;
-    // this.storage.remove(index);
   }
 
-  async newKeyForContainer(id: number): Promise<void> {
+  async newKeyForContainer(id: string): Promise<void> {
     const key = await this.container.generateContainerKey();
     console.log(`adding key for container id ${id}`);
     await this.add(id, key);
@@ -467,7 +465,7 @@ export class Keychain {
     return keypair;
   }
 
-  async fallbackToStoredKeys(keys: Record<number, string>) {
+  async fallbackToStoredKeys(keys: Record<string, string>) {
     if (!keys) {
       keys = await this._storage.loadKeys();
     }
@@ -476,7 +474,7 @@ export class Keychain {
 
   async load(
     keypairStr?: JwkKeyPair,
-    keys?: Record<number, string>
+    keys?: Record<string, string>
   ): Promise<boolean> {
     try {
       // load keypair jwk
