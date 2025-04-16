@@ -33,6 +33,7 @@ export const validateJWT = ({
   try {
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
   } catch {
+    // Refresh token failed to verify, tell the user to re-login.
     return 'shouldLogin';
   }
   // validate access token
