@@ -15,7 +15,7 @@ export interface UserStore {
   login: (loginEmail?: string) => Promise<UserType>;
   loadFromLocalStorage: () => Promise<boolean>;
   store: (
-    newId?: number,
+    newId?: string,
     newTier?: UserTier,
     newEmail?: string
   ) => Promise<void>;
@@ -24,7 +24,7 @@ export interface UserStore {
   updatePublicKey: (jwk: string) => Promise<string>;
   getMozAccountAuthUrl: () => Promise<string>;
   createBackup: (
-    userId: number,
+    userId: string,
     keys: string,
     keypair: string,
     keystring: string,
@@ -35,7 +35,7 @@ export interface UserStore {
 }
 
 export const EMPTY_USER: UserType = {
-  id: 0,
+  id: undefined,
   tier: UserTier.FREE,
   email: '',
 };
@@ -118,7 +118,7 @@ const useUserStore: () => UserStore = defineStore('user', () => {
   }
 
   async function store(
-    newId?: number,
+    newId?: string,
     newTier?: UserTier,
     newEmail?: string
   ): Promise<void> {

@@ -49,12 +49,12 @@ import { addExpiryToContainer } from '@/utils';
 
 const router: Router = Router();
 
-export type TreeNode = {
-  id: number;
-  children: TreeNode[] | [];
-};
+export interface TreeNode {
+  id: string;
+  children: TreeNode[];
+}
 
-export function flattenDescendants(tree: TreeNode): number[] {
+export function flattenDescendants(tree: TreeNode): string[] {
   if (!tree || !tree.id) {
     return [];
   }
@@ -95,7 +95,7 @@ router.get(
   addErrorHandling(CONTAINER_ERRORS.CONTAINER_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
-    const container = await getItemsInContainer(parseInt(containerId));
+    const container = await getItemsInContainer(containerId);
     const { hasLimitedStorage } = getStorageLimit(req);
 
     if (!container) {
@@ -147,7 +147,7 @@ router.get(
   addErrorHandling(CONTAINER_ERRORS.ACCESS_LINKS_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
-    const links = await getAccessLinksForContainer(parseInt(containerId));
+    const links = await getAccessLinksForContainer(containerId);
     res.status(200).json(links);
   })
 );
@@ -208,10 +208,7 @@ router.post(
       shareOnly = req.body.shareOnly;
     }
 
-    let parentId = 0;
-    if (req.body.containerId) {
-      parentId = req.body.containerId;
-    }
+    const parentId = req.body.containerId;
 
     const container = await createContainer(
       name.trim().toLowerCase(),
@@ -266,7 +263,7 @@ router.post(
   wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const { name } = req.body;
-    const container = await updateContainerName(parseInt(containerId), name);
+    const container = await updateContainerName(containerId, name);
     res.status(200).json(container);
   })
 );
@@ -300,11 +297,11 @@ router.delete(
   addErrorHandling(CONTAINER_ERRORS.CONTAINER_NOT_DELETED),
   wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
-    const root = await getContainerWithDescendants(parseInt(containerId));
+    const root = await getContainerWithDescendants(containerId);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const idArray = flattenDescendants(root as any);
 
-    const burnPromises = idArray.map((id: number) =>
+    const burnPromises = idArray.map((id: string) =>
       burnFolder(id, true /* shouldDeleteUpload */)
     );
 
@@ -362,7 +359,7 @@ router.post(
     const { name, uploadId, type, wrappedKey } = req.body;
     const item = await createItem(
       name,
-      parseInt(containerId),
+      containerId,
       uploadId,
       type,
       wrappedKey
@@ -538,10 +535,10 @@ router.post(
       permission = req.body.permission;
     }
     const invitation = await createInvitation(
-      parseInt(containerId),
+      containerId,
       wrappedKey,
-      parseInt(senderId),
-      parseInt(recipientId),
+      senderId,
+      recipientId,
       parseInt(permission)
     );
     res.status(200).json(invitation);
@@ -621,10 +618,7 @@ router.post(
   wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
     const { userId } = req.body;
-    const container = await addGroupMember(
-      parseInt(containerId),
-      parseInt(userId)
-    );
+    const container = await addGroupMember(containerId, userId);
     res.status(200).json(container);
   })
 );
@@ -661,10 +655,7 @@ router.delete(
   addErrorHandling(CONTAINER_ERRORS.MEMBER_NOT_DELETED),
   wrapAsyncHandler(async (req, res) => {
     const { containerId, userId } = req.params;
-    const container = await removeGroupMember(
-      parseInt(containerId),
-      parseInt(userId)
-    );
+    const container = await removeGroupMember(containerId, userId);
     res.status(200).json(container);
   })
 );
@@ -697,7 +688,7 @@ router.get(
   wrapAsyncHandler(async (req, res) => {
     // getContainerWithMembers
     const { containerId } = req.params;
-    const { group } = await getContainerWithMembers(parseInt(containerId));
+    const { group } = await getContainerWithMembers(containerId);
     res.status(200).json(group.members);
   })
 );
@@ -729,7 +720,7 @@ router.get(
   addErrorHandling(CONTAINER_ERRORS.INFO_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
-    const container = await getContainerInfo(parseInt(containerId));
+    const container = await getContainerInfo(containerId);
     res.status(200).json(container);
   })
 );
@@ -761,7 +752,7 @@ router.get(
   addErrorHandling(CONTAINER_ERRORS.SHARES_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.params;
-    const result = await getSharesForContainer(parseInt(containerId));
+    const result = await getSharesForContainer(containerId);
     res.status(200).json({
       result,
     });
@@ -811,9 +802,9 @@ router.post(
     const { userId, invitationId, permission } = req.body; // TODO: get from session
 
     const result = await updateInvitationPermissions(
-      parseInt(containerId),
+      containerId,
       parseInt(invitationId),
-      parseInt(userId),
+      userId,
       parseInt(permission)
     );
     res.status(200).json({
@@ -864,9 +855,9 @@ router.post(
     const { containerId } = req.params;
     const { userId, accessLinkId, permission } = req.body; // TODO: get from session
     const result = await updateAccessLinkPermissions(
-      parseInt(containerId),
+      containerId,
       accessLinkId,
-      parseInt(userId),
+      userId,
       parseInt(permission)
     );
     res.status(200).json({

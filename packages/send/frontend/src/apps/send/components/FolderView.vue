@@ -21,7 +21,7 @@ import DownloadConfirmation from './DownloadConfirmation.vue';
 const folderStore = useFolderStore();
 
 const dayjs = inject(DayJsKey);
-const selectedFolder = ref<number | null>(null);
+const selectedFolder = ref<string | null>(null);
 
 const route = useRoute();
 const router = useRouter();
@@ -57,7 +57,7 @@ const openModal = (item: ItemResponse) => {
 };
 
 const gotoRoute = useDebounceFn(() => {
-  const id = Number(route.params.id);
+  const id = route.params.id as string;
   if (!!id) {
     folderStore.goToRootFolder(id);
     return;
@@ -78,7 +78,7 @@ watch(
   }
 );
 
-function handleClick(id: number) {
+function handleClick(id: string) {
   if (selectedFolder.value === id) {
     router.push({ name: 'folder', params: { id } });
     selectedFolder.value = null;

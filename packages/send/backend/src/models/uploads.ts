@@ -13,7 +13,7 @@ import {
 export async function createUpload(
   id: string,
   size: number,
-  ownerId: number,
+  ownerId: string,
   type: string
 ) {
   // Confirm that file `id` exists and what's on disk

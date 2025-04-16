@@ -25,11 +25,11 @@ function extractParamOrBody(req, prop: string) {
   return req.params[prop] ?? req.body[prop];
 }
 
-function extractContainerId(req) {
+function extractContainerId(req): string {
   const prop = `containerId`;
   const val = extractParamOrBody(req, prop);
   try {
-    return parseInt(val, 10);
+    return val;
   } catch (e) {
     console.error(
       `Could not find ${prop} for ${extractMethodAndRoute(req)}`,
@@ -74,6 +74,15 @@ export async function requireJWT(
     return next();
   }
 
+  // When refresh token is invalid, we should return 403 and ask to login
+  if (validationResult === 'shouldLogin') {
+    return res.status(403).json({
+      message: `Not authorized: Refresh token expired`,
+    });
+  }
+
+  // When the refresh token is valid but the token is not, we should return 401
+  // this is handled as autoretry in the client
   if (validationResult === 'shouldRefresh') {
     return res.status(401).json({
       message: `Not authorized: Token expired`,
@@ -113,7 +122,7 @@ export const getGroupMemberPermissions: RequestHandler = async (
   const { id: userId } = getDataFromAuthenticatedRequest(req);
   const containerId = extractContainerId(req);
 
-  if (userId && containerId === 0) {
+  if (userId) {
     // Users have full permissions to their own top-level
     console.log(`
 *************************************************************************************

@@ -7,11 +7,11 @@ import {
   getContainersOwnedByUser,
   getUploadsOwnedByUser,
 } from '@/models';
-import { uuidv4 } from '@/utils';
 import { checkCompatibility } from '@/utils/compatibility';
 import { loginEmitter } from '@/ws/login';
 import { TRPCError } from '@trpc/server';
 import { createHash } from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 import { on } from 'websocket';
 import { z } from 'zod';
 import {
@@ -75,7 +75,7 @@ export const usersRouter = router({
    *                   description: Complete user data object
    */
   getUserData: trpc.use(isAuthed).query(async ({ ctx }) => {
-    const userData = await getUserById(Number(ctx.user.id));
+    const userData = await getUserById(ctx.user.id);
     return { userData: userData };
   }),
 
@@ -188,7 +188,7 @@ export const usersRouter = router({
     .use(isAuthed)
     .use((props) => useEnvironment(props, ['stage', 'development']))
     .mutation(async ({ ctx }) => {
-      const id = Number(ctx.user.id);
+      const id = ctx.user.id;
       try {
         await resetKeys(id);
         const containers = await getContainersOwnedByUser(id);
@@ -360,7 +360,7 @@ export const usersRouter = router({
     }),
 });
 
-async function handleSuccessfulLogin(email: string, id: number) {
+async function handleSuccessfulLogin(email: string, id: string) {
   const uid = uuidv4();
   // Generate the unique_id with the user's email
   const state = `${uid}____${email}`;

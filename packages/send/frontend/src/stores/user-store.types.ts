@@ -6,7 +6,7 @@ export type Backup = {
 };
 
 export type UserResponse = {
-  id: number;
+  id: string;
   email: string;
   tier: string;
   createdAt?: Date;

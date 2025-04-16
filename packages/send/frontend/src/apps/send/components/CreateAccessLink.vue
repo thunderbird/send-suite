@@ -11,7 +11,7 @@ import { useClipboard, useDebounceFn } from '@vueuse/core';
 const sharingStore = useSharingStore();
 
 const props = defineProps<{
-  folderId: number;
+  folderId: string;
 }>();
 
 const emit = defineEmits(['createAccessLinkComplete', 'createAccessLinkError']);

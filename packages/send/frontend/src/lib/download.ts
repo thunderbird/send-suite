@@ -15,7 +15,7 @@ export default class Downloader {
 
   async doDownload(
     id: string,
-    folderId: number,
+    folderId: string,
     wrappedKeyStr: string,
     filename: string,
     metrics: ReturnType<typeof useMetricsStore>['metrics'],

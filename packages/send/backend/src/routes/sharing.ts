@@ -78,8 +78,8 @@ router.post(
       challengePlaintext,
       expiration,
     }: {
-      containerId: number;
-      senderId: number;
+      containerId: string;
+      senderId: string;
       wrappedKey: string;
       salt: string;
       challengeKey: string;
@@ -295,7 +295,7 @@ router.post(
   addErrorHandling(SHARING_ERRORS.NOT_BURNED),
   wrapAsyncHandler(async (req, res) => {
     const { containerId } = req.body;
-    const result = await burnEphemeralConversation(parseInt(containerId));
+    const result = await burnEphemeralConversation(containerId);
     res.status(200).json({
       result,
     });

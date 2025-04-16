@@ -8,7 +8,7 @@ import { vTooltip } from 'floating-vue';
 import { ref, watchEffect } from 'vue';
 
 type Props = {
-  folderId: number;
+  folderId: string;
 };
 
 const sharingStore = useSharingStore();

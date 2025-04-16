@@ -99,8 +99,8 @@ router.get(
   requireJWT,
   addErrorHandling(USER_ERRORS.PUBLIC_KEY_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const user = await getUserPublicKey(parseInt(id));
+    const { id } = getDataFromAuthenticatedRequest(req);
+    const user = await getUserPublicKey(id);
     res.status(200).json(user);
   })
 );
@@ -276,7 +276,7 @@ router.get(
   addErrorHandling(USER_ERRORS.FOLDERS_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
-    const containers = await getAllUserGroupContainers(parseInt(userId), null);
+    const containers = await getAllUserGroupContainers(userId, null);
     res.status(200).json(containers);
   })
 );
@@ -309,7 +309,7 @@ router.get(
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
     const containers = await getAllUserGroupContainers(
-      parseInt(userId),
+      userId,
       ContainerType.CONVERSATION
     );
     res.status(200).json(containers);
@@ -343,10 +343,7 @@ router.get(
   addErrorHandling(USER_ERRORS.HISTORY_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
-    const containers = await getRecentActivity(
-      parseInt(userId),
-      ContainerType.FOLDER
-    );
+    const containers = await getRecentActivity(userId, ContainerType.FOLDER);
     res.status(200).json(containers);
   })
 );
@@ -379,7 +376,7 @@ router.get(
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
     const containersAndMembers = await getContainersSharedByUser(
-      parseInt(userId)
+      userId
       /*
        * TODO: This functionality is incomplete. The previous functionality used this second parameter
        * We're keeping it to pick it up later.
@@ -419,7 +416,7 @@ router.get(
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
     const containersAndMembers = await getContainersSharedWithUser(
-      parseInt(userId),
+      userId,
       ContainerType.FOLDER
     );
 
@@ -454,7 +451,7 @@ router.get(
   addErrorHandling(USER_ERRORS.INVITATIONS_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {
     const { userId } = req.params;
-    const invitations = await getAllInvitations(parseInt(userId));
+    const invitations = await getAllInvitations(userId);
     res.status(200).json(invitations);
   })
 );
@@ -503,7 +500,7 @@ router.post(
     const { id } = req.params;
     const { keys, keypair, keystring, salt } = req.body;
     // We're not using the return value, but we want to make sure the backup runs
-    await setBackup(parseInt(id), keys, keypair, keystring, salt);
+    await setBackup(id, keys, keypair, keystring, salt);
     res.status(200).json({
       message: 'backup complete',
     });

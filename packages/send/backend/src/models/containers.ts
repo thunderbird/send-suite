@@ -18,9 +18,9 @@ const prisma = new PrismaClient();
 // owner is added to new group
 export async function createContainer(
   name: string,
-  ownerId: number,
+  ownerId: string,
   type: ContainerType,
-  parentId: number,
+  parentId: string | null,
   shareOnly: boolean
 ) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -53,7 +53,7 @@ export async function createContainer(
       updatedAt: new Date(),
     },
   };
-  if (parentId !== 0) {
+  if (parentId) {
     query.data['parentId'] = parentId;
   }
 
@@ -64,7 +64,7 @@ export async function createContainer(
   );
 }
 
-export async function getItemsInContainer(id: number) {
+export async function getItemsInContainer(id: string) {
   // Nested include syntax
   // per https://github.com/prisma/prisma/discussions/5810#discussioncomment-400341
 
@@ -85,7 +85,7 @@ export async function getItemsInContainer(id: number) {
   );
 }
 
-export async function getContainerWithAncestors(id: number) {
+export async function getContainerWithAncestors(id: string) {
   const query = {
     where: {
       id,
@@ -104,7 +104,7 @@ export async function getContainerWithAncestors(id: number) {
   return container;
 }
 
-export async function getAccessLinksForContainer(containerId: number) {
+export async function getAccessLinksForContainer(containerId: string) {
   const shares = await fromPrismaV2(prisma.share.findMany, {
     where: {
       containerId,
@@ -130,7 +130,7 @@ export async function getAccessLinksForContainer(containerId: number) {
   );
 }
 
-export async function updateContainerName(containerId: number, name: string) {
+export async function updateContainerName(containerId: string, name: string) {
   const query = {
     where: {
       id: containerId,

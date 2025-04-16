@@ -21,7 +21,7 @@ export default class Sharer {
   }
 
   // Creates Invitation
-  async shareContainerWithInvitation(containerId: number, email: string) {
+  async shareContainerWithInvitation(containerId: string, email: string) {
     const user = await this.api.call(`users/lookup/${email}/`);
 
     if (user) {
@@ -78,7 +78,7 @@ export default class Sharer {
   async createShareOnlyContainer(
     items = [],
     containerId = null
-  ): Promise<number | null> {
+  ): Promise<string | null> {
     if (items.length === 0 && !containerId) {
       return null;
     }
@@ -169,7 +169,7 @@ export default class Sharer {
   }
 
   async requestAccessLink(
-    containerId: number,
+    containerId: string,
     password?: string,
     expiration?: string
   ): Promise<string | null> {

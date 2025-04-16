@@ -1,5 +1,5 @@
-import crypto from 'crypto';
 import { Transform } from 'stream';
+import { v4 as uuidv4 } from 'uuid';
 import config from './config';
 import storage from './storage';
 
@@ -40,7 +40,7 @@ class Limiter extends Transform {
 }
 
 async function handleUpload(ws, message, fileStream) {
-  const uploadId = crypto.randomBytes(24).toString('hex');
+  const uploadId = uuidv4();
   const fileInfo = JSON.parse(message);
 
   ws.send(

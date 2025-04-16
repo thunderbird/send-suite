@@ -76,9 +76,9 @@ describe('addExpiryToContainer', () => {
 
   it('should calculate correct days to expiry for a new upload', () => {
     const mockUpload: Upload = {
-      id: '1',
+      id: '123e4567-e89b-12d3-a456-426614174000',
       createdAt: new Date('2024-01-01'), // 14 days ago
-      ownerId: 1,
+      ownerId: 'user-123',
       reported: false,
       reportedAt: null,
       size: 100,
@@ -92,9 +92,9 @@ describe('addExpiryToContainer', () => {
 
   it('should mark as expired when exactly at expiry date', () => {
     const mockUpload: Upload = {
-      id: '1',
+      id: '123e4567-e89b-12d3-a456-426614174001',
       createdAt: new Date('2023-12-31'), // 15 days ago
-      ownerId: 1,
+      ownerId: 'user-123',
       reported: false,
       reportedAt: null,
       size: 100,
@@ -108,9 +108,9 @@ describe('addExpiryToContainer', () => {
 
   it('should mark as expired when past expiry date', () => {
     const mockUpload: Upload = {
-      id: '1',
+      id: '123e4567-e89b-12d3-a456-426614174002',
       createdAt: new Date('2023-12-30'), // 16 days ago
-      ownerId: 1,
+      ownerId: 'user-123',
       reported: false,
       reportedAt: null,
       size: 100,
@@ -146,10 +146,9 @@ describe('addExpiryToContainer', () => {
 
   it('should include days to expiry', () => {
     const mockUpload: Upload = {
-      id: '1',
-      // createdAt: new Date(Date.now() - 2 * TIME_CONSTANTS.MILLISECONDS_PER_DAY),
+      id: '123e4567-e89b-12d3-a456-426614174003',
       createdAt: new Date('2024-01-13'), // 2 days ago
-      ownerId: 1,
+      ownerId: 'user-123',
       reported: false,
       reportedAt: null,
       size: 100,

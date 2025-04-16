@@ -26,7 +26,7 @@ export default class Uploader {
 
   async doUpload(
     fileBlob: NamedBlob,
-    containerId: number,
+    containerId: string,
     api: ApiConnection,
     progressTracker: ProgressTracker
   ): Promise<Item> {
