@@ -20,7 +20,7 @@ enum UserTier {
 }
 
 model User {
-  id                  String               @id @default(uuid()) @unique
+  id                  String               @id @default(uuid()) @unique @db.Uuid
   email               String?
   publicKey           String?
   tier                UserTier
@@ -33,7 +33,6 @@ model User {
 
   profile             Profile?
 
-  // links            Link[]
   uploads             Upload[]
   groups              Membership[]
   containers          Container[]
@@ -43,7 +42,6 @@ model User {
 
   // Invitations sent to this user
   invitations         Invitation[]         @relation("Recipient")
-  // ephemeralLinks      EphemeralLink[] @relation("Ephemeral")
 
   backupKeypair       String?
   backupContainerKeys String?
@@ -58,7 +56,7 @@ model Profile {
 
   // 1-1 relationship with User
   user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId        String     @unique
+  userId        String @id @default(uuid()) @unique @db.Uuid
 
   accessToken   String?
   refreshToken  String?
@@ -74,8 +72,8 @@ model Group {
 model Membership {
   groupId     Int
   group       Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  userId      String
-  user        User  @relation(fields: [userId], references: [id])
+  userId      String @db.Uuid
+  user        User  @relation(fields: [userId], references: [id]) 
   permission  Int   @default(0)
                     // Modeled as a bitfield, i.e., 0b00000110
                     // See src/types/custom.ts for values
@@ -90,12 +88,12 @@ model Membership {
 // for a Container.
 // See the PermissionType enum in src/types/custom.ts
 model Share {
-  id              Int     @id @default(autoincrement())
-  containerId     String
+  id              Int       @id @default(autoincrement())
+  containerId     String    @db.Uuid
   container       Container @relation("SharedFolder", fields: [containerId], references: [id], onDelete: Cascade)
 
-  senderId        String   // Not necessarily the owner of the container
-  sender          User    @relation("Sender", fields: [senderId], references: [id])
+  senderId        String    @db.Uuid
+  sender          User      @relation("Sender", fields: [senderId], references: [id])
 
   // There are two ways to access a Share.
   // A User can accept an Invitation.
@@ -118,7 +116,7 @@ model Invitation {
   share         Share   @relation(fields: [shareId], references: [id], onDelete: Cascade)
   wrappedKey    String  // Container key wrapped with recipient publicKey
 
-  recipientId   String
+  recipientId   String  @db.Uuid
   recipient     User    @relation("Recipient", fields: [recipientId], references: [id])
   status        InvitationStatus @default(PENDING)
 
@@ -170,7 +168,7 @@ enum ContainerType {
 }
 
 model Container {
-  id        String            @id @default(uuid()) @unique
+  id        String            @id @default(uuid()) @unique @db.Uuid
   name      String
   createdAt DateTime?
   updatedAt DateTime?
@@ -179,13 +177,13 @@ model Container {
   shareOnly Boolean         @default(false)
   shares    Share[]         @relation("SharedFolder")
 
-  ownerId   String
+  ownerId   String          @db.Uuid
   owner     User            @relation(fields: [ownerId], references: [id])
   groupId   Int             @unique
   group     Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
   items     Item[]
   wrappedKey  String? // this container's key, wrapped using the parent's key
-  parentId  String?
+  parentId  String?         @db.Uuid
   parent    Container?      @relation("Nesting", fields: [parentId], references: [id])
   children  Container[]     @relation("Nesting")
 
@@ -201,30 +199,23 @@ model Item {
   id            Int           @id @default(autoincrement())
   name          String
   wrappedKey    String
-  containerId   String
+  containerId   String        @db.Uuid
   container     Container     @relation(fields: [containerId], references: [id], onDelete: Cascade)
-  uploadId      String
+  uploadId      String        @db.Uuid
   // Do not cascade, since uploads can exist in different Containers as
   // different Items
-  upload        Upload          @relation(fields: [uploadId], references: [id] )
+  upload        Upload        @relation(fields: [uploadId], references: [id] )
   type          ItemType
   createdAt     DateTime?
-  updatedAt     DateTime?
-  // unique "file names" in a container
-  // @@unique([name, containerId])
-
-  // You could make threads by uncommenting the following:
-  // parentId  Int?
-  // parent    Item?      @relation("Nesting", fields: [parentId], references: [id])
-  // children  Item[]     @relation("Nesting")
+  updatedAt     DateTime? 
 
   tags      Tag[]
 }
 
 model Upload {
-  id        String        @id @default(uuid())
+  id        String        @id @default(uuid()) @db.Uuid
   size      Int
-  ownerId   String
+  ownerId   String        @db.Uuid
   owner     User          @relation(fields: [ownerId], references: [id])
   items     Item[]        // A single Upload may back multiple Items
   type      String        // mime type
