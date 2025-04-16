@@ -74,6 +74,15 @@ export async function requireJWT(
     return next();
   }
 
+  // When refresh token is invalid, we should return 403 and ask to login
+  if (validationResult === 'shouldLogin') {
+    return res.status(403).json({
+      message: `Not authorized: Refresh token expired`,
+    });
+  }
+
+  // When the refresh token is valid but the token is not, we should return 401
+  // this is handled as autoretry in the client
   if (validationResult === 'shouldRefresh') {
     return res.status(401).json({
       message: `Not authorized: Token expired`,
