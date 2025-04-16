@@ -33,8 +33,7 @@ export async function isAuthed(opts: { ctx: Context; next: NextFunction }) {
     throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
 
-  // If validation fails or if refresh token is not valid, we return FORBIDDEN
-  if (!validationResult || validationResult === 'shouldLogin') {
+  if (!validationResult) {
     throw new TRPCError({ code: 'FORBIDDEN' });
   }
 }
