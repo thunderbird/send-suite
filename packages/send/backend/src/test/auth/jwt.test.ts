@@ -44,10 +44,13 @@ describe('validateJWT', () => {
   });
 
   it('should return shouldRefresh when token verification fails', () => {
-    vi.mocked(getJWTfromToken).mockReturnValue('invalid-token');
-    vi.mocked(jwt.verify).mockImplementation(() => {
-      throw new Error('Token invalid');
-    });
+    vi.resetAllMocks();
+    vi.mocked(getJWTfromToken).mockReturnValue('valid-token');
+    vi.mocked(jwt.verify)
+      .mockImplementationOnce(() => ({}) as never) // first call succeeds
+      .mockImplementationOnce(() => {
+        throw new Error('Token invalid');
+      }); // second call throws
 
     const result = validateJWT({
       jwtToken: 'invalid-token',
@@ -55,5 +58,19 @@ describe('validateJWT', () => {
     });
 
     expect(result).toBe('shouldRefresh');
+  });
+
+  it('should return null when refresh token is not valid', () => {
+    vi.mocked(getJWTfromToken).mockReturnValue('invalid-refresh-token');
+    vi.mocked(jwt.verify).mockImplementation(() => {
+      throw new Error('Token invalid');
+    });
+
+    const result = validateJWT({
+      jwtToken: 'valid-token',
+      jwtRefreshToken: 'invalid-refresh-token',
+    });
+
+    expect(result).toBe('shouldLogin');
   });
 });

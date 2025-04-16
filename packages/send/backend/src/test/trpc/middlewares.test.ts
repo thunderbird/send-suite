@@ -41,6 +41,15 @@ describe('Middleware tests', () => {
       );
     });
 
+    it('should throw FORBIDDEN error when token needs refresh', async () => {
+      vi.mocked(jwt.validateJWT).mockReturnValue('shouldLogin');
+
+      //@ts-ignore
+      await expect(isAuthed({ ctx: mockCtx, next: mockNext })).rejects.toThrow(
+        new TRPCError({ code: 'FORBIDDEN' })
+      );
+    });
+
     it('should throw FORBIDDEN error when validation fails', async () => {
       vi.mocked(jwt.validateJWT).mockReturnValue(null);
 

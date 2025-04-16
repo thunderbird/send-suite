@@ -9,7 +9,7 @@ type Args = {
 /**
  * The output is either 'valid' or 'shouldRefresh' or null. No other string is possible.
  **/
-type ValidationResult = 'valid' | 'shouldRefresh' | null;
+type ValidationResult = 'valid' | 'shouldRefresh' | 'shouldLogin' | null;
 
 /**
  * This function validates the JWT token and returns a string indicating whether the token is valid or not.
@@ -29,12 +29,18 @@ export const validateJWT = ({
     return null;
   }
 
+  // validate refresh token
+  try {
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+  } catch {
+    return 'shouldLogin';
+  }
+  // validate access token
   try {
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    return 'valid';
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error) {
+  } catch {
     // catch error and try to refresh token
     return 'shouldRefresh';
   }
+  return 'valid';
 };
