@@ -122,15 +122,13 @@ export const getGroupMemberPermissions: RequestHandler = async (
   const { id: userId } = getDataFromAuthenticatedRequest(req);
   const containerId = extractContainerId(req);
 
-  if (userId) {
-    // Users have full permissions to their own top-level
-    console.log(`
-*************************************************************************************
-WARNING: this check needs to be more robust (in middleware.getGroupMemberPermissions)
-Adding full permissions assuming user is operating on their own top-level, when there
-is a user and containerId === 0
-*************************************************************************************
-    `);
+  /* 
+  Users have full permissions to their own top-level (aka root folder)
+  Whenever a request doesn't contain a containerId, we assume it's a top-level folder
+  This happens client side when creating a new folder that doesn't have a parent
+  It also happens when a new account is created and we create a default folder
+ */
+  if (userId && !containerId) {
     req[PERMISSION_REQUEST_KEY] = allPermissions();
     next();
     return;
