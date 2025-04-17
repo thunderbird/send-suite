@@ -7,7 +7,7 @@ import {
   Share,
   UserTier,
 } from '@prisma/client';
-import { randomBytes } from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 
 import { MAX_ACCESS_LINK_RETRIES } from '@/config';
 import {
@@ -29,7 +29,6 @@ import {
 } from '../errors/models';
 import { addGroupMember } from '../models';
 import storage from '../storage';
-import { base64url } from '../utils';
 import { fromPrismaV2 } from './prisma-helper';
 const prisma = new PrismaClient();
 
@@ -91,7 +90,7 @@ export async function createAccessLink(
     share = existingShare;
   }
 
-  const id = base64url(randomBytes(64));
+  const id = uuidv4();
   const expiryDate = expiration ? new Date(expiration) : null;
 
   const accessLinkQuery = {

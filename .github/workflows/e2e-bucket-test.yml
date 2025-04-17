@@ -1,0 +1,91 @@
+---
+name: e2e-bucket-tests
+
+concurrency:
+  group: e2e-bucket-tests
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - "**"
+      - "!main"
+
+permissions:
+  contents: read
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    env:
+      IS_CI_AUTOMATION: "yes"
+    outputs:
+      backend-changed: ${{ steps.check.outputs.backend-changed }}
+      iac-changed: ${{ steps.check.outputs.iac-changed }}
+      frontend-changed: ${{ steps.check.outputs.frontend-changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: dorny/paths-filter@v3
+        id: check
+        with:
+          filters: |
+            backend-changed:
+              - 'packages/send/backend/**'
+            iac-changed:
+              - 'packages/send/pulumi/**'
+              - '.github/workflows/validate.yml'
+            frontend-changed:
+              - 'packages/send/frontend/**'
+  end-to-end-tests:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.backend-changed == 'true' || needs.detect-changes.outputs.frontend-changed == 'true'
+    runs-on: ubuntu-latest
+    env:
+      IS_CI_AUTOMATION: "yes"
+    strategy:
+      matrix:
+        node-version: ["22"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Set up environments and install dependencies
+        id: setup-and-install-dependencies
+        shell: bash
+        run: |
+          npm install -g pnpm
+          npm install -g bun
+          pnpm i --filter "send-*"
+
+          cd packages/send
+          # Setup local environment (use public login)
+          echo Y | pnpm setup:local
+          cd backend
+          # Add bucket vars
+          sed -i "s/^B2_REGION=$/B2_REGION=${{ vars.TEST_B2_REGION }}/" .env
+          sed -i "s/^B2_ENDPOINT=$/B2_ENDPOINT=$B2_ENDPOINT/" .env
+          sed -i "s/^B2_APPLICATION_KEY=$/B2_APPLICATION_KEY=$APP_KEY/" .env
+          sed -i "s/^B2_BUCKET_NAME=$/B2_BUCKET_NAME=${{ vars.TEST_B2_BUCKET_NAME }}/" .env
+          sed -i "s/^B2_APPLICATION_KEY_ID=$/B2_APPLICATION_KEY_ID=${{ secrets.TEST_B2_APPLICATION_KEY_ID }}/" .env
+          sed -i "s/^STORAGE_BACKEND=b2=$/STORAGE_BACKEND=b2=b2/" .env
+
+      - name: Run stack and test
+        id: run-stack-and-test
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          lerna run build-image:backend --scope=send-suite
+          lerna run test:e2e:ci --scope=send-suite
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: packages/send/playwright-report/
+          retention-days: 30
