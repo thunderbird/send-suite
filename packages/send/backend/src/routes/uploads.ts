@@ -1,5 +1,5 @@
-import crypto from 'crypto';
 import { Router } from 'express';
+import { v4 as uuidv4 } from 'uuid';
 
 import {
   addErrorHandling,
@@ -94,77 +94,42 @@ router.post(
 
 /**
  * @openapi
- * /api/uploads/{uploadId}/done:
+ * /api/uploads/signed:
  *   post:
- *     summary: Mark an upload as complete
+ *     summary: Get a pre-signed URL for uploading
  *     tags: [Uploads]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: uploadId
- *         required: true
- *         schema:
- *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               type:
+ *                 type: string
  *     responses:
  *       200:
- *         description: Upload marked as complete
- *       400:
- *         description: Failed to mark upload as complete
- */
-
-/**
- * @openapi
- * /api/uploads/{uploadId}:
- *   delete:
- *     summary: Delete an upload
- *     tags: [Uploads]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: uploadId
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Upload deleted successfully
- *       404:
- *         description: Upload not found
- */
-
-/**
- * @openapi
- * /api/uploads/{uploadId}/download:
- *   get:
- *     summary: Download an upload
- *     tags: [Uploads]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: uploadId
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Upload downloaded successfully
+ *         description: Pre-signed URL generated successfully
  *         content:
- *           application/octet-stream:
+ *           application/json:
  *             schema:
- *               type: string
- *               format: binary
- *       404:
- *         description: Upload not found
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 url:
+ *                   type: string
+ *       500:
+ *         description: Failed to generate pre-signed URL
  */
 router.post(
   '/signed',
   requireJWT,
   addErrorHandling(UPLOAD_ERRORS.NO_BUCKET),
   wrapAsyncHandler(async (req, res) => {
-    const uploadId = crypto.randomBytes(24).toString('hex');
+    const uploadId = uuidv4();
     const { type } = req.body;
     try {
       const url = await storage.getUploadBucketUrl(uploadId, type);
@@ -176,6 +141,32 @@ router.post(
   })
 );
 
+/**
+ * @openapi
+ * /api/uploads/{id}/stat:
+ *   get:
+ *     summary: Get the statistics of an upload by ID
+ *     tags: [Uploads]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the upload
+ *     responses:
+ *       200:
+ *         description: Upload statistics retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 size:
+ *                   type: integer
+ *       404:
+ *         description: Upload not found
+ */
 router.get(
   '/:id/stat',
   addErrorHandling(UPLOAD_ERRORS.FILE_NOT_FOUND),
@@ -187,9 +178,33 @@ router.get(
     });
   })
 );
-// TODO: decide whether it's a security risk not to protect this route.
-// I feel like it is, but it doesn't pertain to anything "perimssion-able".
-// i.e., permissions are applied to containers, not to uploads.
+
+/**
+ * @openapi
+ * /api/uploads/{id}/size:
+ *   get:
+ *     summary: Get the size of an upload by ID
+ *     tags: [Uploads]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the upload
+ *     responses:
+ *       200:
+ *         description: Upload size retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 size:
+ *                   type: integer
+ *       404:
+ *         description: Upload not found
+ */
 router.get(
   '/:id/size',
   addErrorHandling(UPLOAD_ERRORS.FILE_NOT_FOUND),
@@ -202,10 +217,36 @@ router.get(
   })
 );
 
-// TODO: decide whether it's a security risk not to protect this route.
-// I feel like it is, but it doesn't pertain to anything "perimssion-able".
-// i.e., permissions are applied to containers, not to uploads.
+/**
+ * @openapi
+ * /api/uploads/{id}/metadata:
+ *   get:
+ *     summary: Get the metadata of an upload by ID
+ *     tags: [Uploads]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the upload
+ *     responses:
+ *       200:
+ *         description: Upload metadata retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 metadata:
+ *                   type: object
+ *       404:
+ *         description: Upload not found
+ */
 router.get(
+  // TODO: decide whether it's a security risk not to protect this route.
+  // I feel like it is, but it doesn't pertain to anything "perimssion-able".
+  // i.e., permissions are applied to containers, not to uploads.
   '/:id/metadata',
   addErrorHandling(UPLOAD_ERRORS.FILE_NOT_FOUND),
   wrapAsyncHandler(async (req, res) => {

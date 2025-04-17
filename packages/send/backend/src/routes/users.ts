@@ -35,6 +35,7 @@ const router: Router = Router();
  * @swagger
  * /api/users/me:
  *   get:
+ *     tags: [Users]
  *     summary: Get current user information
  *     description: Retrieves the logged-in user from the current session
  *     security:
@@ -77,6 +78,7 @@ router.get(
  * @swagger
  * /api/users/publickey/{id}:
  *   get:
+ *     tags: [Users]
  *     summary: Get user's public key
  *     description: Retrieves the public key for a specific user
  *     security:
@@ -112,6 +114,7 @@ router.get(
  * @swagger
  * /api/users/publickey:
  *   post:
+ *     tags: [Users]
  *     summary: Update user's public key
  *     description: Updates the public key for the authenticated user
  *     security:
@@ -158,6 +161,7 @@ router.post(
  * @swagger
  * /api/users/folders:
  *   get:
+ *     tags: [Users]
  *     summary: Get user's folders
  *     description: Retrieves all folders for the authenticated user
  *     security:
@@ -187,6 +191,7 @@ router.get(
  * @swagger
  * /api/users/lookup/{email}:
  *   get:
+ *     tags: [Users]
  *     summary: Lookup user by email
  *     description: Retrieves user information by email address
  *     security:
@@ -223,6 +228,7 @@ router.get(
  * @swagger
  * /api/users/login:
  *   post:
+ *     tags: [Users]
  *     summary: User login
  *     description: Authenticates and logs in a user
  *     security:
@@ -253,6 +259,7 @@ router.post(
  * @swagger
  * /api/users/{userId}/containers:
  *   get:
+ *     tags: [Users]
  *     summary: Get all user containers
  *     description: Retrieves all containers for a specific user
  *     security:
@@ -285,6 +292,7 @@ router.get(
  * @swagger
  * /api/users/{userId}/conversations:
  *   get:
+ *     tags: [Users]
  *     summary: Get user conversations
  *     description: Retrieves all conversations for a specific user
  *     security:
@@ -320,6 +328,7 @@ router.get(
  * @swagger
  * /api/users/{userId}/activity:
  *   get:
+ *     tags: [Users]
  *     summary: Get user activity
  *     description: Retrieves recent activity for a specific user
  *     security:
@@ -352,6 +361,7 @@ router.get(
  * @swagger
  * /api/users/{userId}/folders/sharedByUser:
  *   get:
+ *     tags: [Users]
  *     summary: Get folders shared by user
  *     description: Retrieves all folders that a user has shared with others
  *     security:
@@ -392,6 +402,7 @@ router.get(
  * @swagger
  * /api/users/{userId}/folders/sharedWithUser:
  *   get:
+ *     tags: [Users]
  *     summary: Get folders shared with user
  *     description: Retrieves all folders that have been shared with a user
  *     security:
@@ -428,6 +439,7 @@ router.get(
  * @swagger
  * /api/users/{userId}/invitations:
  *   get:
+ *     tags: [Users]
  *     summary: Get user invitations
  *     security:
  *       - bearerAuth: []
@@ -460,6 +472,7 @@ router.get(
  * @swagger
  * /api/users/{id}/backup:
  *   post:
+ *     tags: [Users]
  *     summary: Create user backup
  *     description: Creates a backup for a specific user
  *     security:
@@ -511,6 +524,7 @@ router.post(
  * @swagger
  * /api/users/backup:
  *   post:
+ *     tags: [Users]
  *     summary: Create authenticated user backup
  *     description: Creates a backup for the authenticated user
  *
@@ -556,6 +570,7 @@ router.post(
  * @swagger
  * /api/users/backup:
  *   get:
+ *     tags: [Users]
  *     summary: Get authenticated user backup
  *     description: Retrieves the backup for the authenticated user
  *     security:
@@ -581,6 +596,7 @@ router.get(
  * @swagger
  * /api/users/{id}/backup:
  *   get:
+ *     tags: [Users]
  *     summary: Get user backup
  *     description: Retrieves the backup for a specific user
  *     security:
