@@ -119,7 +119,15 @@ export const getGroupMemberPermissions: RequestHandler = async (
     return reject(res);
   }
 
-  const { id: userId } = getDataFromAuthenticatedRequest(req);
+  let userId: string;
+  try {
+    const userData = getDataFromAuthenticatedRequest(req);
+    userId = userData.id;
+  } catch (error) {
+    console.error('Error getting user data:', error);
+    return reject(res);
+  }
+
   const containerId = extractContainerId(req);
 
   /* 
