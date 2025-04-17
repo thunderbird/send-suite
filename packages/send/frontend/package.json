@@ -90,7 +90,7 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.29.1",
     "typescript-language-server": "^3.3.2",
-    "vite": ">=5.4.17",
+    "vite": ">=6.2.6",
     "vitest": "^3.1.1",
     "vitest-localstorage-mock": "^0.0.1",
     "vitest-websocket-mock": "^0.4.0",
