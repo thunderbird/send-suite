@@ -18,7 +18,6 @@ import {
 import {
   getAllUserGroupContainers,
   getBackup,
-  getRecentActivity,
   getUserByEmail,
   getUserById,
   getUserPublicKey,
@@ -320,39 +319,6 @@ router.get(
       userId,
       ContainerType.CONVERSATION
     );
-    res.status(200).json(containers);
-  })
-);
-
-/**
- * @swagger
- * /api/users/{userId}/activity:
- *   get:
- *     tags: [Users]
- *     summary: Get user activity
- *     description: Retrieves recent activity for a specific user
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: userId
- *         required: true
- *         schema:
- *           type: integer
- *         description: User ID
- *     responses:
- *       200:
- *         description: Activity retrieved successfully
- *       404:
- *         description: Activity not found
- */
-router.get(
-  '/:userId/activity',
-  requireJWT,
-  addErrorHandling(USER_ERRORS.HISTORY_NOT_FOUND),
-  wrapAsyncHandler(async (req, res) => {
-    const { userId } = req.params;
-    const containers = await getRecentActivity(userId, ContainerType.FOLDER);
     res.status(200).json(containers);
   })
 );

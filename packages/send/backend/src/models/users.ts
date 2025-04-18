@@ -5,7 +5,7 @@ import {
   USER_NOT_FOUND,
   USER_NOT_UPDATED,
 } from '../errors/models';
-import { fromPrisma, fromPrismaV2, itemsIncludeOptions } from './prisma-helper';
+import { fromPrismaV2, itemsIncludeOptions } from './prisma-helper';
 const prisma = new PrismaClient();
 
 export async function createUser(
@@ -277,45 +277,6 @@ export async function getAllUserGroupContainers(
     },
   };
   return await fromPrismaV2(prisma.container.findMany, query);
-}
-
-export async function getRecentActivity(
-  userId: string,
-  type: ContainerType | null
-) {
-  // Get all containers
-  const containerWhere = await _whereContainer(userId, type);
-  const query = {
-    take: 10,
-    where: containerWhere,
-    orderBy: [
-      {
-        updatedAt: 'desc',
-      },
-      {
-        name: 'asc',
-      },
-    ],
-    select: {
-      id: true,
-      name: true,
-      createdAt: true,
-      updatedAt: true,
-      type: true,
-      shareOnly: true,
-      items: {
-        select: {
-          id: true,
-          name: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      },
-    },
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return await fromPrisma(prisma.container.findMany as any, query);
 }
 
 export async function getBackup(id: string) {

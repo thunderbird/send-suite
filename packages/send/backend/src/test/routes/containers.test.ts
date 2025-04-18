@@ -1,5 +1,5 @@
-import { flattenDescendants, TreeNode } from '@/routes/containers';
 import { describe, expect, it } from 'vitest';
+import { flattenDescendants, TreeNode } from '../../../src/routes/containers';
 
 const containerNoChild: TreeNode = {
   id: '1',
