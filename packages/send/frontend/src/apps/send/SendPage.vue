@@ -9,6 +9,7 @@ import useUserStore from '@/stores/user-store';
 import { onMounted } from 'vue';
 import { ModalsContainer } from 'vue-final-modal';
 import CompatibilityBanner from '../common/CompatibilityBanner.vue';
+import CompatibilityBoundary from '../common/CompatibilityBoundary.vue';
 import ErrorBoundary from '../common/ErrorBoundary.vue';
 import { INIT_ERRORS } from './const';
 
@@ -46,8 +47,10 @@ updateMetricsIdentity();
 
 <template>
   <ErrorBoundary>
-    <CompatibilityBanner />
-    <router-view></router-view>
-    <ModalsContainer />
+    <CompatibilityBoundary>
+      <CompatibilityBanner />
+      <router-view></router-view>
+      <ModalsContainer />
+    </CompatibilityBoundary>
   </ErrorBoundary>
 </template>

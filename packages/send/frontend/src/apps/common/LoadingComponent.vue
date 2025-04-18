@@ -3,7 +3,7 @@ import SpinnerAnimated from '../send/components/SpinnerAnimated.vue';
 </script>
 
 <template>
-  <div class="loading">
+  <div class="loading" data-tesid="loading">
     <SpinnerAnimated />
   </div>
 </template>

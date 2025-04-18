@@ -1,3 +1,4 @@
+import { getByTestId } from '@/lib/testUtils';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import CompatibilityBanner from './CompatibilityBanner.vue';
@@ -11,10 +12,6 @@ vi.mock('../send/stores/config-store', () => ({
     isProd: isProd(),
   }),
 }));
-
-function getByTestId(id) {
-  return `[data-testid="${id}"]`;
-}
 
 // Mock trpc
 vi.mock('@/lib/trpc', () => ({
@@ -78,18 +75,6 @@ describe('CompatibilityBanner.vue', () => {
     );
 
     expect(loadingBanner.exists()).toBe(true);
-  });
-
-  it('should show force update banner when compatibility is FORCE_UPDATE', async () => {
-    isProd.mockReturnValue(true);
-    queryResults.mockReturnValue({
-      compatibility: { result: 'FORCE_UPDATE' },
-    });
-
-    const wrapper = mount(CompatibilityBanner);
-    const forceUpdateBanner = wrapper.find(getByTestId('force-update-banner'));
-
-    expect(forceUpdateBanner.exists()).toBe(true);
   });
 
   it('should show prompt update banner when compatibility is PROMPT_UPDATE', async () => {
