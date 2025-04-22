@@ -276,9 +276,9 @@ You can run the test suite on UI Mode. UI Mode lets you explore, run, and debug 
 1. Run `lerna run dev:detach --scope=send-suite`
 2. Run `lerna run test:e2e:ui --scope=send-suite`
 
-### Headed mode
+### Headless mode
 
-If you want to see the tests running, you can use headed mode by running.
+If you want to run the tests just as they run on CI (headless mode), do the following.
 
 ```sh
 lerna run dev:detach --scope=send-suite
