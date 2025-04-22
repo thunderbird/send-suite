@@ -20,6 +20,7 @@ import useMetricsStore from '@/stores/metrics';
 import { useQuery } from '@tanstack/vue-query';
 import { ModalsContainer } from 'vue-final-modal';
 import CompatibilityBanner from '../common/CompatibilityBanner.vue';
+import CompatibilityBoundary from '../common/CompatibilityBoundary.vue';
 import LoadingComponent from '../common/LoadingComponent.vue';
 import SecureSendIcon from '../common/SecureSendIcon.vue';
 import TBBanner from '../common/TBBanner.vue';
@@ -142,30 +143,32 @@ async function finishLogin() {
 
 <template>
   <div id="send-page" class="container">
-    <CompatibilityBanner />
-    <TBBanner />
-    <div v-if="isLoading">
-      <LoadingComponent />
-    </div>
-
-    <div v-else>
-      <div v-if="isLoggedIn">
-        <UserDashboard :log-out="logOut" />
-        <BackupAndRestore />
+    <CompatibilityBoundary>
+      <CompatibilityBanner />
+      <TBBanner />
+      <div v-if="isLoading">
+        <LoadingComponent />
       </div>
+
       <div v-else>
-        <Btn
-          primary
-          data-testid="login-button"
-          @click.prevent="loginToMozAccount"
-          >Log into Mozilla Account</Btn
-        >
+        <div v-if="isLoggedIn">
+          <UserDashboard :log-out="logOut" />
+          <BackupAndRestore />
+        </div>
+        <div v-else>
+          <Btn
+            primary
+            data-testid="login-button"
+            @click.prevent="loginToMozAccount"
+            >Log into Mozilla Account</Btn
+          >
+        </div>
       </div>
-    </div>
 
-    <FeedbackBox />
-    <SecureSendIcon />
-    <ModalsContainer />
+      <FeedbackBox />
+      <SecureSendIcon />
+      <ModalsContainer />
+    </CompatibilityBoundary>
   </div>
 </template>
 

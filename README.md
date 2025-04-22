@@ -269,6 +269,12 @@ cp .env .env.backup
 
 2. Set your environment variables by running `lerna run setup:local`
 
+3. Make sure you install playwright's dependencies by running:
+
+```sh
+pnpm --filter=send-suite exec playwright install
+```
+
 #### UI mode
 
 You can run the test suite on UI Mode. UI Mode lets you explore, run, and debug tests with a time travel experience complete with a watch mode. All test files are displayed in the testing sidebar, allowing you to expand each file and describe block to individually run, view, watch, and debug each test.
@@ -276,9 +282,9 @@ You can run the test suite on UI Mode. UI Mode lets you explore, run, and debug 
 1. Run `lerna run dev:detach --scope=send-suite`
 2. Run `lerna run test:e2e:ui --scope=send-suite`
 
-### Headed mode
+### Headless mode
 
-If you want to see the tests running, you can use headed mode by running.
+If you want to run the tests just as they run on CI (headless mode), do the following.
 
 ```sh
 lerna run dev:detach --scope=send-suite

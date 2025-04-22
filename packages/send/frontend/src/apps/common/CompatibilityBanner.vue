@@ -19,9 +19,6 @@ function close() {
 }
 
 const compatibility = computed(() => {
-  if (data?.value?.compatibility.result === 'FORCE_UPDATE') {
-    return 'FORCE_UPDATE';
-  }
   if (data?.value?.compatibility.result === 'PROMPT_UPDATE') {
     return 'PROMPT_UPDATE';
   }
@@ -41,16 +38,6 @@ const compatibility = computed(() => {
     <div v-else>
       <div v-if="isLoading" data-testid="loading-compatibility-banner"></div>
       <div v-else>
-        <div
-          v-if="compatibility === 'FORCE_UPDATE'"
-          data-testid="force-update-banner"
-        >
-          <p class="critical">
-            You are using an outdated version of Thunderbird Send. Please update
-            to make sure the application works correctly.
-          </p>
-          <CloseButton :close="close" />
-        </div>
         <div
           v-if="compatibility === 'PROMPT_UPDATE'"
           data-testid="prompt-update-banner"
@@ -72,10 +59,6 @@ header {
 }
 p {
   font-weight: bold;
-}
-.critical {
-  background: var(--colour-ti-critical);
-  padding: 1rem;
 }
 .warning {
   background: var(--colour-warning-default);

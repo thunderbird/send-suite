@@ -11,6 +11,7 @@ import useApiStore from '@/stores/api-store';
 import useMetricsStore from '@/stores/metrics';
 import { ModalsContainer } from 'vue-final-modal';
 import CompatibilityBanner from '../common/CompatibilityBanner.vue';
+import CompatibilityBoundary from '../common/CompatibilityBoundary.vue';
 import SecureSendIcon from '../common/SecureSendIcon.vue';
 import StatusBar from '../common/StatusBar.vue';
 import TBBanner from '../common/TBBanner.vue';
@@ -35,13 +36,15 @@ useMetricsUpdate();
 
 <template>
   <div id="send-page" class="container">
-    <CompatibilityBanner />
-    <TBBanner />
-    <PopupView />
-    <SecureSendIcon />
-    <FeedbackBox />
-    <StatusBar />
-    <ModalsContainer />
+    <CompatibilityBoundary>
+      <CompatibilityBanner />
+      <TBBanner />
+      <PopupView />
+      <SecureSendIcon />
+      <FeedbackBox />
+      <StatusBar />
+      <ModalsContainer />
+    </CompatibilityBoundary>
   </div>
 </template>
 
