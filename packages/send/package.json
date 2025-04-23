@@ -18,9 +18,29 @@
     "sort-package-json": "sort-package-json",
     "test:e2e": "pnpm exec playwright test --headed",
     "test:e2e:ci": "./scripts/e2e.sh",
-    "test:e2e:ui": "pnpm exec playwright test --ui",
     "test:e2e:coverage": "nyc --reporter=lcov --reporter=text pnpm exec playwright test",
-    "test:e2e:coverage:ci": "nyc --reporter=lcov --reporter=text ./scripts/e2e.sh"
+    "test:e2e:coverage:ci": "nyc --reporter=lcov --reporter=text ./scripts/e2e.sh",
+    "test:e2e:ui": "pnpm exec playwright test --ui"
+  },
+  "nyc": {
+    "all": true,
+    "exclude": [
+      "**/*.d.ts",
+      "**/*.test.ts",
+      "**/*.spec.ts",
+      "**/node_modules/**",
+      "**/coverage/**"
+    ],
+    "extension": [
+      ".ts",
+      ".tsx",
+      ".js",
+      ".jsx"
+    ],
+    "reporter": [
+      "lcov",
+      "text"
+    ]
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",
@@ -33,25 +53,5 @@
     "bun": "1.1.13",
     "node": ">=22.11.0",
     "pnpm": ">=10.6.4"
-  },
-  "nyc": {
-    "extension": [
-      ".ts",
-      ".tsx",
-      ".js",
-      ".jsx"
-    ],
-    "exclude": [
-      "**/*.d.ts",
-      "**/*.test.ts",
-      "**/*.spec.ts",
-      "**/node_modules/**",
-      "**/coverage/**"
-    ],
-    "reporter": [
-      "lcov",
-      "text"
-    ],
-    "all": true
   }
 }
