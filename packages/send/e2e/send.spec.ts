@@ -10,6 +10,11 @@ import {
 } from "./pages/myFiles";
 import { setup_browser } from "./testUtils";
 
+export type PlaywrightProps = {
+  context: BrowserContext;
+  page: Page;
+};
+
 export const storageStatePath = path.resolve(
   __dirname,
   "../data/lockboxstate.json"
@@ -19,73 +24,53 @@ const emptyState = {
   origins: [],
 };
 
-export type PlaywrightProps = {
-  context: BrowserContext;
-  page: Page;
-};
+// Configure tests to run serially with retries
+test.describe.configure({ mode: "serial", retries: 3 });
 
-(async () => {
-  test.describe.configure({ mode: "serial", retries: 3 });
+// Cleanup storage state after all tests
+test.afterAll(async () => {
+  fs.writeFileSync(storageStatePath, JSON.stringify(emptyState));
+});
 
-  test.afterAll(async () => {
-    fs.writeFileSync(storageStatePath, JSON.stringify(emptyState));
+// Authentication-related tests
+const authTests = [
+  { title: "Register and log in", path: "/send", action: register_and_login },
+  {
+    title: "Restores keys",
+    path: "/send/profile",
+    action: log_out_restore_keys,
+  },
+];
+
+test.describe("Authentication", () => {
+  authTests.forEach(({ title, path, action }) => {
+    test(title, async () => {
+      const { context, page } = await setup_browser();
+      await page.goto(path);
+      await action({ context, page });
+    });
   });
+});
 
-  test("Register and log in", async () => {
-    const { context, page } = await setup_browser();
-    // Go to main page
-    await page.goto("http://localhost:5173/send");
-    await register_and_login({ context, page });
-  });
+// File workflow tests with shared setup
+test.describe("File workflows", () => {
+  let page: Page;
+  let context: BrowserContext;
 
-  test("Restores keys", async () => {
-    const { page, context } = await setup_browser();
-    // Go to main page
-    await page.goto("http://localhost:5173/send/profile");
-    await log_out_restore_keys({ page, context });
-  });
-
-  test("Share links", async () => {
-    const { page, context } = await setup_browser();
-
-    // Go to main page
-    await page.goto("http://localhost:5173/send");
-
+  test.beforeEach(async () => {
+    ({ page, context } = await setup_browser());
+    await page.goto("/send");
     await expect(page).toHaveTitle(/Thunderbird Send/);
-
-    await share_links({ page, context });
   });
 
-  test("Upload workflow", async () => {
-    const { page, context } = await setup_browser();
+  const workflows = [
+    { title: "Share links", action: share_links },
+    { title: "Upload workflow", action: upload_workflow },
+    { title: "Download workflow", action: download_workflow },
+    { title: "Delete files", action: delete_file },
+  ];
 
-    // Go to main page
-    await page.goto("http://localhost:5173/send");
-
-    await expect(page).toHaveTitle(/Thunderbird Send/);
-
-    await upload_workflow({ page, context });
+  workflows.forEach(({ title, action }) => {
+    test(title, async () => await action({ page, context }));
   });
-
-  test("Download workflow", async () => {
-    const { page, context } = await setup_browser();
-
-    // Go to main page
-    await page.goto("http://localhost:5173/send");
-
-    await expect(page).toHaveTitle(/Thunderbird Send/);
-
-    await download_workflow({ page, context });
-  });
-
-  test("Delete files", async () => {
-    const { page, context } = await setup_browser();
-
-    // Go to main page
-    await page.goto("http://localhost:5173/send");
-
-    await expect(page).toHaveTitle(/Thunderbird Send/);
-
-    await delete_file({ page, context });
-  });
-})();
+});

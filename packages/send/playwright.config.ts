@@ -25,20 +25,42 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    // baseURL: 'http://127.0.0.1:3000',
+    baseURL: "http://localhost:5173",
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
     actionTimeout: 10_000,
     screenshot: "only-on-failure",
     video: "retain-on-failure",
+
+    /* Context settings */
+    contextOptions: {
+      ignoreHTTPSErrors: true,
+      viewport: { width: 1280, height: 720 },
+      acceptDownloads: true,
+      // Default permissions that should work across browsers
+      permissions: ["geolocation"],
+      // Recommended defaults for better stability
+      serviceWorkers: "block",
+      bypassCSP: true,
+    },
   },
 
   /* Configure projects for major browsers */
   projects: [
     {
       name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
+      use: {
+        ...devices["Desktop Firefox"],
+        // Firefox-specific settings
+        launchOptions: {
+          firefoxUserPrefs: {
+            "dom.push.enabled": false,
+            "dom.webnotifications.enabled": false,
+            "privacy.trackingprotection.enabled": false,
+          },
+        },
+      },
     },
 
     // {

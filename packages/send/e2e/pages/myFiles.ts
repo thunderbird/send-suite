@@ -2,13 +2,14 @@ import { expect } from "@playwright/test";
 import { fileLocators } from "../locators";
 import { PlaywrightProps } from "../send.spec";
 import {
+  create_incognito_context,
   downloadFirstFile,
   dragAndDropFile,
   playwrightConfig,
   saveClipboardItem,
 } from "../testUtils";
 
-const { email, password, timeout, shareLinks } = playwrightConfig;
+const { password, timeout, shareLinks } = playwrightConfig;
 
 export async function upload_workflow({ page }: PlaywrightProps) {
   const {
@@ -70,6 +71,7 @@ export async function share_links({ page }: PlaywrightProps) {
   // Create share link without password
   await sharelinkButton.click();
   await linksResponse;
+  await page.waitForLoadState("networkidle");
 
   expect(await firstLink.inputValue()).toContain("/share/");
   await saveClipboardItem(page);
@@ -82,32 +84,67 @@ export async function share_links({ page }: PlaywrightProps) {
   await passwordInput.fill(password);
   await sharelinkButton.click();
   await linksResponse;
+  await page.waitForLoadState("networkidle");
   await saveClipboardItem(page);
 
-  // Check that the password badge renders properly
-  expect(
-    await createdShareLinkWithPassword
-      .getByTestId(linkWithPasswordID)
-      .textContent()
-  ).toContain("Password");
+  // Wait for the password badge to be visible and check its content
+  await createdShareLinkWithPassword.waitFor({ state: "visible" });
+  const passwordBadge =
+    createdShareLinkWithPassword.getByTestId(linkWithPasswordID);
+  await passwordBadge.waitFor({ state: "visible" });
+  expect(await passwordBadge.textContent()).toContain("Password");
 }
 
 export async function download_workflow({ page, context }: PlaywrightProps) {
   const { submitButtonID, passwordInputID } = fileLocators(page);
 
-  // Download file without password
+  // Store URLs before using them
+  const [regularUrl, passwordUrl] = [shareLinks[0], shareLinks[1]];
+
+  // Regular window downloads
   let otherPage = await context.newPage();
-  await otherPage.goto(shareLinks.shift()!);
+  await otherPage.goto(regularUrl);
   await downloadFirstFile(otherPage);
   await otherPage.close();
 
-  // Download file with password
   otherPage = await context.newPage();
-  await otherPage.goto(shareLinks.shift()!);
+  await otherPage.goto(passwordUrl);
   await otherPage.getByTestId(passwordInputID).fill(password);
   await otherPage.getByTestId(submitButtonID).click();
   await downloadFirstFile(otherPage);
   await otherPage.close();
+
+  // Incognito window downloads
+  const browser = context.browser();
+  if (!browser) {
+    throw new Error("Browser context is not available");
+  }
+
+  try {
+    // Create a new incognito context
+    const incognitoContext = await create_incognito_context(browser);
+
+    // Test downloads in incognito context
+    otherPage = await incognitoContext.newPage();
+    await otherPage.goto(regularUrl);
+    await otherPage.waitForLoadState("networkidle");
+    await downloadFirstFile(otherPage);
+    await otherPage.close();
+
+    otherPage = await incognitoContext.newPage();
+    await otherPage.goto(passwordUrl);
+    await otherPage.waitForLoadState("networkidle");
+    await otherPage.getByTestId(passwordInputID).fill(password);
+    await otherPage.getByTestId(submitButtonID).click();
+    await otherPage.waitForLoadState("networkidle");
+    await downloadFirstFile(otherPage);
+    await otherPage.close();
+
+    await incognitoContext.close();
+  } catch (error) {
+    console.error("Error in incognito testing:", error);
+    throw error;
+  }
 }
 
 export async function delete_file({ page }: PlaywrightProps) {

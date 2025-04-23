@@ -1,6 +1,6 @@
 {
   "name": "send-suite",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "",
   "keywords": [],
   "license": "ISC",
@@ -16,6 +16,7 @@
     "setup": "./scripts/setup.sh",
     "setup:local": "./scripts/setup.sh && bun run scripts/local.ts",
     "sort-package-json": "sort-package-json",
+    "teardown": "docker compose down",
     "test:e2e": "pnpm exec playwright test --headed",
     "test:e2e:ci": "./scripts/e2e.sh",
     "test:e2e:ui": "pnpm exec playwright test --ui"

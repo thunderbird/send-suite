@@ -1,4 +1,10 @@
-import { BrowserContext, expect, firefox, Page } from "@playwright/test";
+import {
+  Browser,
+  BrowserContext,
+  expect,
+  firefox,
+  Page,
+} from "@playwright/test";
 import { readFileSync } from "fs";
 
 import { fileLocators } from "./locators";
@@ -34,14 +40,42 @@ export async function saveClipboardItem(page: Page) {
 export async function setup_browser() {
   const browser = await firefox.launch();
 
-  const context = await browser.newContext({
+  // Base context options
+  const contextOptions = {
     ignoreHTTPSErrors: true,
+    viewport: { width: 1280, height: 720 },
+    acceptDownloads: true,
+    serviceWorkers: "block" as const,
+    bypassCSP: true,
+  };
+
+  // Create main context with storage state
+  const context = await browser.newContext({
+    ...contextOptions,
     storageState: storageStatePath,
   });
 
   const page = await context.newPage();
 
   return { context, page };
+}
+
+export async function create_incognito_context(browser: Browser) {
+  // Create incognito context with clean state
+  const incognitoContext = await browser.newContext({
+    ignoreHTTPSErrors: true,
+    viewport: { width: 1280, height: 720 },
+    acceptDownloads: true,
+    serviceWorkers: "block" as const,
+    bypassCSP: true,
+    // Start with a clean state
+    storageState: {
+      cookies: [],
+      origins: [],
+    },
+  });
+
+  return incognitoContext;
 }
 
 export const dragAndDropFile = async (
