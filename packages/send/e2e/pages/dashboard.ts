@@ -67,12 +67,12 @@ export async function log_out_restore_keys({ page }: PlaywrightProps) {
   // restore keys
   secondPage.on("dialog", (dialog) => dialog.accept());
   const passphrase = shareLinks.shift();
-  await secondPage.goto("http://localhost:5173/send/profile");
+  await secondPage.goto("/send/profile");
   await restorekeyInput.fill(passphrase!);
   await restoreKeysButton.click();
 
   // look for folder (only shows when keys are restored)
-  await secondPage.goto("http://localhost:5173/send");
+  await secondPage.goto("/send");
 
   // Check that default folder exists
   await secondPage.waitForSelector(folderRowSelector);
