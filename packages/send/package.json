@@ -13,6 +13,7 @@
     "predev": "./scripts/pre-flight.sh",
     "dev": "docker compose up --build --force-recreate -d && docker compose logs -f",
     "dev:detach": "docker compose up -d --build",
+    "teardown": "docker compose down",
     "setup": "./scripts/setup.sh",
     "setup:local": "./scripts/setup.sh && bun run scripts/local.ts",
     "sort-package-json": "sort-package-json",
