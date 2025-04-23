@@ -17,6 +17,7 @@
     "release": "./scripts/release.sh",
     "sort-package-json": "sort-package-json",
     "test": "VITE_TESTING=true vitest run --silent",
+    "test:coverage": "VITE_TESTING=true vitest run --coverage",
     "test-debug": "VITE_TESTING=true vitest --inspect-brk --single-thread",
     "test:watch": "VITE_TESTING=true vitest --watch",
     "typecheck": "tsc --noEmit",
@@ -98,5 +99,25 @@
   },
   "engines": {
     "node": ">=22.11.0"
+  },
+  "vitest": {
+    "coverage": {
+      "provider": "v8",
+      "reporter": [
+        "text",
+        "json",
+        "html",
+        "lcov"
+      ],
+      "exclude": [
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/coverage/**",
+        "**/test/**",
+        "**/*.d.ts",
+        "**/*.test.ts",
+        "**/*.spec.ts"
+      ]
+    }
   }
 }
