@@ -8,7 +8,8 @@
   "main": "index.js",
   "scripts": {
     "prepare": "husky",
-    "sort-package-json": "sort-package-json"
+    "sort-package-json": "sort-package-json",
+    "test:coverage": "lerna run test:coverage --parallel"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
