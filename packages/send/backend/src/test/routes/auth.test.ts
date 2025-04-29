@@ -6,12 +6,18 @@ import request from 'supertest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import authRouter from '../../routes/auth';
 
-const { mockedVerify, mockedGetLoginSession, mockedGetUserByEmail } =
-  vi.hoisted(() => ({
-    mockedVerify: vi.fn(),
-    mockedGetLoginSession: vi.fn(),
-    mockedGetUserByEmail: vi.fn(),
-  }));
+const {
+  mockedVerify,
+  mockedGetLoginSession,
+  mockedGetUserByEmail,
+  mockedGetUserById,
+} = vi.hoisted(() => ({
+  mockedVerify: vi.fn(),
+  mockedGetLoginSession: vi.fn(),
+  mockedGetUserByEmail: vi.fn(),
+  mockedGetUserById: vi.fn(),
+  mockAuthenticatedRequest: vi.fn(),
+}));
 
 vi.mock('jsonwebtoken', () => ({
   default: { verify: mockedVerify },
@@ -23,6 +29,7 @@ vi.mock('@/models', () => ({
 
 vi.mock('@/models/users', () => ({
   getUserByEmail: mockedGetUserByEmail,
+  getUserById: mockedGetUserById,
 }));
 
 describe('Auth Routes', () => {
@@ -38,6 +45,18 @@ describe('Auth Routes', () => {
 
   describe('GET /auth/me', () => {
     it('should return success when authenticated', async () => {
+      vi.spyOn(authClient, 'getDataFromAuthenticatedRequest').mockReturnValue({
+        id: '1',
+        uniqueHash: 'unique_hash',
+        email: 'something',
+        tier: 'FREE',
+      });
+      mockedGetUserById.mockResolvedValue({
+        id: '1',
+        uniqueHash: 'unique_hash',
+        email: 'something',
+        tier: 'FREE',
+      });
       const token = 'invalid.token';
       const refreshToken = 'invalid.refresh';
       const cookie = `authorization=Bearer%20${token};refresh_token=Bearer%20${refreshToken}`;
@@ -45,6 +64,23 @@ describe('Auth Routes', () => {
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual({ message: 'success' });
+    });
+
+    it('should return auth failure when user is not in the database', async () => {
+      vi.spyOn(authClient, 'getDataFromAuthenticatedRequest').mockReturnValue({
+        id: '1',
+        uniqueHash: 'unique_hash',
+        email: 'something',
+        tier: 'FREE',
+      });
+      mockedGetUserById.mockResolvedValue(null);
+      const token = 'invalid.token';
+      const refreshToken = 'invalid.refresh';
+      const cookie = `authorization=Bearer%20${token};refresh_token=Bearer%20${refreshToken}`;
+      const response = await request(app).get('/auth/me').set('Cookie', cookie);
+
+      expect(response.status).toBe(401);
+      expect(response.body).toEqual({ message: 'Authorization failed.' });
     });
 
     it('should return 401 when not authenticated', async () => {
