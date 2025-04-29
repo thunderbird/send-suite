@@ -57,20 +57,18 @@ router.get(
   '/me',
   requireJWT,
   wrapAsyncHandler(async (req, res) => {
-    // Retrieves the logged-in user from the current session
-    // ok, I need to persist the user to the session, don't I?
-    // am I not doing that already?
     const { id } = getDataFromAuthenticatedRequest(req);
 
-    try {
-      const user = await getUserById(id);
-      return res.status(200).json({
-        user,
+    const user = await getUserById(id);
+    if (!user) {
+      return res.status(404).json({
+        message: 'User not found.',
       });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      return res.status(404).json({});
     }
+    return res.status(200).json({
+      message: 'success',
+      user,
+    });
   })
 );
 

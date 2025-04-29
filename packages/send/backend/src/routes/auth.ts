@@ -7,16 +7,18 @@ import {
 } from '../errors/routes';
 
 import {
+  getDataFromAuthenticatedRequest,
   getJWTfromToken,
   getUserFromJWT,
   registerAuthToken,
   registerTokens,
 } from '@/auth/client';
 import { getLoginSession } from '@/models';
-import { getUserByEmail } from '@/models/users';
+import { getUserByEmail, getUserById } from '@/models/users';
 import { getCookie } from '@/utils';
 import { User, UserTier } from '@prisma/client';
 import { requireJWT, requirePublicLogin } from '../middleware';
+import { logger } from '@/utils/logger';
 
 export type AuthResponse = {
   id: User['id'];
@@ -31,8 +33,20 @@ router.get(
   '/me',
   requireJWT,
   addErrorHandling(AUTH_ERRORS.AUTH_FAILED),
-  wrapAsyncHandler(async (_, res) => {
-    return res.json({ message: 'success' });
+  wrapAsyncHandler(async (req, res) => {
+    const { id } = getDataFromAuthenticatedRequest(req);
+
+    const user = await getUserById(id);
+
+    if (!user) {
+      logger.error(`JWT user id doesn't match any users in the database`);
+      return res.status(401).json({
+        message: 'Authorization failed.',
+      });
+    }
+    return res.status(200).json({
+      message: 'success',
+    });
   })
 );
 
