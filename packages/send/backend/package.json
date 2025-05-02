@@ -25,6 +25,7 @@
     "prestart": "NODE_ENV=production pnpm run build",
     "start": "NODE_ENV=production node dist/index.js",
     "test": "vitest run --silent",
+    "test:coverage": "vitest run --coverage",
     "test:watch": "vitest --watch",
     "typecheck": "tsc --noEmit",
     "typecheck:watch": "tsc --noEmit --watch"
@@ -106,5 +107,25 @@
   },
   "engines": {
     "node": ">=22.11.0"
+  },
+  "vitest": {
+    "coverage": {
+      "provider": "v8",
+      "reporter": [
+        "text",
+        "json",
+        "html",
+        "lcov"
+      ],
+      "exclude": [
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/coverage/**",
+        "**/test/**",
+        "**/*.d.ts",
+        "**/*.test.ts",
+        "**/*.spec.ts"
+      ]
+    }
   }
 }
