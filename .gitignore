@@ -45,3 +45,13 @@ lerna-debug.log*
 .nx/cache
 # This helps the cache to build faster, we'll disable it until we can test it properly on CI
 .nx/workspace-data
+
+# Coverage
+coverage
+.nyc_output
+**/coverage
+**/.nyc_output
+combined-coverage
+*.lcov
+*.coverage
+coverage-final.json
